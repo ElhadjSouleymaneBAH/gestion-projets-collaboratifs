@@ -24,7 +24,12 @@ public class UtilisateurService {
     }
 
     public Optional<Utilisateur> obtenirParId(Long id) {
+
         return utilisateurRepository.findById(id);
+    }
+
+    public Optional<Utilisateur> obtenirParEmail(String email) {
+        return utilisateurRepository.findByEmail(email);
     }
 
     public Utilisateur enregistrer(Utilisateur utilisateur) {

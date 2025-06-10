@@ -6,5 +6,6 @@ CREATE TABLE utilisateurs (
                               mot_de_passe VARCHAR(255) NOT NULL,
                               role VARCHAR(50) NOT NULL,
                               langue VARCHAR(10) NOT NULL DEFAULT 'fr',
-                              cgu_accepte BOOLEAN NOT NULL
+                              cgu_accepte BOOLEAN NOT NULL,
+                              date_inscription DATETIME NOT NULL
 );
