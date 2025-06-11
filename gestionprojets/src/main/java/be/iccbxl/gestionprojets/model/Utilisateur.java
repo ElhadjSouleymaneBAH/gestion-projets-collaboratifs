@@ -1,5 +1,6 @@
 package be.iccbxl.gestionprojets.model;
 
+import be.iccbxl.gestionprojets.enums.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,8 +33,9 @@ public class Utilisateur {
     @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role = Role.MEMBRE;
 
     @Column(nullable = false)
     private String langue = "fr";
@@ -49,5 +51,17 @@ public class Utilisateur {
         if (dateInscription == null) {
             dateInscription = LocalDateTime.now();
         }
+    }
+
+    public void activerCompte() {
+
+    }
+
+    public boolean changerMotDePasse(String nouveauMotDePasse) {
+        if (nouveauMotDePasse != null && !nouveauMotDePasse.trim().isEmpty()) {
+            this.motDePasse = nouveauMotDePasse;
+            return true;
+        }
+        return false;
     }
 }
