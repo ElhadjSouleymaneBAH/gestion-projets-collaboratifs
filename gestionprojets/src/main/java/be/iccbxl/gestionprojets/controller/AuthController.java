@@ -1,6 +1,7 @@
 package be.iccbxl.gestionprojets.controller;
 
 import be.iccbxl.gestionprojets.model.Utilisateur;
+import be.iccbxl.gestionprojets.enums.Role;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import be.iccbxl.gestionprojets.security.JwtService;
 import jakarta.validation.constraints.NotBlank;
@@ -37,8 +38,7 @@ public class AuthController {
             Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-            String token = jwtService.generateToken(request.getEmail(), utilisateur.getRole());
-
+            String token = jwtService.generateToken(request.getEmail(), utilisateur.getRole().name());
             return ResponseEntity.ok(new AuthResponse(token, utilisateur));
 
         } catch (AuthenticationException e) {
@@ -77,21 +77,21 @@ public class AuthController {
             private final String nom;
             private final String prenom;
             private final String email;
-            private final String role;
+            private final Role role;
 
             public UserInfo(Utilisateur utilisateur) {
                 this.id = utilisateur.getId();
                 this.nom = utilisateur.getNom();
                 this.prenom = utilisateur.getPrenom();
                 this.email = utilisateur.getEmail();
-                this.role = utilisateur.getRole();
+                this.role = utilisateur.getRole(); // Maintenant ça marche !
             }
 
             public Long getId() { return id; }
             public String getNom() { return nom; }
             public String getPrenom() { return prenom; }
             public String getEmail() { return email; }
-            public String getRole() { return role; }
+            public Role getRole() { return role; }
         }
     }
 }
