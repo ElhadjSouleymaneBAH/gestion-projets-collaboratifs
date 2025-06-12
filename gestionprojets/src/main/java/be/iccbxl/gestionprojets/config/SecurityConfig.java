@@ -4,6 +4,7 @@ import be.iccbxl.gestionprojets.security.JwtFilter;
 import be.iccbxl.gestionprojets.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -38,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/projets/publics").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/projets").permitAll() // F3: Consulter projets publics
 
                         // Routes selon rôles du cahier des charges
                         .requestMatchers("/api/administrateur/**").hasRole("ADMINISTRATEUR")
