@@ -8,4 +8,4 @@ CREATE TABLE utilisateurs (
                               langue VARCHAR(10) NOT NULL DEFAULT 'fr',
                               cgu_accepte BOOLEAN NOT NULL,
                               date_inscription DATETIME NOT NULL
-);
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

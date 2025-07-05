@@ -1,10 +1,13 @@
-
 package be.iccbxl.gestionprojets.service;
 
 import be.iccbxl.gestionprojets.dto.TacheDTO;
 import be.iccbxl.gestionprojets.model.Tache;
+import be.iccbxl.gestionprojets.model.Projet;
+import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.enums.StatusTache;
 import be.iccbxl.gestionprojets.repository.TacheRepository;
+import be.iccbxl.gestionprojets.repository.ProjetRepository;
+import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +21,13 @@ import java.util.stream.Collectors;
 public class TacheService {
 
     private final TacheRepository tacheRepository;
+    private final ProjetRepository projetRepository;
+    private final UtilisateurRepository utilisateurRepository;
 
-    public TacheService(TacheRepository tacheRepository) {
+    public TacheService(TacheRepository tacheRepository, ProjetRepository projetRepository, UtilisateurRepository utilisateurRepository) {
         this.tacheRepository = tacheRepository;
+        this.projetRepository = projetRepository;
+        this.utilisateurRepository = utilisateurRepository;
     }
 
     /**
@@ -30,9 +37,20 @@ public class TacheService {
         Tache tache = new Tache();
         tache.setTitre(tacheDTO.getTitre());
         tache.setDescription(tacheDTO.getDescription());
-        tache.setIdProjet(tacheDTO.getIdProjet());
-        tache.setIdAssigne(tacheDTO.getIdAssigne());
-        tache.setStatut(StatusTache.BROUILLON); // Statut initial selon diagramme
+
+        // Chercher le projet dans la base
+        Projet projet = projetRepository.findById(tacheDTO.getIdProjet())
+                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+        tache.setProjet(projet);
+
+        // Si la tâche est assignée à quelqu'un
+        if (tacheDTO.getIdAssigne() != null) {
+            Utilisateur utilisateur = utilisateurRepository.findById(tacheDTO.getIdAssigne())
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+            tache.setAssigneA(utilisateur);
+        }
+
+        tache.setStatut(StatusTache.BROUILLON); // Statut par défaut
 
         Tache tacheSauvee = tacheRepository.save(tache);
         return convertirEnDTO(tacheSauvee);
@@ -60,7 +78,7 @@ public class TacheService {
      * Obtenir les tâches d'un projet
      */
     public List<TacheDTO> obtenirTachesParProjet(Long idProjet) {
-        return tacheRepository.findByIdProjet(idProjet)
+        return tacheRepository.findByProjetId(idProjet)
                 .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
@@ -70,7 +88,7 @@ public class TacheService {
      * Obtenir les tâches assignées à un utilisateur
      */
     public List<TacheDTO> obtenirTachesParUtilisateur(Long idUtilisateur) {
-        return tacheRepository.findByIdAssigne(idUtilisateur)
+        return tacheRepository.findByAssigneAId(idUtilisateur)
                 .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
@@ -85,9 +103,17 @@ public class TacheService {
 
         tache.setTitre(tacheDTO.getTitre());
         tache.setDescription(tacheDTO.getDescription());
-        tache.setIdAssigne(tacheDTO.getIdAssigne());
 
-        // Mise à jour  du statut
+        // Gestion de l'assignation
+        if (tacheDTO.getIdAssigne() != null) {
+            Utilisateur utilisateur = utilisateurRepository.findById(tacheDTO.getIdAssigne())
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+            tache.assignerA(utilisateur); // Utilise la méthode de l'entité
+        } else {
+            tache.setAssigneA(null);
+        }
+
+        // Mise à jour du statut
         tache.setStatut(tacheDTO.getStatut());
 
         Tache tacheSauvee = tacheRepository.save(tache);
@@ -102,15 +128,22 @@ public class TacheService {
     }
 
     /**
-     * Conversion en TacheDTO
+     * Conversion Tache vers TacheDTO
      */
     private TacheDTO convertirEnDTO(Tache tache) {
         TacheDTO dto = new TacheDTO();
         dto.setId(tache.getId());
         dto.setTitre(tache.getTitre());
         dto.setDescription(tache.getDescription());
-        dto.setIdProjet(tache.getIdProjet());
-        dto.setIdAssigne(tache.getIdAssigne());
+
+        // Récupération des IDs liés
+        if (tache.getProjet() != null) {
+            dto.setIdProjet(tache.getProjet().getId());
+        }
+        if (tache.getAssigneA() != null) {
+            dto.setIdAssigne(tache.getAssigneA().getId());
+        }
+
         dto.setStatut(tache.getStatut());
         dto.setDateCreation(tache.getDateCreation());
         return dto;

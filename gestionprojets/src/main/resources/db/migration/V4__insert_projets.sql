@@ -46,9 +46,10 @@ INSERT INTO projets (titre, description, id_createur, statut, date_creation) VAL
                                                                                  ('Application de Gestion Budget', 'Suivi des finances personnelles avec graphiques', 2, 'ACTIF', '2024-02-13 12:15:00'),
                                                                                  ('Site de Journalisme Citoyen', 'Plateforme collaborative d''information locale', 1, 'TERMINE', '2024-01-09 14:30:00'),
                                                                                  ('Application de Scan Document', 'Numérisation mobile avec OCR intégré', 3, 'ACTIF', '2024-02-19 10:05:00'),
-                                                                                 ('Plateforme de Télémédecine', 'Consultations médicales à distance', 4, 'ACTIF', '2024-01-32 16:25:00'),
+                                                                                 ('Plateforme de Télémédecine', 'Consultations médicales à distance', 4, 'ACTIF', '2024-01-31 16:25:00'),
                                                                                  ('Système de Gestion Événements', 'Organisation complète d''événements professionnels', 2, 'ACTIF', '2024-02-01 11:40:00'),
                                                                                  ('Application de Mindfulness', 'Méditation et relaxation avec suivi progrès', 1, 'ACTIF', '2024-01-15 13:55:00');
+
 INSERT INTO projets (titre, description, id_createur, statut, date_creation) VALUES
                                                                                  ('Plateforme IoT Agriculture', 'Monitoring intelligent des cultures avec capteurs', 3, 'ACTIF', '2024-02-23 09:10:00'),
                                                                                  ('Application de Livraison Express', 'Service de coursier en moins d''une heure', 4, 'ACTIF', '2024-01-18 15:20:00'),

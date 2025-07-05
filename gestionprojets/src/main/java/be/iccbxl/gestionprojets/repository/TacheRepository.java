@@ -7,19 +7,23 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * Repository pour la gestion des tâches
- */
 @Repository
 public interface TacheRepository extends JpaRepository<Tache, Long> {
 
-    List<Tache> findByIdProjet(Long idProjet);
-    List<Tache> findByIdAssigne(Long idAssigne);
+    // Adaptées aux relations JPA
+    List<Tache> findByProjetId(Long projetId);
 
-    /**
-     * Trouve les tâches par statut
-     * Nécessaire pour filtrer selon enum StatusTache
-     */
+    List<Tache> findByAssigneAId(Long assigneId);
+
     List<Tache> findByStatut(StatusTache statut);
-    List<Tache> findByIdProjetAndStatut(Long idProjet, StatusTache statut);
+
+    List<Tache> findByProjetIdAndStatut(Long projetId, StatusTache statut);
+
+    List<Tache> findByAssigneAIdAndStatut(Long assigneId, StatusTache statut);
+
+    List<Tache> findByAssigneAIsNull();
+
+    Long countByProjetId(Long projetId);
+    
+    Long countByAssigneAId(Long assigneId);
 }

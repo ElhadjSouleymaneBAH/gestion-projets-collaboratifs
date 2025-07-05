@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Entité Tache selon le diagramme de classes
@@ -28,18 +30,24 @@ public class Tache {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "id_projet", nullable = false)
-    private Long idProjet;
-
-    @Column(name = "id_assigne")
-    private Long idAssigne;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusTache statut = StatusTache.BROUILLON;
 
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
+
+    // Relations JPA
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_projet", nullable = false)
+    private Projet projet;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_assigne")
+    private Utilisateur assigneA;
+
+    @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Commentaire> commentaires = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
@@ -49,13 +57,27 @@ public class Tache {
     }
 
     /**
+     * Assigner la tâche à un utilisateur
+     */
+    public void assignerA(Utilisateur utilisateur) {
+        if (this.assigneA != null) {
+            this.assigneA.getTachesAssignees().remove(this);
+        }
+        this.assigneA = utilisateur;
+        if (utilisateur != null) {
+            utilisateur.getTachesAssignees().add(this);
+        }
+    }
+
+    /**
      * Ajouter une tâche
      */
-    public boolean ajouterTache(String titre, String description, Long idProjet) {
-        if (titre != null && !titre.trim().isEmpty() && idProjet != null) {
+    public boolean ajouterTache(String titre, String description, Projet projet) {
+        if (titre != null && !titre.trim().isEmpty() && projet != null) {
             this.titre = titre;
             this.description = description;
-            this.idProjet = idProjet;
+            this.projet = projet;
+            projet.getTaches().add(this);
             return true;
         }
         return false;
@@ -80,6 +102,12 @@ public class Tache {
      */
     public boolean supprimerTache(Long id) {
         if (id != null) {
+            if (this.projet != null) {
+                this.projet.getTaches().remove(this);
+            }
+            if (this.assigneA != null) {
+                this.assigneA.getTachesAssignees().remove(this);
+            }
             return true;
         }
         return false;
