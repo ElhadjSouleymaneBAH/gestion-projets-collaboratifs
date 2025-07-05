@@ -3,6 +3,7 @@ package be.iccbxl.gestionprojets.service;
 import be.iccbxl.gestionprojets.dto.ConnexionDTO;
 import be.iccbxl.gestionprojets.dto.InscriptionDTO;
 import be.iccbxl.gestionprojets.dto.UtilisateurDTO;
+import be.iccbxl.gestionprojets.enums.Role;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,7 +13,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service pour la gestion des utilisateurs
+ * Service pour la gestion des utilisateurs.
+ *
+ * Implémente les fonctionnalités :
+ * - F1 : S'inscrire
+ * - F4 : Consulter son profil
+ * - F5 : Mettre à jour son profil
+ *
+ * @author ElhadjSouleymaneBAH
+ * @version 1.0
  */
 @Service
 public class UtilisateurService {
@@ -25,39 +34,96 @@ public class UtilisateurService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Vos méthodes existantes (gardées)
+    // ========== MÉTHODES DE BASE ==========
+
+    /**
+     * Obtient tous les utilisateurs (usage administrateur).
+     */
     public List<Utilisateur> obtenirTous() {
         return utilisateurRepository.findAll();
     }
 
+    /**
+     * Obtient un utilisateur par son ID.
+     */
     public Optional<Utilisateur> obtenirParId(Long id) {
         return utilisateurRepository.findById(id);
     }
 
+    /**
+     * Obtient un utilisateur par son email.
+     */
     public Optional<Utilisateur> obtenirParEmail(String email) {
         return utilisateurRepository.findByEmail(email);
     }
 
+    /**
+     * Enregistre un utilisateur avec hachage du mot de passe.
+     */
     public Utilisateur enregistrer(Utilisateur utilisateur) {
-        // Hasher le mot de passe
-        String motDePasseEncode = passwordEncoder.encode(utilisateur.getMotDePasse());
-        utilisateur.setMotDePasse(motDePasseEncode);
+        // Hasher le mot de passe si ce n'est pas déjà fait
+        if (utilisateur.getMotDePasse() != null && !utilisateur.getMotDePasse().startsWith("$2a$")) {
+            String motDePasseEncode = passwordEncoder.encode(utilisateur.getMotDePasse());
+            utilisateur.setMotDePasse(motDePasseEncode);
+        }
         return utilisateurRepository.save(utilisateur);
     }
 
+    /**
+     * Supprime un utilisateur par son ID.
+     */
     public void supprimer(Long id) {
         utilisateurRepository.deleteById(id);
     }
 
-    // Nouvelles méthodes avec DTOs pour les exigences
+    // ========== MÉTHODES DE VÉRIFICATION ==========
 
     /**
-     * Inscription d'un nouvel utilisateur
+     * Vérifie si un email existe déjà dans le système.
+     *
+     * @param email L'adresse email à vérifier
+     * @return true si l'email existe déjà, false sinon
      */
-    public UtilisateurDTO inscrire(InscriptionDTO inscriptionDTO) {
+    public boolean existeParEmail(String email) {
+        return utilisateurRepository.existsByEmail(email);
+    }
+
+    /**
+     * Vérifie si un utilisateur existe par son ID.
+     *
+     * @param id L'identifiant de l'utilisateur
+     * @return true si l'utilisateur existe, false sinon
+     */
+    public boolean existeParId(Long id) {
+        return utilisateurRepository.existsById(id);
+    }
+
+    // ========== FONCTIONNALITÉS MÉTIER ==========
+
+    /**
+     * Inscription d'un nouvel utilisateur (F1).
+     *
+     * @param inscriptionDTO Les données d'inscription
+     * @return L'utilisateur créé (pour compatibilité avec le Controller)
+     * @throws RuntimeException si l'email existe déjà ou données invalides
+     */
+    public Utilisateur inscrire(InscriptionDTO inscriptionDTO) {
+        // Validations
+        if (inscriptionDTO.getEmail() == null || inscriptionDTO.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("L'email est obligatoire");
+        }
+
+        if (inscriptionDTO.getMotDePasse() == null || inscriptionDTO.getMotDePasse().length() < 8) {
+            throw new RuntimeException("Le mot de passe doit contenir au moins 8 caractères");
+        }
+
+        if (!inscriptionDTO.isCguAccepte()) {
+            throw new RuntimeException("L'acceptation des CGU est obligatoire (RGPD)");
+        }
+
         // Vérifier si l'email existe déjà
-        if (utilisateurRepository.existsByEmail(inscriptionDTO.getEmail())) {
-            throw new RuntimeException("Email déjà utilisé");
+        if (existeParEmail(inscriptionDTO.getEmail())) {
+            throw new RuntimeException("Un compte existe déjà avec cette adresse email");
         }
 
         // Créer nouvel utilisateur
@@ -66,18 +132,27 @@ public class UtilisateurService {
         utilisateur.setPrenom(inscriptionDTO.getPrenom());
         utilisateur.setEmail(inscriptionDTO.getEmail());
         utilisateur.setMotDePasse(inscriptionDTO.getMotDePasse());
-        utilisateur.setLangue(inscriptionDTO.getLangue());
+        utilisateur.setLangue(inscriptionDTO.getLangue() != null ? inscriptionDTO.getLangue() : "fr");
         utilisateur.setCguAccepte(inscriptionDTO.isCguAccepte());
+        utilisateur.setRole(Role.MEMBRE); // Rôle par défaut pour F1
 
         // Enregistrer avec hashage du mot de passe
-        Utilisateur utilisateurSauve = enregistrer(utilisateur);
-
-        // Convertir en DTO pour la réponse
-        return convertirEnDTO(utilisateurSauve);
+        return enregistrer(utilisateur);
     }
 
     /**
-     * Consulter le profil utilisateur
+     * Version DTO de l'inscription (pour flexibilité).
+     */
+    public UtilisateurDTO inscrireDTO(InscriptionDTO inscriptionDTO) {
+        Utilisateur utilisateur = inscrire(inscriptionDTO);
+        return convertirEnDTO(utilisateur);
+    }
+
+    /**
+     * Consulter le profil utilisateur (F4).
+     *
+     * @param utilisateurId L'ID de l'utilisateur
+     * @return Le profil utilisateur en DTO
      */
     public UtilisateurDTO consulterProfil(Long utilisateurId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
@@ -87,13 +162,17 @@ public class UtilisateurService {
     }
 
     /**
-     * Mettre à jour le profil utilisateur
+     * Mettre à jour le profil utilisateur (F5).
+     *
+     * @param utilisateurId L'ID de l'utilisateur
+     * @param utilisateurDTO Les nouvelles données
+     * @return Le profil mis à jour
      */
     public UtilisateurDTO mettreAJourProfil(Long utilisateurId, UtilisateurDTO utilisateurDTO) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        // Mettre à jour les champs modifiables
+        // Mettre à jour les champs modifiables (F5)
         utilisateur.setNom(utilisateurDTO.getNom());
         utilisateur.setPrenom(utilisateurDTO.getPrenom());
         utilisateur.setLangue(utilisateurDTO.getLangue());
@@ -102,8 +181,10 @@ public class UtilisateurService {
         return convertirEnDTO(utilisateurSauve);
     }
 
+    // ========== MÉTHODES UTILITAIRES ==========
+
     /**
-     *  UtilisateurDTO
+     * Convertit un Utilisateur en UtilisateurDTO (sans mot de passe).
      */
     private UtilisateurDTO convertirEnDTO(Utilisateur utilisateur) {
         UtilisateurDTO dto = new UtilisateurDTO();
@@ -115,5 +196,20 @@ public class UtilisateurService {
         dto.setLangue(utilisateur.getLangue());
         dto.setDateInscription(utilisateur.getDateInscription());
         return dto;
+    }
+
+    /**
+     * Convertit un UtilisateurDTO en Utilisateur.
+     */
+    public Utilisateur convertirEnUtilisateur(UtilisateurDTO dto) {
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setId(dto.getId());
+        utilisateur.setNom(dto.getNom());
+        utilisateur.setPrenom(dto.getPrenom());
+        utilisateur.setEmail(dto.getEmail());
+        utilisateur.setRole(dto.getRole());
+        utilisateur.setLangue(dto.getLangue());
+        utilisateur.setDateInscription(dto.getDateInscription());
+        return utilisateur;
     }
 }
