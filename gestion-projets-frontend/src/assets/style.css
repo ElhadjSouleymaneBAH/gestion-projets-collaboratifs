@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Styles personnalisés COLLABPRO */
+.btn-collabpro {
+  @apply bg-collabpro-blue text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors;
+}
+
+.card-collabpro {
+  @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6;
+}
+
+/* Utilisation des couleurs personnalisées */
+.text-collabpro {
+  @apply text-collabpro-blue;
+}
+
+.bg-collabpro {
+  @apply bg-collabpro-blue;
+}
+
+.bg-collabpro-light {
+  @apply bg-collabpro-light;
+}
