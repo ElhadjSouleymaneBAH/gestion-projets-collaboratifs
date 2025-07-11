@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
-    <!-- Header de navigation (optionnel selon la page) -->
+    <!-- Header de navigation  -->
     <AppHeader v-if="showHeader" />
 
     <!-- Contenu principal -->

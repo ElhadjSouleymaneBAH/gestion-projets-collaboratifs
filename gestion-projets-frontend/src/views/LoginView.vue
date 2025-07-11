@@ -1,200 +1,257 @@
+<!-- LoginView.vue -->
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <!-- Header -->
-      <div>
-        <h1 class="text-center text-3xl font-extrabold text-gray-900">
-          Gestion de Projets Collaboratifs
-        </h1>
-        <h2 class="mt-6 text-center text-2xl font-bold text-gray-900">
-          Connectez-vous à votre compte
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Ou
-          <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-500">
-            créez un nouveau compte
-          </router-link>
-        </p>
-      </div>
+  <div class="auth-container d-flex align-items-center justify-content-center py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+          <div class="card auth-card">
+            <div class="card-body p-5">
 
-      <!-- Formulaire de connexion -->
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div class="rounded-md shadow-sm -space-y-px">
-          <!-- Email -->
-          <div>
-            <label for="email" class="sr-only">Adresse email</label>
-            <input
-              id="email"
-              v-model="form.email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              placeholder="Adresse email"
-              :disabled="authStore.loading"
-            />
-          </div>
+              <!-- Logo et titre -->
+              <div class="text-center mb-4">
+                <img src="/logo-collabpro.png" alt="CollabPro" class="auth-logo mb-3">
+                <h3 class="fw-bold text-collabpro">Se connecter</h3>
+                <p class="text-muted">Accédez à votre espace CollabPro</p>
+              </div>
 
-          <!-- Mot de passe -->
-          <div>
-            <label for="password" class="sr-only">Mot de passe</label>
-            <input
-              id="password"
-              v-model="form.motDePasse"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              placeholder="Mot de passe"
-              :disabled="authStore.loading"
-            />
-          </div>
-        </div>
+              <!-- Messages d'erreur -->
+              <div v-if="error" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ error }}
+                <button type="button" class="btn-close" @click="error = null"></button>
+              </div>
 
-        <!-- Options -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input
-              id="remember-me"
-              v-model="form.rememberMe"
-              name="remember-me"
-              type="checkbox"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label for="remember-me" class="ml-2 block text-sm text-gray-900">
-              Se souvenir de moi
-            </label>
-          </div>
+              <!-- Messages de succès -->
+              <div v-if="success" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ success }}
+                <button type="button" class="btn-close" @click="success = null"></button>
+              </div>
 
-          <div class="text-sm">
-            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-              Mot de passe oublié ?
-            </a>
-          </div>
-        </div>
+              <!-- Formulaire de connexion -->
+              <form @submit.prevent="handleLogin">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="email"
+                    v-model="form.email"
+                    :class="{ 'is-invalid': errors.email }"
+                    required
+                    autocomplete="email"
+                  >
+                  <div v-if="errors.email" class="invalid-feedback">
+                    {{ errors.email }}
+                  </div>
+                </div>
 
-        <!-- Message d'erreur -->
-        <div v-if="authStore.error" class="rounded-md bg-red-50 p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">
-                Erreur de connexion
-              </h3>
-              <div class="mt-2 text-sm text-red-700">
-                <p>{{ authStore.error }}</p>
+                <div class="mb-3">
+                  <label for="password" class="form-label">Mot de passe</label>
+                  <div class="input-group">
+                    <input
+                      :type="showPassword ? 'text' : 'password'"
+                      class="form-control"
+                      id="password"
+                      v-model="form.password"
+                      :class="{ 'is-invalid': errors.password }"
+                      required
+                      autocomplete="current-password"
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      @click="showPassword = !showPassword"
+                    >
+                      <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                    </button>
+                  </div>
+                  <div v-if="errors.password" class="invalid-feedback d-block">
+                    {{ errors.password }}
+                  </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="remember"
+                    v-model="form.remember"
+                  >
+                  <label class="form-check-label" for="remember">
+                    Se souvenir de moi
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-collabpro w-100 mb-3"
+                  :disabled="loading"
+                >
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ loading ? 'Connexion...' : 'Se connecter' }}
+                </button>
+
+                <div class="text-center">
+                  <router-link
+                    to="/forgot-password"
+                    class="text-decoration-none text-muted"
+                  >
+                    Mot de passe oublié ?
+                  </router-link>
+                </div>
+              </form>
+
+              <!-- Lien vers inscription -->
+              <hr class="my-4">
+              <div class="text-center">
+                <p class="text-muted mb-0">
+                  Pas encore de compte ?
+                  <router-link
+                    to="/register"
+                    class="text-collabpro text-decoration-none fw-bold"
+                  >
+                    S'inscrire
+                  </router-link>
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Bouton de connexion -->
-        <div>
-          <button
-            type="submit"
-            :disabled="authStore.loading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <svg v-if="!authStore.loading" class="h-5 w-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-              </svg>
-              <svg v-else class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </span>
-            {{ authStore.loading ? 'Connexion...' : 'Se connecter' }}
-          </button>
-        </div>
-
-        <!-- Liens supplémentaires -->
-        <div class="text-center">
-          <p class="text-sm text-gray-600">
-            Vous n'avez pas de compte ?
-            <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-500">
-              Inscrivez-vous ici
+          <!-- Lien retour accueil -->
+          <div class="text-center mt-3">
+            <router-link
+              to="/"
+              class="text-muted text-decoration-none"
+            >
+              <i class="fas fa-arrow-left me-2"></i>
+              Retour à l'accueil
             </router-link>
-          </p>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { authAPI } from '@/services/api'
 
-// Composables
 const router = useRouter()
-const authStore = useAuthStore()
 
-// State local
-const form = ref({
+// State réactif
+const form = reactive({
   email: '',
-  motDePasse: '',
-  rememberMe: false
+  password: '',
+  remember: false
 })
 
-// Méthodes
-const handleLogin = async () => {
-  // Effacer les erreurs précédentes
-  authStore.clearError()
+const errors = reactive({
+  email: null,
+  password: null
+})
 
-  // Validation basique
-  if (!form.value.email || !form.value.motDePasse) {
-    return
+const error = ref(null)
+const success = ref(null)
+const loading = ref(false)
+const showPassword = ref(false)
+
+// Validation
+const validateForm = () => {
+  // Reset errors
+  errors.email = null
+  errors.password = null
+
+  let isValid = true
+
+  // Validation email
+  if (!form.email) {
+    errors.email = 'L\'email est requis'
+    isValid = false
+  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    errors.email = 'Format d\'email invalide'
+    isValid = false
   }
 
-  try {
-    const result = await authStore.login({
-      email: form.value.email,
-      motDePasse: form.value.motDePasse
-    })
-
-    if (result.success) {
-      // Redirection selon le rôle
-      if (result.user.role === 'ADMINISTRATEUR') {
-        router.push('/admin/dashboard')
-      } else if (result.user.role === 'CHEF_PROJET') {
-        router.push('/chef/dashboard')
-      } else {
-        router.push('/dashboard')
-      }
-    }
-  } catch (error) {
-    console.error('Erreur de connexion:', error)
+  // Validation mot de passe
+  if (!form.password) {
+    errors.password = 'Le mot de passe est requis'
+    isValid = false
+  } else if (form.password.length < 4) {
+    errors.password = 'Le mot de passe doit contenir au moins 4 caractères'
+    isValid = false
   }
+
+  return isValid
 }
 
-// Lifecycle
-onMounted(() => {
-  // Rediriger si déjà connecté
-  if (authStore.isAuthenticated) {
-    router.push('/dashboard')
+// Gestion de la connexion
+const handleLogin = async () => {
+  if (!validateForm()) return
+
+  loading.value = true
+  error.value = null
+  success.value = null
+
+  try {
+    // Appel API de connexion (F2) avec votre service
+    const response = await authAPI.login({
+      email: form.email,
+      motDePasse: form.password
+    })
+
+    // Succès
+    success.value = 'Connexion réussie ! Redirection...'
+
+    // Stocker le token et les infos utilisateur
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token)
+    }
+    if (response.data.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+
+    // Redirection selon le rôle
+    setTimeout(() => {
+      if (response.data.user?.role === 'ADMINISTRATEUR') {
+        router.push('/admin/dashboard')
+      } else if (response.data.user?.role === 'CHEF_PROJET') {
+        router.push('/chef-projet/dashboard')
+      } else {
+        router.push('/membre/dashboard')
+      }
+    }, 1000)
+
+  } catch (err) {
+    console.error('Erreur de connexion:', err)
+
+    if (err.response?.status === 401) {
+      error.value = 'Email ou mot de passe incorrect'
+    } else if (err.response?.status === 403) {
+      error.value = 'Compte désactivé. Contactez l\'administrateur'
+    } else {
+      error.value = err.response?.data?.message || 'Erreur de connexion. Veuillez réessayer.'
+    }
+  } finally {
+    loading.value = false
   }
-})
+}
 </script>
 
 <style scoped>
-/* Styles personnalisés si nécessaire */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.auth-container {
+  min-height: 100vh;
+}
+
+.auth-card {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.auth-logo {
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 </style>
