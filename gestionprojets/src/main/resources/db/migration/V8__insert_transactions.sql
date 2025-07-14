@@ -1,4 +1,4 @@
--- V8: Insert transactions (version complète corrigée)
+-- V8: Insert transactions
 INSERT INTO transactions (montant_ht, tva, montant_ttc, montant_abonnement, statut, date_creation, id_utilisateur) VALUES
                                                                                                                        (100.0, 21.0, 121.0, 100.0, 'COMPLETE', '2024-12-15 14:30:00', 1),
                                                                                                                        (10.0, 2.1, 12.1, 10.0, 'COMPLETE', '2024-12-14 09:15:00', 2),

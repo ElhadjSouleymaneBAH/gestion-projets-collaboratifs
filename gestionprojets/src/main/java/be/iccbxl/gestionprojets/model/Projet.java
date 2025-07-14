@@ -98,7 +98,7 @@ public class Projet {
      */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "projet_membres",
+            name = "projet_utilisateurs",
             joinColumns = @JoinColumn(name = "projet_id"),
             inverseJoinColumns = @JoinColumn(name = "utilisateur_id")
     )

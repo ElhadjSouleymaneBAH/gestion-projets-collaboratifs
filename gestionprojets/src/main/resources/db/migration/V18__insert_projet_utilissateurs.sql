@@ -1,5 +1,5 @@
 -- Insertion des membres dans les projets
-INSERT INTO projet_membres (projet_id, utilisateur_id, role, date_ajout, actif) VALUES
+INSERT INTO projet_utilisateurs (projet_id, utilisateur_id, role, date_ajout, actif) VALUES
                                                                                     (1, 1, 'MEMBRE', '2024-01-15 09:15:00', TRUE),
                                                                                     (1, 2, 'MEMBRE', '2024-01-15 10:00:00', TRUE),
                                                                                     (1, 3, 'MEMBRE', '2024-01-15 10:30:00', TRUE),

@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  * @version 1.0
  */
 @Entity
-@Table(name = "projet_membres")
+@Table(name = "projet_utilisateurs")
 @Getter
 @Setter
 @NoArgsConstructor
