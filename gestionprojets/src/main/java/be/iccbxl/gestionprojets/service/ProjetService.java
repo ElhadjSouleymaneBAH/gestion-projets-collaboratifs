@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  * - F3 : Consulter les projets publics
  * - F6 : Gérer les projets
  * - F8 : Ajouter des membres à un projet
+ * - F9 : Support collaboration temps réel
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
@@ -42,7 +43,7 @@ public class ProjetService {
         this.projetUtilisateurRepository = projetUtilisateurRepository;
     }
 
-    // ========== MÉTHODES EXISTANTES (de votre version) ==========
+    // ========== MÉTHODES DE BASE ==========
 
     /**
      * Créer un nouveau projet
@@ -61,6 +62,7 @@ public class ProjetService {
     /**
      * Obtenir tous les projets
      */
+    @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirTousProjets() {
         return projetRepository.findAll()
                 .stream()
@@ -71,14 +73,25 @@ public class ProjetService {
     /**
      * Obtenir un projet par ID
      */
+    @Transactional(readOnly = true)
     public Optional<ProjetDTO> obtenirProjetParId(Long id) {
         return projetRepository.findById(id)
                 .map(this::convertirEnDTO);
     }
 
     /**
+     * Trouver un projet par ID avec Optional - Support F9
+     * Utilisé pour F9 : Collaboration en temps réel
+     */
+    @Transactional(readOnly = true)
+    public Optional<Projet> findById(Long id) {
+        return projetRepository.findById(id);
+    }
+
+    /**
      * Obtenir les projets d'un créateur
      */
+    @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsParCreateur(Long idCreateur) {
         return projetRepository.findByIdCreateur(idCreateur)
                 .stream()
@@ -142,6 +155,7 @@ public class ProjetService {
      * Vérifier si un utilisateur peut modifier un projet
      * Méthode d'autorisation pour F6
      */
+    @Transactional(readOnly = true)
     public boolean utilisateurPeutModifierProjet(Long projetId, String emailUtilisateur) {
         Optional<Projet> projetOpt = projetRepository.findById(projetId);
         if (projetOpt.isEmpty()) {
@@ -157,6 +171,27 @@ public class ProjetService {
         Projet projet = projetOpt.get();
         // L'utilisateur peut modifier s'il est le créateur
         return projet.getIdCreateur().equals(utilisateur.getId());
+    }
+
+    /**
+     * Vérifier si un utilisateur est membre d'un projet
+     * Utilisé pour F9 : Collaboration en temps réel
+     */
+    @Transactional(readOnly = true)
+    public boolean estMembreDuProjet(Long utilisateurId, Long projetId) {
+        // Vérifier si l'utilisateur est le créateur du projet
+        Optional<Projet> projetOpt = projetRepository.findById(projetId);
+        if (projetOpt.isPresent()) {
+            Projet projet = projetOpt.get();
+            if (projet.getIdCreateur().equals(utilisateurId)) {
+                return true;
+            }
+        }
+
+        // Vérifier si l'utilisateur est membre via projet_utilisateurs
+        return projetUtilisateurRepository.existsByProjetIdAndUtilisateurIdAndActif(
+                projetId, utilisateurId, true
+        );
     }
 
     /**
@@ -210,6 +245,7 @@ public class ProjetService {
      * Obtenir les membres d'un projet
      * Support de F8 pour visualiser les membres
      */
+    @Transactional(readOnly = true)
     public List<UtilisateurDTO> obtenirMembresProjet(Long projetId) {
         // Vérifier que le projet existe
         if (!projetRepository.existsById(projetId)) {
@@ -230,6 +266,7 @@ public class ProjetService {
      * Vérifier si un utilisateur est membre d'un projet
      * Utile pour les autorisations et l'interface
      */
+    @Transactional(readOnly = true)
     public boolean utilisateurEstMembreProjet(Long projetId, Long utilisateurId) {
         return projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId);
     }

@@ -8,6 +8,7 @@ import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +20,13 @@ import java.util.Optional;
  * - F1 : S'inscrire
  * - F4 : Consulter son profil
  * - F5 : Mettre à jour son profil
+ * - F9 : Support collaboration temps réel
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
  */
 @Service
+@Transactional
 public class UtilisateurService {
 
     private final UtilisateurRepository utilisateurRepository;
@@ -39,6 +42,7 @@ public class UtilisateurService {
     /**
      * Obtient tous les utilisateurs (usage administrateur).
      */
+    @Transactional(readOnly = true)
     public List<Utilisateur> obtenirTous() {
         return utilisateurRepository.findAll();
     }
@@ -46,6 +50,7 @@ public class UtilisateurService {
     /**
      * Obtient un utilisateur par son ID.
      */
+    @Transactional(readOnly = true)
     public Optional<Utilisateur> obtenirParId(Long id) {
         return utilisateurRepository.findById(id);
     }
@@ -53,8 +58,18 @@ public class UtilisateurService {
     /**
      * Obtient un utilisateur par son email.
      */
+    @Transactional(readOnly = true)
     public Optional<Utilisateur> obtenirParEmail(String email) {
         return utilisateurRepository.findByEmail(email);
+    }
+
+    /**
+     * Alias pour compatibilité WebSocket (F9)
+     * Utilise la méthode existante obtenirParEmail
+     */
+    @Transactional(readOnly = true)
+    public Optional<Utilisateur> findByEmail(String email) {
+        return obtenirParEmail(email);
     }
 
     /**
@@ -84,6 +99,7 @@ public class UtilisateurService {
      * @param email L'adresse email à vérifier
      * @return true si l'email existe déjà, false sinon
      */
+    @Transactional(readOnly = true)
     public boolean existeParEmail(String email) {
         return utilisateurRepository.existsByEmail(email);
     }
@@ -94,6 +110,7 @@ public class UtilisateurService {
      * @param id L'identifiant de l'utilisateur
      * @return true si l'utilisateur existe, false sinon
      */
+    @Transactional(readOnly = true)
     public boolean existeParId(Long id) {
         return utilisateurRepository.existsById(id);
     }
@@ -154,6 +171,7 @@ public class UtilisateurService {
      * @param utilisateurId L'ID de l'utilisateur
      * @return Le profil utilisateur en DTO
      */
+    @Transactional(readOnly = true)
     public UtilisateurDTO consulterProfil(Long utilisateurId) {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
