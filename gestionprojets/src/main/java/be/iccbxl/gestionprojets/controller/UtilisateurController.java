@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur REST pour la gestion des utilisateurs.
@@ -20,10 +21,11 @@ import java.util.Optional;
  * - F1 : S'inscrire (endpoint public pour les Visiteurs)
  * - F4 : Consulter son profil (membres authentifiés)
  * - F5 : Mettre à jour son profil (membres authentifiés)
+ * - F8 : Recherche d'utilisateurs pour ajouter des membres
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @see "Cahier des charges - Fonctionnalités F1, F4, F5"
+ * @see "Cahier des charges - Fonctionnalités F1, F4, F5, F8"
  */
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -36,7 +38,7 @@ public class UtilisateurController {
         this.utilisateurService = utilisateurService;
     }
 
-    // F1 : S'INSCRIRE (ENDPOINT PUBLIC)
+    // F1 : S'INSCRIRE
 
     /**
      * Inscription publique d'un nouvel utilisateur.
@@ -52,6 +54,8 @@ public class UtilisateurController {
      */
     @PostMapping("/inscription")
     public ResponseEntity<?> sInscrire(@Valid @RequestBody InscriptionDTO inscriptionDTO) {
+        System.out.println("inscriptionDTO: " + inscriptionDTO);
+
         try {
             // Validation CGU obligatoire (contrainte RGPD)
             if (!inscriptionDTO.isCguAccepte()) {
@@ -164,6 +168,45 @@ public class UtilisateurController {
         }
     }
 
+    // F8 : RECHERCHE D'UTILISATEURS (pour ajouter des membres)
+
+    /**
+     * Recherche d'utilisateurs pour F8 - Ajouter des membres à un projet.
+     *
+     * Fonctionnalité F8 : Ajouter des membres à un projet
+     * Utilisateurs : Chef de Projet
+     * Contraintes : Membres existants
+     *
+     * Permet de rechercher des utilisateurs (VISITEUR, MEMBRE, CHEF_PROJET)
+     * par nom, prénom ou email pour les inviter dans un projet.
+     *
+     * @param q Le terme de recherche
+     * @return Liste des utilisateurs correspondant à la recherche
+     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
+     */
+    @GetMapping("/recherche")
+    public ResponseEntity<List<Utilisateur>> rechercherUtilisateurs(@RequestParam String q) {
+        try {
+            System.out.println("DEBUG: [F8] Recherche utilisateurs avec terme: " + q);
+
+            List<Utilisateur> utilisateurs = utilisateurService.obtenirTousLesUtilisateursSansProjet()
+                    .stream()
+                    .filter(u ->
+                            u.getNom().toLowerCase().contains(q.toLowerCase()) ||
+                                    u.getPrenom().toLowerCase().contains(q.toLowerCase()) ||
+                                    u.getEmail().toLowerCase().contains(q.toLowerCase())
+                    )
+                    .collect(Collectors.toList());
+
+            System.out.println("DEBUG: [F8] " + utilisateurs.size() + " utilisateurs trouvés");
+            return ResponseEntity.ok(utilisateurs);
+
+        } catch (Exception e) {
+            System.err.println("ERROR: [F8] Erreur recherche utilisateurs: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ENDPOINTS ADMINISTRATEUR
 
     /**
@@ -177,6 +220,20 @@ public class UtilisateurController {
     public ResponseEntity<List<Utilisateur>> getTous() {
         try {
             List<Utilisateur> utilisateurs = utilisateurService.obtenirTous();
+            return ResponseEntity.ok(utilisateurs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtient tous les utilisateurs disponibles pour F8.
+     * Utilisé pour découvrir des utilisateurs à ajouter aux projets.
+     */
+    @GetMapping("/membresansprojet")
+    public ResponseEntity<List<Utilisateur>> getTousLesUtilisateursSansProjet() {
+        try {
+            List<Utilisateur> utilisateurs = utilisateurService.obtenirTousLesUtilisateursSansProjet();
             return ResponseEntity.ok(utilisateurs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

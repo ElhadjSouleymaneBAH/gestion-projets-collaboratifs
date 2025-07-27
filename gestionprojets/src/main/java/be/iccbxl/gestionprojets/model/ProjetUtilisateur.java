@@ -29,7 +29,7 @@ public class ProjetUtilisateur {
     private Long id;
 
     @Column(name = "projet_id", nullable = false)
-    private Long projetId;
+    private Long projetId;// Projet projetId
 
     @Column(name = "utilisateur_id", nullable = false)
     private Long utilisateurId;

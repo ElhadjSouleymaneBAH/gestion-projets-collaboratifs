@@ -17,6 +17,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Configuration de la sécurité Spring Boot pour CollabPro
+ *
+ * - Active le filtrage JWT
+ * - Définit les accès par rôle
+ * - Configure la session en mode stateless
+ * - Autorise les routes publiques (visiteur)
+ *
+ * @author ElhadjSouleymaneBAH
+ * @version 1.0
+ * @since 2025-07-18
+ * @see "Cahier des charges - F2 : Authentification par rôles"
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -30,12 +43,21 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Définition du filtre de sécurité.
+     *
+     * @param http Configuration HTTP
+     * @return SecurityFilterChain
+     * @throws Exception en cas d’erreur
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Routes publiques (Visiteur)
+                        .requestMatchers("/", "/ws/**").permitAll() // temporaire
+                        .requestMatchers("/ws-native/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/projets/publics").permitAll()

@@ -25,7 +25,7 @@ api.interceptors.request.use(
   }
 )
 
-// Intercepteur pour gérer les réponses et erreurs
+// Intercepteur pour gérer les réponses et erreurs - CORRECTION ICI
 api.interceptors.response.use(
   (response) => {
     return response
@@ -35,7 +35,7 @@ api.interceptors.response.use(
       // Token expiré ou invalide
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/login'
+      window.location.href = '/connexion'
     }
     return Promise.reject(error)
   }
@@ -50,7 +50,7 @@ export const authAPI = {
 
   // F1 : S'inscrire
   register: (userData) => {
-    return api.post('/auth/register', userData)
+    return api.post('/auth/inscription', userData)
   },
 
   // Déconnexion

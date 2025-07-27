@@ -24,11 +24,7 @@ import java.util.HashSet;
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @since 2025-07-05
- * @see Role
- * @see Projet
- * @see Tache
- * @see "Cahier des charges - Entités utilisateur"
+ * @since 2025-07-27
  */
 @Entity
 @Table(name = "utilisateurs")
@@ -107,6 +103,14 @@ public class Utilisateur {
      */
     @Column(name = "date_inscription", nullable = false)
     private LocalDateTime dateInscription;
+
+    /**
+     * Adresse postale de l'utilisateur.
+     * Champ optionnel pour les informations de contact et facturation.
+     * Supporte les fonctionnalités F10-F11 : Facturation et données de contact.
+     */
+    @Column(name = "adresse")
+    private String adresse;
 
     //  RELATIONS JPA
     /**
