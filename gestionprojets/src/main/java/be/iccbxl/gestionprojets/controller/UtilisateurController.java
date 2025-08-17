@@ -23,8 +23,10 @@ import java.util.stream.Collectors;
  * - F5 : Mettre à jour son profil (membres authentifiés)
  * - F8 : Recherche d'utilisateurs pour ajouter des membres
  *
+ * CORRIGÉ : hasAuthority() au lieu de hasRole() pour compatibilité avec JwtFilter
+ *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 1.1
  * @see "Cahier des charges - Fonctionnalités F1, F4, F5, F8"
  */
 @RestController
@@ -106,7 +108,7 @@ public class UtilisateurController {
 
         // Vérifie si c'est un administrateur
         boolean estAdmin = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
         // Vérifie si c'est son propre profil
         boolean estSonPropreProfil = utilisateurDemande.getEmail().equals(emailConnecte);
@@ -149,7 +151,7 @@ public class UtilisateurController {
 
         // Vérifie si c'est un admin
         boolean estAdmin = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
         // Vérifie si c'est son propre profil
         boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
@@ -216,7 +218,7 @@ public class UtilisateurController {
      * @return Liste de tous les utilisateurs
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<Utilisateur>> getTous() {
         try {
             List<Utilisateur> utilisateurs = utilisateurService.obtenirTous();
@@ -248,7 +250,7 @@ public class UtilisateurController {
      * @return L'utilisateur créé
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")  // CORRIGÉ
     public ResponseEntity<Utilisateur> creer(@Valid @RequestBody Utilisateur utilisateur) {
         try {
             // Vérification email unique
@@ -270,7 +272,7 @@ public class UtilisateurController {
      * @return Confirmation de suppression
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")  // CORRIGÉ
     public ResponseEntity<Void> supprimer(@PathVariable Long id) {
         try {
             if (!utilisateurService.existeParId(id)) {

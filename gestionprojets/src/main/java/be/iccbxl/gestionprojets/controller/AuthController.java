@@ -52,8 +52,8 @@ public class AuthController {
      * @param request Données de connexion (email et mot de passe)
      * @return Token JWT et informations utilisateur si succès, erreur sinon
      */
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    @PostMapping("/connexion")
+    public ResponseEntity<?> connexion(@RequestBody AuthRequest request) {
         System.out.println("DEBUG: Tentative de connexion pour: " + request.getEmail());
 
         try {

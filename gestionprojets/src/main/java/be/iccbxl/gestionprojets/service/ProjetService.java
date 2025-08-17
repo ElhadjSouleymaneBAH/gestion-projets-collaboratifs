@@ -13,16 +13,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
- * Service pour la gestion des projets
+ * Service pour la gestion des projets selon le cahier des charges.
  *
  * Implémente les fonctionnalités définies dans le cahier des charges :
- * - F3 : Consulter les projets publics
- * - F6 : Gérer les projets
- * - F8 : Ajouter des membres à un projet
- * - F9 : Support collaboration temps réel
+ * - F3 : Consulter les projets publics (Visiteur)
+ * - F6 : Gérer les projets (Chef de Projet)
+ * - F8 : Ajouter des membres à un projet (Chef de Projet)
+ * - F9 : Support collaboration temps réel (Membre, Chef de Projet)
+ *
+ * Logique métier F8 :
+ * - Chef de Projet peut ajouter/retirer des membres
+ * - Contraintes : Membres existants (pas de doublons)
+ * - Importance : 4/5
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
@@ -95,6 +101,52 @@ public class ProjetService {
     public List<ProjetDTO> obtenirProjetsParCreateur(Long idCreateur) {
         return projetRepository.findByIdCreateur(idCreateur)
                 .stream()
+                .map(this::convertirEnDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtenir les projets auxquels un utilisateur participe
+     * Inclut les projets créés + les projets où il est membre (F8)
+     *
+     * MÉTHODE AJOUTÉE - Corrige l'erreur de compilation ProjetController ligne 128
+     *
+     * @param utilisateurId ID de l'utilisateur
+     * @return Liste des projets de l'utilisateur
+     */
+    @Transactional(readOnly = true)
+    public List<ProjetDTO> obtenirProjetsParUtilisateur(Long utilisateurId) {
+        System.out.println("DEBUG: [F6/F8] Recherche projets pour utilisateur ID: " + utilisateurId);
+
+        // Vérifier que l'utilisateur existe
+        if (!utilisateurRepository.existsById(utilisateurId)) {
+            System.out.println("ERROR: [F6] Utilisateur non trouvé: " + utilisateurId);
+            throw new RuntimeException("Utilisateur non trouvé avec ID: " + utilisateurId);
+        }
+
+        // 1. Projets créés par l'utilisateur (F6 - Chef de Projet)
+        List<Projet> projetsCreees = projetRepository.findByIdCreateur(utilisateurId);
+        System.out.println("DEBUG: [F6] " + projetsCreees.size() + " projets créés par l'utilisateur");
+
+        // 2. Projets où l'utilisateur est membre (F8 - Membre ajouté par Chef de Projet)
+        List<Long> projetIdsCommeMembre = projetUtilisateurRepository.findProjetIdsByUtilisateurId(utilisateurId);
+        List<Projet> projetsCommeMembre = projetRepository.findAllById(projetIdsCommeMembre);
+        System.out.println("DEBUG: [F8] " + projetsCommeMembre.size() + " projets où l'utilisateur est membre");
+
+        // 3. Combiner et éliminer les doublons (un Chef de Projet ne doit pas voir son projet 2 fois)
+        List<Projet> tousProjets = new ArrayList<>();
+        tousProjets.addAll(projetsCreees);
+
+        // Ajouter les projets de membre qui ne sont pas déjà dans la liste
+        for (Projet projet : projetsCommeMembre) {
+            if (!tousProjets.stream().anyMatch(p -> p.getId().equals(projet.getId()))) {
+                tousProjets.add(projet);
+            }
+        }
+
+        System.out.println("DEBUG: [F6/F8] Total " + tousProjets.size() + " projets pour utilisateur " + utilisateurId);
+
+        return tousProjets.stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
     }

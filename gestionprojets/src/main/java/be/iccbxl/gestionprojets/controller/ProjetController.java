@@ -3,27 +3,32 @@ package be.iccbxl.gestionprojets.controller;
 import be.iccbxl.gestionprojets.dto.ProjetDTO;
 import be.iccbxl.gestionprojets.dto.UtilisateurDTO;
 import be.iccbxl.gestionprojets.service.ProjetService;
+import be.iccbxl.gestionprojets.service.UtilisateurService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Controller REST pour la gestion des projets.
  *
- * Implémente les fonctionnalités définies dans le cahier des charges :
- * - F3 : Consulter les projets publics (Visiteurs)
- * - F6 : Gérer les projets (Chef de Projet)
- * - F8 : Ajouter des membres à un projet (Chef de Projet)
+ * Implémente les fonctionnalités du cahier des charges :
+ * - F3 : Consulter les projets publics
+ * - F6 : Gérer les projets
+ * - F8 : Ajouter des membres à un projet
+ * - F9 : Support collaboration temps réel
+ *
+ * CORRIGÉ : hasAuthority() au lieu de hasRole() pour compatibilité avec JwtFilter
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
- * @see "Cahier des charges - Fonctionnalités F3, F6, F8"
+ * @version 1.1
+ * @see "Cahier des charges - Fonctionnalités F3, F6, F8, F9"
  */
 @RestController
 @RequestMapping("/api/projets")
@@ -31,291 +36,419 @@ import java.util.Optional;
 public class ProjetController {
 
     private final ProjetService projetService;
+    private final UtilisateurService utilisateurService;
 
-    public ProjetController(ProjetService projetService) {
+    public ProjetController(ProjetService projetService, UtilisateurService utilisateurService) {
         this.projetService = projetService;
+        this.utilisateurService = utilisateurService;
     }
 
-    // ========== F3 : CONSULTER LES PROJETS PUBLICS ==========
+    // ========== F6 : GESTION DES PROJETS ==========
 
     /**
-     * Obtenir tous les projets publics.
-     *
-     * Fonctionnalité F3 : Consulter les projets publics
-     * Utilisateurs : Visiteur (accès public)
-     * Importance : 4/5
-     * Contraintes : Lecture seule
-     *
-     * @return Liste des projets publics
-     * @see "Cahier des charges - F3: Consulter les projets publics"
-     */
-    @GetMapping
-    public ResponseEntity<List<ProjetDTO>> obtenirTousProjets() {
-        try {
-            List<ProjetDTO> projets = projetService.obtenirTousProjets();
-            return ResponseEntity.ok(projets);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Obtenir un projet par son ID.
-     * Extension logique de F3 pour consultation détaillée.
-     *
-     * @param id L'identifiant du projet
-     * @return Le projet demandé ou erreur 404
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<ProjetDTO> obtenirProjetParId(@PathVariable Long id) {
-        try {
-            Optional<ProjetDTO> projet = projetService.obtenirProjetParId(id);
-            return projet.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // ========== F6 : GÉRER LES PROJETS ==========
-
-    /**
-     * Créer un nouveau projet.
-     *
-     * Fonctionnalité F6 : Gérer les projets
+     * Créer un nouveau projet (F6).
      * Utilisateurs : Chef de Projet
      * Importance : 5/5
      * Contraintes : Abonnement actif
-     *
-     * @param projetDTO Les données du projet à créer
-     * @param authentication Informations d'authentification
-     * @return Le projet créé
-     * @see "Cahier des charges - F6: Gérer les projets"
      */
     @PostMapping
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<ProjetDTO> creerProjet(@Valid @RequestBody ProjetDTO projetDTO,
                                                  Authentication authentication) {
         try {
-            // Définir le créateur du projet
+            System.out.println("DEBUG: [F6] Création projet par " + authentication.getName());
+
             String emailCreateur = authentication.getName();
             ProjetDTO projetCree = projetService.creerProjet(projetDTO, emailCreateur);
+
+            System.out.println("SUCCESS: [F6] Projet créé avec ID: " + projetCree.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(projetCree);
-        } catch (Exception e) {
+
+        } catch (RuntimeException e) {
+            System.out.println("ERROR: [F6] Erreur création projet: " + e.getMessage());
             return ResponseEntity.badRequest().build();
-        }
-    }
-
-    /**
-     * Obtenir les projets d'un créateur spécifique.
-     * Support de F6 pour la gestion "mes projets".
-     *
-     * @param idCreateur L'identifiant du créateur
-     * @return Liste des projets du créateur
-     */
-    @GetMapping("/createur/{idCreateur}")
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<List<ProjetDTO>> obtenirProjetsParCreateur(@PathVariable Long idCreateur,
-                                                                     Authentication authentication) {
-        try {
-            // Vérifier que l'utilisateur consulte ses propres projets (ou admin)
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
-
-            if (!estAdmin) {
-                // TODO: Vérifier que idCreateur correspond à l'utilisateur connecté
-                // String emailConnecte = authentication.getName();
-                // if (!projetService.utilisateurEstCreateur(idCreateur, emailConnecte)) {
-                //     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                // }
-            }
-
-            List<ProjetDTO> projets = projetService.obtenirProjetsParCreateur(idCreateur);
-            return ResponseEntity.ok(projets);
         } catch (Exception e) {
+            System.out.println("ERROR: [F6] Erreur interne création projet: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Modifier un projet existant.
-     *
-     * Fonctionnalité F6 : Gérer les projets
-     * Seul le créateur du projet ou un admin peut le modifier.
-     *
-     * @param id L'identifiant du projet
-     * @param projetDTO Les nouvelles données
-     * @param authentication Informations d'authentification
-     * @return Le projet modifié
+     * Obtenir tous les projets (F3 - Consulter projets publics).
+     * Utilisateurs : Visiteur (lecture seule)
+     * Importance : 4/5
+     * Contraintes : Lecture seule
+     * CORRIGÉ : hasAuthority() au lieu de hasRole()
+     */
+    @GetMapping
+    @PreAuthorize("hasAuthority('VISITEUR') or hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<List<ProjetDTO>> obtenirTousProjets() {
+        try {
+            System.out.println("DEBUG: [F3] Consultation projets publics");
+
+            List<ProjetDTO> projets = projetService.obtenirTousProjets();
+            System.out.println("SUCCESS: [F3] " + projets.size() + " projets publics trouvés");
+
+            return ResponseEntity.ok(projets);
+        } catch (Exception e) {
+            System.out.println("ERROR: [F3] Erreur consultation projets: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtenir un projet par ID (F6).
+     * Utilisateurs : Membre, Chef de Projet, Administrateur
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<ProjetDTO> obtenirProjetParId(@PathVariable Long id,
+                                                        Authentication authentication) {
+        try {
+            System.out.println("DEBUG: [F6] Consultation projet ID: " + id);
+
+            Optional<ProjetDTO> projet = projetService.obtenirProjetParId(id);
+            if (projet.isPresent()) {
+                // TODO: Vérifier accès au projet selon rôle utilisateur
+                System.out.println("SUCCESS: [F6] Projet trouvé: " + projet.get().getTitre());
+                return ResponseEntity.ok(projet.get());
+            } else {
+                System.out.println("ERROR: [F6] Projet non trouvé: " + id);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR: [F6] Erreur consultation projet: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtenir les projets d'un utilisateur (F6).
+     * Utilisateurs : Membre, Chef de Projet, Administrateur
+     */
+    @GetMapping("/utilisateur/{utilisateurId}")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<List<ProjetDTO>> obtenirProjetsParUtilisateur(@PathVariable Long utilisateurId,
+                                                                        Authentication authentication) {
+        try {
+            System.out.println("DEBUG: [F6] Consultation projets utilisateur: " + utilisateurId);
+
+            // Vérifier que l'utilisateur consulte ses propres projets (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
+            if (!estAdmin) {
+                String emailConnecte = authentication.getName();
+                Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
+
+                if (!utilisateurId.equals(idUtilisateurConnecte)) {
+                    System.out.println("ERROR: [F6] Tentative d'accès aux projets d'un autre utilisateur");
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+
+            List<ProjetDTO> projets = projetService.obtenirProjetsParUtilisateur(utilisateurId);
+            System.out.println("SUCCESS: [F6] " + projets.size() + " projets trouvés pour utilisateur " + utilisateurId);
+
+            return ResponseEntity.ok(projets);
+        } catch (Exception e) {
+            System.out.println("ERROR: [F6] Erreur consultation projets utilisateur: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Modifier un projet (F6).
+     * Utilisateurs : Chef de Projet, Administrateur
+     * Contraintes : Abonnement actif
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<ProjetDTO> modifierProjet(@PathVariable Long id,
                                                     @Valid @RequestBody ProjetDTO projetDTO,
                                                     Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+            System.out.println("DEBUG: [F6] Modification projet ID: " + id);
 
-            // Vérifier les autorisations (propriétaire ou admin)
+            String emailConnecte = authentication.getName();
+
+            // Vérifier que l'utilisateur peut modifier ce projet (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
             if (!estAdmin && !projetService.utilisateurPeutModifierProjet(id, emailConnecte)) {
+                System.out.println("ERROR: [F6] Utilisateur n'est pas le créateur du projet");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             ProjetDTO projetModifie = projetService.modifierProjet(id, projetDTO);
+            System.out.println("SUCCESS: [F6] Projet " + id + " modifié avec succès");
+
             return ResponseEntity.ok(projetModifie);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            System.out.println("ERROR: [F6] Erreur modification projet: " + e.getMessage());
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.out.println("ERROR: [F6] Erreur interne modification: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Supprimer un projet.
-     *
-     * Fonctionnalité F6 : Gérer les projets
-     * Seul le créateur du projet ou un admin peut le supprimer.
+     * Supprimer un projet (F6).
+     * Utilisateurs : Chef de Projet, Administrateur
+     * Contraintes : Abonnement actif
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimerProjet(@PathVariable Long id,
                                                 Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+            System.out.println("DEBUG: [F6] Suppression projet ID: " + id);
 
-            // Vérifier les autorisations (propriétaire ou admin)
+            String emailConnecte = authentication.getName();
+
+            // Vérifier que l'utilisateur peut supprimer ce projet (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
             if (!estAdmin && !projetService.utilisateurPeutModifierProjet(id, emailConnecte)) {
+                System.out.println("ERROR: [F6] Utilisateur n'est pas le créateur du projet");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             projetService.supprimerProjet(id);
+            System.out.println("SUCCESS: [F6] Projet " + id + " supprimé avec succès");
+
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            System.out.println("ERROR: [F6] Erreur suppression projet: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            System.out.println("ERROR: [F6] Erreur interne suppression: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     // ========== F8 : AJOUTER DES MEMBRES À UN PROJET ==========
 
     /**
-     * Ajouter un membre à un projet.
+     * Ajouter un membre à un projet (F8).
      *
-     * Fonctionnalité F8 : Ajouter des membres à un projet
-     * Utilisateurs : Chef de Projet
-     * Importance : 4/5
-     * Contraintes : Membres existants
-     *
-     * @param projetId L'identifiant du projet
-     * @param utilisateurId L'identifiant de l'utilisateur à ajouter
-     * @param authentication Informations d'authentification
-     * @return Confirmation d'ajout
-     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
+     * Fonctionnalité F8 du cahier des charges :
+     * - Utilisateurs : Chef de Projet
+     * - Importance : 4/5
+     * - Contraintes : Membres existants
+     * - Description : Inviter des utilisateurs à rejoindre un projet
      */
     @PostMapping("/{projetId}/membres/{utilisateurId}")
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<String> ajouterMembre(@PathVariable Long projetId,
-                                                @PathVariable Long utilisateurId,
-                                                Authentication authentication) {
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Object> ajouterMembreAuProjet(@PathVariable Long projetId,
+                                                        @PathVariable Long utilisateurId,
+                                                        Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+            System.out.println("DEBUG: [F8] Ajout membre " + utilisateurId + " au projet " + projetId);
 
-            // Vérifier que l'utilisateur peut gérer ce projet
+            String emailConnecte = authentication.getName();
+
+            // Vérifie que l'utilisateur connecté peut modifier ce projet (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
             if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
+                System.out.println("ERROR: [F8] Utilisateur n'est pas le créateur du projet " + projetId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Vous n'avez pas l'autorisation de gérer ce projet");
+                        .body(Map.of("message", "Seul le créateur du projet peut ajouter des membres"));
+            }
+
+            // Vérifier que l'utilisateur à ajouter existe
+            if (!utilisateurService.existeParId(utilisateurId)) {
+                System.out.println("ERROR: [F8] Utilisateur à ajouter non trouvé: " + utilisateurId);
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Utilisateur à ajouter non trouvé"));
             }
 
             // Ajouter le membre au projet
             projetService.ajouterMembreAuProjet(projetId, utilisateurId);
-            return ResponseEntity.ok("Membre ajouté avec succès au projet");
+
+            // Promouvoir l'utilisateur VISITEUR vers MEMBRE (logique métier F8)
+            utilisateurService.promouvoirVersMembreParChefProjet(utilisateurId);
+
+            System.out.println("SUCCESS: [F8] Membre " + utilisateurId + " ajouté au projet " + projetId);
+
+            return ResponseEntity.ok(Map.of("message", "Membre ajouté avec succès au projet"));
 
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.out.println("ERROR: [F8] Erreur ajout membre: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Erreur: " + e.getMessage()));
         } catch (Exception e) {
+            System.out.println("ERROR: [F8] Erreur interne ajout membre: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de l'ajout du membre");
+                    .body(Map.of("message", "Erreur interne du serveur"));
         }
     }
 
     /**
-     * Retirer un membre d'un projet.
-     *
-     * Extension de F8 pour la gestion complète des membres.
-     *
-     * @param projetId L'identifiant du projet
-     * @param utilisateurId L'identifiant de l'utilisateur à retirer
-     * @param authentication Informations d'authentification
-     * @return Confirmation de suppression
+     * Obtenir la liste des membres d'un projet (F8).
+     * Utilisateurs : Membre, Chef de Projet, Administrateur
+     */
+    @GetMapping("/{projetId}/membres")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Object> obtenirMembresProjet(@PathVariable Long projetId,
+                                                       Authentication authentication) {
+        try {
+            System.out.println("DEBUG: [F8] Consultation membres du projet " + projetId);
+
+            // Vérifier que l'utilisateur a accès au projet
+            String emailConnecte = authentication.getName();
+            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
+
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
+            // ADMIN : accès total
+            // CHEF_PROJET : ses projets
+            // MEMBRE : projets où il est membre
+            if (!estAdmin &&
+                    !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte) &&
+                    !projetService.estMembreDuProjet(idUtilisateurConnecte, projetId)) {
+
+                System.out.println("ERROR: [F8] Accès refusé au projet " + projetId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Accès refusé à ce projet"));
+            }
+
+            List<UtilisateurDTO> membres = projetService.obtenirMembresProjet(projetId);
+            System.out.println("SUCCESS: [F8] " + membres.size() + " membres trouvés pour le projet " + projetId);
+
+            return ResponseEntity.ok(membres);
+
+        } catch (RuntimeException e) {
+            System.out.println("ERROR: [F8] Erreur consultation membres: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Erreur: " + e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("ERROR: [F8] Erreur interne consultation membres: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur interne du serveur"));
+        }
+    }
+
+    /**
+     * Obtenir les utilisateurs disponibles pour ajout à un projet (F8).
+     * Utilisateurs : Chef de Projet, Administrateur
+     * Contraintes : Membres existants
+     */
+    @GetMapping("/{projetId}/utilisateurs-disponibles")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Object> obtenirUtilisateursDisponibles(@PathVariable Long projetId,
+                                                                 Authentication authentication) {
+        try {
+            System.out.println("DEBUG: [F8] Recherche utilisateurs disponibles pour projet " + projetId);
+
+            String emailConnecte = authentication.getName();
+
+            // Vérifier que l'utilisateur connecté peut modifier ce projet (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
+            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
+                System.out.println("ERROR: [F8] Utilisateur n'est pas le créateur du projet " + projetId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Seul le créateur du projet peut voir les utilisateurs disponibles"));
+            }
+
+            List<UtilisateurDTO> utilisateursDisponibles = utilisateurService.obtenirUtilisateursDisponiblesPourProjet(projetId);
+            System.out.println("SUCCESS: [F8] " + utilisateursDisponibles.size() + " utilisateurs disponibles");
+
+            return ResponseEntity.ok(utilisateursDisponibles);
+
+        } catch (Exception e) {
+            System.out.println("ERROR: [F8] Erreur recherche utilisateurs disponibles: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur interne du serveur"));
+        }
+    }
+
+    /**
+     * Retirer un membre d'un projet (F8).
+     * Utilisateurs : Chef de Projet, Administrateur
      */
     @DeleteMapping("/{projetId}/membres/{utilisateurId}")
-    @PreAuthorize("hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<String> retirerMembre(@PathVariable Long projetId,
-                                                @PathVariable Long utilisateurId,
-                                                Authentication authentication) {
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Object> retirerMembreDuProjet(@PathVariable Long projetId,
+                                                        @PathVariable Long utilisateurId,
+                                                        Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+            System.out.println("DEBUG: [F8] Suppression membre " + utilisateurId + " du projet " + projetId);
 
-            // Vérifier que l'utilisateur peut gérer ce projet
+            String emailConnecte = authentication.getName();
+
+            // Vérifier que l'utilisateur connecté peut modifier ce projet (sauf admin)
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+
             if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
+                System.out.println("ERROR: [F8] Utilisateur n'est pas le créateur du projet " + projetId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Vous n'avez pas l'autorisation de gérer ce projet");
+                        .body(Map.of("message", "Seul le créateur du projet peut retirer des membres"));
+            }
+
+            // Vérifier si l'utilisateur a des tâches en cours avant de le retirer
+            if (utilisateurService.utilisateurATachesEnCours(utilisateurId)) {
+                System.out.println("WARNING: [F8] L'utilisateur " + utilisateurId + " a des tâches en cours");
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Impossible de retirer: l'utilisateur a des tâches en cours"));
             }
 
             // Retirer le membre du projet
             projetService.retirerMembreDuProjet(projetId, utilisateurId);
-            return ResponseEntity.ok("Membre retiré avec succès du projet");
+
+            System.out.println("SUCCESS: [F8] Membre " + utilisateurId + " retiré du projet " + projetId);
+
+            return ResponseEntity.ok(Map.of("message", "Membre retiré avec succès du projet"));
 
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.out.println("ERROR: [F8] Erreur suppression membre: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Erreur: " + e.getMessage()));
         } catch (Exception e) {
+            System.out.println("ERROR: [F8] Erreur interne suppression membre: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de la suppression du membre");
+                    .body(Map.of("message", "Erreur interne du serveur"));
         }
     }
 
     /**
-     * Lister les membres d'un projet.
-     *
-     * Support de F8 pour visualiser les membres actuels.
-     *
-     * @param projetId L'identifiant du projet
-     * @return Liste des membres du projet
+     * Vérifier le statut d'un membre dans un projet (F8).
+     * Utilisateurs : Membre, Chef de Projet, Administrateur
      */
-    @GetMapping("/{projetId}/membres")
-    @PreAuthorize("hasRole('MEMBRE') or hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<List<UtilisateurDTO>> listerMembres(@PathVariable Long projetId) {
+    @GetMapping("/{projetId}/membres/{utilisateurId}/statut")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Object> verifierStatutMembre(@PathVariable Long projetId,
+                                                       @PathVariable Long utilisateurId,
+                                                       Authentication authentication) {
         try {
-            List<UtilisateurDTO> membres = projetService.obtenirMembresProjet(projetId);
-            return ResponseEntity.ok(membres);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+            System.out.println("DEBUG: [F8] Vérification statut membre " + utilisateurId + " dans projet " + projetId);
 
-    /**
-     * Vérifier si un utilisateur est membre d'un projet.
-     *
-     * Utile pour les autorisations et l'interface utilisateur.
-     *
-     * @param projetId L'identifiant du projet
-     * @param utilisateurId L'identifiant de l'utilisateur
-     * @return true si l'utilisateur est membre
-     */
-    @GetMapping("/{projetId}/membres/{utilisateurId}/est-membre")
-    @PreAuthorize("hasRole('MEMBRE') or hasRole('CHEF_PROJET') or hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<Boolean> estMembreDuProjet(@PathVariable Long projetId,
-                                                     @PathVariable Long utilisateurId) {
-        try {
-            boolean estMembre = projetService.utilisateurEstMembreProjet(projetId, utilisateurId);
-            return ResponseEntity.ok(estMembre);
+            boolean estMembre = projetService.estMembreDuProjet(utilisateurId, projetId);
+
+            var statut = Map.of(
+                    "estMembre", estMembre,
+                    "projetId", projetId,
+                    "utilisateurId", utilisateurId
+            );
+
+            System.out.println("DEBUG: [F8] Utilisateur " + utilisateurId +
+                    (estMembre ? " est" : " n'est pas") + " membre du projet " + projetId);
+
+            return ResponseEntity.ok(statut);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.out.println("ERROR: [F8] Erreur vérification statut: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur interne du serveur"));
         }
     }
 }

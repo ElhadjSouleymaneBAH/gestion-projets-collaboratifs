@@ -1,7 +1,7 @@
 package be.iccbxl.gestionprojets.repository;
 
 import be.iccbxl.gestionprojets.model.Tache;
-import be.iccbxl.gestionprojets.enums.StatusTache;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,11 +15,11 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
 
     List<Tache> findByAssigneAId(Long assigneId);
 
-    List<Tache> findByStatut(StatusTache statut);
+    List<Tache> findByStatut(StatutTache statut);
 
-    List<Tache> findByProjetIdAndStatut(Long projetId, StatusTache statut);
+    List<Tache> findByProjetIdAndStatut(Long projetId, StatutTache statut);
 
-    List<Tache> findByAssigneAIdAndStatut(Long assigneId, StatusTache statut);
+    List<Tache> findByAssigneAIdAndStatut(Long assigneId, StatutTache statut);
 
     List<Tache> findByAssigneAIsNull();
 

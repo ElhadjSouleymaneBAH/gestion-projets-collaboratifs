@@ -1,5 +1,6 @@
 package be.iccbxl.gestionprojets.repository;
 
+import be.iccbxl.gestionprojets.enums.TypeMessage;
 import be.iccbxl.gestionprojets.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +16,6 @@ import java.util.List;
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @since 2025-07-14
  */
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
@@ -41,10 +41,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByUtilisateurIdOrderByDateEnvoiDesc(Long utilisateurId);
 
     /**
-     * Trouver les messages par type
+     * Trouver les messages par type (avec enum)
      * Utilisé pour filtrer les messages système/notifications
      */
-    List<Message> findByTypeOrderByDateEnvoiDesc(String type);
+    List<Message> findByTypeOrderByDateEnvoiDesc(TypeMessage type);
 
     /**
      * Trouver les messages non lus d'un projet
@@ -74,11 +74,11 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     Long countMessagesNonLusByProjetAndNotUtilisateur(@Param("projetId") Long projetId, @Param("utilisateurId") Long utilisateurId);
 
     /**
-     * Trouver les messages par projet et type
+     * Trouver les messages par projet et type (avec enum)
      * Utilisé pour filtrer les notifications ou messages système
      */
     @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId AND m.type = :type ORDER BY m.dateEnvoi DESC")
-    List<Message> findByProjetIdAndTypeOrderByDateEnvoiDesc(@Param("projetId") Long projetId, @Param("type") String type);
+    List<Message> findByProjetIdAndTypeOrderByDateEnvoiDesc(@Param("projetId") Long projetId, @Param("type") TypeMessage type);
 
     /**
      * Trouver les derniers messages de tous les projets d'un utilisateur

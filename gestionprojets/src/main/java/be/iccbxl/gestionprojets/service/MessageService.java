@@ -1,5 +1,7 @@
 package be.iccbxl.gestionprojets.service;
 
+import be.iccbxl.gestionprojets.enums.TypeMessage;
+import be.iccbxl.gestionprojets.enums.StatutMessage;
 import be.iccbxl.gestionprojets.model.Message;
 import be.iccbxl.gestionprojets.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,6 @@ import java.util.Optional;
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @since 2025-07-14
  */
 @Service
 @RequiredArgsConstructor
@@ -110,7 +111,7 @@ public class MessageService {
      * Utilisé pour F9 : Filtrer notifications/système
      */
     @Transactional(readOnly = true)
-    public List<Message> getMessagesParType(String type) {
+    public List<Message> getMessagesParType(TypeMessage type) {
         return messageRepository.findByTypeOrderByDateEnvoiDesc(type);
     }
 
@@ -119,7 +120,7 @@ public class MessageService {
      * Utilisé pour F9 : Filtrage avancé
      */
     @Transactional(readOnly = true)
-    public List<Message> getMessagesParProjetEtType(Long projetId, String type) {
+    public List<Message> getMessagesParProjetEtType(Long projetId, TypeMessage type) {
         return messageRepository.findByProjetIdAndTypeOrderByDateEnvoiDesc(projetId, type);
     }
 

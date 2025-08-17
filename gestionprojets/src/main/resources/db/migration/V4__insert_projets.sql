@@ -101,3 +101,6 @@ INSERT INTO projets (titre, description, id_createur, statut, date_creation) VAL
                                                                                  ('Site de Location Déguisements', 'Plateforme location costumes fêtes', 1, 'ACTIF', '2024-02-10 16:25:00'),
                                                                                  ('Système de Gestion Pressing', 'Suivi commandes nettoyage avec SMS', 3, 'ACTIF', '2024-01-28 11:50:00'),
                                                                                  ('Application de Détection Fraude', 'IA anti-fraude pour transactions bancaires', 4, 'ACTIF', '2024-02-20 13:15:00');
+
+
+

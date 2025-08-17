@@ -1,6 +1,6 @@
 package be.iccbxl.gestionprojets.dto;
 
-import be.iccbxl.gestionprojets.enums.StatusTache;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +20,6 @@ public class TacheDTO {
     private String description;
     private Long idProjet;
     private Long idAssigne;
-    private StatusTache statut;
+    private StatutTache statut;
     private LocalDateTime dateCreation;
 }

@@ -1,5 +1,7 @@
 package be.iccbxl.gestionprojets.model;
 
+import be.iccbxl.gestionprojets.enums.TypeMessage;
+import be.iccbxl.gestionprojets.enums.StatutMessage;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,18 +58,20 @@ public class Message {
     private LocalDateTime dateEnvoi;
 
     /**
-     * Type de message.
+     * Type de message avec enum pour plus de sécurité.
      * Valeurs : TEXT, NOTIFICATION, SYSTEM
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 20)
-    private String type;
+    private TypeMessage type;
 
     /**
-     * Statut du message.
-     * Valeurs : ENVOYE, LU, SUPPRIME
+     * Statut du message avec enum pour plus de sécurité.
+     * Valeurs : ENVOYE, DELIVRE, LU
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "statut", length = 20)
-    private String statut;
+    private StatutMessage statut;
 
     /**
      * Date de création (audit).
@@ -113,8 +117,8 @@ public class Message {
         this.utilisateur = utilisateur;
         this.projet = projet;
         this.dateEnvoi = LocalDateTime.now();
-        this.type = "TEXT";
-        this.statut = "ENVOYE";
+        this.type = TypeMessage.TEXT;
+        this.statut = StatutMessage.ENVOYE;
         this.dateCreation = LocalDateTime.now();
         this.dateModification = LocalDateTime.now();
     }
@@ -127,13 +131,13 @@ public class Message {
      * @param projet Le projet
      * @param type Le type de message
      */
-    public Message(String contenu, Utilisateur utilisateur, Projet projet, String type) {
+    public Message(String contenu, Utilisateur utilisateur, Projet projet, TypeMessage type) {
         this.contenu = contenu;
         this.utilisateur = utilisateur;
         this.projet = projet;
         this.type = type;
         this.dateEnvoi = LocalDateTime.now();
-        this.statut = "ENVOYE";
+        this.statut = StatutMessage.ENVOYE;
         this.dateCreation = LocalDateTime.now();
         this.dateModification = LocalDateTime.now();
     }
@@ -150,10 +154,10 @@ public class Message {
             dateEnvoi = LocalDateTime.now();
         }
         if (type == null) {
-            type = "TEXT";
+            type = TypeMessage.TEXT;
         }
         if (statut == null) {
-            statut = "ENVOYE";
+            statut = StatutMessage.ENVOYE;
         }
         if (dateCreation == null) {
             dateCreation = LocalDateTime.now();
@@ -179,7 +183,7 @@ public class Message {
      * Utilisé pour les notifications de lecture.
      */
     public void marquerCommeLu() {
-        this.statut = "LU";
+        this.statut = StatutMessage.LU;
         this.dateModification = LocalDateTime.now();
     }
 
@@ -189,7 +193,7 @@ public class Message {
      * @return true si le type est SYSTEM ou NOTIFICATION
      */
     public boolean estMessageSysteme() {
-        return "SYSTEM".equals(this.type) || "NOTIFICATION".equals(this.type);
+        return TypeMessage.SYSTEM.equals(this.type) || TypeMessage.NOTIFICATION.equals(this.type);
     }
 
     /**

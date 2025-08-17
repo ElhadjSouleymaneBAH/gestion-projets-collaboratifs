@@ -1,6 +1,6 @@
 package be.iccbxl.gestionprojets.model;
 
-import be.iccbxl.gestionprojets.enums.StatusTache;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,7 +29,7 @@ import java.util.HashSet;
  * @author ElhadjSouleymaneBAH
  * @version 1.0
  * @since 2025-07-05
- * @see StatusTache
+ * @see StatutTache
  * @see Projet
  * @see Utilisateur
  * @see "Cahier des charges - F7: Gérer les tâches"
@@ -73,12 +73,12 @@ public class Tache {
      * - Chef de Projet : Valider, Modifier, Annuler
      * - Admin : Annuler (à tout moment)
      *
-     * @see StatusTache
+     * @see StatutTache
      * @see "Diagramme d'état de transition - Cahier des charges"
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusTache statut = StatusTache.BROUILLON;
+    private StatutTache statut = StatutTache.BROUILLON;
 
     /**
      * Date et heure de création de la tâche.
@@ -212,11 +212,11 @@ public class Tache {
      * @param description La nouvelle description (optionnelle)
      * @param statut Le nouveau statut de la tâche
      * @return true si la modification a réussi, false sinon
-     * @see StatusTache
+     * @see StatutTache
      * @see "Cahier des charges - F7: Gérer les tâches - Modification"
      * @see "Diagramme d'état de transition"
      */
-    public boolean modifierTache(Long id, String titre, String description, StatusTache statut) {
+    public boolean modifierTache(Long id, String titre, String description, StatutTache statut) {
         if (id != null && titre != null && !titre.trim().isEmpty()) {
             this.id = id;
             this.titre = titre;
@@ -272,10 +272,10 @@ public class Tache {
      *
      * @param nouveauStatut Le nouveau statut souhaité
      * @return true si la transition est autorisée et effectuée
-     * @see StatusTache
+     * @see StatutTache
      * @see "Diagramme d'état de transition - Cahier des charges"
      */
-    public boolean changerStatut(StatusTache nouveauStatut) {
+    public boolean changerStatut(StatutTache nouveauStatut) {
         if (nouveauStatut == null) {
             return false;
         }
@@ -283,17 +283,17 @@ public class Tache {
         // Vérification des transitions autorisées selon le diagramme d'état
         switch (this.statut) {
             case BROUILLON:
-                if (nouveauStatut == StatusTache.EN_ATTENTE_VALIDATION ||
-                        nouveauStatut == StatusTache.ANNULE) {
+                if (nouveauStatut == StatutTache.EN_ATTENTE_VALIDATION ||
+                        nouveauStatut == StatutTache.ANNULE) {
                     this.statut = nouveauStatut;
                     return true;
                 }
                 break;
 
             case EN_ATTENTE_VALIDATION:
-                if (nouveauStatut == StatusTache.TERMINE ||
-                        nouveauStatut == StatusTache.BROUILLON ||
-                        nouveauStatut == StatusTache.ANNULE) {
+                if (nouveauStatut == StatutTache.TERMINE ||
+                        nouveauStatut == StatutTache.BROUILLON ||
+                        nouveauStatut == StatutTache.ANNULE) {
                     this.statut = nouveauStatut;
                     return true;
                 }
@@ -301,7 +301,7 @@ public class Tache {
 
             case TERMINE:
                 // Une tâche terminée peut être annulée par un Admin
-                if (nouveauStatut == StatusTache.ANNULE) {
+                if (nouveauStatut == StatutTache.ANNULE) {
                     this.statut = nouveauStatut;
                     return true;
                 }
@@ -338,7 +338,7 @@ public class Tache {
         }
 
         // Membre peut modifier ses tâches en brouillon
-        if (utilisateur.equals(this.assigneA) && this.statut == StatusTache.BROUILLON) {
+        if (utilisateur.equals(this.assigneA) && this.statut == StatutTache.BROUILLON) {
             return true;
         }
 
