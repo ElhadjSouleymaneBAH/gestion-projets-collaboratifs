@@ -1,11 +1,11 @@
 CREATE TABLE projets (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
                          titre VARCHAR(255) NOT NULL,
-                         description TEXT,
+                         description TEXT NOT NULL,
                          id_createur BIGINT NOT NULL,
                          statut VARCHAR(50) NOT NULL DEFAULT 'ACTIF',
                          date_creation DATETIME NOT NULL,
-                         publique BOOLEAN DEFAULT FALSE          -- ← NOUVEAU CHAMP
+                         publique BOOLEAN NOT NULL DEFAULT FALSE   -- ← Nouveau champ corrigé
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Index pour F3: Consultation projets publics

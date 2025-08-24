@@ -2,7 +2,7 @@
   <div class="auth-container d-flex align-items-center justify-content-center py-5">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-5">
           <div class="card auth-card">
             <div class="card-body p-5">
 
@@ -145,7 +145,7 @@
                   </div>
                 </div>
 
-                <!-- Acceptation des CGU (checkbox séparée) -->
+                <!-- Acceptation des CGU -->
                 <div class="mb-3 form-check">
                   <input
                     type="checkbox"
@@ -167,7 +167,7 @@
                   </div>
                 </div>
 
-                <!-- Acceptation de la Politique de Confidentialité (nouvelle checkbox) -->
+                <!-- Acceptation de la Politique de Confidentialité -->
                 <div class="mb-3 form-check">
                   <input
                     type="checkbox"
@@ -234,6 +234,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { authAPI } from '@/services/api.js'
 
 const router = useRouter()
 
@@ -246,7 +247,7 @@ const form = reactive({
   motDePasse: '',
   confirmMotDePasse: '',
   acceptTerms: false,
-  acceptPrivacy: false  // Nouvelle propriété pour la politique de confidentialité
+  acceptPrivacy: false
 })
 
 const errors = reactive({
@@ -257,7 +258,7 @@ const errors = reactive({
   motDePasse: null,
   confirmMotDePasse: null,
   acceptTerms: null,
-  acceptPrivacy: null  // Nouvelle propriété pour les erreurs
+  acceptPrivacy: null
 })
 
 const error = ref(null)
@@ -265,22 +266,7 @@ const success = ref(null)
 const loading = ref(false)
 const showPassword = ref(false)
 
-// Base d'utilisateurs HYBRIDE (pour éviter doublons)
-const utilisateursFiges = [
-  { email: 'emilie.durand0@icc.be' },
-  { email: 'sarah.fournier6@icc.be' },
-  { email: 'emilie.durand50@icc.be' },
-  { email: 'nathan.garcia23@icc.be' },
-  { email: 'hugo.giraud7@icc.be' }
-]
-
-const nouveauxUtilisateurs = JSON.parse(localStorage.getItem('nouveauxUtilisateurs')) || []
-const tousLesEmails = [
-  ...utilisateursFiges.map(u => u.email),
-  ...nouveauxUtilisateurs.map(u => u.email)
-]
-
-// Validation du formulaire
+// Validation du formulaire côté client
 const validateForm = () => {
   // Reset erreurs
   Object.keys(errors).forEach(key => errors[key] = null)
@@ -301,9 +287,6 @@ const validateForm = () => {
     isValid = false
   } else if (!/\S+@\S+\.\S+/.test(form.email)) {
     errors.email = 'Format d\'email invalide'
-    isValid = false
-  } else if (tousLesEmails.includes(form.email)) {
-    errors.email = 'Cet email est déjà utilisé'
     isValid = false
   }
 
@@ -328,13 +311,11 @@ const validateForm = () => {
     isValid = false
   }
 
-  // Validation des CGU (obligatoire)
   if (!form.acceptTerms) {
     errors.acceptTerms = 'Vous devez accepter les Conditions Générales d\'Utilisation'
     isValid = false
   }
 
-  // Validation de la Politique de Confidentialité (obligatoire RGPD)
   if (!form.acceptPrivacy) {
     errors.acceptPrivacy = 'Vous devez accepter la Politique de Confidentialité (requis par le RGPD)'
     isValid = false
@@ -343,7 +324,7 @@ const validateForm = () => {
   return isValid
 }
 
-// Inscription
+// Inscription via API backend
 const handleInscription = async () => {
   if (!validateForm()) return
 
@@ -352,59 +333,34 @@ const handleInscription = async () => {
   success.value = null
 
   try {
-    // Générer ID unique (éviter conflits avec IDs figés)
-    const idsExistants = [1, 7, 8, 24, 51, ...nouveauxUtilisateurs.map(u => u.id || 0)]
-    const newId = Math.max(...idsExistants, 100) + 1
-
-    // Créer nouvel utilisateur
-    const nouvelUtilisateur = {
-      id: newId,
+    // Appel de l'API backend pour l'inscription
+    const response = await authAPI.register({
       nom: form.nom.trim(),
       prenom: form.prenom.trim(),
       email: form.email.toLowerCase().trim(),
-      role: form.role,
       motDePasse: form.motDePasse,
-      dateCreation: new Date().toISOString(),
+      role: form.role,
       // Consentements RGPD
-      consentements: {
-        cgu: {
-          accepte: form.acceptTerms,
-          dateAcceptation: new Date().toISOString()
-        },
-        politiqueConfidentialite: {
-          accepte: form.acceptPrivacy,
-          dateAcceptation: new Date().toISOString()
-        }
-      },
-      // Pas d'abonnement pour les nouveaux chefs → doivent payer
-      abonnement: form.role === 'CHEF_PROJET' ? { statut: 'INACTIF' } : null
-    }
+      acceptCGU: form.acceptTerms,
+      acceptPolitiqueConfidentialite: form.acceptPrivacy
+    })
 
-    // Ajouter aux nouveaux utilisateurs (séparé des figés)
-    nouveauxUtilisateurs.push(nouvelUtilisateur)
-    localStorage.setItem('nouveauxUtilisateurs', JSON.stringify(nouveauxUtilisateurs))
-
-    // Connexion automatique
-    localStorage.setItem('user', JSON.stringify(nouvelUtilisateur))
-    localStorage.setItem('token', 'new-user-token-' + newId)
+    // Récupération des données utilisateur du backend
+    const { token, user } = response.data
 
     success.value = 'Compte créé avec succès ! Redirection...'
 
-    // Log pour conformité RGPD
-    console.log('✅ Consentements RGPD enregistrés:', {
-      userId: newId,
-      email: nouvelUtilisateur.email,
-      consentements: nouvelUtilisateur.consentements,
-      dateInscription: nouvelUtilisateur.dateCreation
-    })
+    // Stockage des informations de connexion
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(user))
 
-    // REDIRECTION INTELLIGENTE
+    // Redirection intelligente basée sur le rôle
     setTimeout(() => {
       if (form.role === 'CHEF_PROJET') {
         // Nouveau Chef → Doit s'abonner d'abord
         router.push('/abonnement-premium')
       } else {
-        // Autres rôles → Accès direct
+        // Autres rôles → Accès direct au tableau de bord
         switch (form.role) {
           case 'MEMBRE':
             router.push('/tableau-bord-membre')
@@ -419,8 +375,30 @@ const handleInscription = async () => {
     }, 1500)
 
   } catch (err) {
-    console.error('Erreur inscription:', err)
-    error.value = 'Erreur lors de la création du compte. Veuillez réessayer.'
+    // Gestion des erreurs backend
+    if (err.response?.status === 400) {
+      // Erreur de validation côté serveur
+      const backendErrors = err.response.data.errors
+      if (backendErrors) {
+        // Mapper les erreurs backend vers les erreurs frontend
+        Object.keys(backendErrors).forEach(field => {
+          if (errors.hasOwnProperty(field)) {
+            errors[field] = backendErrors[field]
+          }
+        })
+      } else if (err.response.data.message) {
+        error.value = err.response.data.message
+      } else {
+        error.value = 'Données invalides. Veuillez vérifier le formulaire.'
+      }
+    } else if (err.response?.status === 409) {
+      // Conflit - email déjà utilisé
+      errors.email = 'Cet email est déjà utilisé'
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else {
+      error.value = 'Erreur lors de la création du compte. Veuillez réessayer.'
+    }
   } finally {
     loading.value = false
   }
@@ -468,7 +446,6 @@ const handleInscription = async () => {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-/* Style amélioré pour les checkboxes */
 .form-check-input:checked {
   background-color: #007bff;
   border-color: #007bff;
@@ -484,7 +461,6 @@ const handleInscription = async () => {
   line-height: 1.4;
 }
 
-/* Animation pour l'alerte RGPD */
 .alert {
   animation: fadeIn 0.3s ease-in;
 }
@@ -494,9 +470,8 @@ const handleInscription = async () => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .col-md-6.col-lg-4 {
+  .col-md-6.col-lg-5 {
     margin-top: 1rem;
   }
 

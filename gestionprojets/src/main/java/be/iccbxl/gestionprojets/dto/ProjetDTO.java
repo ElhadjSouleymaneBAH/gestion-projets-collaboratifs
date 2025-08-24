@@ -17,4 +17,5 @@ public class ProjetDTO {
     private Long idCreateur;
     private String statut;
     private LocalDateTime dateCreation;
+    private Boolean publique;
 }

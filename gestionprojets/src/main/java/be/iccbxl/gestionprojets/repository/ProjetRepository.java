@@ -9,10 +9,7 @@ import java.util.List;
 /**
  * Repository JPA pour {@link Projet}.
  *
- * ⚠️ L'entité Projet possède maintenant un champ {@code Utilisateur createur}
- * (FK mappée sur la colonne {@code id_createur}). Utiliser des méthodes
- * dérivées basées sur {@code createur.id} et non plus {@code idCreateur}.
- */
+  */
 @Repository
 public interface ProjetRepository extends JpaRepository<Projet, Long> {
 
@@ -32,4 +29,11 @@ public interface ProjetRepository extends JpaRepository<Projet, Long> {
      * Recherche plein texte sur le titre (insensible à la casse).
      */
     List<Projet> findByTitreContainingIgnoreCase(String titre);
+
+    /**
+     * F3 - Trouve les projets publics pour les visiteurs non connectés.
+     * Respecte le cahier des charges : consultation projets publics sans authentification.
+     * @return liste des projets où publique = true
+     */
+    List<Projet> findByPubliqueTrue();
 }

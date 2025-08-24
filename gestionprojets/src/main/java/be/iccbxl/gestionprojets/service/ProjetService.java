@@ -42,6 +42,24 @@ public class ProjetService {
     }
 
     // =====================================================================
+    // F3 : CONSULTER PROJETS PUBLICS (VISITEURS NON CONNECTÉS)
+    // =====================================================================
+
+    /**
+     * F3 : Consulter les projets publics (accessible aux visiteurs non connectés).
+     * Respecte le cahier des charges - importance 4/5 - contrainte lecture seule.
+     */
+    @Transactional(readOnly = true)
+    public List<ProjetDTO> obtenirProjetsPublics() {
+        System.out.println("DEBUG: [F3] Récupération des projets publics uniquement");
+
+        return projetRepository.findByPubliqueTrue()
+                .stream()
+                .map(this::convertirEnDTO)
+                .collect(Collectors.toList());
+    }
+
+    // =====================================================================
     // F6 : CRÉER / LIRE / MODIFIER / SUPPRIMER
     // =====================================================================
 
@@ -69,7 +87,7 @@ public class ProjetService {
         return convertirEnDTO(saved);
     }
 
-    /** GET tous les projets (F3). */
+    /** GET tous les projets (F6). */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirTousProjets() {
         return projetRepository.findAll()
@@ -156,7 +174,7 @@ public class ProjetService {
     }
 
     // =====================================================================
-    // Surcharges et règles d’autorisation
+    // Surcharges et règles d'autorisation
     // =====================================================================
 
     /**
@@ -261,7 +279,8 @@ public class ProjetService {
         dto.setDescription(p.getDescription());
         dto.setStatut(p.getStatut());
         dto.setDateCreation(p.getDateCreation());
-        // Le DTO conserve idCreateur pour l’API → on le remplit depuis l’objet createur.
+        dto.setPublique(p.getPublique());
+        // Le DTO conserve idCreateur pour l'API → on le remplit depuis l'objet createur.
         dto.setIdCreateur(p.getCreateur() != null ? p.getCreateur().getId() : null);
         return dto;
     }

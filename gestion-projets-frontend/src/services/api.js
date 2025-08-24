@@ -12,15 +12,15 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/connexion'
+    (res) => res,
+    (error) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/connexion'
+      }
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
-  }
 )
 
 // AUTH
@@ -36,6 +36,7 @@ export const authAPI = {
 // PROJETS
 export const projectAPI = {
   getAllProjects: () => api.get('/projets'),
+  getPublicProjects: () => api.get('/projets/publics'), // F3: Pour visiteurs non connectés
   create: (projectData) => api.post('/projets', projectData),
   getProjectById: (id) => api.get(`/projets/${id}`),
   getProjectsByUser: (userId) => api.get(`/projets/utilisateur/${userId}`),

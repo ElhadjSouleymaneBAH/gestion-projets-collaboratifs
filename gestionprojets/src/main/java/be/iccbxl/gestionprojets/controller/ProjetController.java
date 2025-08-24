@@ -40,6 +40,23 @@ public class ProjetController {
         this.utilisateurService = utilisateurService;
     }
 
+    // F3 : Consulter les projets publics (VISITEURS NON CONNECTÉS)
+    @GetMapping("/publics")
+    // SANS @PreAuthorize - accessible aux visiteurs sans authentification
+    public ResponseEntity<List<ProjetDTO>> obtenirProjetsPublics() {
+        try {
+            System.out.println("DEBUG: [F3] Consultation projets publics par visiteur non connecté");
+
+            List<ProjetDTO> projetsPublics = projetService.obtenirProjetsPublics();
+            System.out.println("SUCCESS: [F3] " + projetsPublics.size() + " projets publics trouvés");
+
+            return ResponseEntity.ok(projetsPublics);
+        } catch (Exception e) {
+            System.out.println("ERROR: [F3] Erreur consultation projets publics: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<ProjetDTO> creerProjet(@Valid @RequestBody ProjetDTO projetDTO,
@@ -62,18 +79,18 @@ public class ProjetController {
         }
     }
 
-    @GetMapping({"", "/publics"})
+    @GetMapping
     @PreAuthorize("hasAuthority('VISITEUR') or hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<ProjetDTO>> obtenirTousProjets() {
         try {
-            System.out.println("DEBUG: [F3] Consultation projets publics");
+            System.out.println("DEBUG: [F6] Consultation tous projets (utilisateur connecté)");
 
             List<ProjetDTO> projets = projetService.obtenirTousProjets();
-            System.out.println("SUCCESS: [F3] " + projets.size() + " projets publics trouvés");
+            System.out.println("SUCCESS: [F6] " + projets.size() + " projets trouvés");
 
             return ResponseEntity.ok(projets);
         } catch (Exception e) {
-            System.out.println("ERROR: [F3] Erreur consultation projets: " + e.getMessage());
+            System.out.println("ERROR: [F6] Erreur consultation projets: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
