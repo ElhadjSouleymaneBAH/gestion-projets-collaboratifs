@@ -1,173 +1,62 @@
-@import 'bootstrap/dist/css/bootstrap.min.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Variables CSS pour vos couleurs CollabPro */
-:root {
-  --collabpro-blue: #2b45f8;
-  --collabpro-light: #dbeafe;
-  --collabpro-dark: #1d4ed8;
-}
-
-/* Boutons personnalisés */
+/* Styles personnalisés COLLABPRO */
 .btn-collabpro {
-  background-color: var(--collabpro-blue);
-  border-color: var(--collabpro-blue);
-  color: white;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
+  @apply bg-collabpro-blue text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors;
 }
 
-.btn-collabpro:hover {
-  background-color: var(--collabpro-dark);
-  border-color: var(--collabpro-dark);
-  color: white;
-  transform: translateY(-1px);
-}
-
-/* Bouton d'inscription (RegisterView.vue) */
-.btn-register {
-  background-color: var(--collabpro-blue);
-  border: none;
-  color: white;
-  font-weight: 600;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.btn-register:hover {
-  background-color: var(--collabpro-dark);
-  transform: translateY(-1px);
-}
-
-/* Cartes */
 .card-collabpro {
-  border: none;
-  border-radius: 0.75rem;
-  background-color: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6;
 }
 
-.card-collabpro:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+.text-collabpro { @apply text-collabpro-blue; }
+.bg-collabpro { @apply bg-collabpro-blue; }
+.bg-collabpro-light { @apply bg-collabpro-light; }
+
+/* FORCE MODE CLAIR - PRIORITÉ ABSOLUE */
+html, body, #app {
+  background-color: #ffffff !important;
+  color: #212529 !important;
 }
 
-/* Couleurs de fond et de texte */
-.bg-collabpro {
-  background-color: var(--collabpro-blue) !important;
+/* Override mode sombre navigateur */
+@media (prefers-color-scheme: dark) {
+  html, body, #app {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+  }
 }
 
-.bg-collabpro-light {
-  background-color: var(--collabpro-light) !important;
+/* Bootstrap cards en mode clair */
+.card {
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  color: #212529 !important;
 }
 
-.text-collabpro {
-  color: var(--collabpro-blue) !important;
+.card-body {
+  background-color: #ffffff !important;
+  color: #212529 !important;
 }
 
-/* Branding navbar */
-.navbar-brand {
-  font-weight: 700;
-  color: var(--collabpro-blue) !important;
+/* Navigation */
+.nav-tabs {
+  background-color: #ffffff !important;
 }
 
-/* Focus champs formulaires */
-.form-control:focus {
-  border-color: var(--collabpro-blue);
-  box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+.nav-link {
+  color: #007bff !important;
 }
 
-/* Animations */
-.fade-in {
-  animation: fadeIn 0.6s ease-in;
+.nav-link.active {
+  background-color: #ffffff !important;
+  color: #212529 !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Authentification */
-.auth-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--collabpro-light) 0%, #e0e7ff 100%);
-}
-
-.auth-card {
-  border: none;
-  border-radius: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.auth-logo {
-  width: 60px;
-  height: 60px;
-}
-
-/* Icônes statistiques */
-.icon-stat {
-  font-size: 24px;
-  line-height: 1;
-  vertical-align: middle;
-  color: var(--collabpro-blue);
-  transition: color 0.2s ease;
-}
-
-.icon-stat:hover {
-  color: var(--collabpro-dark);
-}
-
-/* CGU / Politique de confidentialité */
-.cgu-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: #ffffff;
-  border-radius: 0.75rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  color: #333;
-  font-size: 1rem;
-  line-height: 1.65;
-}
-
-.cgu-container h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--collabpro-blue);
-  margin-bottom: 1rem;
-}
-
-.cgu-container h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--collabpro-blue);
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.cgu-container p {
-  margin-bottom: 1rem;
-}
-
-.cgu-container strong {
-  color: var(--collabpro-dark);
-}
-
-.cgu-container .italic {
-  font-style: italic;
-  color: #555;
-}
-
-/* Lien CGU */
-.cgu-link {
-  color: var(--collabpro-blue);
-  text-decoration: underline;
-  font-weight: 500;
-}
-
-.cgu-link:hover {
-  color: var(--collabpro-dark);
+/* Modal */
+.modal-content {
+  background-color: #ffffff !important;
+  color: #212529 !important;
 }

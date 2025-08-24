@@ -145,6 +145,7 @@
                   </div>
                 </div>
 
+                <!-- Acceptation des CGU (checkbox séparée) -->
                 <div class="mb-3 form-check">
                   <input
                     type="checkbox"
@@ -156,12 +157,35 @@
                   >
                   <label class="form-check-label" for="acceptTerms">
                     J'accepte les
-                    <router-link to="/conditions" class="text-collabpro">
-                      conditions d'utilisation
+                    <router-link to="/conditions" target="_blank" class="text-collabpro">
+                      <i class="fas fa-file-contract me-1"></i>
+                      Conditions Générales d'Utilisation
                     </router-link>
                   </label>
                   <div v-if="errors.acceptTerms" class="invalid-feedback d-block">
                     {{ errors.acceptTerms }}
+                  </div>
+                </div>
+
+                <!-- Acceptation de la Politique de Confidentialité (nouvelle checkbox) -->
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="acceptPrivacy"
+                    v-model="form.acceptPrivacy"
+                    :class="{ 'is-invalid': errors.acceptPrivacy }"
+                    required
+                  >
+                  <label class="form-check-label" for="acceptPrivacy">
+                    J'accepte la
+                    <router-link to="/politique-confidentialite" target="_blank" class="text-collabpro">
+                      <i class="fas fa-shield-alt me-1"></i>
+                      Politique de Confidentialité
+                    </router-link>
+                  </label>
+                  <div v-if="errors.acceptPrivacy" class="invalid-feedback d-block">
+                    {{ errors.acceptPrivacy }}
                   </div>
                 </div>
 
@@ -221,7 +245,8 @@ const form = reactive({
   role: '',
   motDePasse: '',
   confirmMotDePasse: '',
-  acceptTerms: false
+  acceptTerms: false,
+  acceptPrivacy: false  // Nouvelle propriété pour la politique de confidentialité
 })
 
 const errors = reactive({
@@ -231,7 +256,8 @@ const errors = reactive({
   role: null,
   motDePasse: null,
   confirmMotDePasse: null,
-  acceptTerms: null
+  acceptTerms: null,
+  acceptPrivacy: null  // Nouvelle propriété pour les erreurs
 })
 
 const error = ref(null)
@@ -302,8 +328,15 @@ const validateForm = () => {
     isValid = false
   }
 
+  // Validation des CGU (obligatoire)
   if (!form.acceptTerms) {
-    errors.acceptTerms = 'Vous devez accepter les conditions d\'utilisation'
+    errors.acceptTerms = 'Vous devez accepter les Conditions Générales d\'Utilisation'
+    isValid = false
+  }
+
+  // Validation de la Politique de Confidentialité (obligatoire RGPD)
+  if (!form.acceptPrivacy) {
+    errors.acceptPrivacy = 'Vous devez accepter la Politique de Confidentialité (requis par le RGPD)'
     isValid = false
   }
 
@@ -332,6 +365,17 @@ const handleInscription = async () => {
       role: form.role,
       motDePasse: form.motDePasse,
       dateCreation: new Date().toISOString(),
+      // Consentements RGPD
+      consentements: {
+        cgu: {
+          accepte: form.acceptTerms,
+          dateAcceptation: new Date().toISOString()
+        },
+        politiqueConfidentialite: {
+          accepte: form.acceptPrivacy,
+          dateAcceptation: new Date().toISOString()
+        }
+      },
       // Pas d'abonnement pour les nouveaux chefs → doivent payer
       abonnement: form.role === 'CHEF_PROJET' ? { statut: 'INACTIF' } : null
     }
@@ -345,6 +389,14 @@ const handleInscription = async () => {
     localStorage.setItem('token', 'new-user-token-' + newId)
 
     success.value = 'Compte créé avec succès ! Redirection...'
+
+    // Log pour conformité RGPD
+    console.log('✅ Consentements RGPD enregistrés:', {
+      userId: newId,
+      email: nouvelUtilisateur.email,
+      consentements: nouvelUtilisateur.consentements,
+      dateInscription: nouvelUtilisateur.dateCreation
+    })
 
     // REDIRECTION INTELLIGENTE
     setTimeout(() => {
@@ -389,8 +441,8 @@ const handleInscription = async () => {
 }
 
 .auth-logo {
-  height: 60px;
-  width: 60px;
+  height: 80px;
+  width: 80px;
   border-radius: 50%;
 }
 
@@ -414,5 +466,46 @@ const handleInscription = async () => {
 .form-select:focus {
   border-color: #007bff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Style amélioré pour les checkboxes */
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.form-check-input:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Animation pour l'alerte RGPD */
+.alert {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .col-md-6.col-lg-4 {
+    margin-top: 1rem;
+  }
+
+  .auth-card {
+    margin: 0 1rem;
+  }
+
+  .card-body {
+    padding: 2rem !important;
+  }
 }
 </style>

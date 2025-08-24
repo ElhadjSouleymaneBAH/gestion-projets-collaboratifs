@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 /**
  * Entité Facture selon le diagramme de classes
@@ -44,10 +46,25 @@ public class Facture {
     @JoinColumn(name = "id_transaction", nullable = false)
     private Transaction transaction;
 
+    // --------- Champ non persisté, utile à l'UI (pas de colonne en base) ---------
+    @Transient
+    private String periode;
+
+    public String getPeriode() {
+        if (periode != null) return periode;
+        if (dateEmission == null) return null;
+        // Exemple: "octobre 2025"
+        String mois = dateEmission.getMonth().getDisplayName(TextStyle.FULL, Locale.FRENCH);
+        return Character.toUpperCase(mois.charAt(0)) + mois.substring(1) + " " + dateEmission.getYear();
+    }
+    // ------------------------------------------------------------------------------
+
     @PrePersist
     protected void onCreate() {
         if (dateEmission == null) {
             dateEmission = LocalDate.now();
+        }
+        if (dateEcheance == null) {
             dateEcheance = dateEmission.plusDays(30);
         }
         if (numeroFacture == null) {

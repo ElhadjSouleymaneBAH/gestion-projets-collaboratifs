@@ -5,13 +5,13 @@
         v-model="requeteRecherche"
         @input="rechercherUtilisateurs"
         @focus="champActif = true"
-        placeholder="Rechercher un utilisateur par nom ou email..."
+        :placeholder="$t('search_users_placeholder')"
         class="form-control"
       >
     </div>
 
     <div v-if="enChargement" class="text-center py-2">
-      <small class="text-muted">Recherche en cours...</small>
+      <small class="text-muted">{{ $t('searching') }}...</small>
     </div>
 
     <div
@@ -42,7 +42,7 @@
       v-if="requeteRecherche.length >= 2 && utilisateursTrouves.length === 0 && !enChargement"
       class="text-center py-2"
     >
-      <small class="text-muted">Aucun utilisateur trouvé</small>
+      <small class="text-muted">{{ $t('user_not_found') }}</small>
     </div>
   </div>
 </template>
@@ -117,7 +117,7 @@ export default {
     },
 
     obtenirTousLesUtilisateurs() {
-      // Utilisateurs figés  données SQL
+      // Utilisateurs figés données SQL
       const utilisateursFiges = [
         { id: 1, email: 'emilie.durand0@icc.be', prenom: 'Émilie', nom: 'Durand', role: 'CHEF_PROJET' },
         { id: 7, email: 'sarah.fournier6@icc.be', prenom: 'Sarah', nom: 'Fournier', role: 'MEMBRE' },
@@ -156,8 +156,8 @@ export default {
 
     getRoleLabel(role) {
       const labels = {
-        'CHEF_PROJET': 'Chef de Projet',
-        'MEMBRE': 'Membre'
+        'CHEF_PROJET': this.$t('role_chef'),
+        'MEMBRE': this.$t('role_member')
       }
       return labels[role] || role
     }

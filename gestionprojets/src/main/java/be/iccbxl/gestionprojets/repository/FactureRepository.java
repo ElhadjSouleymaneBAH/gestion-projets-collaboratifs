@@ -31,7 +31,6 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
     /**
      * Trouve toutes les factures d'un utilisateur via les transactions.
-     * TEMPORAIRE - À adapter selon ton modèle Transaction
      */
     @Query("SELECT f FROM Facture f WHERE f.transaction.id IN " +
             "(SELECT t.id FROM Transaction t WHERE t.utilisateur.id = :utilisateurId) " +

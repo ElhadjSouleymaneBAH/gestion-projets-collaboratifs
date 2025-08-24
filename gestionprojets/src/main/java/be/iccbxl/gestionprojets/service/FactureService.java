@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,8 +31,14 @@ public class FactureService {
         Facture facture = new Facture();
         facture.setNumeroFacture(genererNumeroFacture());
         facture.setTransaction(transaction);
-        facture.setMontantHT(transaction.getMontantHT());
-        facture.setTva(transaction.getTva());
+
+        // Sécurisation null
+        Double ht = transaction.getMontantHT() != null ? transaction.getMontantHT() : 0d;
+        Double tva = transaction.getTva() != null ? transaction.getTva() : 0d;
+
+        facture.setMontantHT(ht);
+        facture.setTva(tva);
+
         facture.setDateEmission(LocalDate.now());
         facture.setDateEcheance(LocalDate.now().plusDays(30));
         facture.setStatut("GENEREE");

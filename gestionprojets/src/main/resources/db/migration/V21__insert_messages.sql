@@ -1,76 +1,102 @@
--- Insertion de messages de test conformes aux VRAIS membres des projets
-INSERT INTO messages (contenu, utilisateur_id, projet_id, type, statut, date_envoi) VALUES
-
--- Projet 1 : Application Mobile E-commerce
-
-('Bienvenue dans le chat du projet Application Mobile E-commerce !', 1, 1, 'SYSTEM', 'ENVOYE', '2024-01-15 09:30:00'),
-('Excellente analyse des besoins pour l e-commerce mobile !', 1, 1, 'TEXT', 'ENVOYE', '2024-01-15 11:30:00'),
-('Il faut ajouter la gestion des avis clients', 2, 1, 'TEXT', 'ENVOYE', '2024-01-15 14:20:00'),
-('D accord, essentiel pour la confiance', 3, 1, 'TEXT', 'ENVOYE', '2024-01-15 16:45:00'),
-('J ai ajouté des suggestions d amélioration', 4, 1, 'TEXT', 'ENVOYE', '2024-01-16 15:30:00'),
-
--- Projet 2 : Site Web Portfolio Architecte
-
-('Discussion Portfolio Architecte ouverte', 2, 2, 'SYSTEM', 'ENVOYE', '2024-01-20 14:30:00'),
-('Les maquettes sont vraiment réussies !', 5, 2, 'TEXT', 'ENVOYE', '2024-01-16 10:15:00'),
-('J ai ajouté des suggestions d amélioration', 6, 2, 'TEXT', 'ENVOYE', '2024-01-16 15:30:00'),
-('La charte graphique respecte l identité', 2, 2, 'TEXT', 'ENVOYE', '2024-01-22 15:45:00'),
-
--- Projet 3 : Système de Gestion RH
-
-('Équipe Système de Gestion RH au complet !', 1, 3, 'SYSTEM', 'ENVOYE', '2024-02-01 08:30:00'),
-('Base de données RH bien structurée', 7, 3, 'TEXT', 'ENVOYE', '2024-02-02 11:15:00'),
-('Interface très intuitive pour les RH', 8, 3, 'TEXT', 'ENVOYE', '2024-02-04 16:30:00'),
-('Le workflow de validation est parfait', 9, 3, 'TEXT', 'ENVOYE', '2024-02-06 14:45:00'),
-('Calcul automatique paie fonctionne bien', 10, 3, 'TEXT', 'ENVOYE', '2024-02-08 16:45:00'),
-
--- Projet 4 : Plateforme de Formation en Ligne
-
-('Chat projet Plateforme de Formation en Ligne actif', 3, 4, 'SYSTEM', 'ENVOYE', '2024-02-10 11:00:00'),
-('Architecture technique plateforme excellente', 11, 4, 'TEXT', 'ENVOYE', '2024-02-11 08:45:00'),
-('Upload vidéo très rapide !', 12, 4, 'TEXT', 'ENVOYE', '2024-02-13 15:35:00'),
-('Player vidéo personnalisé vraiment professionnel', 13, 4, 'TEXT', 'ENVOYE', '2024-02-15 12:50:00'),
-
--- Projet 5 : Application de Livraison Restaurant
-
-('Application de Livraison Restaurant - Let s go !', 2, 5, 'SYSTEM', 'ENVOYE', '2024-01-05 16:35:00'),
-('Étude de marché très approfondie', 14, 5, 'TEXT', 'ENVOYE', '2024-01-06 12:30:00'),
-('Géolocalisation précise au mètre près !', 15, 5, 'TEXT', 'ENVOYE', '2024-01-08 16:45:00'),
-('Interface restaurant très ergonomique', 16, 5, 'TEXT', 'ENVOYE', '2024-01-10 14:20:00'),
-('Tests utilisateurs très concluants !', 2, 5, 'TEXT', 'ENVOYE', '2024-01-14 13:25:00'),
-
--- Projet 6 : Boutique en Ligne Vêtements
-
-('Boutique en Ligne Vêtements - Team chat', 1, 6, 'SYSTEM', 'ENVOYE', '2024-02-15 11:45:00'),
-('Recherche tendances mode en cours', 17, 6, 'TEXT', 'ENVOYE', '2024-02-16 09:30:00'),
-('Photographie produits terminée', 18, 6, 'TEXT', 'ENVOYE', '2024-02-18 14:45:00'),
-('Système essayage virtuel impressionnant', 19, 6, 'TEXT', 'ENVOYE', '2024-02-20 10:20:00'),
-
--- Projet 8 : Réseau Social Étudiants
-
-('Réseau Social Étudiants - Collaboration active', 3, 8, 'SYSTEM', 'ENVOYE', '2024-02-05 09:35:00'),
-('Définition personas utilisateurs terminée', 22, 8, 'TEXT', 'ENVOYE', '2024-02-06 10:00:00'),
-('Architecture sociale bien pensée', 23, 8, 'TEXT', 'ENVOYE', '2024-02-08 15:15:00'),
-('Modération automatique IA fonctionnelle', 24, 8, 'TEXT', 'ENVOYE', '2024-02-10 11:10:00'),
-('Application mobile native en cours', 25, 8, 'TEXT', 'ENVOYE', '2024-02-14 13:40:00'),
-
--- Projet 9 : Application de Covoiturage
-
-('Application de Covoiturage - Chat en direct', 2, 9, 'SYSTEM', 'ENVOYE', '2024-01-30 15:25:00'),
-('Algorithme matching trajets au top !', 26, 9, 'TEXT', 'ENVOYE', '2024-01-31 10:20:00'),
-('Système évaluation utilisateurs impeccable', 27, 9, 'TEXT', 'ENVOYE', '2024-02-02 15:35:00'),
-
--- Projet 10 : Site de Réservation Hôtel
-
-('Site de Réservation Hôtel - Team discussion', 1, 10, 'SYSTEM', 'ENVOYE', '2024-01-10 12:15:00'),
-('Intégration API hôtels réussie', 28, 10, 'TEXT', 'ENVOYE', '2024-01-11 11:30:00'),
-('Système comparaison prix excellent', 29, 10, 'TEXT', 'ENVOYE', '2024-01-13 16:00:00'),
-('Tests utilisateurs très concluants !', 30, 10, 'TEXT', 'ENVOYE', '2024-01-17 10:15:00'),
-
--- Messages récents pour démonstration F9 (collaboration temps réel)
-('Excellente collaboration cette semaine !', 1, 1, 'TEXT', 'ENVOYE', '2024-12-14 17:00:00'),
-('L équipe est vraiment soudée ', 2, 1, 'TEXT', 'ENVOYE', '2024-12-14 17:05:00'),
-('Nouvelle tâche Backend API créée', 3, 4, 'NOTIFICATION', 'ENVOYE', '2024-12-12 17:45:00'),
-('Commentaire résolu sur Database Design', 7, 3, 'TEXT', 'ENVOYE', '2024-12-12 16:20:00'),
-('Tests automatisés OK sur tous navigateurs', 12, 4, 'TEXT', 'ENVOYE', '2024-12-11 16:35:00');
-
+INSERT INTO `messages` (`id`, `contenu`, `date_envoi`, `type`, `statut`, `utilisateur_id`, `projet_id`, `date_creation`, `date_modification`) VALUES
+                                                                                                                                                  (1, 'Bienvenue dans le chat du projet Application Mobile E-commerce !', '2025-01-15 09:30:00', 'SYSTEM', 'ENVOYE', 1, 1, '2025-01-15 09:30:00', '2025-01-15 09:30:00'),
+                                                                                                                                                  (2, 'Excellente analyse des besoins pour l e-commerce mobile !', '2025-01-15 11:30:00', 'TEXT', 'ENVOYE', 1, 1, '2025-01-15 11:30:00', '2025-01-15 11:30:00'),
+                                                                                                                                                  (3, 'Il faut ajouter la gestion des avis clients', '2025-01-15 14:20:00', 'TEXT', 'ENVOYE', 2, 1, '2025-01-15 14:20:00', '2025-01-15 14:20:00'),
+                                                                                                                                                  (4, 'D accord, essentiel pour la confiance', '2025-01-15 16:45:00', 'TEXT', 'ENVOYE', 3, 1, '2025-01-15 16:45:00', '2025-01-15 16:45:00'),
+                                                                                                                                                  (5, 'J ai ajouté des suggestions d amélioration', '2025-01-16 15:30:00', 'TEXT', 'ENVOYE', 4, 1, '2025-01-16 15:30:00', '2025-01-16 15:30:00'),
+                                                                                                                                                  (6, 'Discussion Portfolio Architecte ouverte', '2025-01-20 14:30:00', 'SYSTEM', 'ENVOYE', 2, 2, '2025-01-20 14:30:00', '2025-01-20 14:30:00'),
+                                                                                                                                                  (7, 'Les maquettes sont vraiment réussies !', '2025-01-16 10:15:00', 'TEXT', 'ENVOYE', 5, 2, '2025-01-16 10:15:00', '2025-01-16 10:15:00'),
+                                                                                                                                                  (8, 'J ai ajouté des suggestions d amélioration', '2025-01-16 15:30:00', 'TEXT', 'ENVOYE', 6, 2, '2025-01-16 15:30:00', '2025-01-16 15:30:00'),
+                                                                                                                                                  (9, 'La charte graphique respecte l identité', '2025-01-22 15:45:00', 'TEXT', 'ENVOYE', 2, 2, '2025-01-22 15:45:00', '2025-01-22 15:45:00'),
+                                                                                                                                                  (10, 'Équipe Système de Gestion RH au complet !', '2025-02-01 08:30:00', 'SYSTEM', 'ENVOYE', 1, 3, '2025-02-01 08:30:00', '2025-02-01 08:30:00'),
+                                                                                                                                                  (11, 'Base de données RH bien structurée', '2025-02-02 11:15:00', 'TEXT', 'ENVOYE', 7, 3, '2025-02-02 11:15:00', '2025-02-02 11:15:00'),
+                                                                                                                                                  (12, 'Interface très intuitive pour les RH', '2025-02-04 16:30:00', 'TEXT', 'ENVOYE', 8, 3, '2025-02-04 16:30:00', '2025-02-04 16:30:00'),
+                                                                                                                                                  (13, 'Le workflow de validation est parfait', '2025-02-06 14:45:00', 'TEXT', 'ENVOYE', 9, 3, '2025-02-06 14:45:00', '2025-02-06 14:45:00'),
+                                                                                                                                                  (14, 'Calcul automatique paie fonctionne bien', '2025-02-08 16:45:00', 'TEXT', 'ENVOYE', 10, 3, '2025-02-08 16:45:00', '2025-02-08 16:45:00'),
+                                                                                                                                                  (15, 'Chat projet Plateforme de Formation en Ligne actif', '2025-02-10 11:00:00', 'SYSTEM', 'ENVOYE', 3, 4, '2025-02-10 11:00:00', '2025-02-10 11:00:00'),
+                                                                                                                                                  (16, 'Architecture technique plateforme excellente', '2025-02-11 08:45:00', 'TEXT', 'ENVOYE', 11, 4, '2025-02-11 08:45:00', '2025-02-11 08:45:00'),
+                                                                                                                                                  (17, 'Upload vidéo très rapide !', '2025-02-13 15:35:00', 'TEXT', 'ENVOYE', 12, 4, '2025-02-13 15:35:00', '2025-02-13 15:35:00'),
+                                                                                                                                                  (18, 'Player vidéo personnalisé vraiment professionnel', '2025-02-15 12:50:00', 'TEXT', 'ENVOYE', 13, 4, '2025-02-15 12:50:00', '2025-02-15 12:50:00'),
+                                                                                                                                                  (19, 'Application de Livraison Restaurant - Let s go !', '2025-01-05 16:35:00', 'SYSTEM', 'ENVOYE', 2, 5, '2025-01-05 16:35:00', '2025-01-05 16:35:00'),
+                                                                                                                                                  (20, 'Étude de marché très approfondie', '2025-01-06 12:30:00', 'TEXT', 'ENVOYE', 14, 5, '2025-01-06 12:30:00', '2025-01-06 12:30:00'),
+                                                                                                                                                  (21, 'Géolocalisation précise au mètre près !', '2025-01-08 16:45:00', 'TEXT', 'ENVOYE', 15, 5, '2025-01-08 16:45:00', '2025-01-08 16:45:00'),
+                                                                                                                                                  (22, 'Interface restaurant très ergonomique', '2025-01-10 14:20:00', 'TEXT', 'ENVOYE', 16, 5, '2025-01-10 14:20:00', '2025-01-10 14:20:00'),
+                                                                                                                                                  (23, 'Tests utilisateurs très concluants !', '2025-01-14 13:25:00', 'TEXT', 'ENVOYE', 2, 5, '2025-01-14 13:25:00', '2025-01-14 13:25:00'),
+                                                                                                                                                  (24, 'Boutique en Ligne Vêtements - Team chat', '2025-02-15 11:45:00', 'SYSTEM', 'ENVOYE', 1, 6, '2025-02-15 11:45:00', '2025-02-15 11:45:00'),
+                                                                                                                                                  (25, 'Recherche tendances mode en cours', '2025-02-16 09:30:00', 'TEXT', 'ENVOYE', 17, 6, '2025-02-16 09:30:00', '2025-02-16 09:30:00'),
+                                                                                                                                                  (26, 'Photographie produits terminée', '2025-02-18 14:45:00', 'TEXT', 'ENVOYE', 18, 6, '2025-02-18 14:45:00', '2025-02-18 14:45:00'),
+                                                                                                                                                  (27, 'Système essayage virtuel impressionnant', '2025-02-20 10:20:00', 'TEXT', 'ENVOYE', 19, 6, '2025-02-20 10:20:00', '2025-02-20 10:20:00'),
+                                                                                                                                                  (28, 'Réseau Social Étudiants - Collaboration active', '2025-02-05 09:35:00', 'SYSTEM', 'ENVOYE', 3, 8, '2025-02-05 09:35:00', '2025-02-05 09:35:00'),
+                                                                                                                                                  (29, 'Définition personas utilisateurs terminée', '2025-02-06 10:00:00', 'TEXT', 'ENVOYE', 22, 8, '2025-02-06 10:00:00', '2025-02-06 10:00:00'),
+                                                                                                                                                  (30, 'Architecture sociale bien pensée', '2025-02-08 15:15:00', 'TEXT', 'ENVOYE', 23, 8, '2025-02-08 15:15:00', '2025-02-08 15:15:00'),
+                                                                                                                                                  (31, 'Modération automatique IA fonctionnelle', '2025-02-10 11:10:00', 'TEXT', 'ENVOYE', 24, 8, '2025-02-10 11:10:00', '2025-02-10 11:10:00'),
+                                                                                                                                                  (32, 'Application mobile native en cours', '2025-02-14 13:40:00', 'TEXT', 'ENVOYE', 25, 8, '2025-02-14 13:40:00', '2025-02-14 13:40:00'),
+                                                                                                                                                  (33, 'Application de Covoiturage - Chat en direct', '2025-01-30 15:25:00', 'SYSTEM', 'ENVOYE', 2, 9, '2025-01-30 15:25:00', '2025-01-30 15:25:00'),
+                                                                                                                                                  (34, 'Algorithme matching trajets au top !', '2025-01-31 10:20:00', 'TEXT', 'ENVOYE', 26, 9, '2025-01-31 10:20:00', '2025-01-31 10:20:00'),
+                                                                                                                                                  (35, 'Système évaluation utilisateurs impeccable', '2025-02-02 15:35:00', 'TEXT', 'ENVOYE', 27, 9, '2025-02-02 15:35:00', '2025-02-02 15:35:00'),
+                                                                                                                                                  (36, 'Site de Réservation Hôtel - Team discussion', '2025-01-10 12:15:00', 'SYSTEM', 'ENVOYE', 1, 10, '2025-01-10 12:15:00', '2025-01-10 12:15:00'),
+                                                                                                                                                  (37, 'Intégration API hôtels réussie', '2025-01-11 11:30:00', 'TEXT', 'ENVOYE', 28, 10, '2025-01-11 11:30:00', '2025-01-11 11:30:00'),
+                                                                                                                                                  (38, 'Système comparaison prix excellent', '2025-01-13 16:00:00', 'TEXT', 'ENVOYE', 29, 10, '2025-01-13 16:00:00', '2025-01-13 16:00:00'),
+                                                                                                                                                  (39, 'Tests utilisateurs très concluants !', '2025-01-17 10:15:00', 'TEXT', 'ENVOYE', 30, 10, '2025-01-17 10:15:00', '2025-01-17 10:15:00'),
+                                                                                                                                                  (40, 'Excellente collaboration cette semaine !', '2025-12-14 17:00:00', 'TEXT', 'ENVOYE', 1, 1, '2025-12-14 17:00:00', '2025-12-14 17:00:00'),
+                                                                                                                                                  (41, 'L équipe est vraiment soudée ', '2025-12-14 17:05:00', 'TEXT', 'ENVOYE', 2, 1, '2025-12-14 17:05:00', '2025-12-14 17:05:00'),
+                                                                                                                                                  (42, 'Nouvelle tâche Backend API créée', '2025-12-12 17:45:00', 'NOTIFICATION', 'ENVOYE', 3, 4, '2025-12-12 17:45:00', '2025-12-12 17:45:00'),
+                                                                                                                                                  (43, 'Commentaire résolu sur Database Design', '2025-12-12 16:20:00', 'TEXT', 'ENVOYE', 7, 3, '2025-12-12 16:20:00', '2025-12-12 16:20:00'),
+                                                                                                                                                  (44, 'Tests automatisés OK sur tous navigateurs', '2025-12-11 16:35:00', 'TEXT', 'ENVOYE', 12, 4, '2025-12-11 16:35:00', '2025-12-11 16:35:00'),
+-- ajouts
+                                                                                                                                                  (45, 'Réunion de lancement du sprint planifiée', '2025-02-18 09:00:00', 'SYSTEM', 'ENVOYE', 1, 1, '2025-02-18 09:00:00', '2025-02-18 09:00:00'),
+                                                                                                                                                  (46, 'J avance sur la page produit, section avis en cours', '2025-02-18 11:20:00', 'TEXT', 'ENVOYE', 4, 1, '2025-02-18 11:20:00', '2025-02-18 11:20:00'),
+                                                                                                                                                  (47, 'Notifier le client que la démo est prête', '2025-02-18 15:05:00', 'TEXT', 'ENVOYE', 3, 1, '2025-02-18 15:05:00', '2025-02-18 15:05:00'),
+                                                                                                                                                  (48, 'Mise à jour des dépendances effectuée', '2025-02-19 10:10:00', 'TEXT', 'ENVOYE', 6, 2, '2025-02-19 10:10:00', '2025-02-19 10:10:00'),
+                                                                                                                                                  (49, 'Nouvelles maquettes validées par le client', '2025-02-19 14:25:00', 'TEXT', 'ENVOYE', 5, 2, '2025-02-19 14:25:00', '2025-02-19 14:25:00'),
+                                                                                                                                                  (50, 'Tâche « Configurer CI/CD » créée', '2025-02-19 16:40:00', 'NOTIFICATION', 'ENVOYE', 2, 2, '2025-02-19 16:40:00', '2025-02-19 16:40:00'),
+                                                                                                                                                  (51, 'Module paie : revue de code effectuée', '2025-02-20 09:35:00', 'TEXT', 'ENVOYE', 8, 3, '2025-02-20 09:35:00', '2025-02-20 09:35:00'),
+                                                                                                                                                  (52, 'On passe en recette sur les RH', '2025-02-20 15:10:00', 'TEXT', 'ENVOYE', 7, 3, '2025-02-20 15:10:00', '2025-02-20 15:10:00'),
+                                                                                                                                                  (53, 'Formation en ligne : tests e2e verts', '2025-02-21 10:05:00', 'TEXT', 'ENVOYE', 11, 4, '2025-02-21 10:05:00', '2025-02-21 10:05:00'),
+                                                                                                                                                  (54, 'Notification : build de la branche main réussi', '2025-02-21 11:45:00', 'NOTIFICATION', 'ENVOYE', 3, 4, '2025-02-21 11:45:00', '2025-02-21 11:45:00'),
+                                                                                                                                                  (55, 'Restaurant : la carte est importée', '2025-02-22 09:15:00', 'TEXT', 'ENVOYE', 14, 5, '2025-02-22 09:15:00', '2025-02-22 09:15:00'),
+                                                                                                                                                  (56, 'Géolocalisation : précision améliorée', '2025-02-22 11:20:00', 'TEXT', 'ENVOYE', 15, 5, '2025-02-22 11:20:00', '2025-02-22 11:20:00'),
+                                                                                                                                                  (57, 'Notification : nouvelle livraison test', '2025-02-22 13:05:00', 'NOTIFICATION', 'ENVOYE', 2, 5, '2025-02-22 13:05:00', '2025-02-22 13:05:00'),
+                                                                                                                                                  (58, 'Vêtements : filtre par tailles ajouté', '2025-02-23 10:30:00', 'TEXT', 'ENVOYE', 17, 6, '2025-02-23 10:30:00', '2025-02-23 10:30:00'),
+                                                                                                                                                  (59, 'Shooting photo validé', '2025-02-23 14:40:00', 'TEXT', 'ENVOYE', 18, 6, '2025-02-23 14:40:00', '2025-02-23 14:40:00'),
+                                                                                                                                                  (60, 'Notification : promo flash activée', '2025-02-23 18:00:00', 'NOTIFICATION', 'ENVOYE', 1, 6, '2025-02-23 18:00:00', '2025-02-23 18:00:00'),
+                                                                                                                                                  (61, 'Étudiants : fil d actu opérationnel', '2025-02-24 09:05:00', 'TEXT', 'ENVOYE', 22, 8, '2025-02-24 09:05:00', '2025-02-24 09:05:00'),
+                                                                                                                                                  (62, 'Groupes : invitations envoyées', '2025-02-24 11:45:00', 'TEXT', 'ENVOYE', 25, 8, '2025-02-24 11:45:00', '2025-02-24 11:45:00'),
+                                                                                                                                                  (63, 'Notification : nouveau message modération', '2025-02-24 15:20:00', 'NOTIFICATION', 'ENVOYE', 24, 8, '2025-02-24 15:20:00', '2025-02-24 15:20:00'),
+                                                                                                                                                  (64, 'Covoiturage : optimisation des trajets', '2025-02-25 10:10:00', 'TEXT', 'ENVOYE', 27, 9, '2025-02-25 10:10:00', '2025-02-25 10:10:00'),
+                                                                                                                                                  (65, 'Matching : scores plus pertinents', '2025-02-25 13:30:00', 'TEXT', 'ENVOYE', 26, 9, '2025-02-25 13:30:00', '2025-02-25 13:30:00'),
+                                                                                                                                                  (66, 'Notification : trajet réservé', '2025-02-25 17:05:00', 'NOTIFICATION', 'ENVOYE', 2, 9, '2025-02-25 17:05:00', '2025-02-25 17:05:00'),
+                                                                                                                                                  (67, 'Hôtels : calendrier synchronisé', '2025-02-26 09:25:00', 'TEXT', 'ENVOYE', 28, 10, '2025-02-26 09:25:00', '2025-02-26 09:25:00'),
+                                                                                                                                                  (68, 'Comparateur : tri par prix/score', '2025-02-26 11:50:00', 'TEXT', 'ENVOYE', 29, 10, '2025-02-26 11:50:00', '2025-02-26 11:50:00'),
+                                                                                                                                                  (69, 'Notification : réservation confirmée', '2025-02-26 15:40:00', 'NOTIFICATION', 'ENVOYE', 30, 10, '2025-02-26 15:40:00', '2025-02-26 15:40:00'),
+                                                                                                                                                  (70, 'E-commerce : module coupons ajouté', '2025-03-01 09:00:00', 'TEXT', 'ENVOYE', 1, 1, '2025-03-01 09:00:00', '2025-03-01 09:00:00'),
+                                                                                                                                                  (71, 'Panier : optimisation des performances', '2025-03-01 11:20:00', 'TEXT', 'ENVOYE', 3, 1, '2025-03-01 11:20:00', '2025-03-01 11:20:00'),
+                                                                                                                                                  (72, 'Notification : paiement remboursé', '2025-03-01 16:10:00', 'NOTIFICATION', 'ENVOYE', 2, 1, '2025-03-01 16:10:00', '2025-03-01 16:10:00'),
+                                                                                                                                                  (73, 'Portfolio : formulaire de contact sécurisé', '2025-03-02 10:15:00', 'TEXT', 'ENVOYE', 5, 2, '2025-03-02 10:15:00', '2025-03-02 10:15:00'),
+                                                                                                                                                  (74, 'Notification : nouveau commentaire reçu', '2025-03-02 13:05:00', 'NOTIFICATION', 'ENVOYE', 6, 2, '2025-03-02 13:05:00', '2025-03-02 13:05:00'),
+                                                                                                                                                  (75, 'RH : export PDF des fiches validé', '2025-03-03 09:50:00', 'TEXT', 'ENVOYE', 7, 3, '2025-03-03 09:50:00', '2025-03-03 09:50:00'),
+                                                                                                                                                  (76, 'Notification : contrat signé par le client', '2025-03-03 14:25:00', 'NOTIFICATION', 'ENVOYE', 10, 3, '2025-03-03 14:25:00', '2025-03-03 14:25:00'),
+                                                                                                                                                  (77, 'Formation : quiz noté déployé', '2025-03-04 10:05:00', 'TEXT', 'ENVOYE', 12, 4, '2025-03-04 10:05:00', '2025-03-04 10:05:00'),
+                                                                                                                                                  (78, 'Notification : session live démarrée', '2025-03-04 11:30:00', 'NOTIFICATION', 'ENVOYE', 11, 4, '2025-03-04 11:30:00', '2025-03-04 11:30:00'),
+                                                                                                                                                  (79, 'Restaurant : suivi des commandes temps réel', '2025-03-05 09:40:00', 'TEXT', 'ENVOYE', 16, 5, '2025-03-05 09:40:00', '2025-03-05 09:40:00'),
+                                                                                                                                                  (80, 'Notification : commande livrée', '2025-03-05 12:55:00', 'NOTIFICATION', 'ENVOYE', 14, 5, '2025-03-05 12:55:00', '2025-03-05 12:55:00'),
+                                                                                                                                                  (81, 'Vêtements : suggestions IA ajoutées', '2025-03-06 10:10:00', 'TEXT', 'ENVOYE', 17, 6, '2025-03-06 10:10:00', '2025-03-06 10:10:00'),
+                                                                                                                                                  (82, 'Notification : retour produit enregistré', '2025-03-06 15:00:00', 'NOTIFICATION', 'ENVOYE', 1, 6, '2025-03-06 15:00:00', '2025-03-06 15:00:00'),
+                                                                                                                                                  (83, 'Étudiants : messagerie privée prête', '2025-03-07 09:30:00', 'TEXT', 'ENVOYE', 23, 8, '2025-03-07 09:30:00', '2025-03-07 09:30:00'),
+                                                                                                                                                  (84, 'Notification : nouveau membre dans le groupe', '2025-03-07 12:20:00', 'NOTIFICATION', 'ENVOYE', 22, 8, '2025-03-07 12:20:00', '2025-03-07 12:20:00'),
+                                                                                                                                                  (85, 'Covoiturage : historique visible pour l utilisateur', '2025-03-08 10:35:00', 'TEXT', 'ENVOYE', 27, 9, '2025-03-08 10:35:00', '2025-03-08 10:35:00'),
+                                                                                                                                                  (86, 'Notification : annulation de trajet', '2025-03-08 16:05:00', 'NOTIFICATION', 'ENVOYE', 2, 9, '2025-03-08 16:05:00', '2025-03-08 16:05:00'),
+                                                                                                                                                  (87, 'Hôtels : filtres avancés par équipements', '2025-03-09 09:25:00', 'TEXT', 'ENVOYE', 28, 10, '2025-03-09 09:25:00', '2025-03-09 09:25:00'),
+                                                                                                                                                  (88, 'Notification : baisse de prix détectée', '2025-03-09 14:15:00', 'NOTIFICATION', 'ENVOYE', 29, 10, '2025-03-09 14:15:00', '2025-03-09 14:15:00'),
+                                                                                                                                                  (89, 'E-commerce : optimisation SEO appliquée', '2025-03-10 10:05:00', 'TEXT', 'ENVOYE', 3, 1, '2025-03-10 10:05:00', '2025-03-10 10:05:00'),
+                                                                                                                                                  (90, 'Notification : panier abandonné relancé', '2025-03-10 12:35:00', 'NOTIFICATION', 'ENVOYE', 1, 1, '2025-03-10 12:35:00', '2025-03-10 12:35:00'),
+                                                                                                                                                  (91, 'Portfolio : section témoignages publiée', '2025-03-11 09:40:00', 'TEXT', 'ENVOYE', 6, 2, '2025-03-11 09:40:00', '2025-03-11 09:40:00'),
+                                                                                                                                                  (92, 'Notification : formulaire contact reçu', '2025-03-11 11:55:00', 'NOTIFICATION', 'ENVOYE', 5, 2, '2025-03-11 11:55:00', '2025-03-11 11:55:00'),
+                                                                                                                                                  (93, 'RH : génération des bulletins test OK', '2025-03-12 09:10:00', 'TEXT', 'ENVOYE', 8, 3, '2025-03-12 09:10:00', '2025-03-12 09:10:00'),
+                                                                                                                                                  (94, 'Notification : contrat approuvé', '2025-03-12 15:20:00', 'NOTIFICATION', 'ENVOYE', 7, 3, '2025-03-12 15:20:00', '2025-03-12 15:20:00'),
+                                                                                                                                                  (95, 'Formation : export des résultats', '2025-03-13 10:00:00', 'TEXT', 'ENVOYE', 12, 4, '2025-03-13 10:00:00', '2025-03-13 10:00:00'),
+                                                                                                                                                  (96, 'Notification : nouveau module publié', '2025-03-13 14:40:00', 'NOTIFICATION', 'ENVOYE', 11, 4, '2025-03-13 14:40:00', '2025-03-13 14:40:00'),
+                                                                                                                                                  (97, 'Restaurant : mode nuit pour tablettes', '2025-03-14 09:45:00', 'TEXT', 'ENVOYE', 16, 5, '2025-03-14 09:45:00', '2025-03-14 09:45:00'),
+                                                                                                                                                  (98, 'Notification : nouvelle évaluation reçue', '2025-03-14 13:25:00', 'NOTIFICATION', 'ENVOYE', 14, 5, '2025-03-14 13:25:00', '2025-03-14 13:25:00'),
+                                                                                                                                                  (99, 'Vêtements : tri par popularité ajouté', '2025-03-15 10:30:00', 'TEXT', 'ENVOYE', 18, 6, '2025-03-15 10:30:00', '2025-03-15 10:30:00'),
+                                                                                                                                                  (100, 'Notification : inventaire synchronisé', '2025-03-15 16:20:00', 'NOTIFICATION', 'ENVOYE', 1, 6, '2025-03-15 16:20:00', '2025-03-15 16:20:00');

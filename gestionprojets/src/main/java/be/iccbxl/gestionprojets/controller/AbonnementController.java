@@ -27,13 +27,12 @@ import java.util.Optional;
  * - Intégration avec Stripe pour les paiements sécurisés
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 2.0 - CORS géré par CorsConfig.java
  * @see "Cahier des charges - F10: Paiements et abonnements"
  * @see "Business plan - Modèle freemium 10€/mois"
  */
 @RestController
 @RequestMapping("/api/abonnements")
-@CrossOrigin(origins = "*")
 public class AbonnementController {
 
     private final AbonnementService abonnementService;
@@ -66,7 +65,7 @@ public class AbonnementController {
             System.out.println("DEBUG: [F10] Souscription abonnement par: " + authentication.getName());
 
             // Récupérer l'utilisateur authentifié
-            Optional<Utilisateur> utilisateurOpt = utilisateurService.obtenirParEmail(authentication.getName());
+            Optional<Utilisateur> utilisateurOpt = utilisateurService.findByEmail(authentication.getName());
             if (utilisateurOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Utilisateur non trouvé");
@@ -121,7 +120,7 @@ public class AbonnementController {
 
             // Vérifie si c'est un administrateur
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
 
             // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
@@ -163,7 +162,7 @@ public class AbonnementController {
 
             // Vérifie si c'est un administrateur
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
 
             // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
@@ -204,7 +203,7 @@ public class AbonnementController {
 
             // Vérifie si c'est un admin
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
 
             // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
@@ -251,7 +250,7 @@ public class AbonnementController {
 
             // Vérifie si c'est un admin
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
 
             // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
@@ -303,7 +302,7 @@ public class AbonnementController {
      * @return Liste de tous les abonnements
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<List<Abonnement>> getTousLesAbonnements() {
         try {
             List<Abonnement> abonnements = abonnementService.findAll();
@@ -323,7 +322,7 @@ public class AbonnementController {
      * @return L'abonnement créé
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<Abonnement> creerAbonnementAdmin(@Valid @RequestBody Abonnement abonnement) {
         try {
             Abonnement abonnementCree = abonnementService.save(abonnement);
@@ -343,7 +342,7 @@ public class AbonnementController {
      * @return Confirmation de suppression
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimerAbonnement(@PathVariable Long id) {
         try {
             if (!abonnementService.existsById(id)) {

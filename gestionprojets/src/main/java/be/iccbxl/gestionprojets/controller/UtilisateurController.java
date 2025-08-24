@@ -14,24 +14,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Contrôleur REST pour la gestion des utilisateurs.
- *
- * Implémente les fonctionnalités définies dans le cahier des charges :
- * - F1 : S'inscrire (endpoint public pour les Visiteurs)
- * - F4 : Consulter son profil (membres authentifiés)
- * - F5 : Mettre à jour son profil (membres authentifiés)
- * - F8 : Recherche d'utilisateurs pour ajouter des membres
- *
- * CORRIGÉ : hasAuthority() au lieu de hasRole() pour compatibilité avec JwtFilter
- *
- * @author ElhadjSouleymaneBAH
- * @version 1.1
- * @see "Cahier des charges - Fonctionnalités F1, F4, F5, F8"
- */
 @RestController
 @RequestMapping("/api/utilisateurs")
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+        origins = {
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:5175",
+                "http://localhost:5177",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:5174",
+                "http://127.0.0.1:5175",
+                "http://127.0.0.1:5177"
+        },
+        allowCredentials = "true"
+)
 public class UtilisateurController {
 
     private final UtilisateurService utilisateurService;
@@ -40,38 +37,29 @@ public class UtilisateurController {
         this.utilisateurService = utilisateurService;
     }
 
-    // F1 : S'INSCRIRE
-
-    /**
-     * Inscription publique d'un nouvel utilisateur.
-     *
-     * Fonctionnalité F1 : S'inscrire
-     * Utilisateurs : Visiteur (accès public, sans authentification)
-     * Importance : 5/5
-     * Contraintes : Remplir un formulaire
-     *
-     * @param inscriptionDTO Données d'inscription
-     * @return L'utilisateur créé ou message d'erreur
-     * @see "Cahier des charges - F1: S'inscrire"
-     */
     @PostMapping("/inscription")
     public ResponseEntity<?> sInscrire(@Valid @RequestBody InscriptionDTO inscriptionDTO) {
         System.out.println("inscriptionDTO: " + inscriptionDTO);
 
         try {
-            // Validation CGU obligatoire (contrainte RGPD)
             if (!inscriptionDTO.isCguAccepte()) {
                 return ResponseEntity.badRequest()
                         .body("L'acceptation des CGU est obligatoire pour la conformité RGPD");
             }
 
-            // Vérification email unique
-            if (utilisateurService.existeParEmail(inscriptionDTO.getEmail())) {
+            String emailNormalise = inscriptionDTO.getEmail() != null
+                    ? inscriptionDTO.getEmail().trim().toLowerCase()
+                    : null;
+            if (emailNormalise == null || emailNormalise.isBlank()) {
+                return ResponseEntity.badRequest().body("L'email est requis");
+            }
+            inscriptionDTO.setEmail(emailNormalise);
+
+            if (utilisateurService.existeParEmail(emailNormalise)) {
                 return ResponseEntity.badRequest()
                         .body("Un compte existe déjà avec cette adresse email");
             }
 
-            // Création du compte utilisateur (F1)
             Utilisateur nouvelUtilisateur = utilisateurService.inscrire(inscriptionDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(nouvelUtilisateur);
 
@@ -81,23 +69,12 @@ public class UtilisateurController {
         }
     }
 
-    //  F4 : CONSULTER SON PROFIL
-
-    /**
-     * Consultation du profil utilisateur.
-     *
-     * Fonctionnalité F4 : Consulter son profil
-     * Utilisateurs : Membre (authentification requise)
-     * Importance : 3/5
-     * Contraintes : Connexion requise
-     *
-     * @param id L'identifiant de l'utilisateur
-     * @param authentication Informations d'authentification
-     * @return Le profil utilisateur ou erreur 403/404
-     * @see "Cahier des charges - F4: Consulter son profil"
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Utilisateur> getParId(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Optional<Utilisateur> utilisateurDemandeOpt = utilisateurService.obtenirParId(id);
         if (utilisateurDemandeOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -106,14 +83,11 @@ public class UtilisateurController {
         Utilisateur utilisateurDemande = utilisateurDemandeOpt.get();
         String emailConnecte = authentication.getName();
 
-        // Vérifie si c'est un administrateur
         boolean estAdmin = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-        // Vérifie si c'est son propre profil
         boolean estSonPropreProfil = utilisateurDemande.getEmail().equals(emailConnecte);
 
-        // Autorise si admin OU si c'est son propre profil
         if (estAdmin || estSonPropreProfil) {
             return ResponseEntity.ok(utilisateurDemande);
         } else {
@@ -121,26 +95,14 @@ public class UtilisateurController {
         }
     }
 
-    //  F5 : METTRE À JOUR SON PROFIL
-
-    /**
-     * Mise à jour du profil utilisateur.
-     *
-     * Fonctionnalité F5 : Mettre à jour son profil
-     * Utilisateurs : Membre (authentification requise)
-     * Importance : 3/5
-     * Contraintes : Format valide requis
-     *
-     * @param id L'identifiant de l'utilisateur
-     * @param utilisateurModifie Les nouvelles données
-     * @param authentication Informations d'authentification
-     * @return Le profil mis à jour ou erreur 403/404
-     * @see "Cahier des charges - F5: Mettre à jour son profil"
-     */
     @PutMapping("/{id}")
     public ResponseEntity<Utilisateur> mettreAJour(@PathVariable Long id,
                                                    @Valid @RequestBody Utilisateur utilisateurModifie,
                                                    Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Optional<Utilisateur> utilisateurExistantOpt = utilisateurService.obtenirParId(id);
         if (utilisateurExistantOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -149,14 +111,11 @@ public class UtilisateurController {
         Utilisateur utilisateurExistant = utilisateurExistantOpt.get();
         String emailConnecte = authentication.getName();
 
-        // Vérifie si c'est un admin
         boolean estAdmin = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-        // Vérifie si c'est son propre profil
         boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
 
-        // Autorise si admin OU si c'est son propre profil
         if (estAdmin || estSonPropreProfil) {
             try {
                 utilisateurModifie.setId(id);
@@ -170,34 +129,21 @@ public class UtilisateurController {
         }
     }
 
-    // F8 : RECHERCHE D'UTILISATEURS (pour ajouter des membres)
-
-    /**
-     * Recherche d'utilisateurs pour F8 - Ajouter des membres à un projet.
-     *
-     * Fonctionnalité F8 : Ajouter des membres à un projet
-     * Utilisateurs : Chef de Projet
-     * Contraintes : Membres existants
-     *
-     * Permet de rechercher des utilisateurs (VISITEUR, MEMBRE, CHEF_PROJET)
-     * par nom, prénom ou email pour les inviter dans un projet.
-     *
-     * @param q Le terme de recherche
-     * @return Liste des utilisateurs correspondant à la recherche
-     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
-     */
     @GetMapping("/recherche")
     public ResponseEntity<List<Utilisateur>> rechercherUtilisateurs(@RequestParam String q) {
         try {
             System.out.println("DEBUG: [F8] Recherche utilisateurs avec terme: " + q);
 
+            final String query = q == null ? "" : q.trim().toLowerCase();
+
             List<Utilisateur> utilisateurs = utilisateurService.obtenirTousLesUtilisateursSansProjet()
                     .stream()
-                    .filter(u ->
-                            u.getNom().toLowerCase().contains(q.toLowerCase()) ||
-                                    u.getPrenom().toLowerCase().contains(q.toLowerCase()) ||
-                                    u.getEmail().toLowerCase().contains(q.toLowerCase())
-                    )
+                    .filter(u -> {
+                        String nom = u.getNom() == null ? "" : u.getNom().toLowerCase();
+                        String prenom = u.getPrenom() == null ? "" : u.getPrenom().toLowerCase();
+                        String email = u.getEmail() == null ? "" : u.getEmail().toLowerCase();
+                        return nom.contains(query) || prenom.contains(query) || email.contains(query);
+                    })
                     .collect(Collectors.toList());
 
             System.out.println("DEBUG: [F8] " + utilisateurs.size() + " utilisateurs trouvés");
@@ -209,14 +155,6 @@ public class UtilisateurController {
         }
     }
 
-    // ENDPOINTS ADMINISTRATEUR
-
-    /**
-     * Liste tous les utilisateurs du système.
-     * Réservé aux administrateurs pour la gestion globale.
-     *
-     * @return Liste de tous les utilisateurs
-     */
     @GetMapping
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<Utilisateur>> getTous() {
@@ -228,10 +166,6 @@ public class UtilisateurController {
         }
     }
 
-    /**
-     * Obtient tous les utilisateurs disponibles pour F8.
-     * Utilisé pour découvrir des utilisateurs à ajouter aux projets.
-     */
     @GetMapping("/membresansprojet")
     public ResponseEntity<List<Utilisateur>> getTousLesUtilisateursSansProjet() {
         try {
@@ -242,21 +176,18 @@ public class UtilisateurController {
         }
     }
 
-    /**
-     * Création d'utilisateur par l'administrateur.
-     * Différent de l'inscription publique (F1).
-     *
-     * @param utilisateur L'utilisateur à créer
-     * @return L'utilisateur créé
-     */
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")  // CORRIGÉ
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Utilisateur> creer(@Valid @RequestBody Utilisateur utilisateur) {
         try {
-            // Vérification email unique
-            if (utilisateurService.existeParEmail(utilisateur.getEmail())) {
+            String email = utilisateur.getEmail() == null ? null : utilisateur.getEmail().trim().toLowerCase();
+            if (email == null || email.isBlank()) {
                 return ResponseEntity.badRequest().build();
             }
+            if (utilisateurService.existeParEmail(email)) {
+                return ResponseEntity.badRequest().build();
+            }
+            utilisateur.setEmail(email);
 
             Utilisateur utilisateurCree = utilisateurService.enregistrer(utilisateur);
             return ResponseEntity.status(HttpStatus.CREATED).body(utilisateurCree);
@@ -265,14 +196,8 @@ public class UtilisateurController {
         }
     }
 
-    /**
-     * Suppression d'utilisateur par l'administrateur.
-     *
-     * @param id L'identifiant de l'utilisateur à supprimer
-     * @return Confirmation de suppression
-     */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")  // CORRIGÉ
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimer(@PathVariable Long id) {
         try {
             if (!utilisateurService.existeParId(id)) {
@@ -286,19 +211,11 @@ public class UtilisateurController {
         }
     }
 
-    // ENDPOINTS UTILITAIRES
-
-    /**
-     * Vérification de disponibilité d'email.
-     * Utilisé pour validation en temps réel lors de l'inscription.
-     *
-     * @param email L'adresse email à vérifier
-     * @return true si l'email est disponible
-     */
     @GetMapping("/email-disponible")
     public ResponseEntity<Boolean> emailDisponible(@RequestParam String email) {
         try {
-            boolean disponible = !utilisateurService.existeParEmail(email);
+            String emailNormalise = email == null ? "" : email.trim().toLowerCase();
+            boolean disponible = !utilisateurService.existeParEmail(emailNormalise);
             return ResponseEntity.ok(disponible);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

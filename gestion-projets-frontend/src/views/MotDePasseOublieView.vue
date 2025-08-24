@@ -87,7 +87,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { authAPI } from '@/services/api'
+import { authAPI } from '@/services/api.js'
 
 const email = ref('')
 const error = ref(null)

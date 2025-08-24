@@ -1,10 +1,16 @@
+// src/main.js
+import './assets/style.css'
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+
 import App from './App.vue'
 import router from './router'
-import './assets/style.css'
-//import { translationPlugin } from './components/LanguageSwitcher.vue'
+import i18n from './i18n'
 
 const app = createApp(App)
-app.use(router)
-app.mount('#app')
 
+app.use(createPinia())
+app.use(router)
+app.use(i18n)
+
+app.mount('#app')

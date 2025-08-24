@@ -1,15 +1,15 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <h5><i class="fas fa-user-plus me-2"></i>Inviter des membres</h5>
+      <h5><i class="fas fa-user-plus me-2"></i>{{ $t('invite_member') }}</h5>
     </div>
     <div class="card-body">
       <!-- Formulaire d'invitation -->
       <form @submit.prevent="inviterMembre">
         <div class="mb-3">
-          <label class="form-label">Projet</label>
+          <label class="form-label">{{ $t('projects') }}</label>
           <select class="form-select" v-model="invitation.projetId" required>
-            <option value="">Sélectionner un projet</option>
+            <option value="">{{ $t('search') }} {{ $t('projects').toLowerCase() }}</option>
             <option v-for="projet in mesProjets" :key="projet.id" :value="projet.id">
               {{ projet.titre }}
             </option>
@@ -17,39 +17,39 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Email du membre</label>
+          <label class="form-label">{{ $t('member_email') }}</label>
           <input
             type="email"
             class="form-control"
             v-model="invitation.email"
-            placeholder="sarah.fournier@exemple.com"
+            :placeholder="'sarah.fournier@exemple.com'"
             required
           >
           <div class="form-text">
-            Le membre doit avoir un compte existant
+            {{ $t('user_must_exist') }}
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Message (optionnel)</label>
+          <label class="form-label">{{ $t('message') }} ({{ $t('optional') }})</label>
           <textarea
             class="form-control"
             v-model="invitation.message"
             rows="2"
-            placeholder="Rejoignez-nous sur ce projet..."
+            :placeholder="$t('join_project_message')"
           ></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary" :disabled="loading">
           <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
           <i class="fas fa-paper-plane me-2"></i>
-          Inviter au projet
+          {{ $t('invite') }} {{ $t('projects').toLowerCase() }}
         </button>
       </form>
 
       <!-- Invitations récentes -->
       <div v-if="invitationsRecentes.length > 0" class="mt-4">
-        <h6>Invitations récentes :</h6>
+        <h6>{{ $t('recent_invitations') }} :</h6>
         <div class="list-group">
           <div v-for="inv in invitationsRecentes.slice(0, 3)" :key="inv.id" class="list-group-item">
             <div class="d-flex justify-content-between align-items-center">
@@ -58,7 +58,7 @@
                 <br>
                 <small class="text-muted">{{ getProjetTitre(inv.projetId) }}</small>
               </div>
-              <span class="badge bg-success">Ajouté</span>
+              <span class="badge bg-success">{{ $t('added') }}</span>
             </div>
           </div>
         </div>
@@ -128,14 +128,14 @@ export default {
         const utilisateurExiste = this.verifierUtilisateurExiste(this.invitation.email)
 
         if (!utilisateurExiste) {
-          this.message = `L'utilisateur ${this.invitation.email} n'existe pas. Il doit créer un compte d'abord.`
+          this.message = `${this.$t('user')} ${this.invitation.email} ${this.$t('user_not_exist')}. ${this.$t('must_create_account')}.`
           this.messageType = 'alert-danger'
           return
         }
 
         // Vérifier si déjà membre du projet
         if (this.verifierDejaMembre(utilisateurExiste.id, this.invitation.projetId)) {
-          this.message = 'Ce membre fait déjà partie de ce projet.'
+          this.message = this.$t('already_member')
           this.messageType = 'alert-warning'
           return
         }
@@ -156,7 +156,7 @@ export default {
         this.invitationsRecentes.unshift(nouvelleInvitation)
         localStorage.setItem('invitations', JSON.stringify(this.invitationsRecentes))
 
-        this.message = `${utilisateurExiste.prenom} ${utilisateurExiste.nom} a été ajouté au projet avec succès !`
+        this.message = `${utilisateurExiste.prenom} ${utilisateurExiste.nom} ${this.$t('member_added')}`
         this.messageType = 'alert-success'
 
         // Reset formulaire
@@ -170,7 +170,7 @@ export default {
 
       } catch (error) {
         console.error('Erreur invitation:', error)
-        this.message = 'Erreur lors de l\'invitation.'
+        this.message = this.$t('invitation_error')
         this.messageType = 'alert-danger'
       } finally {
         this.loading = false
@@ -220,7 +220,7 @@ export default {
 
     getProjetTitre(projetId) {
       const projet = this.mesProjets.find(p => p.id == projetId)
-      return projet ? projet.titre : 'Projet inconnu'
+      return projet ? projet.titre : this.$t('unknown_project')
     }
   }
 }

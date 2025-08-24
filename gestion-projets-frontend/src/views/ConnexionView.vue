@@ -36,14 +36,9 @@
                     class="form-control"
                     id="email"
                     v-model="form.email"
-                    :class="{ 'is-invalid': errors.email }"
                     required
-                    autocomplete="email"
                     placeholder="votre@email.com"
                   >
-                  <div v-if="errors.email" class="invalid-feedback">
-                    {{ errors.email }}
-                  </div>
                 </div>
 
                 <div class="mb-3">
@@ -54,9 +49,7 @@
                       class="form-control"
                       id="password"
                       v-model="form.motDePasse"
-                      :class="{ 'is-invalid': errors.motDePasse }"
                       required
-                      autocomplete="current-password"
                       placeholder="••••••••"
                     >
                     <button
@@ -66,9 +59,6 @@
                     >
                       <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                     </button>
-                  </div>
-                  <div v-if="errors.motDePasse" class="invalid-feedback d-block">
-                    {{ errors.motDePasse }}
                   </div>
                 </div>
 
@@ -102,28 +92,6 @@
                   </router-link>
                 </div>
               </form>
-
-              <!-- Comptes de test pour développement - MASQUÉS en production -->
-              <div v-if="false" class="mt-4 p-3 bg-light rounded">
-                <h6 class="text-muted mb-3">🧪 Comptes de test :</h6>
-                <div class="row g-2">
-                  <div class="col-6">
-                    <button class="btn btn-outline-success btn-sm w-100" @click="connexionRapide('chef')">
-                      👨‍💼 Chef de Projet
-                    </button>
-                    <small class="text-muted d-block">Émilie Durand</small>
-                  </div>
-                  <div class="col-6">
-                    <button class="btn btn-outline-info btn-sm w-100" @click="connexionRapide('membre')">
-                      👤 Membre
-                    </button>
-                    <small class="text-muted d-block">Sarah Fournier</small>
-                  </div>
-                </div>
-                <button class="btn btn-outline-danger btn-sm w-100 mt-2" @click="connexionRapide('admin')">
-                  🔧 Administrateur
-                </button>
-              </div>
 
               <!-- Lien vers inscription -->
               <hr class="my-4">
@@ -160,184 +128,69 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-// import { authAPI } from '@/services/api' // À décommenter quand API prête
+import { authAPI } from '@/services/api.js'
 
 const router = useRouter()
 
-// Variables réactives
 const form = reactive({
   email: '',
   motDePasse: '',
   remember: false
 })
 
-const errors = reactive({
-  email: null,
-  motDePasse: null
-})
-
 const error = ref(null)
 const success = ref(null)
 const loading = ref(false)
 const showPassword = ref(false)
-// showTestAccounts supprimé - plus besoin
 
-// Base d'utilisateurs HYBRIDE (figés + dynamiques)
-const utilisateursFiges = {
-  'emilie.durand0@icc.be': {
-    id: 1,
-    nom: 'Durand',
-    prenom: 'Émilie',
-    email: 'emilie.durand0@icc.be',
-    role: 'CHEF_PROJET',
-    motDePasse: '1986',
-    abonnement: { type: 'PREMIUM', statut: 'ACTIF' } // Déjà Premium
-  },
-  'sarah.fournier6@icc.be': {
-    id: 7,
-    nom: 'Fournier',
-    prenom: 'Sarah',
-    email: 'sarah.fournier6@icc.be',
-    role: 'MEMBRE',
-    motDePasse: '1986'
-  },
-  'emilie.durand50@icc.be': {
-    id: 51,
-    nom: 'Durand',
-    prenom: 'Émilie',
-    email: 'emilie.durand50@icc.be',
-    role: 'ADMINISTRATEUR',
-    motDePasse: '1986'
-  },
-  'nathan.garcia23@icc.be': {
-    id: 24,
-    nom: 'Garcia',
-    prenom: 'Nathan',
-    email: 'nathan.garcia23@icc.be',
-    role: 'VISITEUR',
-    motDePasse: '1986'
-  }
-}
-
-// Récupérer les nouveaux utilisateurs du localStorage
-const nouveauxUtilisateurs = JSON.parse(localStorage.getItem('nouveauxUtilisateurs')) || []
-
-// FUSION des deux systèmes
-const tousLesUtilisateurs = { ...utilisateursFiges }
-nouveauxUtilisateurs.forEach(user => {
-  tousLesUtilisateurs[user.email] = user
-})
-
-// Fonction de validation
-const validateForm = () => {
-  errors.email = null
-  errors.motDePasse = null
-
-  let isValid = true
-
-  if (!form.email) {
-    errors.email = 'L\'email est requis'
-    isValid = false
-  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-    errors.email = 'Format d\'email invalide'
-    isValid = false
-  }
-
-  if (!form.motDePasse) {
-    errors.motDePasse = 'Le mot de passe est requis'
-    isValid = false
-  }
-
-  return isValid
-}
-
-// Fonction principale de connexion
 const handleConnexion = async () => {
-  if (!validateForm()) return
-
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    // Mode hybride - chercher dans les deux systèmes
-    const utilisateur = tousLesUtilisateurs[form.email]
+    const response = await authAPI.login({
+      email: form.email,
+      motDePasse: form.motDePasse
+    })
 
-    if (!utilisateur) {
-      error.value = 'Email non trouvé. Créez d\'abord un compte via "S\'inscrire".'
-      return
-    }
+    const { token, user } = response.data
 
-    if (utilisateur.motDePasse !== form.motDePasse) {
-      error.value = 'Mot de passe incorrect.'
-      return
-    }
-
-    // Connexion réussie
     success.value = 'Connexion réussie ! Redirection...'
 
-    // Sauvegarder les données utilisateur
-    localStorage.setItem('user', JSON.stringify(utilisateur))
-    localStorage.setItem('token', 'token-' + utilisateur.id)
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(user))
 
-    // LOGIQUE DE REDIRECTION INTELLIGENTE
     setTimeout(() => {
-      // Vérifier si Chef sans abonnement Premium
-      if (utilisateur.role === 'CHEF_PROJET') {
-        const aAbonnementActif = utilisateur.abonnement?.statut === 'ACTIF'
-
-        if (!aAbonnementActif) {
-          // Nouveau Chef → Doit payer d'abord
-          router.push('/abonnement-premium')
-          return
-        }
-      }
-
-      // Redirection normale selon le rôle
-      switch (utilisateur.role) {
+      switch (user.role) {
         case 'ADMINISTRATEUR':
-          window.location.href = '/admin/tableau-de-bord'
+          router.push('/admin/tableau-de-bord')
           break
         case 'CHEF_PROJET':
-          window.location.href = '/tableau-bord-chef-projet'
+          router.push('/tableau-bord-chef-projet')
           break
         case 'MEMBRE':
-          window.location.href = '/tableau-bord-membre'
+          router.push('/tableau-bord-membre')
           break
         case 'VISITEUR':
-          window.location.href = '/projets-publics'
+          router.push('/projets-publics')
           break
         default:
-          window.location.href = '/'
+          router.push('/')
       }
     }, 1500)
 
   } catch (err) {
-    console.error('Erreur de connexion:', err)
-    error.value = 'Erreur de connexion. Veuillez réessayer.'
+    if (err.response?.status === 401) {
+      error.value = 'Email ou mot de passe incorrect.'
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else {
+      error.value = 'Erreur de connexion. Veuillez réessayer.'
+    }
   } finally {
     loading.value = false
   }
-}
-
-// Connexion rapide pour les tests
-const connexionRapide = (typeRole) => {
-  switch(typeRole) {
-    case 'chef':
-      form.email = 'emilie.durand0@icc.be'
-      break
-    case 'membre':
-      form.email = 'sarah.fournier6@icc.be'
-      break
-    case 'admin':
-      form.email = 'emilie.durand50@icc.be'
-      break
-    case 'visiteur':
-      form.email = 'nathan.garcia23@icc.be'
-      break
-  }
-  form.motDePasse = '1986'
-  handleConnexion()
 }
 </script>
 

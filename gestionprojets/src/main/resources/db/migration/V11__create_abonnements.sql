@@ -1,5 +1,4 @@
 -- Migration V11 : Création de la table abonnements
--- Version corrigée sans colonne générée problématique
 
 CREATE TABLE abonnements (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,

@@ -6,15 +6,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entité représentant un projet dans le système de gestion collaborative.
  *
  * Un projet peut être créé et géré uniquement par un Chef de Projet (avec abonnement actif)
  * ou un Administrateur selon le cahier des charges. Les projets peuvent être publics
- * (consultables par les Visiteurs) ou privés (accessibles aux membres uniquement).
+ * (consultables par les Visiteurs) ou privés (accessibles aux membres seulment).
  *
  * Fonctionnalités couvertes :
  * - F3 : Consulter les projets publics
@@ -36,65 +36,44 @@ import java.util.HashSet;
 @NoArgsConstructor
 public class Projet {
 
-    /**
-     * Identifiant unique du projet.
-     * Généré automatiquement par la base de données.
-     */
+    /** Identifiant unique du projet. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Titre du projet.
-     * Champ obligatoire pour identifier le projet.
-     * Utilisé dans les listes et l'affichage public (F3).
-     */
+    /** Titre du projet (obligatoire, utilisé pour l’affichage public F3). */
     @Column(nullable = false)
     private String titre;
 
-    /**
-     * Description détaillée du projet.
-     * Stockée en format TEXT pour permettre des descriptions longues.
-     * Visible dans la consultation publique des projets (F3).
-     */
+    /** Description détaillée du projet (format TEXT). */
     @Column(columnDefinition = "TEXT")
     private String description;
 
     /**
-     * Identifiant du créateur du projet.
-     * Référence l'utilisateur (Chef de Projet ou Admin) qui a créé le projet.
+     * Créateur du projet.
+     * Mappé sur la colonne id_createur (FK vers utilisateurs.id).
      * Nécessaire pour les autorisations de gestion (F6).
      */
-    @Column(name = "id_createur", nullable = false)
-    private Long idCreateur;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_createur", nullable = false)
+    private Utilisateur createur;
 
     /**
-     * Statut actuel du projet.
-     * Valeurs possibles : ACTIF, SUSPENDU, TERMINE, ARCHIVE
-     * Par défaut : ACTIF pour les nouveaux projets.
+     * Statut du projet.
+     * Valeurs prévues : ACTIF, SUSPENDU, TERMINE, ARCHIVE (stockées en VARCHAR).
      */
     @Column(nullable = false)
     private String statut = "ACTIF";
 
-    /**
-     * Date et heure de création du projet.
-     * Automatiquement définie lors de la création via @PrePersist.
-     * Utilisée pour l'historique et les statistiques.
-     */
+    /** Date/heure de création (initialisée en @PrePersist). */
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
 
     // ========== RELATIONS JPA ==========
 
     /**
-     * Liste des membres participant au projet.
-     * Relation Many-to-Many bidirectionnelle avec l'entité Utilisateur.
-     *
-     * Supporte la fonctionnalité F8 : Ajouter des membres à un projet.
-     * Les Chefs de Projet peuvent inviter des membres existants pour collaboration.
-     *
-     * @see Utilisateur#projets
-     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
+     * Membres du projet (ManyToMany via table de jointure).
+     * Supporte F8 : Ajouter des membres.
      */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -105,24 +84,15 @@ public class Projet {
     private Set<Utilisateur> membres = new HashSet<>();
 
     /**
-     * Liste des tâches appartenant à ce projet.
-     * Relation One-to-Many avec l'entité Tache.
-     *
-     * Supporte la fonctionnalité F7 : Gérer les tâches.
-     * Les tâches sont automatiquement supprimées si le projet est supprimé (CASCADE.ALL).
-     *
-     * @see Tache#projet
-     * @see "Cahier des charges - F7: Gérer les tâches"
+     * Tâches du projet (OneToMany).
+     * Supporte F7 : Gérer les tâches.
      */
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Tache> taches = new HashSet<>();
 
-    //  MÉTHODES DU CYCLE DE VIE JPA
+    // ========== CYCLE DE VIE ==========
 
-    /**
-     * Méthode appelée automatiquement avant la persistance.
-     * Initialise la date de création si elle n'est pas définie.
-     */
+    /** Initialise la date de création si absente. */
     @PrePersist
     protected void onCreate() {
         if (dateCreation == null) {
@@ -130,19 +100,11 @@ public class Projet {
         }
     }
 
-    //  MÉTHODES MÉTIER
+    // ========== MÉTHODES MÉTIER ==========
 
     /**
-     * Ajoute un membre au projet.
-     * Gère automatiquement la relation bidirectionnelle Many-to-Many.
-     *
-     * Fonctionnalité F8 : Ajouter des membres à un projet.
-     * Seuls les Chefs de Projet peuvent ajouter des membres selon le cahier des charges.
-     *
-     * @param utilisateur L'utilisateur à ajouter comme membre du projet (obligatoire)
-     * @throws IllegalArgumentException si l'utilisateur est null
-     * @see Utilisateur#getProjets()
-     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
+     * Ajoute un membre (relation bidirectionnelle).
+     * F8 : Ajouter des membres à un projet.
      */
     public void ajouterMembre(Utilisateur utilisateur) {
         if (utilisateur == null) {
@@ -153,15 +115,8 @@ public class Projet {
     }
 
     /**
-     * Retire un membre du projet.
-     * Gère automatiquement la relation bidirectionnelle Many-to-Many.
-     *
-     * Fonctionnalité F8 : Gérer les membres d'un projet.
-     * Seuls les Chefs de Projet peuvent retirer des membres selon le cahier des charges.
-     *
-     * @param utilisateur L'utilisateur à retirer du projet
-     * @see Utilisateur#getProjets()
-     * @see "Cahier des charges - F8: Ajouter des membres à un projet"
+     * Retire un membre (relation bidirectionnelle).
+     * F8 : Gérer les membres d'un projet.
      */
     public void retirerMembre(Utilisateur utilisateur) {
         if (utilisateur != null) {
@@ -171,16 +126,7 @@ public class Projet {
     }
 
     /**
-     * Initialise un nouveau projet avec les données fournies.
-     * Conformément à la fonctionnalité F6 du cahier des charges.
-     *
-     * Note: Cette méthode configure l'instance actuelle plutôt que de créer un nouveau projet.
-     * Dans un contexte réel, cette logique serait dans un service dédié.
-     *
-     * @param titre Le titre du projet (obligatoire)
-     * @param description La description du projet (optionnelle)
-     * @return true si le projet a été configuré avec succès, false sinon
-     * @see "Cahier des charges - F6: Gérer les projets - Création"
+     * Initialise un nouveau projet (F6).
      */
     public boolean ajouterProjet(String titre, String description) {
         if (titre != null && !titre.trim().isEmpty()) {
@@ -192,16 +138,7 @@ public class Projet {
     }
 
     /**
-     * Modifie les propriétés du projet.
-     * Conformément à la fonctionnalité F6 du cahier des charges.
-     *
-     * Seuls les Chefs de Projet (créateur) et les Administrateurs peuvent modifier un projet.
-     *
-     * @param id L'identifiant du projet (pour validation)
-     * @param titre Le nouveau titre (obligatoire)
-     * @param description La nouvelle description (optionnelle)
-     * @return true si la modification a réussi, false sinon
-     * @see "Cahier des charges - F6: Gérer les projets - Modification"
+     * Modifie le projet (F6).
      */
     public boolean modifierProjet(Long id, String titre, String description) {
         if (id != null && titre != null && !titre.trim().isEmpty()) {
@@ -214,39 +151,20 @@ public class Projet {
     }
 
     /**
-     * Supprime le projet.
-     * Conformément à la fonctionnalité F6 du cahier des charges.
-     *
-     * Seuls les Chefs de Projet (créateur) et les Administrateurs peuvent supprimer un projet.
-     * La suppression cascade automatiquement vers les tâches associées.
-     *
-     * @param id L'identifiant du projet à supprimer (pour validation)
-     * @return true si la suppression a réussi, false sinon
-     * @see "Cahier des charges - F6: Gérer les projets - Suppression"
+     * Supprime le projet (F6) – logique métier gérée au service.
      */
     public boolean supprimerProjet(Long id) {
-        if (id != null) {
-            return true;
-        }
-        return false;
+        return id != null;
     }
 
     /**
-     * Vérifie si le projet est visible par les visiteurs.
-     * Détermine si le projet apparaît dans la consultation publique (F3).
-     *
-     * @return true si le projet est public et actif
-     * @see "Cahier des charges - F3: Consulter les projets publics"
+     * Le projet est-il visible publiquement ? (F3)
      */
     public boolean estPublic() {
         return "ACTIF".equals(this.statut);
     }
 
     /**
-     * Vérifie si un utilisateur est membre du projet.
-     * Utilisé pour les autorisations d'accès et de collaboration.
-     *
-     * @param utilisateur L'utilisateur à vérifier
      * @return true si l'utilisateur est membre du projet
      */
     public boolean contientMembre(Utilisateur utilisateur) {
@@ -254,63 +172,47 @@ public class Projet {
     }
 
     /**
-     * Retourne le nombre de tâches actives du projet.
-     * Utilisé pour les statistiques et l'affichage dans l'interface.
-     *
-     * @return Le nombre de tâches non archivées
+     * @return nombre de tâches non terminées (indicatif)
      */
     public long getNombreTachesActives() {
         return taches.stream()
-                .filter(tache -> !"TERMINE".equals(tache.getStatut().toString()))
+                .filter(t -> !"TERMINE".equals(t.getStatut().toString()))
                 .count();
     }
 
-    //  MÉTHODES UTILITAIRES
+    // ========== UTILITAIRES ==========
 
-    /**
-     * Représentation textuelle du projet.
-     * Utilisée pour le débogage et les logs.
-     *
-     * @return String contenant les informations principales
-     */
-    @Override
-    public String toString() {
-        return String.format("Projet{id=%d, titre='%s', statut='%s', membres=%d, taches=%d}",
-                id, titre, statut, membres.size(), taches.size());
+    /** Accès pratique à l'ID du créateur pour compatibilité éventuelle. */
+    @Transient
+    public Long getIdCreateur() {
+        return (createur != null) ? createur.getId() : null;
     }
 
-    /**
-     * Comparaison d'égalité basée sur l'ID et le titre.
-     * Deux projets sont égaux s'ils ont le même ID ou le même titre et créateur.
-     *
-     * @param obj Objet à comparer
-     * @return true si les projets sont identiques
-     */
+    @Override
+    public String toString() {
+        return String.format(
+                "Projet{id=%d, titre='%s', statut='%s', createurId=%s, membres=%d, taches=%d}",
+                id, titre, statut, getIdCreateur(), membres.size(), taches.size()
+        );
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        Projet that = (Projet) obj;
-        if (id != null && that.id != null) {
-            return id.equals(that.id);
-        }
-        return titre != null ? titre.equals(that.titre) &&
-                idCreateur != null ? idCreateur.equals(that.idCreateur) : that.idCreateur == null
+        if (!(obj instanceof Projet that)) return false;
+        if (id != null && that.id != null) return id.equals(that.id);
+        // fallback sur titre + créateur
+        Long c1 = (createur != null) ? createur.getId() : null;
+        Long c2 = (that.createur != null) ? that.createur.getId() : null;
+        return titre != null ? titre.equals(that.titre) && (c1 != null ? c1.equals(c2) : c2 == null)
                 : that.titre == null;
     }
 
-    /**
-     * Code de hachage basé sur l'ID ou le titre.
-     * Utilisé dans les collections (HashMap, HashSet).
-     *
-     * @return Hash code du projet
-     */
     @Override
     public int hashCode() {
-        if (id != null) {
-            return id.hashCode();
-        }
-        return titre != null ? titre.hashCode() : 0;
+        if (id != null) return id.hashCode();
+        int result = (titre != null) ? titre.hashCode() : 0;
+        result = 31 * result + ((createur != null && createur.getId() != null) ? createur.getId().hashCode() : 0);
+        return result;
     }
 }

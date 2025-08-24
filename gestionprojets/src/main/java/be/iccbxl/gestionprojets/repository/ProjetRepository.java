@@ -6,24 +6,30 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository JPA pour {@link Projet}.
+ *
+ * ⚠️ L'entité Projet possède maintenant un champ {@code Utilisateur createur}
+ * (FK mappée sur la colonne {@code id_createur}). Utiliser des méthodes
+ * dérivées basées sur {@code createur.id} et non plus {@code idCreateur}.
+ */
 @Repository
 public interface ProjetRepository extends JpaRepository<Projet, Long> {
 
     /**
-     * Trouve les projets par créateur
-     *Gérer les projets (Chef de Projet)
+     * Trouve les projets par créateur (via la relation {@code createur.id}).
+     * @param createurId identifiant de l'utilisateur créateur
+     * @return liste des projets créés par cet utilisateur
      */
-    List<Projet> findByIdCreateur(Long idCreateur);
+    List<Projet> findByCreateurId(Long createurId);
 
     /**
-     * Trouve les projets par statut
-     * Nécessaire pour filtrer les projets actifs/inactifs
+     * Trouve les projets par statut (ex.: ACTIF, SUSPENDU, TERMINE, ARCHIVE).
      */
     List<Projet> findByStatut(String statut);
 
     /**
-     * Trouve les projets par titre (recherche)
-     * Nécessaire pour F3: Consulter les projets publics
+     * Recherche plein texte sur le titre (insensible à la casse).
      */
     List<Projet> findByTitreContainingIgnoreCase(String titre);
 }

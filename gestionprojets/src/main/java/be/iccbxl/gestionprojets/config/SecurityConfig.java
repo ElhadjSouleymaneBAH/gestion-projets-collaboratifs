@@ -16,15 +16,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * Configuration de la sécurité Spring Boot pour Gestion de Projets Collaboratifs
- * Couvre TOUTES les fonctionnalités F1-F12 du cahier des charges
- * CORRIGÉ : Ajout de la route /error pour éviter les 403 sur les erreurs de paramètres
+ * Configuration de sécurité Spring Boot - VERSION PRODUCTION
+ * Fonctionnalités ordonnées F1 à F14 selon le cahier des charges
+ *
+ * ORDRE CRITIQUE: Du plus spécifique au plus générique pour éviter les conflits
  *
  * @author ElhadjSouleymaneBAH
- * @version 2.1
- * @see "Cahier des charges - Fonctionnalités F1 à F12"
+ * @version 3.0 - PRODUCTION
+ * @see "Cahier des charges - Application Web de Gestion de Projets Collaboratifs"
  */
 @Configuration
 @EnableWebSecurity
@@ -33,115 +35,211 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(JwtFilter jwtFilter, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(JwtFilter jwtFilter,
+                          CustomUserDetailsService userDetailsService,
+                          CorsConfigurationSource corsConfigurationSource) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     /**
-     * Configuration complète des accès par fonctionnalité (F1-F12)
-     * Respecte strictement le cahier des charges et les rôles définis
+     * Configuration des accès par fonctionnalité - ORDRE PRODUCTION
+     * Respecte strictement le cahier des charges et l'ordre des URLs
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Configuration CORS et CSRF
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
+
                 .authorizeHttpRequests(auth -> auth
-                        // ========== ROUTES PUBLIQUES (VISITEUR) ==========
 
-                        // F1 : S'inscrire - Accès public pour permettre la création de compte
-                        .requestMatchers("/api/utilisateurs/inscription").permitAll()
+                        // ===================================================================
+                        // ROUTES SYSTÈME ET INFRASTRUCTURE (Plus spécifiques en premier)
+                        // ===================================================================
 
-                        // F2 : Se connecter - Accès public pour l'authentification
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // Préflights CORS
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // CORRECTION : Route d'erreur Spring Boot (évite 403 sur erreurs de paramètres)
-                        .requestMatchers("/error").permitAll()
+                        // Routes d'erreur et techniques
 
-                        // F3 : Consulter projets publics - Accès libre aux visiteurs
-                        .requestMatchers("/api/projets/publics").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/projets").permitAll()
+                        .requestMatchers("/error", "/favicon.ico", "/actuator/**").permitAll()
+                        .requestMatchers("/", "/static/**", "/assets/**", "/public/**").permitAll()
 
-                        // F9 : Collaboration temps réel - WebSocket accessible
-                        .requestMatchers("/ws/**", "/ws-native/**").permitAll()
+                        // ===================================================================
+                        // FONCTIONNALITÉ F1 : S'INSCRIRE (Visiteur)
+                        // Accès public pour création de compte
+                        // ===================================================================
 
-                        // F12 : Multilingue - Ressources publiques sans restriction
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/", "/static/**", "/favicon.ico").permitAll()
 
-                        // ========== ROUTES AUTHENTIFIÉES PAR RÔLE ==========
+                        .requestMatchers(HttpMethod.POST, "/api/auth/inscription").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/utilisateurs/inscription").permitAll()
 
-                        // F4 & F5 : Consulter et modifier son profil (MEMBRE minimum)
-                        .requestMatchers("/api/utilisateurs/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        // ===================================================================
+                        // FONCTIONNALITÉ F2 : SE CONNECTER (Visiteur)
+                        // Accès public pour authentification
+                        // ===================================================================
 
-                        // F6 : Gérer projets
-                        // - Consultation : MEMBRE peut voir les projets auxquels il participe
-                        // - Gestion complète : CHEF_PROJET et ADMINISTRATEUR
-                        .requestMatchers(HttpMethod.GET, "/api/projets/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/projets/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/connexion").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/refresh").permitAll()
 
-                        // F7 : Gérer tâches
-                        // - Consultation : MEMBRE peut voir ses tâches assignées
-                        // - Gestion complète : CHEF_PROJET peut créer/modifier/assigner
-                        .requestMatchers(HttpMethod.GET, "/api/taches/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/taches/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        // ===================================================================
+                        // FONCTIONNALITÉ F3 : CONSULTER PROJETS PUBLICS (Visiteur)
+                        // Lecture seule pour visiteurs non connectés
+                        // ===================================================================
 
-                        // F8 : Ajouter membres aux projets (inclus dans F6)
-                        // Géré via les endpoints de projets ci-dessus
+                        .requestMatchers(HttpMethod.GET, "/api/projets/publics").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/projets/public/**").permitAll()
 
-                        // F9 : Collaboration en temps réel
-                        // - Commentaires sur tâches : Tous les membres authentifiés
-                        .requestMatchers("/api/commentaires/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-                        // - Messages projet : Tous les membres du projet
-                        .requestMatchers("/api/messages/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        // ===================================================================
+                        // FONCTIONNALITÉ F14 : MULTILINGUE (Tous)
+                        // Services de traduction accessibles à tous
+                        // ===================================================================
 
-                        // F10 : Paiements et abonnements (CHEF_PROJET obligatoire selon cahier des charges)
-                        .requestMatchers("/api/paiements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/abonnements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/transactions/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/public/translations/**").permitAll()
+                        .requestMatchers("/api/public/locale/**").permitAll()
 
-                        // F11 : Générer factures (automatique après paiement - CHEF_PROJET)
-                        .requestMatchers("/api/factures/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        // ===================================================================
+                        // ROUTES ADMINISTRATEUR (Plus spécifiques - avant routes génériques)
+                        // Accès exclusif ADMINISTRATEUR
+                        // ===================================================================
 
-                        // NOTIFICATIONS (Support F4, F6, F7, F8, F10, F11)
-                        // Tous les utilisateurs authentifiés peuvent recevoir des notifications
-                        .requestMatchers("/api/notifications/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-
-                        // ========== ROUTES ADMINISTRATEUR SPÉCIALISÉES ==========
-
-                        // Gestion globale des utilisateurs (promotion, gestion des rôles)
+                        // Gestion globale des utilisateurs
                         .requestMatchers("/api/admin/utilisateurs/**").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers("/api/admin/users/**").hasAuthority("ADMINISTRATEUR")
 
-                        // Gestion globale des abonnements et paiements
+                        // Gestion globale des abonnements et paiements (F10 + F11 Admin)
                         .requestMatchers("/api/admin/abonnements/**").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers("/api/admin/paiements/**").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers("/api/admin/transactions/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/factures/**").hasAuthority("ADMINISTRATEUR")
 
                         // Statistiques et rapports globaux
                         .requestMatchers("/api/admin/stats/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/rapports/**").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers("/api/admin/analytics/**").hasAuthority("ADMINISTRATEUR")
 
-                        // Routes administrateur générales
+                        // Gestion système
+                        .requestMatchers("/api/admin/systeme/**").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers("/api/admin/config/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMINISTRATEUR")
-                        .requestMatchers("/api/administrateur/**").hasAuthority("ADMINISTRATEUR")
 
-                        // ========== ROUTES CHEF DE PROJET SPÉCIALISÉES ==========
+                        // ===================================================================
+                        // ROUTES CHEF DE PROJET (Abonnés premium)
+                        // Accès exclusif CHEF_PROJET + ADMINISTRATEUR
+                        // ===================================================================
 
-                        // Fonctionnalités premium accessibles uniquement aux chefs de projet abonnés
-                        .requestMatchers("/api/chef-projet/projets/**").hasAuthority("CHEF_PROJET")
-                        .requestMatchers("/api/chef-projet/equipes/**").hasAuthority("CHEF_PROJET")
-                        .requestMatchers("/api/chef-projet/rapports/**").hasAuthority("CHEF_PROJET")
+                        // F6 : Gérer projets (Création, modification, suppression)
+                        .requestMatchers(HttpMethod.POST, "/api/projets").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/projets/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/projets/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/projets/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // ========== ROUTES MEMBRE SPÉCIALISÉES ==========
+                        // F7 : Gérer tâches (Création et validation par Chef de projet)
+                        .requestMatchers(HttpMethod.POST, "/api/taches").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/taches/*/valider").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/taches/*/statut").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/taches/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // Fonctionnalités accessibles aux membres (consultation, participation)
-                        .requestMatchers("/api/membre/taches/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/membre/projets/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        // F8 : Ajouter membres aux projets (Gestion équipe)
+                        .requestMatchers(HttpMethod.POST, "/api/projets/*/membres").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/projets/*/membres/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/projets/*/membres/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // ========== SÉCURITÉ PAR DÉFAUT ==========
+                        // F10 : Paiements et abonnements (Chef de projet peut gérer ses abonnements)
+                        .requestMatchers("/api/paiements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/abonnements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/transactions/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/stripe/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // F11 : Générer factures (Chef de projet peut voir ses factures)
+                        .requestMatchers(HttpMethod.GET, "/api/factures/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.POST, "/api/factures/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // Fonctionnalités premium chef de projet
+                        .requestMatchers("/api/chef-projet/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // FONCTIONNALITÉ F4 & F5 : PROFIL UTILISATEUR
+                        // Consultation et modification profil (MEMBRE minimum)
+                        // ===================================================================
+
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs/profil").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/utilisateurs/profil").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/utilisateurs/profil").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/utilisateurs/me").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // FONCTIONNALITÉ F6 : CONSULTER PROJETS (Membres authentifiés)
+                        // Lecture projets auxquels l'utilisateur participe
+                        // ===================================================================
+
+                        .requestMatchers(HttpMethod.GET, "/api/projets").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/projets/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // FONCTIONNALITÉ F7 : CONSULTER ET MODIFIER TÂCHES
+                        // Membres peuvent voir et modifier leurs tâches assignées
+                        // ===================================================================
+
+                        .requestMatchers(HttpMethod.GET, "/api/taches").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/taches/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/taches/*/terminer").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/taches/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/taches/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // FONCTIONNALITÉ F9 & F12 : COLLABORATION TEMPS RÉEL
+                        // Messages, commentaires, WebSocket pour tous les membres
+                        // ===================================================================
+
+                        // WebSocket collaboration
+                        .requestMatchers("/ws/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/websocket/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // Messages de projet
+                        .requestMatchers("/api/messages/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/chat/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // Commentaires sur tâches/projets (F12)
+                        .requestMatchers("/api/commentaires/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/comments/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // FONCTIONNALITÉ F13 : NOTIFICATIONS
+                        // Système de notifications pour tous les membres authentifiés
+                        // ===================================================================
+
+                        .requestMatchers("/api/notifications/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // ROUTES MEMBRES (Fonctionnalités de base)
+                        // ===================================================================
+
+                        .requestMatchers("/api/membre/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // ROUTES GÉNÉRIQUES UTILISATEURS (Moins spécifiques)
+                        // ===================================================================
+
+                        .requestMatchers("/api/utilisateurs/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers("/api/users/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // SÉCURITÉ PAR DÉFAUT
                         // Toute autre requête nécessite une authentification minimum
+                        // ===================================================================
+
                         .anyRequest().authenticated()
                 )
+
+                // Configuration session et filtres
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -156,7 +254,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12); // Force 12 pour production
     }
 
     @Bean
@@ -164,6 +262,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
+        provider.setHideUserNotFoundExceptions(false); // Pour debug en dev, true en prod
         return provider;
     }
 }

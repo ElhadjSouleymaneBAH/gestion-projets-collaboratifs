@@ -1,50 +1,101 @@
--- Commentaires pour les tâches du projet 1 (Application Mobile E-commerce)
-
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Excellente analyse des besoins pour l''e-commerce mobile !', '2024-01-15 11:30:00', 1, 1),
-                                                                                ('Il faut ajouter la gestion des avis clients', '2024-01-15 14:20:00', 2, 1),
-                                                                                ('D''accord, essentiel pour la confiance', '2024-01-15 16:45:00', 3, 1);
--- Commentaires pour tâche 2 (Conception interface utilisateur)
-
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Les maquettes sont vraiment réussies !', '2024-01-16 10:15:00', 4, 2),
-                                                                                ('J''ai ajouté des suggestions d''amélioration', '2024-01-16 15:30:00', 1, 2);
--- Commentaires pour tâche 3 (Développement authentification)
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('L''authentification JWT fonctionne parfaitement', '2024-01-18 16:20:00', 2, 3),
-                                                                                ('Excellent travail sur la sécurité !', '2024-01-18 17:45:00', 3, 3),
-                                                                                ('Il faudra tester avec différents navigateurs', '2024-01-19 09:10:00', 1, 3);
--- Commentaires pour tâche 4 (Intégration API paiement)
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Stripe est bien intégré, tests en cours', '2024-01-20 14:30:00', 4, 4),
-                                                                                ('Les webhooks fonctionnent correctement', '2024-01-20 16:15:00', 2, 4);
--- Commentaires pour projet 2 (Site Web Portfolio Architecte)
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Benchmark très instructif, bon travail !', '2024-01-21 10:30:00', 2, 6),
-                                                                                ('La charte graphique respecte l''identité', '2024-01-22 15:45:00', 1, 7),
-                                                                                ('Galerie photos très fluide, j''adore !', '2024-01-24 12:20:00', 3, 8);
--- Commentaires pour projet 3 (Système de Gestion RH)
-
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Base de données RH bien structurée', '2024-02-02 11:15:00', 1, 11),
-                                                                                ('Interface très intuitive pour les RH', '2024-02-04 16:30:00', 2, 12),
-                                                                                ('Le workflow de validation est parfait', '2024-02-06 14:45:00', 4, 13);
--- Commentaires pour projet 4 (Plateforme de Formation en Ligne)
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Architecture solide pour la montée en charge', '2024-02-11 10:20:00', 1, 16),
-                                                                                ('Upload vidéo très rapide !', '2024-02-13 15:35:00', 4, 17),
-                                                                                ('Player personnalisé vraiment professionnel', '2024-02-15 12:50:00', 2, 18);
--- Commentaires pour projet 5 (Application de Livraison Restaurant) - TERMINÉ
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Étude de marché très approfondie', '2024-01-06 12:30:00', 1, 21),
-                                                                                ('Géolocalisation précise au mètre près !', '2024-01-08 16:45:00', 2, 22),
-                                                                                ('Interface restaurant très ergonomique', '2024-01-10 14:20:00', 4, 23),
-                                                                                ('Notifications temps réel parfaites', '2024-01-12 18:10:00', 3, 24),
-                                                                                ('Tests utilisateurs très concluants !', '2024-01-14 13:25:00', 1, 25);
--- Commentaires récents cohérents avec notifications
-INSERT INTO commentaires (contenu, date_creation, utilisateur_id, tache_id) VALUES
-                                                                                ('Excellente collaboration cette semaine !', '2024-12-14 17:00:00', 1, 26),
-                                                                                ('L''équipe est vraiment soudée 🚀', '2024-12-14 17:05:00', 2, 26),
-                                                                                ('Nouvelle tâche Backend API créée', '2024-12-12 17:45:00', 4, 27),
-                                                                                ('Commentaire résolu sur Database Design', '2024-12-12 16:20:00', 3, 28),
-                                                                                ('Tests automatisés OK sur tous navigateurs', '2024-12-11 16:35:00', 1, 29);
+INSERT INTO `commentaires` (`id`, `contenu`, `date_creation`, `utilisateur_id`, `tache_id`) VALUES
+                                                                                                (1, 'Excellente analyse des besoins pour l\'e-commerce mobile !', '2025-01-15 11:30:00', 1, 1),
+(2, 'Il faut ajouter la gestion des avis clients', '2025-01-15 14:20:00', 2, 1),
+(3, 'D\'accord, essentiel pour la confiance', '2025-01-15 16:45:00', 3, 1),
+                                                                                                (4, 'Les maquettes sont vraiment réussies !', '2025-01-16 10:15:00', 4, 2),
+                                                                                                (5, 'J\'ai ajouté des suggestions d\'amélioration', '2025-01-16 15:30:00', 1, 2),
+                                                                                                (6, 'L\'authentification JWT fonctionne parfaitement', '2025-01-18 16:20:00', 2, 3),
+(7, 'Excellent travail sur la sécurité !', '2025-01-18 17:45:00', 3, 3),
+(8, 'Il faudra tester avec différents navigateurs', '2025-01-19 09:10:00', 1, 3),
+(9, 'Stripe est bien intégré, tests en cours', '2025-01-20 14:30:00', 4, 4),
+(10, 'Les webhooks fonctionnent correctement', '2025-01-20 16:15:00', 2, 4),
+(11, 'Benchmark très instructif, bon travail !', '2025-01-21 10:30:00', 2, 6),
+(12, 'La charte graphique respecte l\'identité', '2025-01-22 15:45:00', 1, 7),
+                                                                                                (13, 'Galerie photos très fluide, j\'adore !', '2025-01-24 12:20:00', 3, 8),
+(14, 'Base de données RH bien structurée', '2025-02-02 11:15:00', 1, 11),
+(15, 'Interface très intuitive pour les RH', '2025-02-04 16:30:00', 2, 12),
+(16, 'Le workflow de validation est parfait', '2025-02-06 14:45:00', 4, 13),
+(17, 'Architecture solide pour la montée en charge', '2025-02-11 10:20:00', 1, 16),
+(18, 'Upload vidéo très rapide !', '2025-02-13 15:35:00', 4, 17),
+(19, 'Player personnalisé vraiment professionnel', '2025-02-15 12:50:00', 2, 18),
+(20, 'Étude de marché très approfondie', '2025-01-06 12:30:00', 1, 21),
+(21, 'Géolocalisation précise au mètre près !', '2025-01-08 16:45:00', 2, 22),
+(22, 'Interface restaurant très ergonomique', '2025-01-10 14:20:00', 4, 23),
+(23, 'Notifications temps réel parfaites', '2025-01-12 18:10:00', 3, 24),
+(24, 'Tests utilisateurs très concluants !', '2025-01-14 13:25:00', 1, 25),
+(25, 'Excellente collaboration cette semaine !', '2025-12-14 17:00:00', 1, 26),
+(26, 'L\'équipe est vraiment soudée ', '2025-12-14 17:05:00', 2, 26),
+                                                                                                (27, 'Nouvelle tâche Backend API créée', '2025-12-12 17:45:00', 4, 27),
+                                                                                                (28, 'Commentaire résolu sur Database Design', '2025-12-12 16:20:00', 3, 28),
+                                                                                                (29, 'Tests automatisés OK sur tous navigateurs', '2025-12-11 16:35:00', 1, 29),
+                                                                                                (30, 'Page d\'accueil optimisée pour le SEO', '2025-02-18 09:25:00', 5, 30),
+(31, 'Ajouter un filtre par catégorie', '2025-02-19 10:40:00', 6, 31),
+(32, 'Bonne couverture de tests unitaires', '2025-02-20 08:55:00', 7, 32),
+(33, 'Prévoir un fallback hors-ligne', '2025-02-21 13:05:00', 8, 33),
+(34, 'La pagination est fluide', '2025-02-22 11:30:00', 9, 34),
+(35, 'Accessibilité: contraste à améliorer', '2025-02-23 15:45:00', 10, 35),
+(36, 'Le responsive sur tablette est nickel', '2025-02-24 10:15:00', 11, 36),
+(37, 'Documenter les endpoints publics', '2025-02-25 16:25:00', 12, 37),
+(38, 'Cache HTTP configuré correctement', '2025-02-26 09:05:00', 13, 38),
+(39, 'Améliorer le message d\'erreur 500', '2025-02-27 14:00:00', 14, 39),
+                                                                                                (40, 'Super idée d\'ajouter la recherche', '2025-03-01 09:10:00', 15, 40),
+(41, 'Le drag-and-drop fonctionne bien', '2025-03-02 11:55:00', 16, 41),
+(42, 'Penser à la traduction en NL', '2025-03-03 13:40:00', 17, 42),
+(43, 'Temps de build réduit de 30%', '2025-03-04 10:20:00', 18, 43),
+(44, 'Mettre un rate limit sur l\'API', '2025-03-05 15:10:00', 19, 44),
+                                                                                                (45, 'UX panier: bouton plus visible', '2025-03-06 12:45:00', 20, 45),
+                                                                                                (46, 'Rien à redire sur les logs', '2025-03-07 08:35:00', 21, 46),
+                                                                                                (47, 'Bonne séparation des responsabilités', '2025-03-08 16:25:00', 22, 47),
+                                                                                                (48, 'Ajouter un export CSV', '2025-03-09 10:50:00', 23, 48),
+                                                                                                (49, 'La doc est claire et concise', '2025-03-10 09:05:00', 24, 49),
+                                                                                                (50, 'Notifications par email reçues', '2025-03-11 14:55:00', 25, 50),
+                                                                                                (51, 'Améliorer les messages de commit', '2025-03-12 11:15:00', 26, 51),
+                                                                                                (52, 'API versionnée: bon choix', '2025-03-13 15:30:00', 27, 52),
+                                                                                                (53, 'Sécurité: penser aux en-têtes CSP', '2025-03-14 13:05:00', 28, 53),
+                                                                                                (54, 'Compression images efficace', '2025-03-15 09:45:00', 29, 54),
+                                                                                                (55, 'Points de perf identifiés', '2025-03-16 10:20:00', 30, 55),
+                                                                                                (56, 'Refactor du module paiement OK', '2025-03-17 16:40:00', 31, 56),
+                                                                                                (57, 'Ajouter un bouton d\'annulation', '2025-03-18 08:55:00', 32, 57),
+(58, 'Testé sur Safari iOS: RAS', '2025-03-19 12:10:00', 33, 58),
+(59, 'Mettre des placeholders parlants', '2025-03-20 09:35:00', 34, 59),
+(60, 'Très bonne lisibilité du code', '2025-03-21 14:05:00', 35, 60),
+(61, 'Prévoir un import de données', '2025-03-22 10:40:00', 36, 61),
+(62, 'Job CRON quotidien validé', '2025-03-23 17:20:00', 37, 62),
+(63, 'Bons retours des testeurs', '2025-03-24 11:00:00', 38, 63),
+(64, 'Message d\'accueil plus humain', '2025-03-25 09:25:00', 39, 64),
+                                                                                                (65, 'Raccourcis clavier appréciés', '2025-03-26 15:35:00', 40, 65),
+                                                                                                (66, 'Succès: 0 régressions détectées', '2025-03-27 13:10:00', 41, 66),
+                                                                                                (67, 'Limiter la taille des uploads', '2025-03-28 10:55:00', 42, 67),
+                                                                                                (68, 'Loader ajouté pour la liste', '2025-03-29 08:30:00', 43, 68),
+                                                                                                (69, 'Docs d\'architecture à relire', '2025-03-30 16:15:00', 44, 69),
+(70, 'Belle cohérence visuelle', '2025-03-31 09:05:00', 45, 70),
+(71, 'Page 404 personnalisée sympa', '2025-04-01 11:40:00', 46, 71),
+(72, 'Runbooks incident mis à jour', '2025-04-02 10:25:00', 47, 72),
+(73, 'Ajouter un bouton copier', '2025-04-03 14:35:00', 48, 73),
+(74, 'Formulaire: validation côté client', '2025-04-04 09:55:00', 49, 74),
+(75, 'Monitoring SLA en place', '2025-04-05 12:20:00', 50, 75),
+(76, 'États vides mieux expliqués', '2025-04-06 10:10:00', 51, 76),
+(77, 'Bonne gestion des erreurs réseau', '2025-04-07 15:00:00', 52, 77),
+(78, 'Logs audit conformes RGPD', '2025-04-08 08:45:00', 53, 78),
+(79, 'Super travail d\'intégration UI', '2025-04-09 16:30:00', 54, 79),
+                                                                                                (80, 'Prévoir un thème sombre', '2025-04-10 13:50:00', 55, 80),
+                                                                                                (81, 'La recherche par tags marche bien', '2025-04-11 09:10:00', 56, 81),
+                                                                                                (82, 'Bon découpage en micro-services', '2025-04-12 11:55:00', 57, 82),
+                                                                                                (83, 'Indicateur de progression utile', '2025-04-13 10:05:00', 58, 83),
+                                                                                                (84, 'Réduction du temps de chargement', '2025-04-14 14:25:00', 59, 84),
+                                                                                                (85, 'Formulaire multi-étapes validé', '2025-04-15 12:40:00', 60, 85),
+                                                                                                (86, 'Mode démo apprécié par le client', '2025-04-16 09:35:00', 61, 86),
+                                                                                                (87, 'Accessibilité clavier vérifiée', '2025-04-17 15:15:00', 62, 87),
+                                                                                                (88, 'Rétro hebdo: points d\'amélioration', '2025-04-18 10:55:00', 63, 88),
+(89, 'Très bonne couverture e2e', '2025-04-19 08:50:00', 64, 89),
+(90, 'Ajout d\'un mode hors-ligne', '2025-04-20 16:05:00', 65, 90),
+                                                                                                (91, 'Taille police ajustée sur mobile', '2025-04-21 13:25:00', 66, 91),
+                                                                                                (92, 'Droits d\'accès vérifiés', '2025-04-22 11:10:00', 67, 92),
+(93, 'Hotfix déployé avec succès', '2025-04-23 09:45:00', 68, 93),
+(94, 'Ajouter une page changelog', '2025-04-24 15:40:00', 69, 94),
+(95, 'Les performances API sont stables', '2025-04-25 10:35:00', 70, 95),
+(96, 'Bonne gestion des pièces jointes', '2025-04-26 12:15:00', 71, 96),
+(97, 'Checklist de release suivie', '2025-04-27 09:20:00', 72, 97),
+(98, 'Nettoyage des dépendances fait', '2025-04-28 14:50:00', 73, 98),
+(99, 'A/B test concluant sur l\'onboarding', '2025-04-29 11:05:00', 74, 99),
+                                                                                                (100, 'Clôture de sprint: objectifs atteints', '2025-04-30 16:30:00', 75, 100);
