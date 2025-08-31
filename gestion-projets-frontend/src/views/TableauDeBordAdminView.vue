@@ -41,68 +41,17 @@
     <div v-else>
       <!-- KPIs -->
       <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-3" v-for="kpi in kpis" :key="kpi.label">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center gap-3">
-              <div class="rounded-circle bg-danger bg-opacity-10 p-3">
-                <i class="fas fa-users fa-2x text-danger"></i>
+              <div class="rounded-circle p-3" :class="kpi.bg">
+                <i :class="kpi.icon"></i>
               </div>
               <div>
-                <h3 class="mb-0 fw-bold">{{ stats.totalUsers }}</h3>
-                <p class="text-muted mb-0 small">{{ $t('tableauBord.admin.utilisateurs') }}</p>
-                <small class="text-success">
-                  <i class="fas fa-arrow-up me-1"></i>+{{ stats.nouveauxUtilisateurs }} ce mois
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body d-flex align-items-center gap-3">
-              <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                <i class="fas fa-project-diagram fa-2x text-primary"></i>
-              </div>
-              <div>
-                <h3 class="mb-0 fw-bold">{{ stats.totalProjects }}</h3>
-                <p class="text-muted mb-0 small">{{ $t('projets.titre') }}</p>
-                <small class="text-warning">
-                  <i class="fas fa-clock me-1"></i>{{ stats.projetsActifs }} actifs
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body d-flex align-items-center gap-3">
-              <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                <i class="fas fa-credit-card fa-2x text-success"></i>
-              </div>
-              <div>
-                <h3 class="mb-0 fw-bold">{{ stats.abonnementsActifs }}</h3>
-                <p class="text-muted mb-0 small">Abonnements actifs</p>
-                <small class="text-success">
-                  <i class="fas fa-euro-sign me-1"></i>{{ stats.revenueMensuel }}€/mois
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body d-flex align-items-center gap-3">
-              <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                <i class="fas fa-bell fa-2x text-info"></i>
-              </div>
-              <div>
-                <h3 class="mb-0 fw-bold">{{ stats.alertesSysteme }}</h3>
-                <p class="text-muted mb-0 small">Alertes système</p>
-                <small class="text-danger" v-if="stats.alertesCritiques > 0">
-                  <i class="fas fa-exclamation-triangle me-1"></i>{{ stats.alertesCritiques }} critiques
-                </small>
-                <small class="text-success" v-else>
-                  <i class="fas fa-check me-1"></i>Système stable
+                <h3 class="mb-0 fw-bold">{{ kpi.value }}</h3>
+                <p class="text-muted mb-0 small">{{ kpi.label }}</p>
+                <small v-if="kpi.sub" :class="kpi.subClass">
+                  <i :class="kpi.subIcon + ' me-1'"></i>{{ kpi.sub }}
                 </small>
               </div>
             </div>
@@ -145,9 +94,6 @@
               <h5 class="mb-0">{{ $t('tableauBord.admin.utilisateurs') }}</h5>
               <small class="text-muted">Gérer tous les utilisateurs de la plateforme</small>
             </div>
-            <button class="btn btn-danger" @click="ouvrirCreationUtilisateur">
-              <i class="fas fa-user-plus me-2"></i>Créer Utilisateur
-            </button>
           </div>
           <div class="card-body">
             <!-- Filtres -->
@@ -184,13 +130,7 @@
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                 <tr>
-                  <th>ID</th>
-                  <th>Utilisateur</th>
-                  <th>Email</th>
-                  <th>Rôle</th>
-                  <th>Inscription</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
+                  <th>ID</th><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Inscription</th><th>Statut</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -208,24 +148,9 @@
                     </div>
                   </td>
                   <td>{{ u.email }}</td>
-                  <td>
-                    <span class="badge" :class="getRoleBadgeClass(u.role)">{{ $t('roles.' + (u.role||'').toLowerCase()) }}</span>
-                  </td>
-                  <td>{{ formatDate(pickDate(u)) }}</td>
+                  <td><span class="badge" :class="getRoleBadgeClass(u.role)">{{ $t('roles.' + (u.role||'').toLowerCase()) }}</span></td>
+                  <td>{{ formatDate(u.date_inscription || u.dateInscription) }}</td>
                   <td><span class="badge bg-success">Actif</span></td>
-                  <td>
-                    <div class="btn-group" role="group">
-                      <button class="btn btn-sm btn-outline-primary" @click="modifierUtilisateur(u)" title="Modifier">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-info" @click="voirDetailsUtilisateur(u)" title="Détails">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" :disabled="u.id===utilisateur?.id" @click="supprimerUtilisateur(u.id)" title="Supprimer">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
                 </tr>
                 </tbody>
               </table>
@@ -242,7 +167,7 @@
             <div class="card border-0 shadow-sm bg-success text-white">
               <div class="card-body text-center">
                 <i class="fas fa-euro-sign fa-3x mb-3"></i>
-                <h4 class="mb-0">{{ stats.revenueMensuel }}€</h4>
+                <h4 class="mb-0">{{ formatPrix(stats.revenueMensuel) }}</h4>
                 <small>Revenus ce mois</small>
               </div>
             </div>
@@ -276,38 +201,31 @@
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                 <tr>
-                  <th>Utilisateur</th>
-                  <th>Plan</th>
-                  <th>Prix</th>
-                  <th>Début</th>
-                  <th>Fin</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
+                  <th>Utilisateur</th><th>Plan</th><th>Prix</th><th>Début</th><th>Fin</th><th>Statut</th><th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr v-for="a in abonnements" :key="a.id">
                   <td>
-                    <div>{{ getUserName(a.utilisateur_id) }}</div>
-                    <small class="text-muted">ID: {{ a.utilisateur_id }}</small>
+                    <div>{{ getUserName(a.utilisateur_id || a.userId) }}</div>
+                    <small class="text-muted">ID: {{ a.utilisateur_id || a.userId }}</small>
                   </td>
-                  <td>{{ a.nom }}</td>
-                  <td><span class="fw-bold text-success">{{ a.prix }}€</span></td>
-                  <td>{{ formatDate(a.date_debut) }}</td>
-                  <td>{{ formatDate(a.date_fin) }}</td>
-                  <td>
-                    <span class="badge" :class="a.statut === 'ACTIF' ? 'bg-success' : 'bg-danger'">{{ a.statut }}</span>
-                  </td>
+                  <td>{{ a.nom || a.plan || '—' }}</td>
+                  <td><span class="fw-bold text-success">{{ formatPrix(a.prix) }}</span></td>
+                  <td>{{ formatDate(a.date_debut || a.dateDebut) }}</td>
+                  <td>{{ formatDate(a.date_fin || a.dateFin) }}</td>
+                  <td><span class="badge" :class="(a.statut||'ACTIF')==='ACTIF' ? 'bg-success' : 'bg-danger'">{{ a.statut || 'ACTIF' }}</span></td>
                   <td>
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-warning" @click="suspendreAbonnement(a.id)" v-if="a.statut === 'ACTIF'">
-                        <i class="fas fa-pause"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-success" @click="reactiverAbonnement(a.id)" v-else>
-                        <i class="fas fa-play"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-info" @click="voirFacturesUtilisateur(a.utilisateur_id)">
+                      <button class="btn btn-sm btn-outline-info"
+                              @click="voirFacturesUtilisateur(a.utilisateur_id || a.userId)"
+                              title="Voir factures">
                         <i class="fas fa-file-invoice"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger"
+                              @click="annulerAbonnement(a.id)"
+                              title="Annuler">
+                        <i class="fas fa-times"></i>
                       </button>
                     </div>
                   </td>
@@ -352,13 +270,7 @@
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                 <tr>
-                  <th>Projet</th>
-                  <th>Chef de Projet</th>
-                  <th>Membres</th>
-                  <th>Tâches</th>
-                  <th>Statut</th>
-                  <th>Activité</th>
-                  <th>Actions</th>
+                  <th>Projet</th><th>Chef de Projet</th><th>Membres</th><th>Tâches</th><th>Statut</th><th>Créé</th><th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -372,23 +284,12 @@
                   <td>{{ getProprietaireName(p) }}</td>
                   <td>—</td>
                   <td>—</td>
-                  <td>
-                      <span class="badge" :class="getStatutBadgeClass(p.statut)">
-                        {{ $t('projets.statuts.'+(p.statut||'').toLowerCase()) }}
-                      </span>
-                  </td>
-                  <td><small class="text-muted">{{ formatDateRelative(p.date_creation || p.dateCreation) }}</small></td>
+                  <td><span class="badge" :class="getStatutBadgeClass(p.statut)">{{ p.statut }}</span></td>
+                  <td><small class="text-muted">{{ formatDate(p.date_creation || p.dateCreation) }}</small></td>
                   <td>
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-info" @click="voirProjet(p.id)" title="Voir">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning" @click="modererProjet(p)" title="Modérer">
-                        <i class="fas fa-flag"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" @click="archiverProjet(p.id)" title="Archiver">
-                        <i class="fas fa-archive"></i>
-                      </button>
+                      <button class="btn btn-sm btn-outline-info" @click="voirProjet(p.id)" title="Voir"><i class="fas fa-eye"></i></button>
+                      <button class="btn btn-sm btn-outline-danger" @click="archiverProjet(p.id)" title="Archiver"><i class="fas fa-archive"></i></button>
                     </div>
                   </td>
                 </tr>
@@ -404,9 +305,7 @@
         <div class="row g-3">
           <div class="col-md-8">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white">
-                <h5 class="mb-0">État du Système</h5>
-              </div>
+              <div class="card-header bg-white"><h5 class="mb-0">État du Système</h5></div>
               <div class="card-body">
                 <div class="row g-3">
                   <div class="col-md-6 d-flex justify-content-between"><span>Base de données</span><span class="badge bg-success">Opérationnelle</span></div>
@@ -444,7 +343,6 @@
 </template>
 
 <script>
-import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api, { userAPI, projectAPI, abonnementAPI } from '@/services/api'
 import SelecteurLangue from '@/components/SelecteurLangue.vue'
@@ -466,32 +364,41 @@ export default {
       filtreRole: '',
       filtreStatut: '',
       filtreProjetStatut: '',
-      erreurBackend: null,
-      _timer: null
+      erreurBackend: null
     }
   },
   computed: {
     utilisateur() { return useAuthStore().user },
     now() { return new Date().toLocaleString() },
     stats() {
-      const users = Array.isArray(this.utilisateurs) ? this.utilisateurs : []
-      const projs = Array.isArray(this.projets) ? this.projets : []
-      const abos = Array.isArray(this.abonnements) ? this.abonnements : []
+      const users = this.utilisateurs || []
+      const projs = this.projets || []
+      const abos = this.abonnements || []
+      const revenus = abos.filter(a => (a.statut||'ACTIF')==='ACTIF')
+        .reduce((s,a)=> s + Number(a.prix || 0), 0)
       return {
         totalUsers: users.length,
         totalProjects: projs.length,
-        nouveauxUtilisateurs: users.filter(u => this.isThisMonth(this.pickDate(u))).length,
+        nouveauxUtilisateurs: users.filter(u => this.isThisMonth(u.date_inscription || u.dateInscription)).length,
         projetsActifs: projs.filter(p => p.statut === 'ACTIF').length,
-        abonnementsActifs: abos.filter(a => a.statut === 'ACTIF').length,
-        revenueMensuel: abos.filter(a => a.statut === 'ACTIF').reduce((sum, a) => sum + (a.prix || 0), 0),
-        tauxConversion: users.length > 0 ? Math.round((abos.length / users.length) * 100) : 0,
+        abonnementsActifs: abos.filter(a => (a.statut||'ACTIF')==='ACTIF').length,
+        revenueMensuel: revenus,
+        tauxConversion: users.length ? Math.round((abos.length / users.length) * 100) : 0,
         alertesSysteme: 0,
         alertesCritiques: 0
       }
     },
+    kpis(){
+      return [
+        { label: this.$t('tableauBord.admin.utilisateurs'), value: this.stats.totalUsers, bg:'bg-danger bg-opacity-10', icon:'fas fa-users fa-2x text-danger' },
+        { label: this.$t('projets.titre'), value: this.stats.totalProjects, bg:'bg-primary bg-opacity-10', icon:'fas fa-project-diagram fa-2x text-primary' },
+        { label: 'Abonnements actifs', value: this.stats.abonnementsActifs, bg:'bg-success bg-opacity-10', icon:'fas fa-credit-card fa-2x text-success', sub: this.formatPrix(this.stats.revenueMensuel)+'/mois', subIcon:'fas fa-euro-sign', subClass:'text-success' },
+        { label: 'Alertes système', value: this.stats.alertesSysteme, bg:'bg-info bg-opacity-10', icon:'fas fa-bell fa-2x text-info', sub: this.stats.alertesCritiques>0 ? `${this.stats.alertesCritiques} critiques` : 'Système stable', subIcon: this.stats.alertesCritiques>0 ? 'fas fa-exclamation-triangle' : 'fas fa-check', subClass: this.stats.alertesCritiques>0 ? 'text-danger' : 'text-success' },
+      ]
+    },
     utilisateursFiltres() {
       const q = this.filtreUtilisateur.trim().toLowerCase()
-      let base = Array.isArray(this.utilisateurs) ? this.utilisateurs : []
+      let base = this.utilisateurs || []
       if (q) {
         base = base.filter(u =>
           (u.nom || '').toLowerCase().includes(q) ||
@@ -504,7 +411,7 @@ export default {
     },
     projetsFiltres() {
       const q = this.filtreProjet.trim().toLowerCase()
-      let base = Array.isArray(this.projets) ? this.projets : []
+      let base = this.projets || []
       if (q) {
         base = base.filter(p =>
           (p.titre || '').toLowerCase().includes(q) ||
@@ -525,19 +432,10 @@ export default {
       return
     }
     await this.chargerToutesDonnees()
-
-    // watchers pour recharger la liste utilisateur côté API (q/role/statut)
-    this.$watch(() => [this.filtreRole, this.filtreStatut], () => this.chargerUtilisateurs())
-    this.$watch(() => this.filtreUtilisateur, () => {
-      clearTimeout(this._timer)
-      this._timer = setTimeout(() => this.chargerUtilisateurs(), 300)
-    })
-  },
-  beforeUnmount() {
-    clearTimeout(this._timer)
   },
   methods: {
     tOr(k, f) { const v = this.$t(k); return v === k ? f : v },
+    formatPrix(v){ return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(Number(v||0)) },
 
     async chargerToutesDonnees() {
       this.chargementGlobal = true
@@ -555,120 +453,55 @@ export default {
         this.chargementGlobal = false
       }
     },
-
     async chargerUtilisateurs() {
       this.chargementUtilisateurs = true
       try {
-        const { data } = await userAPI.list({
-          q: this.filtreUtilisateur || '',
-          role: this.filtreRole || '',
-          statut: this.filtreStatut || '',
-          page: 0,
-          size: 200
-        })
-        this.utilisateurs = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
+        const { data } = await userAPI.getAllUsers()
+        this.utilisateurs = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : [])
       } catch (e) {
-        console.error(e)
-        this.utilisateurs = []
-      } finally {
-        this.chargementUtilisateurs = false
-      }
+        console.error(e); this.utilisateurs = []
+      } finally { this.chargementUtilisateurs = false }
     },
-
     async chargerProjets() {
       this.chargementProjets = true
       try {
         const { data } = await projectAPI.getAllProjects()
         this.projets = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : [])
       } catch (e) {
-        console.error(e)
-        this.projets = []
-      } finally {
-        this.chargementProjets = false
-      }
+        console.error(e); this.projets = []
+      } finally { this.chargementProjets = false }
     },
-
     async chargerAbonnements() {
       try {
-        const { data } = await abonnementAPI.list()
+        const { data } = await abonnementAPI.getSubscriptions()
         this.abonnements = Array.isArray(data) ? data : []
-      } catch (e) {
-        console.error(e)
-        this.abonnements = []
-      }
-    },
-
-    // Utilisateurs
-    async ouvrirCreationUtilisateur() {
-      const nom = prompt('Nom :'); if (!nom) return
-      const prenom = prompt('Prénom :'); if (!prenom) return
-      const email = prompt('Email :'); if (!email) return
-      const role = prompt('Rôle (ADMINISTRATEUR|CHEF_PROJET|MEMBRE|VISITEUR) :', 'MEMBRE') || 'MEMBRE'
-      try {
-        const { data } = await api.post('/utilisateurs', { nom, prenom, email, role })
-        this.utilisateurs.unshift(data)
-        alert('Utilisateur créé avec succès')
-      } catch (e) {
-        console.error(e)
-        alert('Erreur lors de la création')
-      }
-    },
-    modifierUtilisateur(u) { alert(`Modifier utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`) },
-    voirDetailsUtilisateur(u) { alert(`Détails utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`) },
-    async supprimerUtilisateur(id) {
-      const s = useAuthStore()
-      if (id === s.user?.id) { alert('Impossible de supprimer votre propre compte'); return }
-      if (!confirm('Confirmer la suppression de cet utilisateur ?')) return
-      try {
-        await userAPI.deleteUser(id)
-        this.utilisateurs = this.utilisateurs.filter(x => x.id !== id)
-        alert('Utilisateur supprimé avec succès')
-      } catch (e) {
-        console.error(e)
-        alert('Erreur lors de la suppression')
-      }
+      } catch (e) { console.error(e); this.abonnements = [] }
     },
 
     // Abonnements
-    async suspendreAbonnement(id) {
-      if (!confirm('Suspendre cet abonnement ?')) return
+    async annulerAbonnement(id){
+      if (!confirm('Annuler cet abonnement ?')) return
       try {
-        await abonnementAPI.updateStatut(id, 'SUSPENDU')
-        const abo = this.abonnements.find(a => a.id === id)
-        if (abo) abo.statut = 'SUSPENDU'
-        alert('Abonnement suspendu')
-      } catch (e) {
-        console.error(e)
-        alert('Erreur')
-      }
+        await abonnementAPI.cancelSubscription(id)
+        this.abonnements = this.abonnements.filter(a => a.id !== id)
+        alert('Abonnement annulé')
+      } catch (e) { console.error(e); alert('Erreur lors de l’annulation') }
     },
-    async reactiverAbonnement(id) {
-      try {
-        await abonnementAPI.updateStatut(id, 'ACTIF')
-        const abo = this.abonnements.find(a => a.id === id)
-        if (abo) abo.statut = 'ACTIF'
-        alert('Abonnement réactivé')
-      } catch (e) {
-        console.error(e)
-        alert('Erreur')
-      }
+    voirFacturesUtilisateur(userId){
+      if(!userId) return
+      this.$router.push({ path: '/factures', query: { userId } })
     },
-    voirFacturesUtilisateur(userId) { alert(`Voir factures utilisateur ${userId} (modal à implémenter)`) },
 
     // Projets
     voirProjet(id) { this.$router.push(`/projet/${id}`) },
-    modererProjet(p) { alert(`Modérer projet ${p.titre} (modal à implémenter)`) },
     async archiverProjet(id) {
       if (!confirm('Archiver ce projet ?')) return
       try {
-        await projectAPI.updateStatut(id, 'ARCHIVE')
-        const projet = this.projets.find(p => p.id === id)
-        if (projet) projet.statut = 'ARCHIVE'
+        await api.patch(`/projets/${id}`, { statut: 'ARCHIVE' })
+        const p = this.projets.find(x => x.id === id)
+        if (p) p.statut = 'ARCHIVE'
         alert('Projet archivé')
-      } catch (e) {
-        console.error(e)
-        alert('Erreur')
-      }
+      } catch (e) { console.error(e); alert('Erreur') }
     },
 
     // Utils
@@ -682,12 +515,7 @@ export default {
       return classes[role] || 'bg-secondary'
     },
     getStatutBadgeClass(s) {
-      const classes = {
-        'ACTIF': 'bg-success',
-        'TERMINE': 'bg-secondary',
-        'SUSPENDU': 'bg-warning text-dark',
-        'ARCHIVE': 'bg-dark'
-      }
+      const classes = { 'ACTIF':'bg-success','TERMINE':'bg-secondary','SUSPENDU':'bg-warning text-dark','ARCHIVE':'bg-dark' }
       return classes[s] || 'bg-secondary'
     },
     getProprietaireName(p) {
@@ -702,37 +530,25 @@ export default {
       const u = this.utilisateurs.find(x => x.id === userId)
       return u ? `${u.prenom} ${u.nom}` : `Utilisateur #${userId}`
     },
-    pickDate(obj) { return obj?.dateInscription || obj?.date_inscription || obj?.date_creation || obj?.dateCreation },
     formatDate(date) { return date ? new Date(date).toLocaleDateString('fr-FR') : '—' },
-    formatDateRelative(date) {
-      if (!date) return '—'
+    isThisMonth(date) {
+      if(!date) return false
       const now = new Date(), d = new Date(date)
-      const days = Math.floor((now - d) / (1000*60*60*24))
-      if (days === 0) return "Aujourd'hui"
-      if (days === 1) return "Hier"
-      if (days < 7) return `Il y a ${days} jours`
-      return this.formatDate(date)
+      return now.getMonth() === d.getMonth() && now.getFullYear() === d.getFullYear()
     },
-
-    seDeconnecter() {
-      const s = useAuthStore()
-      s.logout()
-      this.$router.push('/')
-    }
+    seDeconnecter() { useAuthStore().logout(); this.$router.push('/') },
+    exporterDonnees(){ alert('Export des données (à implémenter)') },
+    nettoyerLogs(){ alert('Nettoyage des logs (à implémenter)') },
+    genererRapport(){ alert('Génération du rapport (à implémenter)') }
   }
 }
 </script>
 
 <style scoped>
 .card{border:none;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
-.cursor-pointer{cursor:pointer}
-.cursor-pointer:hover{opacity:.9;transform:translateY(-2px);transition:all .2s ease}
-.text-truncate{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .nav-pills .nav-link{border-radius:8px;margin:0 2px}
 .nav-pills .nav-link.active{background:linear-gradient(135deg,#dc3545,#fd7e83)}
 .avatar{font-size:12px;font-weight:600}
-.progress{height:6px;border-radius:10px}
-.btn-group .btn{border-radius:6px;margin:0 1px}
 .table th{border-top:none;font-weight:600;color:#495057;font-size:.875rem}
 .badge{font-size:.75rem;padding:.375rem .75rem}
 </style>
