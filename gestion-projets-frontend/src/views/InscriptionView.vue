@@ -102,6 +102,22 @@
                 </div>
 
                 <div class="mb-3">
+                  <label for="langue" class="form-label">Langue préférée</label>
+                  <select
+                    class="form-select"
+                    id="langue"
+                    v-model="form.langue"
+                    :class="{ 'is-invalid': errors.langue }"
+                  >
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                  </select>
+                  <div v-if="errors.langue" class="invalid-feedback">
+                    {{ errors.langue }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
                   <label for="password" class="form-label">Mot de passe</label>
                   <div class="input-group">
                     <input
@@ -244,6 +260,7 @@ const form = reactive({
   nom: '',
   email: '',
   role: '',
+  langue: 'fr',
   motDePasse: '',
   confirmMotDePasse: '',
   acceptTerms: false,
@@ -255,6 +272,7 @@ const errors = reactive({
   nom: null,
   email: null,
   role: null,
+  langue: null,
   motDePasse: null,
   confirmMotDePasse: null,
   acceptTerms: null,
@@ -340,6 +358,7 @@ const handleInscription = async () => {
       email: form.email.toLowerCase().trim(),
       motDePasse: form.motDePasse,
       role: form.role,
+      langue: form.langue,
       // Consentements RGPD
       acceptCGU: form.acceptTerms,
       acceptPolitiqueConfidentialite: form.acceptPrivacy

@@ -1,23 +1,29 @@
-version: '3.8'
 services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: admin123
-      MYSQL_DATABASE: gestionprojets
-    ports:
-      - "3307:3306"
-
   backend:
-    build: ./gestionprojects
+    build:
+      context: ./gestionprojets
+      dockerfile: Dockerfile
+    container_name: api_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/gestionprojets?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin123
+      TZ: Europe/Brussels
     ports:
       - "8080:8080"
-    depends_on:
-      - mysql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
 
   frontend:
-    build: ./gestion-projects-frontend
-    ports:
-      - "5174:5174"
+    build:
+      context: ./gestion-projets-frontend
+      dockerfile: Dockerfile
+    container_name: web_frontend
+    environment:
+      VITE_API_TARGET: http://backend:8080
     depends_on:
       - backend
+    ports:
+      - "5174:5174"
+    restart: unless-stopped

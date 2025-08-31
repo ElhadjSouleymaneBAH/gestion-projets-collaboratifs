@@ -1,4 +1,4 @@
-// src/i18n/locales/fr.js - VERSION CORRIGÉE
+// src/i18n/locales/fr.js - VERSION COMPLÈTE CORRIGÉE
 export default {
   // NAVIGATION GLOBALE
   nav: {
@@ -36,7 +36,11 @@ export default {
     aucunResultat: 'Aucun résultat trouvé',
     erreur: 'Une erreur est survenue',
     succes: 'Opération réussie',
-    langue: 'Langue'
+    langue: 'Langue',
+    fonctionnalites: 'Fonctionnalités',
+    pretCommencer: 'Prêt à commencer ?',
+    rejoindreCollabPro: 'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs dès maintenant.',
+    droitsReserves: 'Tous droits réservés'
   },
 
   // F1: INSCRIPTION
@@ -53,7 +57,9 @@ export default {
     accepterCGU: 'J\'accepte les conditions d\'utilisation',
     creerCompte: 'Créer mon compte',
     dejaCompte: 'Vous avez déjà un compte ?',
-    seConnecter: 'Se connecter'
+    seConnecter: 'Se connecter',
+    description: 'Créer un compte utilisateur avec nom, prénom, email et mot de passe.',
+    languePreferee: 'Langue préférée'
   },
 
   // F2: CONNEXION
@@ -88,7 +94,7 @@ export default {
     dateCreation: 'Créé le',
     creePar: 'Créé par',
     statut: 'Statut',
-    description: 'Description'
+    description: 'Consulter la liste des projets publics même sans compte.'
   },
 
   // F6: GESTION PROJETS (Chef de Projet)
@@ -106,6 +112,8 @@ export default {
     supprimer: 'Supprimer le projet',
     archiver: 'Archiver',
     restaurer: 'Restaurer',
+    gestion: 'Gérer les projets',
+    descriptionGestion: 'Créer, modifier ou supprimer des projets (Chef de Projet uniquement).',
     statuts: {
       actif: 'Actif',
       suspendu: 'Suspendu',
@@ -127,6 +135,8 @@ export default {
     creer: 'Créer la tâche',
     modifier: 'Modifier la tâche',
     terminer: 'Marquer comme terminée',
+    gestion: 'Gérer les tâches',
+    descriptionGestion: 'Créer, assigner ou modifier des tâches au sein des projets.',
     statuts: {
       brouillon: 'Brouillon',
       enAttente: 'En attente de validation',
@@ -151,6 +161,8 @@ export default {
     retirer: 'Retirer du projet',
     changerRole: 'Changer le rôle',
     invitationEnvoyee: 'Invitation envoyée',
+    ajout: 'Ajouter des membres',
+    descriptionAjout: 'Inviter et gérer les membres des projets (Chef de Projet).',
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
@@ -167,7 +179,9 @@ export default {
     horsLigne: 'Hors ligne',
     tape: 'est en train d\'écrire...',
     fichier: 'Fichier',
-    partager: 'Partager'
+    partager: 'Partager',
+    tempsReel: 'Chat temps réel',
+    descriptionTempsReel: 'Discussion instantanée dans les projets pour les membres connectés.'
   },
 
   // F10: ABONNEMENTS ET PAIEMENTS
@@ -184,7 +198,9 @@ export default {
     statut: 'Statut de l\'abonnement',
     prochainPaiement: 'Prochain paiement',
     paymentSuccess: 'Paiement réussi !',
-    paymentCancel: 'Paiement annulé'
+    paymentCancel: 'Paiement annulé',
+    paiements: 'Paiements Stripe',
+    descriptionPaiements: 'Souscrire à un abonnement mensuel sécurisé via Stripe.'
   },
 
   // F11: FACTURES
@@ -197,6 +213,8 @@ export default {
     telecharger: 'Télécharger',
     generer: 'Générer la facture',
     aucuneFacture: 'Aucune facture disponible',
+    pdf: 'Factures PDF',
+    descriptionPdf: 'Génération automatique de facture PDF pour chaque paiement.',
     statuts: {
       payee: 'Payée',
       enAttente: 'En attente',

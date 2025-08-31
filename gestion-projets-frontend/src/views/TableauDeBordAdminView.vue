@@ -39,15 +39,13 @@
 
     <!-- Content -->
     <div v-else>
-      <!-- KPIs Principaux -->
+      <!-- KPIs -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center gap-3">
-              <div class="flex-shrink-0">
-                <div class="rounded-circle bg-danger bg-opacity-10 p-3">
-                  <i class="fas fa-users fa-2x text-danger"></i>
-                </div>
+              <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                <i class="fas fa-users fa-2x text-danger"></i>
               </div>
               <div>
                 <h3 class="mb-0 fw-bold">{{ stats.totalUsers }}</h3>
@@ -62,10 +60,8 @@
         <div class="col-md-3">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center gap-3">
-              <div class="flex-shrink-0">
-                <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                  <i class="fas fa-project-diagram fa-2x text-primary"></i>
-                </div>
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                <i class="fas fa-project-diagram fa-2x text-primary"></i>
               </div>
               <div>
                 <h3 class="mb-0 fw-bold">{{ stats.totalProjects }}</h3>
@@ -80,10 +76,8 @@
         <div class="col-md-3">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center gap-3">
-              <div class="flex-shrink-0">
-                <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                  <i class="fas fa-credit-card fa-2x text-success"></i>
-                </div>
+              <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                <i class="fas fa-credit-card fa-2x text-success"></i>
               </div>
               <div>
                 <h3 class="mb-0 fw-bold">{{ stats.abonnementsActifs }}</h3>
@@ -98,10 +92,8 @@
         <div class="col-md-3">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center gap-3">
-              <div class="flex-shrink-0">
-                <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                  <i class="fas fa-bell fa-2x text-info"></i>
-                </div>
+              <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                <i class="fas fa-bell fa-2x text-info"></i>
               </div>
               <div>
                 <h3 class="mb-0 fw-bold">{{ stats.alertesSysteme }}</h3>
@@ -118,7 +110,7 @@
         </div>
       </div>
 
-      <!-- Navigation Onglets -->
+      <!-- Tabs -->
       <ul class="nav nav-pills bg-light rounded p-2 mb-4">
         <li class="nav-item">
           <a class="nav-link" :class="{active:onglet==='utilisateurs'}" @click="onglet='utilisateurs'">
@@ -145,7 +137,7 @@
         </li>
       </ul>
 
-      <!-- ONGLET UTILISATEURS -->
+      <!-- UTILISATEURS -->
       <div v-if="onglet==='utilisateurs'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -181,7 +173,7 @@
               </div>
             </div>
 
-            <!-- Tableau Utilisateurs -->
+            <!-- Tableau -->
             <div v-if="chargementUtilisateurs" class="text-center py-4">
               <div class="spinner-border text-danger"></div>
             </div>
@@ -211,20 +203,16 @@
                       </div>
                       <div>
                         <div class="fw-semibold">{{ u.prenom }} {{ u.nom }}</div>
-                        <small class="text-muted">{{ u.langue?.toUpperCase() || 'FR' }}</small>
+                        <small class="text-muted">{{ (u.langue || 'fr').toUpperCase() }}</small>
                       </div>
                     </div>
                   </td>
                   <td>{{ u.email }}</td>
                   <td>
-                      <span class="badge" :class="getRoleBadgeClass(u.role)">
-                        {{ $t('roles.' + (u.role||'').toLowerCase()) }}
-                      </span>
+                    <span class="badge" :class="getRoleBadgeClass(u.role)">{{ $t('roles.' + (u.role||'').toLowerCase()) }}</span>
                   </td>
-                  <td>{{ formatDate(u.date_inscription) }}</td>
-                  <td>
-                    <span class="badge bg-success">Actif</span>
-                  </td>
+                  <td>{{ formatDate(pickDate(u)) }}</td>
+                  <td><span class="badge bg-success">Actif</span></td>
                   <td>
                     <div class="btn-group" role="group">
                       <button class="btn btn-sm btn-outline-primary" @click="modifierUtilisateur(u)" title="Modifier">
@@ -242,14 +230,14 @@
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>
 
-      <!-- ONGLET ABONNEMENTS & PAIEMENTS -->
+      <!-- ABONNEMENTS -->
       <div v-if="onglet==='abonnements'">
         <div class="row g-3 mb-4">
-          <!-- Métriques Financières -->
           <div class="col-md-4">
             <div class="card border-0 shadow-sm bg-success text-white">
               <div class="card-body text-center">
@@ -279,7 +267,6 @@
           </div>
         </div>
 
-        <!-- Tableau Abonnements -->
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
             <h5 class="mb-0">Supervision des Abonnements</h5>
@@ -309,9 +296,7 @@
                   <td>{{ formatDate(a.date_debut) }}</td>
                   <td>{{ formatDate(a.date_fin) }}</td>
                   <td>
-                      <span class="badge" :class="a.statut === 'ACTIF' ? 'bg-success' : 'bg-danger'">
-                        {{ a.statut }}
-                      </span>
+                    <span class="badge" :class="a.statut === 'ACTIF' ? 'bg-success' : 'bg-danger'">{{ a.statut }}</span>
                   </td>
                   <td>
                     <div class="btn-group">
@@ -329,12 +314,15 @@
                 </tr>
                 </tbody>
               </table>
+              <div v-if="!abonnements.length" class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Aucun abonnement trouvé
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ONGLET PROJETS -->
+      <!-- PROJETS -->
       <div v-if="onglet==='projets'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -349,6 +337,7 @@
                 <option value="ACTIF">Actifs</option>
                 <option value="TERMINE">Terminés</option>
                 <option value="SUSPENDU">Suspendus</option>
+                <option value="ARCHIVE">Archivés</option>
               </select>
             </div>
           </div>
@@ -377,27 +366,18 @@
                   <td>
                     <div>
                       <div class="fw-semibold">{{ p.titre }}</div>
-                      <small class="text-muted">{{ p.description?.substring(0, 50) }}...</small>
+                      <small class="text-muted">{{ (p.description || '').substring(0, 80) }}</small>
                     </div>
                   </td>
                   <td>{{ getProprietaireName(p) }}</td>
-                  <td>
-                    <span class="badge bg-light text-dark">{{ getMembresCount(p.id) }}</span>
-                  </td>
-                  <td>
-                    <div class="progress" style="width:80px;height:6px">
-                      <div class="progress-bar bg-success" :style="{width: getTachesProgression(p.id) + '%'}"></div>
-                    </div>
-                    <small>{{ getTachesProgression(p.id) }}%</small>
-                  </td>
+                  <td>—</td>
+                  <td>—</td>
                   <td>
                       <span class="badge" :class="getStatutBadgeClass(p.statut)">
                         {{ $t('projets.statuts.'+(p.statut||'').toLowerCase()) }}
                       </span>
                   </td>
-                  <td>
-                    <small class="text-muted">{{ formatDateRelative(p.date_creation) }}</small>
-                  </td>
+                  <td><small class="text-muted">{{ formatDateRelative(p.date_creation || p.dateCreation) }}</small></td>
                   <td>
                     <div class="btn-group">
                       <button class="btn btn-sm btn-outline-info" @click="voirProjet(p.id)" title="Voir">
@@ -419,7 +399,7 @@
         </div>
       </div>
 
-      <!-- ONGLET MAINTENANCE -->
+      <!-- MAINTENANCE -->
       <div v-if="onglet==='maintenance'">
         <div class="row g-3">
           <div class="col-md-8">
@@ -429,62 +409,28 @@
               </div>
               <div class="card-body">
                 <div class="row g-3">
-                  <div class="col-md-6">
-                    <div class="d-flex justify-content-between">
-                      <span>Base de données</span>
-                      <span class="badge bg-success">Opérationnelle</span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="d-flex justify-content-between">
-                      <span>API Spring Boot</span>
-                      <span class="badge bg-success">Opérationnelle</span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="d-flex justify-content-between">
-                      <span>Frontend Vue.js</span>
-                      <span class="badge bg-success">Opérationnelle</span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="d-flex justify-content-between">
-                      <span>Paiements Stripe</span>
-                      <span class="badge bg-success">Opérationnelle</span>
-                    </div>
-                  </div>
+                  <div class="col-md-6 d-flex justify-content-between"><span>Base de données</span><span class="badge bg-success">Opérationnelle</span></div>
+                  <div class="col-md-6 d-flex justify-content-between"><span>API Spring Boot</span><span class="badge bg-success">Opérationnelle</span></div>
+                  <div class="col-md-6 d-flex justify-content-between"><span>Frontend Vue.js</span><span class="badge bg-success">Opérationnelle</span></div>
+                  <div class="col-md-6 d-flex justify-content-between"><span>Paiements Stripe</span><span class="badge bg-success">Opérationnelle</span></div>
                 </div>
                 <hr>
                 <div class="row g-3">
-                  <div class="col-md-4">
-                    <button class="btn btn-outline-primary w-100" @click="exporterDonnees">
-                      <i class="fas fa-download me-2"></i>Exporter Données
-                    </button>
-                  </div>
-                  <div class="col-md-4">
-                    <button class="btn btn-outline-warning w-100" @click="nettoyerLogs">
-                      <i class="fas fa-broom me-2"></i>Nettoyer Logs
-                    </button>
-                  </div>
-                  <div class="col-md-4">
-                    <button class="btn btn-outline-info w-100" @click="genererRapport">
-                      <i class="fas fa-chart-bar me-2"></i>Rapport Activité
-                    </button>
-                  </div>
+                  <div class="col-md-4"><button class="btn btn-outline-primary w-100" @click="exporterDonnees"><i class="fas fa-download me-2"></i>Exporter Données</button></div>
+                  <div class="col-md-4"><button class="btn btn-outline-warning w-100" @click="nettoyerLogs"><i class="fas fa-broom me-2"></i>Nettoyer Logs</button></div>
+                  <div class="col-md-4"><button class="btn btn-outline-info w-100" @click="genererRapport"><i class="fas fa-chart-bar me-2"></i>Rapport Activité</button></div>
                 </div>
               </div>
             </div>
           </div>
           <div class="col-md-4">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white">
-                <h6 class="mb-0">Informations Système</h6>
-              </div>
+              <div class="card-header bg-white"><h6 class="mb-0">Informations Système</h6></div>
               <div class="card-body">
                 <p class="mb-2"><strong>Version:</strong> 1.0.0</p>
                 <p class="mb-2"><strong>Environnement:</strong> Production</p>
-                <p class="mb-2"><strong>Base:</strong> MySQL 8.2.0</p>
-                <p class="mb-2"><strong>Backend:</strong> Spring Boot (Java 21)</p>
+                <p class="mb-2"><strong>Base:</strong> MySQL 8.x</p>
+                <p class="mb-2"><strong>Backend:</strong> Spring Boot</p>
                 <p class="mb-2"><strong>Frontend:</strong> Vue.js 3</p>
                 <p class="mb-0"><strong>Dernière MàJ:</strong> {{ now }}</p>
               </div>
@@ -492,11 +438,13 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
 
 <script>
+import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api, { userAPI, projectAPI, abonnementAPI } from '@/services/api'
 import SelecteurLangue from '@/components/SelecteurLangue.vue'
@@ -518,7 +466,8 @@ export default {
       filtreRole: '',
       filtreStatut: '',
       filtreProjetStatut: '',
-      erreurBackend: null
+      erreurBackend: null,
+      _timer: null
     }
   },
   computed: {
@@ -528,11 +477,10 @@ export default {
       const users = Array.isArray(this.utilisateurs) ? this.utilisateurs : []
       const projs = Array.isArray(this.projets) ? this.projets : []
       const abos = Array.isArray(this.abonnements) ? this.abonnements : []
-
       return {
         totalUsers: users.length,
         totalProjects: projs.length,
-        nouveauxUtilisateurs: users.filter(u => this.isThisMonth(u.date_inscription)).length,
+        nouveauxUtilisateurs: users.filter(u => this.isThisMonth(this.pickDate(u))).length,
         projetsActifs: projs.filter(p => p.statut === 'ACTIF').length,
         abonnementsActifs: abos.filter(a => a.statut === 'ACTIF').length,
         revenueMensuel: abos.filter(a => a.statut === 'ACTIF').reduce((sum, a) => sum + (a.prix || 0), 0),
@@ -544,7 +492,6 @@ export default {
     utilisateursFiltres() {
       const q = this.filtreUtilisateur.trim().toLowerCase()
       let base = Array.isArray(this.utilisateurs) ? this.utilisateurs : []
-
       if (q) {
         base = base.filter(u =>
           (u.nom || '').toLowerCase().includes(q) ||
@@ -552,28 +499,19 @@ export default {
           (u.email || '').toLowerCase().includes(q)
         )
       }
-
-      if (this.filtreRole) {
-        base = base.filter(u => u.role === this.filtreRole)
-      }
-
+      if (this.filtreRole) base = base.filter(u => u.role === this.filtreRole)
       return base
     },
     projetsFiltres() {
       const q = this.filtreProjet.trim().toLowerCase()
       let base = Array.isArray(this.projets) ? this.projets : []
-
       if (q) {
         base = base.filter(p =>
           (p.titre || '').toLowerCase().includes(q) ||
           (p.description || '').toLowerCase().includes(q)
         )
       }
-
-      if (this.filtreProjetStatut) {
-        base = base.filter(p => p.statut === this.filtreProjetStatut)
-      }
-
+      if (this.filtreProjetStatut) base = base.filter(p => p.statut === this.filtreProjetStatut)
       return base
     }
   },
@@ -587,6 +525,16 @@ export default {
       return
     }
     await this.chargerToutesDonnees()
+
+    // watchers pour recharger la liste utilisateur côté API (q/role/statut)
+    this.$watch(() => [this.filtreRole, this.filtreStatut], () => this.chargerUtilisateurs())
+    this.$watch(() => this.filtreUtilisateur, () => {
+      clearTimeout(this._timer)
+      this._timer = setTimeout(() => this.chargerUtilisateurs(), 300)
+    })
+  },
+  beforeUnmount() {
+    clearTimeout(this._timer)
   },
   methods: {
     tOr(k, f) { const v = this.$t(k); return v === k ? f : v },
@@ -611,8 +559,14 @@ export default {
     async chargerUtilisateurs() {
       this.chargementUtilisateurs = true
       try {
-        const { data } = await userAPI.getAllUsers()
-        this.utilisateurs = Array.isArray(data) ? data : (Array.isArray(data?.content) ? data.content : [])
+        const { data } = await userAPI.list({
+          q: this.filtreUtilisateur || '',
+          role: this.filtreRole || '',
+          statut: this.filtreStatut || '',
+          page: 0,
+          size: 200
+        })
+        this.utilisateurs = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
       } catch (e) {
         console.error(e)
         this.utilisateurs = []
@@ -636,7 +590,7 @@ export default {
 
     async chargerAbonnements() {
       try {
-        const { data } = await abonnementAPI.getAllAbonnements()
+        const { data } = await abonnementAPI.list()
         this.abonnements = Array.isArray(data) ? data : []
       } catch (e) {
         console.error(e)
@@ -644,16 +598,12 @@ export default {
       }
     },
 
-    // Actions Utilisateurs
+    // Utilisateurs
     async ouvrirCreationUtilisateur() {
-      const nom = prompt('Nom :')
-      if (!nom) return
-      const prenom = prompt('Prénom :')
-      if (!prenom) return
-      const email = prompt('Email :')
-      if (!email) return
+      const nom = prompt('Nom :'); if (!nom) return
+      const prenom = prompt('Prénom :'); if (!prenom) return
+      const email = prompt('Email :'); if (!email) return
       const role = prompt('Rôle (ADMINISTRATEUR|CHEF_PROJET|MEMBRE|VISITEUR) :', 'MEMBRE') || 'MEMBRE'
-
       try {
         const { data } = await api.post('/utilisateurs', { nom, prenom, email, role })
         this.utilisateurs.unshift(data)
@@ -663,23 +613,12 @@ export default {
         alert('Erreur lors de la création')
       }
     },
-
-    modifierUtilisateur(u) {
-      alert(`Modifier utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`)
-    },
-
-    voirDetailsUtilisateur(u) {
-      alert(`Détails utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`)
-    },
-
+    modifierUtilisateur(u) { alert(`Modifier utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`) },
+    voirDetailsUtilisateur(u) { alert(`Détails utilisateur ${u.prenom} ${u.nom} (modal à implémenter)`) },
     async supprimerUtilisateur(id) {
       const s = useAuthStore()
-      if (id === s.user?.id) {
-        alert('Impossible de supprimer votre propre compte')
-        return
-      }
+      if (id === s.user?.id) { alert('Impossible de supprimer votre propre compte'); return }
       if (!confirm('Confirmer la suppression de cet utilisateur ?')) return
-
       try {
         await userAPI.deleteUser(id)
         this.utilisateurs = this.utilisateurs.filter(x => x.id !== id)
@@ -690,7 +629,7 @@ export default {
       }
     },
 
-    // Actions Abonnements
+    // Abonnements
     async suspendreAbonnement(id) {
       if (!confirm('Suspendre cet abonnement ?')) return
       try {
@@ -703,7 +642,6 @@ export default {
         alert('Erreur')
       }
     },
-
     async reactiverAbonnement(id) {
       try {
         await abonnementAPI.updateStatut(id, 'ACTIF')
@@ -715,12 +653,9 @@ export default {
         alert('Erreur')
       }
     },
+    voirFacturesUtilisateur(userId) { alert(`Voir factures utilisateur ${userId} (modal à implémenter)`) },
 
-    voirFacturesUtilisateur(userId) {
-      alert(`Voir factures utilisateur ${userId} (modal à implémenter)`)
-    },
-
-    // Actions Projets
+    // Projets
     voirProjet(id) { this.$router.push(`/projet/${id}`) },
     modererProjet(p) { alert(`Modérer projet ${p.titre} (modal à implémenter)`) },
     async archiverProjet(id) {
@@ -736,12 +671,7 @@ export default {
       }
     },
 
-    // Actions Maintenance
-    exporterDonnees() { alert('Export des données (à implémenter)') },
-    nettoyerLogs() { alert('Nettoyage des logs (à implémenter)') },
-    genererRapport() { alert('Génération du rapport (à implémenter)') },
-
-    // Utilitaires
+    // Utils
     getRoleBadgeClass(role) {
       const classes = {
         'ADMINISTRATEUR': 'bg-danger',
@@ -751,7 +681,6 @@ export default {
       }
       return classes[role] || 'bg-secondary'
     },
-
     getStatutBadgeClass(s) {
       const classes = {
         'ACTIF': 'bg-success',
@@ -761,7 +690,6 @@ export default {
       }
       return classes[s] || 'bg-secondary'
     },
-
     getProprietaireName(p) {
       if (p.proprietaire) return `${p.proprietaire.prenom} ${p.proprietaire.nom}`
       if (p.id_createur) {
@@ -770,38 +698,20 @@ export default {
       }
       return 'Inconnu'
     },
-
     getUserName(userId) {
       const u = this.utilisateurs.find(x => x.id === userId)
       return u ? `${u.prenom} ${u.nom}` : `Utilisateur #${userId}`
     },
-
-    getMembresCount(projetId) {
-      return Math.floor(Math.random() * 8) + 1 // Placeholder - à connecter à l'API
-    },
-
-    getTachesProgression(projetId) {
-      return Math.floor(Math.random() * 100) // Placeholder - à connecter à l'API
-    },
-
-    formatDate(date) {
-      return new Date(date).toLocaleDateString('fr-FR')
-    },
-
+    pickDate(obj) { return obj?.dateInscription || obj?.date_inscription || obj?.date_creation || obj?.dateCreation },
+    formatDate(date) { return date ? new Date(date).toLocaleDateString('fr-FR') : '—' },
     formatDateRelative(date) {
-      const now = new Date()
-      const diff = now - new Date(date)
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      if (!date) return '—'
+      const now = new Date(), d = new Date(date)
+      const days = Math.floor((now - d) / (1000*60*60*24))
       if (days === 0) return "Aujourd'hui"
       if (days === 1) return "Hier"
       if (days < 7) return `Il y a ${days} jours`
       return this.formatDate(date)
-    },
-
-    isThisMonth(date) {
-      const now = new Date()
-      const d = new Date(date)
-      return now.getMonth() === d.getMonth() && now.getFullYear() === d.getFullYear()
     },
 
     seDeconnecter() {
@@ -814,61 +724,15 @@ export default {
 </script>
 
 <style scoped>
-.card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.08);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.cursor-pointer:hover {
-  opacity: .9;
-  transform: translateY(-2px);
-  transition: all 0.2s ease;
-}
-
-.text-truncate {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.nav-pills .nav-link {
-  border-radius: 8px;
-  margin: 0 2px;
-}
-
-.nav-pills .nav-link.active {
-  background: linear-gradient(135deg, #dc3545, #fd7e83);
-}
-
-.avatar {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.progress {
-  height: 6px;
-  border-radius: 10px;
-}
-
-.btn-group .btn {
-  border-radius: 6px;
-  margin: 0 1px;
-}
-
-.table th {
-  border-top: none;
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.875rem;
-}
-
-.badge {
-  font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
-}
+.card{border:none;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.cursor-pointer{cursor:pointer}
+.cursor-pointer:hover{opacity:.9;transform:translateY(-2px);transition:all .2s ease}
+.text-truncate{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.nav-pills .nav-link{border-radius:8px;margin:0 2px}
+.nav-pills .nav-link.active{background:linear-gradient(135deg,#dc3545,#fd7e83)}
+.avatar{font-size:12px;font-weight:600}
+.progress{height:6px;border-radius:10px}
+.btn-group .btn{border-radius:6px;margin:0 1px}
+.table th{border-top:none;font-weight:600;color:#495057;font-size:.875rem}
+.badge{font-size:.75rem;padding:.375rem .75rem}
 </style>

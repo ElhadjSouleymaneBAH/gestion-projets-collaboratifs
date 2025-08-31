@@ -126,11 +126,12 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { authAPI } from '@/services/api.js'
 
 const router = useRouter()
+const route = useRoute()
 
 const form = reactive({
   email: '',
@@ -143,47 +144,51 @@ const success = ref(null)
 const loading = ref(false)
 const showPassword = ref(false)
 
+// Purge d'anciens tokens à l'arrivée pour éviter toute redirection fantôme
+onMounted(() => {
+  try {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  } catch {}
+})
+
 const handleConnexion = async () => {
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    const response = await authAPI.login({
+    // Backend attend { email, motDePasse }
+    const { data } = await authAPI.login({
       email: form.email,
       motDePasse: form.motDePasse
     })
 
-    const { token, user } = response.data
-
+    const { token, user } = data
     success.value = 'Connexion réussie ! Redirection...'
 
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(user))
 
+    // Redirection prioritaire vers la route demandée (query ?redirect=)
+    const backTo = route.query.redirect
+
     setTimeout(() => {
+      if (backTo) return router.push(backTo.toString())
+
       switch (user.role) {
-        case 'ADMINISTRATEUR':
-          router.push('/admin/tableau-de-bord')
-          break
-        case 'CHEF_PROJET':
-          router.push('/tableau-bord-chef-projet')
-          break
-        case 'MEMBRE':
-          router.push('/tableau-bord-membre')
-          break
-        case 'VISITEUR':
-          router.push('/projets-publics')
-          break
-        default:
-          router.push('/')
+        case 'ADMINISTRATEUR': return router.push('/admin/tableau-de-bord')
+        case 'CHEF_PROJET':    return router.push('/tableau-bord-chef-projet')
+        case 'MEMBRE':         return router.push('/tableau-bord-membre')
+        case 'VISITEUR':       return router.push('/projets-publics')
+        default:               return router.push('/')
       }
-    }, 1500)
+    }, 600)
 
   } catch (err) {
-    if (err.response?.status === 401) {
+    if (err?.response?.status === 401) {
       error.value = 'Email ou mot de passe incorrect.'
-    } else if (err.response?.data?.message) {
+    } else if (err?.response?.data?.message) {
       error.value = err.response.data.message
     } else {
       error.value = 'Erreur de connexion. Veuillez réessayer.'
@@ -225,9 +230,7 @@ const handleConnexion = async () => {
   color: white;
 }
 
-.text-collabpro {
-  color: #007bff;
-}
+.text-collabpro { color: #007bff; }
 
 .form-control:focus {
   border-color: #007bff;

@@ -1,4 +1,4 @@
-// src/i18n/locales/en.js - VERSION CORRIGÉE
+// src/i18n/locales/en.js - VERSION COMPLÈTE CORRIGÉE
 export default {
   // GLOBAL NAVIGATION
   nav: {
@@ -36,7 +36,11 @@ export default {
     aucunResultat: 'No results found',
     erreur: 'An error occurred',
     succes: 'Operation successful',
-    langue: 'Language'
+    langue: 'Language',
+    fonctionnalites: 'Features',
+    pretCommencer: 'Ready to get started?',
+    rejoindreCollabPro: 'Join CollabPro and start managing your collaborative projects now.',
+    droitsReserves: 'All rights reserved'
   },
 
   // F1: REGISTRATION
@@ -53,7 +57,9 @@ export default {
     accepterCGU: 'I accept the terms of service',
     creerCompte: 'Create my account',
     dejaCompte: 'Already have an account?',
-    seConnecter: 'Sign in'
+    seConnecter: 'Sign in',
+    description: 'Create user account with name, email and password.',
+    languePreferee: 'Preferred Language'
   },
 
   // F2: LOGIN
@@ -88,7 +94,7 @@ export default {
     dateCreation: 'Created on',
     creePar: 'Created by',
     statut: 'Status',
-    description: 'Description'
+    description: 'View list of public projects even without account.'
   },
 
   // F6: PROJECT MANAGEMENT
@@ -106,6 +112,8 @@ export default {
     supprimer: 'Delete project',
     archiver: 'Archive',
     restaurer: 'Restore',
+    gestion: 'Manage Projects',
+    descriptionGestion: 'Create, edit or delete projects (Project Manager only).',
     statuts: {
       actif: 'Active',
       suspendu: 'Suspended',
@@ -127,6 +135,8 @@ export default {
     creer: 'Create task',
     modifier: 'Edit task',
     terminer: 'Mark as completed',
+    gestion: 'Manage Tasks',
+    descriptionGestion: 'Create, assign or modify tasks within projects.',
     statuts: {
       brouillon: 'Draft',
       enAttente: 'Pending validation',
@@ -151,6 +161,8 @@ export default {
     retirer: 'Remove from project',
     changerRole: 'Change role',
     invitationEnvoyee: 'Invitation sent',
+    ajout: 'Add Members',
+    descriptionAjout: 'Invite and manage project members (Project Manager).',
     roles: {
       membre: 'Member',
       moderateur: 'Moderator',
@@ -164,10 +176,12 @@ export default {
     ecrireMessage: 'Write a message...',
     envoyer: 'Send',
     enLigne: 'Online',
-    horsLigne: 'Offline', // ✅ CORRIGÉ : majuscule L pour cohérence
+    horsLigne: 'Offline',
     tape: 'is typing...',
     fichier: 'File',
-    partager: 'Share'
+    partager: 'Share',
+    tempsReel: 'Real-time Chat',
+    descriptionTempsReel: 'Real-time chat in projects for connected members.'
   },
 
   // F10: SUBSCRIPTIONS AND PAYMENTS
@@ -184,7 +198,9 @@ export default {
     statut: 'Subscription status',
     prochainPaiement: 'Next payment',
     paymentSuccess: 'Payment successful!',
-    paymentCancel: 'Payment cancelled'
+    paymentCancel: 'Payment cancelled',
+    paiements: 'Stripe Payments',
+    descriptionPaiements: 'Subscribe to secure monthly subscription via Stripe.'
   },
 
   // F11: INVOICES
@@ -197,6 +213,8 @@ export default {
     telecharger: 'Download',
     generer: 'Generate invoice',
     aucuneFacture: 'No invoices available',
+    pdf: 'PDF Invoices',
+    descriptionPdf: 'Automatic PDF invoice generation for each payment.',
     statuts: {
       payee: 'Paid',
       enAttente: 'Pending',
