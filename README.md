@@ -4,7 +4,7 @@ CollabPro est une application web développée dans le cadre du TFE 2025. Elle p
 
 ## Stack technique
 - Vue.js 3 + Axios (frontend)
-- Spring Boot + MySQL (backend)
+- Spring Boot + PhpMyAdmin via Wampserver (backend)
 - Stripe pour les paiements
 - Bootstrap 5 pour le design
 
