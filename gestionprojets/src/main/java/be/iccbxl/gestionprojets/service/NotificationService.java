@@ -35,28 +35,38 @@ public class NotificationService {
     // ============================================================================
 
     /**
-     * Créer une nouvelle notification (méthode principale)
+     * Créer une notification (F13) - Version simplifiée pour F12
+     *
+     * Conforme au cahier des charges :
+     * "Permet d'envoyer et de recevoir des notifications automatiques
+     *  lors des actions dans les projets (création de tâches, commentaires, modifications)"
+     *
+     * @param utilisateurId ID du destinataire
+     * @param message Contenu de la notification
+     * @return Notification créée
      */
     public Notification creerNotification(Long utilisateurId, String message) {
-        log.debug("Création notification pour utilisateur {} : {}", utilisateurId, message);
+        log.debug("[F13] Création notification pour utilisateur {} : {}", utilisateurId, message);
 
-        // Validation similaire à UtilisateurService
+        // Validation du message
         if (message == null || message.trim().isEmpty()) {
             throw new RuntimeException("Le message de notification est obligatoire");
         }
 
-        Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findById(utilisateurId);
-        if (utilisateurOpt.isEmpty()) {
-            throw new RuntimeException("Utilisateur non trouvé avec l'ID : " + utilisateurId);
-        }
+        // Vérification de l'existence de l'utilisateur
+        Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + utilisateurId));
 
+        // Création de la notification
         Notification notification = new Notification();
         notification.setMessage(message);
-        notification.setUtilisateur(utilisateurOpt.get());
+        notification.setUtilisateur(utilisateur);
         notification.setDate(LocalDateTime.now());
         notification.setLu(false);
 
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        log.info("[F13] ✅ Notification {} créée pour utilisateur {}", saved.getId(), utilisateurId);
+        return saved;
     }
 
     /**
@@ -173,7 +183,6 @@ public class NotificationService {
 
     /**
      * Notification de bienvenue (F1 - S'inscrire)
-     * Pattern similaire à UtilisateurService.inscrire()
      */
     public Notification creerNotificationBienvenue(Long utilisateurId) {
         log.debug("Création notification bienvenue pour utilisateur {}", utilisateurId);
@@ -186,7 +195,6 @@ public class NotificationService {
 
     /**
      * Notifications pour les projets (F6, F7, F8)
-     * Pattern similaire aux méthodes métier de UtilisateurService
      */
     public void notifierNouveauProjet(Long chefProjetId, String nomProjet) {
         String message = String.format("Votre projet '%s' a été créé avec succès !", nomProjet);
@@ -205,7 +213,6 @@ public class NotificationService {
 
     /**
      * Notifications de paiement (F10, F11)
-     * Pattern similaire aux méthodes de promotion dans UtilisateurService
      */
     public void notifierPaiementAbonnement(Long chefProjetId, String statut, Double montant) {
         String message;
@@ -226,12 +233,11 @@ public class NotificationService {
     }
 
     // ============================================================================
-    // MÉTHODES DE VÉRIFICATION (pattern UtilisateurService)
+    // MÉTHODES DE VÉRIFICATION
     // ============================================================================
 
     /**
      * Vérifier si une notification appartient à un utilisateur
-     * Pattern similaire aux vérifications dans UtilisateurService
      */
     @Transactional(readOnly = true)
     public boolean appartientAUtilisateur(Long notificationId, Long utilisateurId) {
@@ -244,7 +250,6 @@ public class NotificationService {
 
     /**
      * Vérifier si l'utilisateur a des notifications non lues
-     * Pattern similaire à UtilisateurService.existeParEmail()
      */
     @Transactional(readOnly = true)
     public boolean hasNotificationsNonLues(Long utilisateurId) {
@@ -256,12 +261,11 @@ public class NotificationService {
     }
 
     // ============================================================================
-    // MÉTHODES ADMINISTRATEUR (pattern UtilisateurService)
+    // MÉTHODES ADMINISTRATEUR
     // ============================================================================
 
     /**
      * Obtenir toutes les notifications (Admin)
-     * Pattern identique à UtilisateurService.obtenirTous()
      */
     @Transactional(readOnly = true)
     public List<Notification> obtenirToutes() {
@@ -270,14 +274,12 @@ public class NotificationService {
 
     /**
      * Nettoyer les anciennes notifications (maintenance)
-     * Pattern de maintenance comme dans votre architecture
      */
     @Transactional
     public int nettoyerAnciennesNotifications(int jours) {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(jours);
         log.info("Nettoyage des notifications antérieures au {}", cutoffDate);
 
-        // Implementation simple sans méthode repository complexe
         List<Notification> anciennes = notificationRepository.findAll().stream()
                 .filter(n -> n.getDate().isBefore(cutoffDate))
                 .toList();

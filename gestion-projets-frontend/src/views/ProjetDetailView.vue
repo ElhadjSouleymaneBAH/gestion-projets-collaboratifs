@@ -45,7 +45,7 @@
 
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-secondary">
-                    {{ $t(`roles.${m.role || 'MEMBRE'}`) }}
+                    {{ $t(`roles.${(m.role || 'membre').toLowerCase()}`) }}
                   </span>
                   <button
                     v-if="peutSupprimerMembre(m)"
