@@ -1,32 +1,65 @@
-// src/services/facture.service.js
-import api from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
+import api, { factureAPI as base } from './api'
+import i18n from '@/i18n'
 
-function normalizeFacture(f) {
-  const toDate = (d) => (d ? new Date(d) : null)
-  const emission = toDate(f.dateEmission)
-  const periode = emission
-    ? `${String(emission.getMonth() + 1).padStart(2, '0')}/${emission.getFullYear()}`
-    : ''
+const ERROR_CODES = {
+  LOAD_FACTURES_FAILED: 'factures.errors.loadFailed',
+  DOWNLOAD_PDF_FAILED: 'factures.errors.downloadFailed',
+  EMAIL_NOT_AVAILABLE: 'factures.errors.emailNotAvailable',
+}
 
-  return {
-    ...f,
-    montantHT: f.montantHT,
-    tva: f.tva,
-    montantTTC: (Number(f.montantHT) || 0) + (Number(f.tva) || 0),
-    periode,
+const SUCCESS_MESSAGES = {
+  FACTURES_LOADED: 'factures.success.loaded',
+  PDF_DOWNLOADED: 'factures.success.pdfDownloaded',
+}
+
+const normalize = (f) => {
+  const d = f?.dateEmission ? new Date(f.dateEmission) : null
+  const periode = d ? `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}` : ''
+  return { ...f, montantTTC: (Number(f.montantHT) || 0) + (Number(f.tva) || 0), periode }
+}
+
+/**
+ * Récupère la langue active de manière robuste
+ */
+const getActiveLanguage = () => {
+  try {
+    // 1. localStorage avec la clé 'langue'
+    const storedLang = localStorage.getItem('langue')
+    if (storedLang && (storedLang === 'fr' || storedLang === 'en')) {
+      return storedLang
+    }
+
+    // 2. i18n (Composition API)
+    if (i18n?.global?.locale?.value) {
+      return i18n.global.locale.value
+    }
+
+    // 3. i18n (Legacy API )
+    if (i18n?.locale) {
+      return i18n.locale
+    }
+
+    // 4. Langue du navigateur
+    const browserLang = navigator.language?.split('-')[0]
+    if (browserLang === 'en' || browserLang === 'fr') {
+      return browserLang
+    }
+  } catch (error) {
+    console.warn('Erreur récupération langue:', error)
   }
+
+  // 5. Défaut français
+  return 'fr'
 }
 
 export default {
   async getFactures() {
     try {
-      const store = useAuthStore()
-      const role = store.user?.role
-      const url = role === 'ADMINISTRATEUR' ? '/factures/toutes' : '/factures/mes-factures'
-      const { data } = await api.get(url)
+      const user = JSON.parse(localStorage.getItem('user') || 'null')
+      const isAdmin = user?.role === 'ADMINISTRATEUR'
+      const { data } = isAdmin ? await base.getToutesAdmin() : await base.getMesFactures()
+      const list = Array.isArray(data) ? data.map(normalize) : []
 
-      const list = Array.isArray(data) ? data.map(normalizeFacture) : []
       return {
         success: true,
         data: {
@@ -35,41 +68,45 @@ export default {
           totalPages: 1,
           totalElements: list.length,
         },
+        messageKey: SUCCESS_MESSAGES.FACTURES_LOADED,
       }
     } catch (e) {
       console.error('facture.service.getFactures error:', e)
-      return { success: false, message: 'Erreur lors du chargement des factures' }
+      return { success: false, errorCode: ERROR_CODES.LOAD_FACTURES_FAILED }
     }
   },
 
   async telechargerPDF(id) {
     try {
-      const response = await api.get(`/factures/telecharger/${id}`, {
-        responseType: 'blob',
-      })
-      const disp = response.headers['content-disposition'] || ''
-      const match = /filename="?([^"]+)"?/.exec(disp)
-      const filename = match?.[1] || `facture_${id}.pdf`
+      const langue = getActiveLanguage()
 
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
+      const res = await base.telechargerPDF(id, langue)
+
+      const disp = res.headers?.['content-disposition'] || ''
+      const match = /filename="?([^"]+)"?/.exec(disp)
+      const file = match?.[1] || `facture_${id}.pdf`
+
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = filename
+      a.download = file
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      a.remove()
+      URL.revokeObjectURL(url)
 
-      return { success: true }
+      return { success: true, messageKey: SUCCESS_MESSAGES.PDF_DOWNLOADED }
     } catch (e) {
       console.error('facture.service.telechargerPDF error:', e)
-      return { success: false, message: 'Erreur téléchargement PDF' }
+      return { success: false, errorCode: ERROR_CODES.DOWNLOAD_PDF_FAILED }
     }
   },
 
   async envoyerParEmail() {
-    // pas encore d’endpoint côté backend
-    return { success: false, message: "Fonction non disponible côté backend" }
+    return { success: false, errorCode: ERROR_CODES.EMAIL_NOT_AVAILABLE }
   },
+
+  ERROR_CODES,
+  SUCCESS_MESSAGES,
 }

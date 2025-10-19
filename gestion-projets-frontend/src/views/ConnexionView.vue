@@ -9,8 +9,8 @@
               <!-- Logo et titre -->
               <div class="text-center mb-4">
                 <img src="/logo-collabpro.png" alt="CollabPro" class="auth-logo mb-3">
-                <h3 class="fw-bold text-collabpro">Se connecter</h3>
-                <p class="text-muted">Accédez à votre espace CollabPro</p>
+                <h3 class="fw-bold text-collabpro">{{ $t('connexion.titre') }}</h3>
+                <p class="text-muted">{{ $t('auth.accederEspace') }}</p>
               </div>
 
               <!-- Messages d'erreur -->
@@ -30,7 +30,7 @@
               <!-- Formulaire de connexion -->
               <form @submit.prevent="handleConnexion">
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
+                  <label for="email" class="form-label">{{ $t('connexion.email') }}</label>
                   <input
                     type="email"
                     class="form-control"
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="password" class="form-label">Mot de passe</label>
+                  <label for="password" class="form-label">{{ $t('connexion.motDePasse') }}</label>
                   <div class="input-group">
                     <input
                       :type="showPassword ? 'text' : 'password'"
@@ -70,7 +70,7 @@
                     v-model="form.remember"
                   >
                   <label class="form-check-label" for="remember">
-                    Se souvenir de moi
+                    {{ $t('auth.seSouvenirDeMoi') }}
                   </label>
                 </div>
 
@@ -80,7 +80,7 @@
                   :disabled="loading"
                 >
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ loading ? 'Connexion...' : 'Se connecter' }}
+                  {{ loading ? $t('auth.connexionEnCours') : $t('auth.seConnecterBtn') }}
                 </button>
 
                 <div class="text-center">
@@ -88,7 +88,7 @@
                     to="/mot-de-passe-oublie"
                     class="text-decoration-none text-muted"
                   >
-                    Mot de passe oublié ?
+                    {{ $t('connexion.motDePasseOublie') }}
                   </router-link>
                 </div>
               </form>
@@ -97,12 +97,12 @@
               <hr class="my-4">
               <div class="text-center">
                 <p class="text-muted mb-0">
-                  Pas encore de compte ?
+                  {{ $t('connexion.pasDeCompte') }}
                   <router-link
                     to="/inscription"
                     class="text-collabpro text-decoration-none fw-bold"
                   >
-                    S'inscrire
+                    {{ $t('connexion.sInscrire') }}
                   </router-link>
                 </p>
               </div>
@@ -116,7 +116,7 @@
               class="text-muted text-decoration-none"
             >
               <i class="fas fa-arrow-left me-2"></i>
-              Retour à l'accueil
+              {{ $t('auth.retourAccueil') }}
             </router-link>
           </div>
         </div>
@@ -128,10 +128,12 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { authAPI } from '@/services/api.js'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 const form = reactive({
   email: '',
@@ -165,7 +167,7 @@ const handleConnexion = async () => {
     })
 
     const { token, user } = data
-    success.value = 'Connexion réussie ! Redirection...'
+    success.value = t('validation.connexionReussie')
 
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(user))
@@ -187,11 +189,11 @@ const handleConnexion = async () => {
 
   } catch (err) {
     if (err?.response?.status === 401) {
-      error.value = 'Email ou mot de passe incorrect.'
+      error.value = t('validation.emailMotDePasseIncorrect')
     } else if (err?.response?.data?.message) {
       error.value = err.response.data.message
     } else {
-      error.value = 'Erreur de connexion. Veuillez réessayer.'
+      error.value = t('validation.erreurConnexion')
     }
   } finally {
     loading.value = false

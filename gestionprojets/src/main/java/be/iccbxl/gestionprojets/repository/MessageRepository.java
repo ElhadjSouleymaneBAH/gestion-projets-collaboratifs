@@ -20,70 +20,100 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-    /**
-     * Trouver tous les messages d'un projet, triés par date d'envoi
-     * Utilisé pour F9 : Afficher l'historique du chat
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId ORDER BY m.dateEnvoi ASC")
+    /** Historique du chat d’un projet (asc) — avec JOIN FETCH pour éviter lazy init */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.utilisateur u
+           JOIN FETCH m.projet p
+           WHERE p.id = :projetId
+           ORDER BY m.dateEnvoi ASC
+           """)
     List<Message> findByProjetIdOrderByDateEnvoiAsc(@Param("projetId") Long projetId);
 
-    /**
-     * Trouver les derniers messages d'un projet
-     * Utilisé pour F9 : Chat avec pagination
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId ORDER BY m.dateEnvoi DESC")
+    /** Derniers messages d’un projet (desc) — avec JOIN FETCH */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.utilisateur u
+           JOIN FETCH m.projet p
+           WHERE p.id = :projetId
+           ORDER BY m.dateEnvoi DESC
+           """)
     List<Message> findByProjetIdOrderByDateEnvoiDesc(@Param("projetId") Long projetId);
 
-    /**
-     * Trouver les messages par utilisateur
-     * Utilisé pour le profil utilisateur
-     */
-    List<Message> findByUtilisateurIdOrderByDateEnvoiDesc(Long utilisateurId);
+    /** Messages par utilisateur (desc) */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.projet p
+           WHERE m.utilisateur.id = :utilisateurId
+           ORDER BY m.dateEnvoi DESC
+           """)
+    List<Message> findByUtilisateurIdOrderByDateEnvoiDesc(@Param("utilisateurId") Long utilisateurId);
 
-    /**
-     * Trouver les messages par type (avec enum)
-     * Utilisé pour filtrer les messages système/notifications
-     */
-    List<Message> findByTypeOrderByDateEnvoiDesc(TypeMessage type);
+    /** Messages par type */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.projet p
+           JOIN FETCH m.utilisateur u
+           WHERE m.type = :type
+           ORDER BY m.dateEnvoi DESC
+           """)
+    List<Message> findByTypeOrderByDateEnvoiDesc(@Param("type") TypeMessage type);
 
-    /**
-     * Trouver les messages non lus d'un projet
-     * Utilisé pour F9 : Notifications de messages non lus
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId AND m.statut != 'LU' ORDER BY m.dateEnvoi DESC")
+    /** Non lus d’un projet */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.utilisateur u
+           WHERE m.projet.id = :projetId AND m.statut <> 'LU'
+           ORDER BY m.dateEnvoi DESC
+           """)
     List<Message> findMessagesNonLusByProjet(@Param("projetId") Long projetId);
 
-    /**
-     * Trouver les messages récents d'un projet (depuis une date)
-     * Utilisé pour F9 : Activité récente
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId AND m.dateEnvoi >= :depuis ORDER BY m.dateEnvoi DESC")
-    List<Message> findMessagesRecentsByProjet(@Param("projetId") Long projetId, @Param("depuis") LocalDateTime depuis);
+    /** Récents d’un projet depuis une date */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.utilisateur u
+           JOIN FETCH m.projet p
+           WHERE p.id = :projetId AND m.dateEnvoi >= :depuis
+           ORDER BY m.dateEnvoi DESC
+           """)
+    List<Message> findMessagesRecentsByProjet(@Param("projetId") Long projetId,
+                                              @Param("depuis") LocalDateTime depuis);
 
-    /**
-     * Compter les messages d'un projet
-     * Statistiques pour l'interface
-     */
+    /** Compter messages d’un projet */
     Long countByProjetId(Long projetId);
 
-    /**
-     * Compter les messages non lus d'un projet pour un utilisateur
-     * Utilisé pour les badges de notification
-     */
-    @Query("SELECT COUNT(m) FROM Message m WHERE m.projet.id = :projetId AND m.statut != 'LU' AND m.utilisateur.id != :utilisateurId")
-    Long countMessagesNonLusByProjetAndNotUtilisateur(@Param("projetId") Long projetId, @Param("utilisateurId") Long utilisateurId);
+    /** Compter non lus d’un projet pour un utilisateur */
+    @Query("""
+           SELECT COUNT(m)
+           FROM Message m
+           WHERE m.projet.id = :projetId AND m.statut <> 'LU' AND m.utilisateur.id <> :utilisateurId
+           """)
+    Long countMessagesNonLusByProjetAndNotUtilisateur(@Param("projetId") Long projetId,
+                                                      @Param("utilisateurId") Long utilisateurId);
 
-    /**
-     * Trouver les messages par projet et type (avec enum)
-     * Utilisé pour filtrer les notifications ou messages système
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id = :projetId AND m.type = :type ORDER BY m.dateEnvoi DESC")
-    List<Message> findByProjetIdAndTypeOrderByDateEnvoiDesc(@Param("projetId") Long projetId, @Param("type") TypeMessage type);
+    /** Par projet et type */
+    @Query("""
+           SELECT m
+           FROM Message m
+           JOIN FETCH m.utilisateur u
+           WHERE m.projet.id = :projetId AND m.type = :type
+           ORDER BY m.dateEnvoi DESC
+           """)
+    List<Message> findByProjetIdAndTypeOrderByDateEnvoiDesc(@Param("projetId") Long projetId,
+                                                            @Param("type") TypeMessage type);
 
-    /**
-     * Trouver les derniers messages de tous les projets d'un utilisateur
-     * Utilisé pour le tableau de bord utilisateur
-     */
-    @Query("SELECT m FROM Message m WHERE m.projet.id IN :projetIds ORDER BY m.dateEnvoi DESC")
+    /** Derniers messages sur une liste de projets (dashboard) */
+    @Query("""
+           SELECT m
+           FROM Message m
+           WHERE m.projet.id IN :projetIds
+           ORDER BY m.dateEnvoi DESC
+           """)
     List<Message> findLatestMessagesByProjetIds(@Param("projetIds") List<Long> projetIds);
 }

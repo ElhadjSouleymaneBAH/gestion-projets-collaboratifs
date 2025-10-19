@@ -4,11 +4,15 @@ import be.iccbxl.gestionprojets.model.Facture;
 import be.iccbxl.gestionprojets.model.Transaction;
 import be.iccbxl.gestionprojets.repository.FactureRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -23,6 +27,21 @@ import java.util.Optional;
 public class FactureService {
 
     private final FactureRepository factureRepository;
+
+    @Value("${app.entreprise.nom:CollabPro Solutions}")
+    private String entrepriseNom;
+
+    @Value("${app.entreprise.adresse:Avenue de l'Innovation 123}")
+    private String entrepriseAdresse;
+
+    @Value("${app.entreprise.ville:1000 Bruxelles, Belgique}")
+    private String entrepriseVille;
+
+    @Value("${app.entreprise.email:contact@collabpro.be}")
+    private String entrepriseEmail;
+
+    @Value("${app.entreprise.tva:BE0123.456.789}")
+    private String entrepriseTva;
 
     /**
      * F11 : Générer une facture automatiquement après paiement
@@ -42,8 +61,83 @@ public class FactureService {
         facture.setDateEmission(LocalDate.now());
         facture.setDateEcheance(LocalDate.now().plusDays(30));
         facture.setStatut("GENEREE");
+        facture.setPeriode(genererPeriodeFacturation());
 
         return factureRepository.save(facture);
+    }
+
+    /**
+     * NOUVEAU : Récupérer les données complètes pour affichage PDF
+     */
+    public Map<String, Object> getDonneesFacturePDF(Long factureId) {
+        Optional<Facture> factureOpt = findByIdWithJoins(factureId);
+        if (factureOpt.isEmpty()) {
+            throw new IllegalArgumentException("Facture non trouvée : " + factureId);
+        }
+
+        Facture facture = factureOpt.get();
+        Map<String, Object> donnees = new HashMap<>();
+
+        // En-tête facture
+        donnees.put("factureId", facture.getId());
+        donnees.put("numeroFacture", facture.getNumeroFacture());
+        donnees.put("dateEmission", formatDate(facture.getDateEmission()));
+        donnees.put("dateEcheance", formatDate(facture.getDateEcheance()));
+        donnees.put("statut", facture.getStatut());
+        donnees.put("periode", facture.getPeriode());
+
+        // Montants
+        Double montantHT = facture.getMontantHT() != null ? facture.getMontantHT() : 0.0;
+        Double tva = facture.getTva() != null ? facture.getTva() : 0.0;
+        Double montantTTC = montantHT + tva;
+        donnees.put("montantHT", montantHT);
+        donnees.put("tva", tva);
+        donnees.put("montantTTC", montantTTC);
+        donnees.put("tauxTva", 21.0);
+        donnees.put("description", "Abonnement Premium CollabPro - Mensuel");
+
+        // Entreprise
+        donnees.put("entrepriseNom", entrepriseNom);
+        donnees.put("entrepriseAdresse", entrepriseAdresse);
+        donnees.put("entrepriseVille", entrepriseVille);
+        donnees.put("entrepriseEmail", entrepriseEmail);
+        donnees.put("entrepriseTva", entrepriseTva);
+        donnees.put("logoPath", "/logo-collabpro.png");
+
+        // Client
+        if (facture.getTransaction() != null && facture.getTransaction().getUtilisateur() != null) {
+            var utilisateur = facture.getTransaction().getUtilisateur();
+            donnees.put("clientNom",
+                    (utilisateur.getPrenom() != null ? utilisateur.getPrenom() : "") + " " +
+                            (utilisateur.getNom() != null ? utilisateur.getNom() : ""));
+            donnees.put("clientEmail", utilisateur.getEmail());
+            //  Adresse issue du profil utilisateur
+            donnees.put("clientAdresse",
+                    utilisateur.getAdresse() != null ? utilisateur.getAdresse() : "");
+            donnees.put("transactionId", facture.getTransaction().getId());
+        } else {
+            donnees.put("clientNom", "");
+            donnees.put("clientEmail", "");
+            donnees.put("clientAdresse", "");
+        }
+
+        return donnees;
+    }
+
+    /**
+     * Générer la période de facturation
+     */
+    private String genererPeriodeFacturation() {
+        LocalDate maintenant = LocalDate.now();
+        return maintenant.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+    }
+
+    /**
+     * Formater une date
+     */
+    private String formatDate(LocalDate date) {
+        if (date == null) return "";
+        return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
     /**
@@ -52,6 +146,14 @@ public class FactureService {
     @Transactional(readOnly = true)
     public Optional<Facture> findById(Long id) {
         return factureRepository.findById(id);
+    }
+
+    /**
+     * Récupérer une facture par ID avec fetch-join (transaction + utilisateur)
+     */
+    @Transactional(readOnly = true)
+    public Optional<Facture> findByIdWithJoins(Long id) {
+        return factureRepository.findByIdWithTransactionAndUser(id);
     }
 
     /**
@@ -75,7 +177,7 @@ public class FactureService {
      */
     @Transactional(readOnly = true)
     public List<Facture> getFacturesParStatut(String statut) {
-        return factureRepository.findByStatut(statut);
+        return factureRepository.findByStatutWithJoins(statut);
     }
 
     /**
@@ -108,6 +210,6 @@ public class FactureService {
      */
     @Transactional(readOnly = true)
     public List<Facture> findAll() {
-        return factureRepository.findAll();
+        return factureRepository.findAllWithTransactionAndUser();
     }
 }

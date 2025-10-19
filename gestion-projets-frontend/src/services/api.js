@@ -1,169 +1,225 @@
 import axios from 'axios'
 
-/** Base URL : proxy Vite => /api ; sinon mets VITE_API_URL=http://localhost:8080 */
-const API_BASE = import.meta.env.VITE_API_URL || '/api'
+/* ============================================
+   ENDPOINTS
+============================================ */
+export const endpoints = {
+  auth: '/api/auth',
+  users: '/api/utilisateurs',
+  stripe: '/api/stripe',
+  abonnements: '/api/abonnements',
+  factures: '/api/factures',
+  projects: '/api/projets',
+  tasks: '/api/taches',
+  messages: '/api/messages',
+  notifications: '/api/notifications',
+  commentaires: '/api/commentaires',
+  transactions: '/api/transactions',
+}
 
+/* ============================================
+   BASE URL via .env
+============================================ */
+const RAW_BASE = import.meta.env?.VITE_API_URL ?? ''
+const API_BASE = (RAW_BASE === '/api' ? '' : RAW_BASE).replace(/\/$/, '')
+
+/* ============================================
+   Client axios
+============================================ */
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 })
 
-/** Bearer automatique */
+/* utils */
+const shortLang = (v) =>
+  String(v || '').toLowerCase().startsWith('fr') ? 'fr' : 'en'
+const cleanId = (id) => (id == null ? id : String(id).split(':')[0])
+
+/* --------- Auth: bearer auto + langue --------- */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  const storedLang = localStorage.getItem('lang') || navigator.language || 'fr'
+  config.headers['Accept-Language'] = shortLang(storedLang)
   return config
 })
 
-/** 401 global */
+/* --------- 401 global --------- */
 api.interceptors.response.use(
-    (res) => res,
-    (error) => {
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        window.location.href = '/connexion'
-      }
-      return Promise.reject(error)
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/connexion'
     }
+    return Promise.reject(error)
+  }
 )
 
 /* ===================== AUTH ===================== */
 export const authAPI = {
-  login: (credentials) => api.post('/auth/connexion', credentials),
-  register: (userData) => api.post('/utilisateurs/inscription', userData),
+  login: (credentials) => api.post(`${endpoints.auth}/connexion`, credentials),
+  register: (userData) => api.post(`${endpoints.auth}/inscription`, userData),
+  forgotPassword: (emailData) =>
+    api.post(`${endpoints.auth}/mot-de-passe-oublie`, emailData),
   logout: () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
   },
 }
 
-/* ===================== PROJETS ===================== */
-export const projectAPI = {
-  getAllProjects: () => api.get('/projets'),
-  getPublicProjects: () => api.get('/projets/publics'),
-  create: (projectData) => api.post('/projets', projectData),
-  getProjectById: (id) => api.get(`/projets/${id}`),
-  getProjectsByUser: (userId) => api.get(`/projets/utilisateur/${userId}`),
-  updateProject: (id, projectData) => api.put(`/projets/${id}`, projectData),
-  /** Admin (ARCHIVE, ACTIF, etc.) */
-  updateStatut: (id, statut) => api.patch(`/projets/${id}/statut`, { statut }),
-  deleteProject: (id) => api.delete(`/projets/${id}`),
-  addMember: (projectId, userId, role = 'MEMBRE') =>
-      api.post(`/projets/${projectId}/membres/${userId}`, { role }),
-  removeMember: (projectId, userId) => api.delete(`/projets/${projectId}/membres/${userId}`),
-  getProjectMembers: (projectId) => api.get(`/projets/${projectId}/membres`),
-}
-
-/* ===================== TÂCHES ===================== */
-export const taskAPI = {
-  getAllTasks: () => api.get('/taches'),
-  create: (taskData) => api.post('/taches', taskData),
-  updateTask: (id, taskData) => api.put(`/taches/${id}`, taskData),
-  updateStatus: (id, statut) => api.patch(`/taches/${id}/statut`, { statut }),
-  deleteTask: (id) => api.delete(`/taches/${id}`),
-  getTasksByProject: (projectId) => api.get(`/taches/projet/${projectId}`),
-  getTasksByUser: (userId) => api.get(`/taches/utilisateur/${userId}`),
-  getTasksByChefProjet: (chefProjetId) => api.get(`/taches/chefprojet/${chefProjetId}`),
-}
-
-/* ===================== UTILISATEURS ===================== */
-export const userAPI = {
-  /** liste + recherche + pagination */
-  list: ({ q = '', role = '', statut = '', page = 0, size = 20 } = {}) =>
-      api.get('/utilisateurs', { params: { q, role, statut, page, size } }),
-
-  getUserById: (id) => api.get(`/utilisateurs/${id}`),
-  create: (payload) => api.post('/utilisateurs', payload),
-  updateProfile: (id, userData) => api.put(`/utilisateurs/${id}`, userData),
-  deleteUser: (id) => api.delete(`/utilisateurs/${id}`),
-
-  /** alias simple si besoin */
-  search: (q = '', page = 0, size = 20) => api.get('/utilisateurs', { params: { q, page, size } }),
-}
-
-/* ===================== MESSAGES ===================== */
-export const messagesAPI = {
-  getByProjet: (projetId) => api.get(`/messages/projet/${projetId}`),
-  send: (projetId, messageData) => api.post(`/messages/projet/${projetId}`, messageData),
-}
-
-/* ===================== NOTIFICATIONS ===================== */
-export const notificationAPI = {
-  getUserNotifications: (userId) => api.get(`/notifications/utilisateur/${userId}`),
-  markAsRead: (notificationId) => api.patch(`/notifications/${notificationId}/lue`),
-  markAllAsRead: (userId) => api.patch(`/notifications/utilisateur/${userId}/toutes-lues`),
-  deleteNotification: (id) => api.delete(`/notifications/${id}`),
+/* ===================== PAIEMENTS (Stripe) ===================== */
+export const stripeAPI = {
+  createPaymentIntent: () =>
+    api.post(`${endpoints.stripe}/create-payment-intent`),
+  confirmPayment: (sessionId) =>
+    api.post(`${endpoints.stripe}/confirm-payment`, { sessionId }),
+  listMyTransactions: () => api.get(`${endpoints.stripe}/mes-transactions`),
 }
 
 /* ===================== ABONNEMENTS ===================== */
 export const abonnementAPI = {
-  /** Admin */
-  list: () => api.get('/abonnements'),
-  updateStatut: (id, statut) => api.patch(`/abonnements/${id}/statut`, { statut }),
-
-  /** Utilisateur */
-  getCurrentSubscription: (userId) => api.get(`/abonnements/utilisateur/${userId}/actuel`),
-  subscribe: (subscriptionData) => api.post('/abonnements', subscriptionData),
-  cancelSubscription: (subscriptionId) => api.delete(`/abonnements/${subscriptionId}`),
-  updatePaymentMethod: (subscriptionId, paymentData) =>
-      api.put(`/abonnements/${subscriptionId}/paiement`, paymentData),
-  getSubscriptionHistory: (userId) => api.get(`/abonnements/utilisateur/${userId}/historique`),
-  getByUserId: (userId) => api.get(`/abonnements/utilisateur/${userId}`),
+  list: () => api.get(`${endpoints.abonnements}`),
+  souscrire: (abonnementData) =>
+    api.post(`${endpoints.abonnements}/souscrire`, abonnementData),
+  getByUserId: (userId) =>
+    api.get(`${endpoints.abonnements}/utilisateur/${cleanId(userId)}`),
+  renew: (id) => api.put(`${endpoints.abonnements}/${cleanId(id)}/renouveler`),
+  cancel: (id) => api.put(`${endpoints.abonnements}/${cleanId(id)}/resilier`),
 }
 
 /* ===================== FACTURES ===================== */
 export const factureAPI = {
-  getFactures: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString()
-    return api.get(`/factures${queryString ? `?${queryString}` : ''}`)
-  },
-  getFactureById: (id) => api.get(`/factures/${id}`),
-  downloadPDF: (id) =>
-      api
-          .get(`/factures/${id}/pdf`, {
-            responseType: 'blob',
-            headers: { Accept: 'application/pdf' },
-          })
-          .then((response) => {
-            const url = window.URL.createObjectURL(new Blob([response.data]))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', `facture_${id}.pdf`)
-            document.body.appendChild(link)
-            link.click()
-            link.remove()
-            window.URL.revokeObjectURL(url)
-            return { success: true }
-          })
-          .catch((error) => {
-            console.error('Erreur téléchargement PDF:', error)
-            return { success: false, message: error.message }
-          }),
-  sendByEmail: (id, emailData) => api.post(`/factures/${id}/email`, emailData),
-  regenerateFacture: (id) => api.post(`/factures/${id}/regenerer`),
+  getAllAdmin: (params) => api.get(`${endpoints.factures}`, { params }),
+  getMesFactures: () => api.get(`${endpoints.factures}/mes-factures`),
+  getToutes: (params) => api.get(`${endpoints.factures}/toutes`, { params }),
+  telechargerPDF: (id, langue = 'fr') =>
+    api.get(`${endpoints.factures}/${cleanId(id)}/telecharger`, {
+      params: { langue, _t: Date.now() },
+      responseType: 'blob',
+      headers: { 'Accept-Language': shortLang(langue) },
+    }),
+  getDonneesPDF: (id) => api.get(`${endpoints.factures}/${cleanId(id)}/pdf-data`),
 }
 
-/* ===================== STATS ===================== */
-export const statsAPI = {
-  getDashboardStats: (userId) => api.get(`/statistiques/dashboard/${userId}`),
-  getProjectStats: (projectId) => api.get(`/statistiques/projet/${projectId}`),
-  getUserActivity: (userId) => api.get(`/statistiques/activite/${userId}`),
-  getSystemStats: () => api.get('/statistiques/systeme'),
+/* ===================== PROJETS ===================== */
+export const projectAPI = {
+  list: () => api.get(endpoints.projects),
+  getAll: () => api.get(endpoints.projects),
+  getPublics: () => api.get(`${endpoints.projects}/publics`),
+  create: (payload) => api.post(endpoints.projects, payload),
+  byId: (id) => api.get(`${endpoints.projects}/${cleanId(id)}`),
+  byUser: (userId) =>
+    api.get(`${endpoints.projects}/utilisateur/${cleanId(userId)}`),
+  update: (id, payload) =>
+    api.put(`${endpoints.projects}/${cleanId(id)}`, payload),
+  delete: (id) => api.delete(`${endpoints.projects}/${cleanId(id)}`),
+  addMember: (projectId, userId, role = 'MEMBRE') =>
+    api.post(
+      `${endpoints.projects}/${cleanId(projectId)}/membres/${cleanId(userId)}`,
+      { role }
+    ),
+  removeMember: (projectId, userId) =>
+    api.delete(
+      `${endpoints.projects}/${cleanId(projectId)}/membres/${cleanId(userId)}`
+    ),
+  getStatuses: () => api.get(`${endpoints.projects}/statuts`),
+  getProjectMembers: (projectId) =>
+    api.get(`${endpoints.projects}/${cleanId(projectId)}/membres`),
 }
 
-/* ===================== UPLOAD ===================== */
-export const uploadAPI = {
-  uploadFile: (file, type = 'document') => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('type', type)
-    return api.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-  },
-  deleteFile: (fileId) => api.delete(`/upload/${fileId}`),
-  getFileUrl: (fileId) => `${api.defaults.baseURL}/upload/${fileId}`,
+/* ===================== TÂCHES ===================== */
+export const taskAPI = {
+  list: () => api.get(endpoints.tasks),
+  create: (payload) => api.post(endpoints.tasks, payload),
+  update: (id, payload) => api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
+  updateStatus: (id, statut) =>
+    api.put(`${endpoints.tasks}/${cleanId(id)}/statut`, { statut }),
+  delete: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
+  byUser: (userId) =>
+    api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
+  byChefProjet: (userId) =>
+    api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
+  byProjet: (projetId) =>
+    api.get(`${endpoints.tasks}/projet/${cleanId(projetId)}`),
+  getStatuses: () => api.get(`${endpoints.tasks}/statuts`),
+  getPriorities: () => api.get(`${endpoints.tasks}/priorites`),
+  deleteTask: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
+
+  // ADMIN F7 - Voir toutes les tâches (maintenance plateforme + annulation)
+  getAllAdmin: () => api.get(`${endpoints.tasks}/admin/all`),
+
+  // ADMIN F7 - Annuler une tâche à tout moment (CDC explicite)
+  annulerParAdmin: (id) => api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
+}
+
+/* ===================== UTILISATEURS ===================== */
+export const userAPI = {
+  list: ({ q = '', role = '', statut = '', page = 0, size = 20 } = {}) =>
+    api.get(endpoints.users, { params: { q, role, statut, page, size } }),
+  create: (payload) => api.post(endpoints.users, payload),
+  updateProfile: (id, payload) =>
+    api.put(`${endpoints.users}/${cleanId(id)}`, payload),
+  search: (email) => api.get(`${endpoints.users}/search`, { params: { email } }),
+  updateRole: (id, role) =>
+    api.put(`${endpoints.users}/${cleanId(id)}/role`, { role }),
+  getById: (id) => api.get(`${endpoints.users}/${cleanId(id)}`),
+}
+
+/* ===================== MESSAGES ===================== */
+export const messagesAPI = {
+  list: () => api.get(endpoints.messages),
+  byProjet: (projectId) =>
+    api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
+  send: (payload) => api.post(endpoints.messages, payload),
+  markAsRead: (id) => api.put(`${endpoints.messages}/${cleanId(id)}/lu`),
+  getByProjet: (projectId) =>
+    api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
+  sendMessage: (payload) => api.post(endpoints.messages, payload),
+}
+
+/* ===================== NOTIFICATIONS ===================== */
+export const notificationAPI = {
+  list: (userId) =>
+    api.get(`${endpoints.notifications}/user/${cleanId(userId)}`),
+  markAsRead: (id, userId) =>
+    api.put(`${endpoints.notifications}/${cleanId(id)}/read`, null, {
+      params: { userId: cleanId(userId) },
+    }),
+  markAllAsRead: (userId) =>
+    api.put(`${endpoints.notifications}/user/${cleanId(userId)}/mark-all-read`),
+  countUnread: (userId) =>
+    api.get(`${endpoints.notifications}/user/${cleanId(userId)}/count`),
+  delete: (id, userId) =>
+    api.delete(`${endpoints.notifications}/${cleanId(id)}`, {
+      params: { userId: cleanId(userId) },
+    }),
+  getNotifications: (userId) =>
+    api.get(`${endpoints.notifications}/user/${cleanId(userId)}`),
+  deleteNotification: (id, userId) =>
+    api.delete(`${endpoints.notifications}/${cleanId(id)}`, {
+      params: userId ? { userId: cleanId(userId) } : undefined,
+    }),
+}
+
+/* ===================== COMMENTAIRES ===================== */
+export const commentaireAPI = {
+  list: () => api.get(endpoints.commentaires),
+  byTache: (tacheId) =>
+    api.get(`${endpoints.commentaires}/tache/${cleanId(tacheId)}`),
+  create: (payload) => api.post(endpoints.commentaires, payload),
+  update: (id, payload) =>
+    api.put(`${endpoints.commentaires}/${cleanId(id)}`, payload),
+  delete: (id) => api.delete(`${endpoints.commentaires}/${cleanId(id)}`),
+}
+
+/* ===================== TRANSACTIONS ===================== */
+export const transactionAPI = {
+  getAllAdmin: () => api.get(`${endpoints.transactions}/admin/all`),
+  getById: (id) => api.get(`${endpoints.transactions}/${cleanId(id)}`),
+  listMine: () => api.get(`${endpoints.stripe}/mes-transactions`),
 }
 
 export default api

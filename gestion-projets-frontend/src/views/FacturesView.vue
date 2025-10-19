@@ -5,10 +5,7 @@
       <div class="page-header">
         <div class="row align-items-center">
           <div class="col-md-6">
-            <h1 class="page-title">
-              <i class="fas fa-file-invoice-dollar me-3"></i>
-              {{ $t('factures.mesFactures') }}
-            </h1>
+            <h1 class="page-title">{{ $t('factures.mesFactures') }}</h1>
             <p class="page-subtitle">{{ $t('factures.gestionFactures') }}</p>
           </div>
           <div class="col-md-6 text-end">
@@ -138,7 +135,7 @@
                 </div>
               </div>
 
-              <!-- Actions carte -->
+              <!-- Actions -->
               <div class="facture-card-actions">
                 <button
                   @click="voirFacture(facture)"
@@ -156,16 +153,6 @@
                 >
                   <span v-if="actionsEnCours[facture.id]?.pdf" class="spinner-border spinner-border-sm me-2"></span>
                   <i v-else class="fas fa-download me-2"></i>{{ $t('factures.telecharger') }}
-                </button>
-
-                <button
-                  @click="envoyerParEmail(facture)"
-                  class="btn btn-info btn-sm"
-                  :disabled="actionsEnCours[facture.id]?.email"
-                  :title="$t('factures.envoyerEmail')"
-                >
-                  <span v-if="actionsEnCours[facture.id]?.email" class="spinner-border spinner-border-sm me-2"></span>
-                  <i v-else class="fas fa-envelope me-2"></i>{{ $t('factures.envoyer') }}
                 </button>
               </div>
             </div>
@@ -239,7 +226,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import { factureService } from '@/services/api'
+import { factureAPI } from '@/services/api'
 import Facture from '@/components/Facture.vue'
 
 export default {
@@ -249,7 +236,12 @@ export default {
     const { t, locale } = useI18n()
     const route = useRoute()
 
-    // États
+    // 🇫🇷/🇬🇧 : plus robuste (gère fr, fr-BE, vide, null)
+    const shortLang = (val) => {
+      const v = String(val || '').toLowerCase()
+      return v.startsWith('fr') ? 'fr' : 'en'
+    }
+
     const factures = ref([])
     const chargement = ref(false)
     const filtreStatut = ref('')
@@ -268,19 +260,17 @@ export default {
     const statistiques = reactive({ total: 0, montantTotal: 0 })
     const message = reactive({ texte: '', type: '' })
 
-    // années filtre (auto)
     const anneesDisponibles = computed(() => {
       const anneeCourante = new Date().getFullYear()
       return [anneeCourante, anneeCourante - 1, anneeCourante - 2]
     })
 
-    // Normalisation facture (snake_case/camelCase)
+    // Normalisation
     const normalize = (f) => {
-      // valeurs numériques
       const n = (v) => (v == null ? 0 : Number(v))
       const montantHT = n(f.montant_ht ?? f.montantHT)
       const tva = n(f.tva)
-      const montantTTC = n(f.montant_ttc ?? f.montantTTC ?? (montantHT + tva))
+      const montantTTC = n(f.montant_ttc ?? f.montantTTC ?? montantHT + tva)
 
       return {
         id: f.id,
@@ -292,22 +282,17 @@ export default {
         montantHT,
         tva,
         montantTTC,
-        tauxTva: f.taux_tva ?? f.tauxTva ?? null,
+        tauxTva: f.taux_tva ?? f.tauxTva ?? 21,
         statut: f.statut ?? 'GENEREE',
         utilisateurId: f.utilisateur_id ?? f.utilisateurId ?? null
       }
     }
 
-    // Computed
+    // Filtrage local
     const facturesFiltrees = computed(() => {
       let arr = factures.value
-
-      if (filtreStatut.value) {
-        arr = arr.filter(f => f.statut === filtreStatut.value)
-      }
-      if (filtrePeriode.value) {
-        arr = arr.filter(f => (f.periode || '').includes(filtrePeriode.value))
-      }
+      if (filtreStatut.value) arr = arr.filter(f => f.statut === filtreStatut.value)
+      if (filtrePeriode.value) arr = arr.filter(f => (f.periode || '').includes(filtrePeriode.value))
       if (rechercheTexte.value) {
         const r = rechercheTexte.value.toLowerCase()
         arr = arr.filter(f =>
@@ -319,6 +304,7 @@ export default {
       return arr
     })
 
+    // Pages visibles
     const pagesVisibles = computed(() => {
       const pages = []
       const start = Math.max(0, pagination.currentPage - 2)
@@ -337,12 +323,18 @@ export default {
     const formatDate = (dateString) => {
       if (!dateString) return '—'
       const d = new Date(dateString)
-      return d.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      const lang = shortLang(locale.value)
+      return d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      })
     }
 
     const formatMontant = (montant) => {
       const n = Number.isFinite(montant) ? montant : 0
-      return new Intl.NumberFormat(locale.value === 'fr' ? 'fr-FR' : 'en-US', { style: 'currency', currency: 'EUR' }).format(n)
+      const lang = shortLang(locale.value)
+      return new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-US', {
+        style: 'currency', currency: 'EUR'
+      }).format(n)
     }
 
     const getStatutClass = (statut) => {
@@ -350,36 +342,39 @@ export default {
       return map[statut] || 'badge bg-secondary'
     }
 
-    // API
+    // Chargement principal (+ fallback non-admin)
     const chargerFactures = async (page = 0) => {
       try {
         chargement.value = true
         message.texte = ''
 
         const userId = route.query.userId || route.query.utilisateurId || undefined
-
         const params = {
           page,
           size: pagination.pageSize,
           statut: filtreStatut.value || undefined,
           periode: filtrePeriode.value || undefined,
           recherche: rechercheTexte.value || undefined,
-          userId,                 // côté backend: vous lisez l'un des deux
-          utilisateurId: userId,  // (selon votre contrôleur)
+          userId,
+          utilisateurId: userId,
         }
 
-        const resp = await factureService.getFactures(params)
-        const data = resp.data
+        let data = null
+        try {
+          const resp = await factureAPI.getAllAdmin(params)
+          data = resp?.data
+        } catch (err) {
+          const resp2 = await factureAPI.getMesFactures()
+          data = resp2?.data
+        }
 
         const list = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : [])
         factures.value = list.map(normalize)
 
-        // pagination Spring (si présente)
         pagination.currentPage = Number.isFinite(data?.number) ? data.number : 0
         pagination.totalPages = Number.isFinite(data?.totalPages) ? data.totalPages : 1
         pagination.totalElements = Number.isFinite(data?.totalElements) ? data.totalElements : factures.value.length
 
-        // stats
         statistiques.total = factures.value.length
         statistiques.montantTotal = factures.value.reduce((s, f) => s + (Number(f.montantTTC) || 0), 0)
       } catch (e) {
@@ -405,36 +400,48 @@ export default {
       if (page >= 0 && page < pagination.totalPages) chargerFactures(page)
     }
 
-    // Actions
     const voirFacture = (facture) => { factureSelectionnee.value = facture }
     const fermerModalFacture = () => { factureSelectionnee.value = null }
 
+    // Téléchargement PDF (langue + filename RFC5987)
     const telechargerPDF = async (facture) => {
       try {
         actionsEnCours.value[facture.id] = { ...(actionsEnCours.value[facture.id] || {}), pdf: true }
-        const result = await factureService.telechargerPDF(facture.id) // retourne { success: true/false } dans ton api.js
-        if (result?.success) afficherMessage(t('factures.telechargementReussi'), 'success')
-        else throw new Error(result?.message || 'Erreur téléchargement')
+
+        const lang = shortLang(locale.value)
+        const response = await factureAPI.telechargerPDF(facture.id, lang)
+        if (!response || !response.data) throw new Error('Aucune donnée reçue')
+
+        // Nom de fichier : gère filename*=UTF-8''... et filename="..."
+        let filename = `${facture.numeroFacture || 'facture'}-${lang}.pdf`
+        const cd = response.headers?.['content-disposition'] || response.headers?.get?.('content-disposition')
+        if (cd) {
+          // RFC5987
+          const mStar = cd.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)
+          const mBasic = cd.match(/filename\s*=\s*"([^"]+)"|filename\s*=\s*([^;]+)/i)
+          if (mStar && mStar[1]) {
+            try { filename = decodeURIComponent(mStar[1]) } catch { filename = mStar[1] }
+          } else if (mBasic && (mBasic[1] || mBasic[2])) {
+            filename = (mBasic[1] || mBasic[2]).trim().replace(/^"|"$/g, '')
+          }
+        }
+
+        const blob = new Blob([response.data], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        afficherMessage(t('factures.telechargementReussi'), 'success')
       } catch (e) {
-        console.error(e)
+        console.error('Erreur téléchargement PDF:', e)
         afficherMessage(t('factures.erreurTelechargement'), 'error')
       } finally {
-        actionsEnCours.value[facture.id].pdf = false
-      }
-    }
-
-    const envoyerParEmail = async (facture) => {
-      try {
-        actionsEnCours.value[facture.id] = { ...(actionsEnCours.value[facture.id] || {}), email: true }
-        // factureService.envoyerParEmail => axios.post (pas de {success}) => on check le status
-        const resp = await factureService.envoyerParEmail(facture.id, {})
-        if (resp?.status >= 200 && resp?.status < 300) afficherMessage(t('factures.emailEnvoye'), 'success')
-        else throw new Error('Erreur envoi email')
-      } catch (e) {
-        console.error(e)
-        afficherMessage(t('factures.erreurEmail'), 'error')
-      } finally {
-        actionsEnCours.value[facture.id].email = false
+        if (actionsEnCours.value[facture.id]) actionsEnCours.value[facture.id].pdf = false
       }
     }
 
@@ -446,36 +453,33 @@ export default {
     }
 
     const onActionTerminee = (event) => {
-      if (event?.success) afficherMessage(t(`factures.${event.type}Reussi`), 'success')
-      else afficherMessage(t(`factures.erreur${(event?.type || '').charAt(0).toUpperCase() + (event?.type || '').slice(1)}`), 'error')
+      const successKeyMap = { telechargement: 'telechargementReussi' }
+      const errorKeyMap = { telechargement: 'erreurTelechargement' }
+      if (event?.success) afficherMessage(t(`factures.${successKeyMap[event?.type] || 'succes'}`), 'success')
+      else afficherMessage(t(`factures.${errorKeyMap[event?.type] || 'erreurChargement'}`), 'error')
     }
 
-    // Watch route userId -> recharger
+    // Watchers & montage
     watch(() => route.query.userId, () => chargerFactures(0))
     watch(() => [filtreStatut.value, filtrePeriode.value], () => chargerFactures(0))
-
     onMounted(() => { chargerFactures() })
 
     return {
-      // états
       factures, chargement, filtreStatut, filtrePeriode, rechercheTexte,
       factureSelectionnee, actionsEnCours, pagination, statistiques, message,
-
-      // computed
       facturesFiltrees, pagesVisibles, anneesDisponibles,
-
-      // méthodes
       formatDate, formatMontant, getStatutClass,
       chargerFactures, rechercherFactures, changerPage,
-      voirFacture, fermerModalFacture, telechargerPDF, envoyerParEmail,
+      voirFacture, fermerModalFacture, telechargerPDF,
       reinitialiserFiltres, onActionTerminee
     }
   }
 }
 </script>
 
+
+
 <style scoped>
-/* --- styles identiques à ta base, conservés --- */
 .factures-view{min-height:100vh;background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);padding:20px 0}
 .page-header{background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-bottom:30px}
 .page-title{color:#2c3e50;font-weight:700;margin-bottom:8px}
@@ -510,7 +514,6 @@ export default {
 .btn-sm{padding:8px 12px;font-size:.85rem;border-radius:6px;font-weight:500;transition:.2s;flex:1;min-width:0}
 .btn-primary{background:linear-gradient(135deg,#007bff 0%,#0056b3 100%);border:none}
 .btn-success{background:linear-gradient(135deg,#28a745 0%,#1e7e34 100%);border:none}
-.btn-info{background:linear-gradient(135deg,#17a2b8 0%,#117a8b 100%);border:none}
 .btn:hover:not(:disabled){transform:translateY(-1px)}
 .pagination-section{background:#fff;padding:25px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-top:30px}
 .pagination{margin-bottom:0}

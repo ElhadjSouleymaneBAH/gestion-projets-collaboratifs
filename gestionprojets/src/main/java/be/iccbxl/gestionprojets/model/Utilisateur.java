@@ -2,6 +2,7 @@ package be.iccbxl.gestionprojets.model;
 
 import be.iccbxl.gestionprojets.enums.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,6 @@ import java.util.HashSet;
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @since 2025-07-27
  */
 @Entity
 @Table(name = "utilisateurs")
@@ -121,6 +121,7 @@ public class Utilisateur {
      * @see Projet#membres
      */
     @ManyToMany(mappedBy = "membres", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Projet> projets = new HashSet<>();
 
     /**
@@ -131,6 +132,7 @@ public class Utilisateur {
      * @see Tache#assigneA
      */
     @OneToMany(mappedBy = "assigneA", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Tache> tachesAssignees = new HashSet<>();
 
     /**
@@ -141,6 +143,7 @@ public class Utilisateur {
      * @see Transaction
      */
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Transaction> transactions = new HashSet<>();
 
     /**
@@ -151,6 +154,7 @@ public class Utilisateur {
      * @see Abonnement
      */
     @OneToOne(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Abonnement abonnement;
 
     /**
@@ -161,6 +165,7 @@ public class Utilisateur {
      * @see Notification
      */
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Notification> notifications = new HashSet<>();
 
     /**
@@ -171,6 +176,7 @@ public class Utilisateur {
      * @see Commentaire#auteur
      */
     @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Commentaire> commentaires = new HashSet<>();
 
     // MÉTHODES DU CYCLE DE VIE JPA

@@ -1,459 +1,140 @@
+import api from './api.js'
+
+/**
+ * Service pour la gestion des membres de projets - Frontend Vue.js
+ * Implémente la fonctionnalité F8 du cahier des charges
+ * Version simplifiée sans méthodes inutilisées
+ *
+ * @author Équipe Développement
+ * @version 1.0
+ */
 class MembreService {
-  constructor() {
-    this.baseURL = 'http://localhost:8080/api'
 
-    //  AUTO-DÉTECTION MODE
-    this.modeLocal = this.detecterModeLocal()
-
-    console.log(`MembreService initialisé en mode: ${this.modeLocal ? 'LOCAL (démo)' : 'API (production)'}`)
+  /**
+   * Codes d'erreur standardisés pour l'internationalisation
+   */
+  static ERROR_CODES = {
+    SEARCH_USERS_FAILED: 'erreurs.rechercheUtilisateurs',
+    ADD_MEMBER_FAILED: 'erreurs.ajoutMembre',
+    REMOVE_MEMBER_FAILED: 'erreurs.suppressionMembre',
+    GET_MEMBERS_FAILED: 'erreurs.chargementMembres',
+    VALIDATION_ERROR: 'erreurs.validation',
+    CONFLICT: 'erreurs.conflit'
   }
 
-  //  DÉTECTION AUTOMATIQUE DU MODE
-  detecterModeLocal() {
-    // Méthode 1: Variable d'environnement
-    if (process.env.NODE_ENV === 'production') {
-      return false // Production = API
-    }
-
-    // Méthode 2: Hostname
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return false // Domaine réel = API
-    }
-
-    // Méthode 3: Port de développement
-    if (window.location.port !== '5173' && window.location.port !== '3000') {
-      return false // Port production = API
-    }
-
-    // Méthode 4: Présence de flag debug
-    if (localStorage.getItem('FORCE_API_MODE') === 'true') {
-      return false // Force API mode
-    }
-
-    return true // Par défaut: mode local pour démo
-  }
-
-  //  RECHERCHER UTILISATEURS (F8)
-  async rechercherUtilisateurs(query) {
-    if (this.modeLocal) {
-      return this.rechercherUtilisateursLocal(query)
-    } else {
-      return this.rechercherUtilisateursAPI(query)
-    }
-  }
-
-  //  VERSION LOCALE - Pour démo
-  rechercherUtilisateursLocal(query) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const tousLesUtilisateurs = this.obtenirTousLesUtilisateurs()
-        const terme = query.toLowerCase()
-
-        const resultats = tousLesUtilisateurs.filter(user => {
-          const nomComplet = `${user.prenom} ${user.nom}`.toLowerCase()
-          const emailMatch = user.email.toLowerCase().includes(terme)
-          const nomMatch = nomComplet.includes(terme)
-
-          // F8 : STRICTEMENT MEMBRE et CHEF_PROJET selon cahier des charges
-          const roleValide = user.role === 'MEMBRE' || user.role === 'CHEF_PROJET'
-
-          return (emailMatch || nomMatch) && roleValide
-        })
-
-        resolve(resultats.slice(0, 10))
-      }, 300)
-    })
-  }
-
-  //  VERSION API - Pour production
-  async rechercherUtilisateursAPI(query) {
+  /**
+   * F8 : Ajouter un membre à un projet
+   * Contrainte : Chef de projet uniquement, utilisateur doit exister sur la plateforme
+   *
+   * @param {number} projetId - ID du projet
+   * @param {number} utilisateurId - ID de l'utilisateur à ajouter
+   * @param {Object} options - Options d'ajout
+   * @param {string} options.role - Rôle du membre (défaut: 'MEMBRE')
+   * @returns {Promise<Object>} Résultat de l'ajout
+   */
+  async ajouterMembreProjet(projetId, utilisateurId, options = {}) {
     try {
-      const axios = (await import('axios')).default
-      const response = await axios.get(`${this.baseURL}/utilisateurs/recherche`, {
-        params: { q: query, page: 0, size: 10 },
-        headers: this.getAuthHeaders()
+      const { role = 'MEMBRE' } = options
+
+      console.log('[F8] Adding member', utilisateurId, 'to project', projetId)
+
+      const response = await api.post(`/projets/${projetId}/membres/${utilisateurId}`, {
+        role
       })
 
-      // F8 : Filtrer STRICTEMENT selon cahier des charges
-      return response.data.filter(user =>
-        user.role === 'MEMBRE' || user.role === 'CHEF_PROJET'
-      )
+      console.log('[F8] Member added successfully')
+      return {
+        success: true,
+        data: response.data
+      }
     } catch (error) {
-      console.error('Erreur API recherche utilisateurs:', error)
-      this.gererErreur(error)
-      throw error
-    }
-  }
+      console.error('[F8] Add member error:', error.response?.data || error.message)
 
-  //  OBTENIR TOUS LES UTILISATEURS (système hybride)
-  obtenirTousLesUtilisateurs() {
-    // Utilisateurs figés selon VOS DONNÉES SQL EXACTES
-    const utilisateursFiges = [
-      { id: 1, email: 'emilie.durand0@icc.be', prenom: 'Émilie', nom: 'Durand', role: 'CHEF_PROJET' },
-      { id: 7, email: 'sarah.fournier6@icc.be', prenom: 'Sarah', nom: 'Fournier', role: 'MEMBRE' },
-      { id: 8, email: 'hugo.giraud7@icc.be', prenom: 'Hugo', nom: 'Giraud', role: 'MEMBRE' },
-      { id: 24, email: 'nathan.garcia23@icc.be', prenom: 'Nathan', nom: 'Garcia', role: 'VISITEUR' },
-      { id: 51, email: 'emilie.durand50@icc.be', prenom: 'Émilie', nom: 'Durand', role: 'ADMINISTRATEUR' }
-    ]
-
-    // Nouveaux utilisateurs dynamiques
-    const nouveauxUtilisateurs = JSON.parse(localStorage.getItem('nouveauxUtilisateurs')) || []
-
-    return [...utilisateursFiges, ...nouveauxUtilisateurs]
-  }
-
-  //  RÉCUPÉRER MEMBRES D'UN PROJET
-  async getMembresProjets(projetId) {
-    if (this.modeLocal) {
-      return this.getMembresProjetsLocal(projetId)
-    } else {
-      return this.getMembresProjetsAPI(projetId)
-    }
-  }
-
-  getMembresProjetsLocal(projetId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const membresProjet = JSON.parse(localStorage.getItem(`membres_projet_${projetId}`)) || []
-        resolve(membresProjet)
-      }, 200)
-    })
-  }
-
-  async getMembresProjetsAPI(projetId) {
-    try {
-      const axios = (await import('axios')).default
-      const response = await axios.get(`${this.baseURL}/projets/${projetId}/membres`, {
-        headers: this.getAuthHeaders()
-      })
-      return response.data
-    } catch (error) {
-      this.gererErreur(error)
-      throw error
-    }
-  }
-
-  // AJOUTER MEMBRE AU PROJET (F8)
-  async ajouterMembreProjet(projetId, utilisateurId) {
-    if (this.modeLocal) {
-      return this.ajouterMembreProjetLocal(projetId, utilisateurId)
-    } else {
-      return this.ajouterMembreProjetAPI(projetId, utilisateurId)
-    }
-  }
-
-  ajouterMembreProjetLocal(projetId, utilisateurId) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          const membresProjet = JSON.parse(localStorage.getItem(`membres_projet_${projetId}`)) || []
-
-          // Vérifier si déjà membre
-          const dejaMembre = membresProjet.some(m => m.userId === utilisateurId)
-          if (dejaMembre) {
-            reject(new Error('Utilisateur déjà membre de ce projet'))
-            return
-          }
-
-          // Trouver l'utilisateur
-          const utilisateur = this.obtenirTousLesUtilisateurs().find(u => u.id === utilisateurId)
-          if (!utilisateur) {
-            reject(new Error('Utilisateur non trouvé'))
-            return
-          }
-
-          // Ajouter le membre
-          const nouveauMembre = {
-            userId: utilisateur.id,
-            nom: utilisateur.nom,
-            prenom: utilisateur.prenom,
-            email: utilisateur.email,
-            role: utilisateur.role,
-            dateAjout: new Date().toISOString()
-          }
-
-          membresProjet.push(nouveauMembre)
-          localStorage.setItem(`membres_projet_${projetId}`, JSON.stringify(membresProjet))
-
-          console.log(`Membre ${utilisateurId} ajouté au projet ${projetId}`)
-          resolve({ success: true, membre: nouveauMembre })
-        } catch (error) {
-          reject(error)
+      if (error.response?.status === 409) {
+        throw {
+          success: false,
+          errorCode: MembreService.ERROR_CODES.CONFLICT,
+          message: error.response.data?.error
         }
-      }, 500)
-    })
-  }
+      }
 
-  async ajouterMembreProjetAPI(projetId, utilisateurId) {
-    try {
-      const axios = (await import('axios')).default
-      const response = await axios.post(`${this.baseURL}/projets/${projetId}/membres`, {
-        utilisateurId: utilisateurId
-      }, {
-        headers: this.getAuthHeaders()
-      })
-
-      console.log(`Membre ${utilisateurId} ajouté au projet ${projetId}`)
-      return response.data
-    } catch (error) {
-      this.gererErreur(error)
-      throw error
+      throw {
+        success: false,
+        errorCode: MembreService.ERROR_CODES.ADD_MEMBER_FAILED,
+        message: error.response?.data?.error || error.message
+      }
     }
   }
 
-  // INVITER PAR EMAIL (F8 - InvitationMembres)
-  async inviterParEmail(projetId, email, message = '') {
-    if (this.modeLocal) {
-      return this.inviterParEmailLocal(projetId, email, message)
-    } else {
-      return this.inviterParEmailAPI(projetId, email, message)
-    }
-  }
-
-  inviterParEmailLocal(projetId, email, message) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          // Vérifier si l'utilisateur existe
-          const utilisateur = this.obtenirTousLesUtilisateurs().find(u => u.email === email)
-          if (!utilisateur) {
-            reject(new Error('Utilisateur non trouvé'))
-            return
-          }
-
-          // Ajouter automatiquement au projet (simulation acceptation)
-          this.ajouterMembreProjetLocal(projetId, utilisateur.id)
-            .then(() => {
-              // Enregistrer l'invitation
-              const invitations = JSON.parse(localStorage.getItem('invitations')) || []
-              const nouvelleInvitation = {
-                id: Date.now(),
-                projetId,
-                email,
-                message,
-                statut: 'ACCEPTEE',
-                dateEnvoi: new Date().toISOString(),
-                utilisateurId: utilisateur.id
-              }
-
-              invitations.push(nouvelleInvitation)
-              localStorage.setItem('invitations', JSON.stringify(invitations))
-
-              resolve({ success: true, utilisateur, invitation: nouvelleInvitation })
-            })
-            .catch(reject)
-        } catch (error) {
-          reject(error)
-        }
-      }, 400)
-    })
-  }
-
-  async inviterParEmailAPI(projetId, email, message) {
-    try {
-      const axios = (await import('axios')).default
-      const response = await axios.post(`${this.baseURL}/projets/${projetId}/invitations`, {
-        email: email,
-        message: message
-      }, {
-        headers: this.getAuthHeaders()
-      })
-
-      console.log(`Invitation envoyée à ${email} pour le projet ${projetId}`)
-      return response.data
-    } catch (error) {
-      this.gererErreur(error)
-      throw error
-    }
-  }
-
-  // SUPPRIMER MEMBRE PROJET
+  /**
+   * F8 : Supprimer un membre d'un projet
+   * Contrainte : Chef de projet uniquement
+   *
+   * @param {number} projetId - ID du projet
+   * @param {number} utilisateurId - ID de l'utilisateur à retirer
+   * @returns {Promise<Object>} Résultat de la suppression
+   */
   async supprimerMembreProjet(projetId, utilisateurId) {
-    if (this.modeLocal) {
-      return this.supprimerMembreProjetLocal(projetId, utilisateurId)
-    } else {
-      return this.supprimerMembreProjetAPI(projetId, utilisateurId)
-    }
-  }
-
-  supprimerMembreProjetLocal(projetId, utilisateurId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const membresProjet = JSON.parse(localStorage.getItem(`membres_projet_${projetId}`)) || []
-        const nouveauxMembres = membresProjet.filter(m => m.userId !== utilisateurId)
-        localStorage.setItem(`membres_projet_${projetId}`, JSON.stringify(nouveauxMembres))
-
-        console.log(`Membre ${utilisateurId} retiré du projet ${projetId}`)
-        resolve({ success: true })
-      }, 300)
-    })
-  }
-
-  async supprimerMembreProjetAPI(projetId, utilisateurId) {
     try {
-      const axios = (await import('axios')).default
-      await axios.delete(`${this.baseURL}/projets/${projetId}/membres/${utilisateurId}`, {
-        headers: this.getAuthHeaders()
-      })
+      console.log('[F8] Removing member', utilisateurId, 'from project', projetId)
 
-      console.log(`Membre ${utilisateurId} retiré du projet ${projetId}`)
-    } catch (error) {
-      this.gererErreur(error)
-      throw error
-    }
-  }
+      await api.delete(`/projets/${projetId}/membres/${utilisateurId}`)
 
-  // VÉRIFIER SI MEMBRE D'UN PROJET
-  async estMembreProjet(projetId, utilisateurId) {
-    if (this.modeLocal) {
-      return this.estMembreProjetLocal(projetId, utilisateurId)
-    } else {
-      return this.estMembreProjetAPI(projetId, utilisateurId)
-    }
-  }
-
-  estMembreProjetLocal(projetId, utilisateurId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const membresProjet = JSON.parse(localStorage.getItem(`membres_projet_${projetId}`)) || []
-        const estMembre = membresProjet.some(m => m.userId === utilisateurId)
-        resolve(estMembre)
-      }, 100)
-    })
-  }
-
-  async estMembreProjetAPI(projetId, utilisateurId) {
-    try {
-      const axios = (await import('axios')).default
-      const response = await axios.get(`${this.baseURL}/projets/${projetId}/membres/${utilisateurId}`, {
-        headers: this.getAuthHeaders()
-      })
-      return response.status === 200
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        return false
+      console.log('[F8] Member removed successfully')
+      return {
+        success: true,
+        message: 'Membre retiré du projet'
       }
-      throw error
-    }
-  }
-
-  // OBTENIR PROJETS D'UN MEMBRE
-  async getProjetsMembre(utilisateurId) {
-    if (this.modeLocal) {
-      return this.getProjetsMembreLocal(utilisateurId)
-    } else {
-      return this.getProjetsMembreAPI(utilisateurId)
-    }
-  }
-
-  getProjetsMembreLocal(utilisateurId) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const projets = []
-
-        // Projets figés avec DONNÉES SQL EXACTES
-        if (utilisateurId === 7) {
-          projets.push(
-            { id: 1, titre: 'Application Mobile E-commerce', description: 'Développement mobile', statut: 'ACTIF' },
-            { id: 3, titre: 'Système de Gestion RH', description: 'Logiciel RH', statut: 'ACTIF' }
-          )
-        }
-
-        resolve(projets)
-      }, 200)
-    })
-  }
-
-  async getProjetsMembreAPI(utilisateurId) {
-    try {
-      const axios = (await import('axios')).default
-      const response = await axios.get(`${this.baseURL}/utilisateurs/${utilisateurId}/projets`, {
-        headers: this.getAuthHeaders()
-      })
-      return response.data
     } catch (error) {
-      this.gererErreur(error)
-      throw error
-    }
-  }
-
-  // UTILITAIRES
-  getAuthHeaders() {
-    const token = localStorage.getItem('token')
-    return token ? {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    } : {
-      'Content-Type': 'application/json'
-    }
-  }
-
-  gererErreur(error) {
-    if (error.response) {
-      const status = error.response.status
-      const message = error.response.data?.message || 'Erreur serveur'
-
-      switch (status) {
-        case 401:
-          console.error('Non autorisé - Token invalide')
-          this.redirectionConnexion()
-          break
-        case 403:
-          console.error('Accès refusé - Droits insuffisants')
-          break
-        case 404:
-          console.error('Ressource non trouvée')
-          break
-        case 409:
-          console.error('Conflit - Membre déjà présent')
-          break
-        default:
-          console.error(`Erreur ${status}: ${message}`)
+      console.error('[F8] Remove member error:', error.response?.data || error.message)
+      throw {
+        success: false,
+        errorCode: MembreService.ERROR_CODES.REMOVE_MEMBER_FAILED,
+        message: error.response?.data?.error
       }
-    } else {
-      console.error('Erreur:', error.message)
     }
   }
 
-  redirectionConnexion() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+  /**
+   * F8 : Obtenir la liste des membres d'un projet
+   *
+   * @param {number} projetId - ID du projet
+   * @returns {Promise<Object>} Liste des membres du projet
+   */
+  async getMembresProjets(projetId) {
+    try {
+      console.log('[F8] Loading project members for project:', projetId)
 
-    if (window.location.pathname !== '/connexion') {
-      window.location.href = '/connexion'
+      const response = await api.get(`/projets/${projetId}/membres`)
+
+      console.log('[F8] Project members loaded successfully')
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('[F8] Get members error:', error.response?.data || error.message)
+      throw {
+        success: false,
+        errorCode: MembreService.ERROR_CODES.GET_MEMBERS_FAILED,
+        message: error.response?.data?.error
+      }
     }
   }
 
-  // MÉTHODES DE CONTRÔLE MANUEL
-  forceApiMode() {
-    localStorage.setItem('FORCE_API_MODE', 'true')
-    this.modeLocal = false
-    console.log('Mode API forcé')
-  }
-
-  forceLocalMode() {
-    localStorage.removeItem('FORCE_API_MODE')
-    this.modeLocal = true
-    console.log('Mode local forcé')
-  }
-
-  getCurrentMode() {
-    return this.modeLocal ? 'LOCAL' : 'API'
-  }
-
-  // VALIDATION DES DONNÉES
-  validerEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return regex.test(email)
-  }
-
-  validerUtilisateurId(id) {
-    return id && (typeof id === 'number' || typeof id === 'string') && Number(id) > 0
-  }
-
-  validerProjetId(id) {
-    return id && (typeof id === 'number' || typeof id === 'string') && Number(id) > 0
+  /**
+   * Obtenir le message d'erreur internationalisé
+   * @param {Object} error - Objet d'erreur du service
+   * @param {Function} t - Fonction de traduction Vue i18n
+   * @returns {string} Message d'erreur traduit
+   */
+  getLocalizedErrorMessage(error, t) {
+    if (error.errorCode && t) {
+      return t(error.errorCode)
+    }
+    return error.message || t('erreurs.general')
   }
 }
 
+// Export de l'instance unique
 export default new MembreService()

@@ -30,93 +30,71 @@ public class CommentaireService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
-    /**
-     * Obtenir tous les commentaires d'une tâche (F9)
-     */
+    /** ⇨ AJOUT : Tous les commentaires (alias admin) */
+    @Transactional(readOnly = true)
+    public List<CommentaireDTO> obtenirTous() {
+        return commentaireRepository.findAll()
+                .stream()
+                .map(this::convertirEnDTO)
+                .toList();
+    }
+
+    /** Obtenir tous les commentaires d'une tâche (F9) */
     @Transactional(readOnly = true)
     public List<CommentaireDTO> obtenirCommentairesTache(Long tacheId) {
         System.out.println("DEBUG: [F9] Recherche commentaires pour tâche " + tacheId);
-
         List<Commentaire> commentaires = commentaireRepository.findByTacheIdOrderByDateAsc(tacheId);
-
         System.out.println("SUCCESS: [F9] " + commentaires.size() + " commentaires trouvés");
-
-        return commentaires.stream()
-                .map(this::convertirEnDTO)
-                .collect(Collectors.toList());
+        return commentaires.stream().map(this::convertirEnDTO).collect(Collectors.toList());
     }
 
-    /**
-     * Créer un nouveau commentaire (F9)
-     */
+    /** Créer un nouveau commentaire (F9) */
     public CommentaireDTO creerCommentaire(CommentaireDTO commentaireDTO, String emailAuteur) {
         System.out.println("DEBUG: [F9] Création commentaire par " + emailAuteur);
-
-        // Vérifier que la tâche existe
         Tache tache = tacheRepository.findById(commentaireDTO.getTacheId())
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée: " + commentaireDTO.getTacheId()));
-
-        // Vérifier que l'auteur existe
         Utilisateur auteur = utilisateurRepository.findByEmail(emailAuteur)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + emailAuteur));
-
-        // Créer le commentaire
         Commentaire commentaire = new Commentaire();
         commentaire.setContenu(commentaireDTO.getContenu());
         commentaire.setDate(LocalDateTime.now());
         commentaire.setTache(tache);
         commentaire.setAuteur(auteur);
-
         Commentaire commentaireSauvegarde = commentaireRepository.save(commentaire);
-
         System.out.println("SUCCESS: [F9] Commentaire créé avec ID: " + commentaireSauvegarde.getId());
-
         return convertirEnDTO(commentaireSauvegarde);
     }
 
-    /**
-     * Obtenir les commentaires d'un utilisateur
-     */
+    /** Obtenir les commentaires d'un utilisateur */
     @Transactional(readOnly = true)
     public List<CommentaireDTO> obtenirCommentairesUtilisateur(Long utilisateurId) {
         List<Commentaire> commentaires = commentaireRepository.findByAuteurIdOrderByDateDesc(utilisateurId);
-        return commentaires.stream()
-                .map(this::convertirEnDTO)
-                .collect(Collectors.toList());
+        return commentaires.stream().map(this::convertirEnDTO).collect(Collectors.toList());
     }
 
-    /**
-     * Supprimer un commentaire
-     */
+    /** Supprimer un commentaire */
     public void supprimerCommentaire(Long commentaireId) {
         System.out.println("DEBUG: [F9] Suppression commentaire " + commentaireId);
-
         if (!commentaireRepository.existsById(commentaireId)) {
             throw new RuntimeException("Commentaire non trouvé: " + commentaireId);
         }
-
         commentaireRepository.deleteById(commentaireId);
         System.out.println("SUCCESS: [F9] Commentaire " + commentaireId + " supprimé");
     }
 
-    /**
-     * Conversion Commentaire → CommentaireDTO
-     */
+    /** Conversion Commentaire → CommentaireDTO */
     private CommentaireDTO convertirEnDTO(Commentaire commentaire) {
         CommentaireDTO dto = new CommentaireDTO();
         dto.setId(commentaire.getId());
         dto.setContenu(commentaire.getContenu());
         dto.setDate(commentaire.getDate());
         dto.setTacheId(commentaire.getTache().getId());
-
-        // Informations auteur
         if (commentaire.getAuteur() != null) {
             dto.setAuteurId(commentaire.getAuteur().getId());
             dto.setAuteurNom(commentaire.getAuteur().getNom());
             dto.setAuteurPrenom(commentaire.getAuteur().getPrenom());
             dto.setAuteurEmail(commentaire.getAuteur().getEmail());
         }
-
         return dto;
     }
 }

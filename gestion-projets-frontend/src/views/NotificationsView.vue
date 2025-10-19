@@ -8,9 +8,9 @@
             <div class="col-md-8">
               <h1 class="text-collabpro mb-2">
                 <i class="fas fa-bell me-3"></i>
-                Mes Notifications
+                {{ t('notifications.titre') }}
               </h1>
-              <p class="text-muted mb-0">Gérez vos notifications en temps réel</p>
+              <p class="text-muted mb-0">{{ t('notifications.sousTitre') }}</p>
             </div>
             <div class="col-md-4 text-end">
               <div class="d-flex gap-2 flex-wrap">
@@ -20,7 +20,7 @@
                   :disabled="!hasNotificationsNonLues || chargement"
                 >
                   <i class="fas fa-check-double me-2"></i>
-                  Marquer tout lu
+                  {{ t('notifications.marquerToutesLues') }}
                 </button>
                 <button
                   @click="supprimerToutesLues"
@@ -28,7 +28,7 @@
                   :disabled="!hasNotificationsLues || chargement"
                 >
                   <i class="fas fa-trash me-2"></i>
-                  Supprimer lues
+                  {{ t('notifications.supprimerLues') }}
                 </button>
               </div>
             </div>
@@ -46,7 +46,7 @@
               </div>
               <div>
                 <h3 class="text-collabpro mb-1">{{ statistiques.total }}</h3>
-                <p class="text-muted mb-0">Total</p>
+                <p class="text-muted mb-0">{{ t('notifications.total') }}</p>
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@
               </div>
               <div>
                 <h3 class="text-warning mb-1">{{ statistiques.nonLues }}</h3>
-                <p class="text-muted mb-0">Non lues</p>
+                <p class="text-muted mb-0">{{ t('notifications.nonLues') }}</p>
               </div>
             </div>
           </div>
@@ -72,7 +72,7 @@
               </div>
               <div>
                 <h3 class="text-success mb-1">{{ statistiques.lues }}</h3>
-                <p class="text-muted mb-0">Lues</p>
+                <p class="text-muted mb-0">{{ t('notifications.lues') }}</p>
               </div>
             </div>
           </div>
@@ -85,7 +85,7 @@
               </div>
               <div>
                 <h3 class="text-info mb-1">{{ statistiques.aujourdhui }}</h3>
-                <p class="text-muted mb-0">Aujourd'hui</p>
+                <p class="text-muted mb-0">{{ t('notifications.aujourdhui') }}</p>
               </div>
             </div>
           </div>
@@ -97,41 +97,41 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-3 mb-3">
-              <label class="form-label fw-semibold">Filtrer par type</label>
+              <label class="form-label fw-semibold">{{ t('notifications.filtres.type') }}</label>
               <select v-model="filtreType" @change="appliquerFiltres" class="form-select">
-                <option value="">Tous les types</option>
-                <option value="TACHE">Tâche</option>
-                <option value="PROJET">Projet</option>
-                <option value="PAIEMENT">Paiement</option>
-                <option value="INVITATION">Invitation</option>
-                <option value="SYSTEME">Système</option>
+                <option value="">{{ t('notifications.filtres.tousTypes') }}</option>
+                <option value="TACHE">{{ t('notifications.types.tache') }}</option>
+                <option value="PROJET">{{ t('notifications.types.projet') }}</option>
+                <option value="PAIEMENT">{{ t('notifications.types.paiement') }}</option>
+                <option value="INVITATION">{{ t('notifications.types.invitation') }}</option>
+                <option value="SYSTEME">{{ t('notifications.types.systeme') }}</option>
               </select>
             </div>
             <div class="col-md-3 mb-3">
-              <label class="form-label fw-semibold">Filtrer par statut</label>
+              <label class="form-label fw-semibold">{{ t('notifications.filtres.statut') }}</label>
               <select v-model="filtreStatut" @change="appliquerFiltres" class="form-select">
-                <option value="">Tous les statuts</option>
-                <option value="false">Non lues</option>
-                <option value="true">Lues</option>
+                <option value="">{{ t('notifications.filtres.tousStatuts') }}</option>
+                <option value="false">{{ t('notifications.nonLues') }}</option>
+                <option value="true">{{ t('notifications.lues') }}</option>
               </select>
             </div>
             <div class="col-md-3 mb-3">
-              <label class="form-label fw-semibold">Période</label>
+              <label class="form-label fw-semibold">{{ t('notifications.filtres.periode') }}</label>
               <select v-model="filtrePeriode" @change="appliquerFiltres" class="form-select">
-                <option value="">Toutes les périodes</option>
-                <option value="today">Aujourd'hui</option>
-                <option value="week">Cette semaine</option>
-                <option value="month">Ce mois</option>
+                <option value="">{{ t('notifications.filtres.toutesPeriodes') }}</option>
+                <option value="today">{{ t('notifications.periodes.ajd') }}</option>
+                <option value="week">{{ t('notifications.periodes.semaine') }}</option>
+                <option value="month">{{ t('notifications.periodes.mois') }}</option>
               </select>
             </div>
             <div class="col-md-3 mb-3">
-              <label class="form-label fw-semibold">Rechercher</label>
+              <label class="form-label fw-semibold">{{ t('notifications.filtres.rechercher') }}</label>
               <input
                 v-model="rechercheTexte"
                 @input="rechercherNotifications"
                 type="text"
                 class="form-control"
-                placeholder="Rechercher une notification..."
+                :placeholder="t('notifications.filtres.placeholder')"
               >
             </div>
           </div>
@@ -147,9 +147,9 @@
       <!-- Loading -->
       <div v-if="chargement" class="text-center py-5">
         <div class="spinner-border text-collabpro" role="status">
-          <span class="visually-hidden">Chargement...</span>
+          <span class="visually-hidden">{{ t('commun.chargement') }}</span>
         </div>
-        <p class="mt-2">Chargement des notifications...</p>
+        <p class="mt-2">{{ t('notifications.chargement') }}</p>
       </div>
 
       <!-- Liste des notifications -->
@@ -193,7 +193,7 @@
               >
                 <span v-if="actionsEnCours[notification.id]" class="spinner-border spinner-border-sm me-1"></span>
                 <i v-else class="fas fa-check me-1"></i>
-                Marquer lu
+                {{ t('notifications.marquerLue') }}
               </button>
 
               <button
@@ -202,7 +202,7 @@
                 class="btn btn-outline-primary btn-sm"
               >
                 <i class="fas fa-external-link-alt me-1"></i>
-                Voir
+                {{ t('commun.voir') || 'Voir' }}
               </button>
 
               <button
@@ -211,12 +211,12 @@
                 :disabled="actionsEnCours[notification.id]"
               >
                 <i class="fas fa-trash me-1"></i>
-                Supprimer
+                {{ t('commun.supprimer') }}
               </button>
             </div>
 
             <div v-if="isNouvelle(notification)" class="position-absolute top-0 end-0 p-2">
-              <span class="badge bg-warning">Nouveau</span>
+              <span class="badge bg-warning">{{ t('notifications.nouveau') }}</span>
             </div>
           </div>
         </div>
@@ -226,10 +226,10 @@
       <div v-else-if="!chargement" class="card-collabpro">
         <div class="card-body text-center py-5">
           <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-          <h4>Aucune notification</h4>
-          <p class="text-muted">Vous n'avez pas de notifications pour le moment.</p>
+          <h4>{{ t('notifications.aucuneNotification') }}</h4>
+          <p class="text-muted">{{ t('notifications.aucuneDesc') }}</p>
           <button class="btn btn-collabpro" @click="reinitialiserFiltres">
-            <i class="fas fa-refresh me-2"></i>Réinitialiser les filtres
+            <i class="fas fa-refresh me-2"></i>{{ t('notifications.reinitialiserFiltres') }}
           </button>
         </div>
       </div>
@@ -237,438 +237,312 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import notificationService from '@/services/notification.service.js'
 import websocketService from '@/services/websocket.service.js'
 
-export default {
-  name: 'NotificationsView',
-  setup() {
-    const router = useRouter()
+const router = useRouter()
+const { t, locale } = useI18n()
 
-    // États réactifs
-    const notifications = ref([])
-    const chargement = ref(false)
-    const filtreType = ref('')
-    const filtreStatut = ref('')
-    const filtrePeriode = ref('')
-    const rechercheTexte = ref('')
-    const actionsEnCours = ref({})
-    const websocketConnecte = ref(false)
+// États
+const notifications = ref([])
+const chargement = ref(false)
+const filtreType = ref('')
+const filtreStatut = ref('')
+const filtrePeriode = ref('')
+const rechercheTexte = ref('')
+const actionsEnCours = ref({})
+const websocketConnecte = ref(false)
 
-    const statistiques = reactive({
-      total: 0,
-      nonLues: 0,
-      lues: 0,
-      aujourdhui: 0
+const statistiques = reactive({
+  total: 0, nonLues: 0, lues: 0, aujourdhui: 0
+})
+
+const message = reactive({ texte: '', type: '' })
+
+// Helpers i18n
+const rtf = computed(() => new Intl.RelativeTimeFormat(locale.value || 'fr-FR', { numeric: 'auto' }))
+
+// Computed
+const notificationsFiltrees = computed(() => {
+  let filtrees = notifications.value
+
+  if (filtreType.value) {
+    filtrees = filtrees.filter(n => n.type === filtreType.value)
+  }
+
+  if (filtreStatut.value !== '') {
+    const estLue = filtreStatut.value === 'true'
+    filtrees = filtrees.filter(n => n.lu === estLue)
+  }
+
+  if (filtrePeriode.value) {
+    const maintenant = new Date()
+    filtrees = filtrees.filter(n => {
+      const d = new Date(n.dateCreation)
+      switch (filtrePeriode.value) {
+        case 'today': return d.toDateString() === maintenant.toDateString()
+        case 'week':  return d >= new Date(maintenant.getTime() - 7 * 86400000)
+        case 'month': return d >= new Date(maintenant.getTime() - 30 * 86400000)
+        default: return true
+      }
     })
+  }
 
-    const message = reactive({
-      texte: '',
-      type: ''
-    })
+  if (rechercheTexte.value) {
+    const r = rechercheTexte.value.toLowerCase()
+    filtrees = filtrees.filter(n =>
+      n.titre?.toLowerCase().includes(r) ||
+      n.message?.toLowerCase().includes(r)
+    )
+  }
 
-    // Computed
-    const notificationsFiltrees = computed(() => {
-      let filtrees = notifications.value
+  return filtrees.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
+})
 
-      if (filtreType.value) {
-        filtrees = filtrees.filter(n => n.type === filtreType.value)
-      }
+const hasNotificationsNonLues = computed(() => notifications.value.some(n => !n.lu))
+const hasNotificationsLues = computed(() => notifications.value.some(n => n.lu))
 
-      if (filtreStatut.value !== '') {
-        const estLue = filtreStatut.value === 'true'
-        filtrees = filtrees.filter(n => n.lu === estLue)
-      }
+// Méthodes utilitaires
+const afficherMessage = (texte, type = 'success') => {
+  message.texte = texte
+  message.type = type
+  setTimeout(() => { message.texte = ''; message.type = '' }, 5000)
+}
 
-      if (filtrePeriode.value) {
-        const maintenant = new Date()
-        filtrees = filtrees.filter(n => {
-          const dateNotif = new Date(n.dateCreation)
-          switch (filtrePeriode.value) {
-            case 'today':
-              return dateNotif.toDateString() === maintenant.toDateString()
-            case 'week':
-              const debutSemaine = new Date(maintenant)
-              debutSemaine.setDate(maintenant.getDate() - 7)
-              return dateNotif >= debutSemaine
-            case 'month':
-              const debutMois = new Date(maintenant)
-              debutMois.setDate(maintenant.getDate() - 30)
-              return dateNotif >= debutMois
-            default:
-              return true
-          }
-        })
-      }
+const formatDate = (iso) => {
+  if (!iso) return ''
+  const date = new Date(iso)
+  const diffMs = Date.now() - date.getTime()
 
-      if (rechercheTexte.value) {
-        const recherche = rechercheTexte.value.toLowerCase()
-        filtrees = filtrees.filter(n =>
-          n.titre?.toLowerCase().includes(recherche) ||
-          n.message?.toLowerCase().includes(recherche)
-        )
-      }
+  const minutes = Math.round(diffMs / 60000)
+  const hours = Math.round(diffMs / 3600000)
+  const days = Math.round(diffMs / 86400000)
 
-      return filtrees.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
-    })
+  if (Math.abs(minutes) < 60) return rtf.value.format(-minutes, 'minute')
+  if (Math.abs(hours) < 24)   return rtf.value.format(-hours, 'hour')
+  if (Math.abs(days) < 7)     return rtf.value.format(-days, 'day')
 
-    const hasNotificationsNonLues = computed(() => {
-      return notifications.value.some(n => !n.lu)
-    })
+  return date.toLocaleString(locale.value || 'fr-FR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
 
-    const hasNotificationsLues = computed(() => {
-      return notifications.value.some(n => n.lu)
-    })
+const formatMontant = (montant) => {
+  const n = Number.isFinite(montant) ? montant : 0
+  return new Intl.NumberFormat(
+    locale.value?.startsWith('fr') ? 'fr-FR' : 'en-US',
+    { style: 'currency', currency: 'EUR' }
+  ).format(n)
+}
 
-    // Méthodes utilitaires
-    const afficherMessage = (texte, type = 'success') => {
-      message.texte = texte
-      message.type = type
-      setTimeout(() => {
-        message.texte = ''
-        message.type = ''
-      }, 5000)
+const getTypeIcon = (type) => ({
+  TACHE: 'fas fa-tasks',
+  PROJET: 'fas fa-project-diagram',
+  PAIEMENT: 'fas fa-credit-card',
+  INVITATION: 'fas fa-user-plus',
+  SYSTEME: 'fas fa-cog'
+}[type] || 'fas fa-bell')
+
+const getTypeColor = (type) => ({
+  TACHE: '#007bff',
+  PROJET: '#28a745',
+  PAIEMENT: '#ffc107',
+  INVITATION: '#17a2b8',
+  SYSTEME: '#6c757d'
+}[type] || '#007bff')
+
+const getTypeLabel = (type) => ({
+  TACHE: t('notifications.types.tache'),
+  PROJET: t('notifications.types.projet'),
+  PAIEMENT: t('notifications.types.paiement'),
+  INVITATION: t('notifications.types.invitation'),
+  SYSTEME: t('notifications.types.systeme')
+}[type] || type)
+
+const isNouvelle = (n) => {
+  const diffMs = Date.now() - new Date(n.dateCreation).getTime()
+  return diffMs < 5 * 60 * 1000 && !n.lu
+}
+
+// API
+const chargerNotifications = async () => {
+  try {
+    chargement.value = true
+    message.texte = ''
+
+    const params = {
+      type: filtreType.value || undefined,
+      lu: filtreStatut.value !== '' ? filtreStatut.value === 'true' : undefined,
+      periode: filtrePeriode.value || undefined,
+      recherche: rechercheTexte.value || undefined
     }
 
-    const formatDate = (dateString) => {
-      if (!dateString) return ''
-      const date = new Date(dateString)
-      const maintenant = new Date()
-      const diffMs = maintenant - date
-      const diffMins = Math.floor(diffMs / 60000)
-      const diffHeures = Math.floor(diffMs / 3600000)
-      const diffJours = Math.floor(diffMs / 86400000)
+    const result = await notificationService.getNotifications(params)
 
-      if (diffMins < 1) return 'Maintenant'
-      if (diffMins < 60) return `Il y a ${diffMins} min`
-      if (diffHeures < 24) return `Il y a ${diffHeures}h`
-      if (diffJours < 7) return `Il y a ${diffJours} jour${diffJours > 1 ? 's' : ''}`
-
-      return date.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+    if (result.success) {
+      notifications.value = result.data || []
+      calculerStatistiques()
+    } else {
+      throw new Error(result.message || 'load_error')
     }
-
-    const formatMontant = (montant) => {
-      if (typeof montant !== 'number') return '0,00 €'
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(montant)
-    }
-
-    const getTypeIcon = (type) => {
-      const icons = {
-        'TACHE': 'fas fa-tasks',
-        'PROJET': 'fas fa-project-diagram',
-        'PAIEMENT': 'fas fa-credit-card',
-        'INVITATION': 'fas fa-user-plus',
-        'SYSTEME': 'fas fa-cog'
-      }
-      return icons[type] || 'fas fa-bell'
-    }
-
-    const getTypeColor = (type) => {
-      const colors = {
-        'TACHE': '#007bff',
-        'PROJET': '#28a745',
-        'PAIEMENT': '#ffc107',
-        'INVITATION': '#17a2b8',
-        'SYSTEME': '#6c757d'
-      }
-      return colors[type] || '#007bff'
-    }
-
-    const getTypeLabel = (type) => {
-      const labels = {
-        'TACHE': 'Tâche',
-        'PROJET': 'Projet',
-        'PAIEMENT': 'Paiement',
-        'INVITATION': 'Invitation',
-        'SYSTEME': 'Système'
-      }
-      return labels[type] || type
-    }
-
-    const isNouvelle = (notification) => {
-      const maintenant = new Date()
-      const dateNotif = new Date(notification.dateCreation)
-      const diffMs = maintenant - dateNotif
-      return diffMs < 300000 && !notification.lu // Nouvelle si < 5 minutes et non lue
-    }
-
-    // Méthodes principales
-    const chargerNotifications = async () => {
-      try {
-        chargement.value = true
-        message.texte = ''
-
-        const params = {
-          type: filtreType.value || undefined,
-          lu: filtreStatut.value !== '' ? filtreStatut.value === 'true' : undefined,
-          periode: filtrePeriode.value || undefined,
-          recherche: rechercheTexte.value || undefined
-        }
-
-        const result = await notificationService.getNotifications(params)
-
-        if (result.success) {
-          notifications.value = result.data || []
-          calculerStatistiques()
-        } else {
-          throw new Error(result.message || 'Erreur lors du chargement des notifications')
-        }
-      } catch (error) {
-        console.error('Erreur chargement notifications:', error)
-        afficherMessage('Erreur lors du chargement des notifications', 'error')
-      } finally {
-        chargement.value = false
-      }
-    }
-
-    const calculerStatistiques = () => {
-      statistiques.total = notifications.value.length
-      statistiques.nonLues = notifications.value.filter(n => !n.lu).length
-      statistiques.lues = notifications.value.filter(n => n.lu).length
-
-      const aujourdhui = new Date().toDateString()
-      statistiques.aujourdhui = notifications.value.filter(n =>
-        new Date(n.dateCreation).toDateString() === aujourdhui
-      ).length
-    }
-
-    const marquerCommeLue = async (notificationId) => {
-      try {
-        actionsEnCours.value[notificationId] = true
-
-        const result = await notificationService.marquerCommeLue(notificationId)
-
-        if (result.success) {
-          const notification = notifications.value.find(n => n.id === notificationId)
-          if (notification) {
-            notification.lu = true
-            calculerStatistiques()
-          }
-          afficherMessage('Notification marquée comme lue', 'success')
-        } else {
-          throw new Error(result.message || 'Erreur marquer comme lue')
-        }
-      } catch (error) {
-        console.error('Erreur marquer comme lue:', error)
-        afficherMessage('Erreur lors du marquage', 'error')
-      } finally {
-        actionsEnCours.value[notificationId] = false
-      }
-    }
-
-    const marquerToutesLues = async () => {
-      try {
-        chargement.value = true
-        const result = await notificationService.marquerToutesLues()
-
-        if (result.success) {
-          notifications.value.forEach(n => n.lu = true)
-          calculerStatistiques()
-          afficherMessage('Toutes les notifications ont été marquées comme lues', 'success')
-        } else {
-          throw new Error(result.message || 'Erreur marquer toutes comme lues')
-        }
-      } catch (error) {
-        console.error('Erreur marquer toutes comme lues:', error)
-        afficherMessage('Erreur lors du marquage', 'error')
-      } finally {
-        chargement.value = false
-      }
-    }
-
-    const supprimerNotification = async (notificationId) => {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) return
-
-      try {
-        actionsEnCours.value[notificationId] = true
-
-        const result = await notificationService.supprimerNotification(notificationId)
-
-        if (result.success) {
-          const index = notifications.value.findIndex(n => n.id === notificationId)
-          if (index !== -1) {
-            notifications.value.splice(index, 1)
-            calculerStatistiques()
-          }
-          afficherMessage('Notification supprimée', 'success')
-        } else {
-          throw new Error(result.message || 'Erreur suppression')
-        }
-      } catch (error) {
-        console.error('Erreur suppression notification:', error)
-        afficherMessage('Erreur lors de la suppression', 'error')
-      } finally {
-        actionsEnCours.value[notificationId] = false
-      }
-    }
-
-    const supprimerToutesLues = async () => {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications lues ?')) return
-
-      try {
-        chargement.value = true
-        const result = await notificationService.supprimerToutesLues()
-
-        if (result.success) {
-          notifications.value = notifications.value.filter(n => !n.lu)
-          calculerStatistiques()
-          afficherMessage('Notifications lues supprimées', 'success')
-        } else {
-          throw new Error(result.message || 'Erreur suppression notifications lues')
-        }
-      } catch (error) {
-        console.error('Erreur suppression toutes lues:', error)
-        afficherMessage('Erreur lors de la suppression', 'error')
-      } finally {
-        chargement.value = false
-      }
-    }
-
-    const naviguerVersAction = (notification) => {
-      if (notification.actionUrl) {
-        router.push(notification.actionUrl)
-        if (!notification.lu) {
-          marquerCommeLue(notification.id)
-        }
-      }
-    }
-
-    const appliquerFiltres = () => {
-      chargerNotifications()
-    }
-
-    const rechercherNotifications = () => {
-      clearTimeout(window.rechercheTimeout)
-      window.rechercheTimeout = setTimeout(() => {
-        chargerNotifications()
-      }, 500)
-    }
-
-    const reinitialiserFiltres = () => {
-      filtreType.value = ''
-      filtreStatut.value = ''
-      filtrePeriode.value = ''
-      rechercheTexte.value = ''
-      chargerNotifications()
-    }
-
-    // Initialisation WebSocket pour notifications temps réel (F9 + F12)
-    const initWebSocket = () => {
-      const token = localStorage.getItem('token')
-      if (token) {
-        websocketService.connect(token)
-        websocketConnecte.value = websocketService.connected
-
-        // Écouter les notifications en temps réel
-        websocketService.subscribeToProject('notifications', (messageData) => {
-          if (messageData.type === 'NOTIFICATION') {
-            // Ajouter la nouvelle notification en temps réel
-            const nouvelleNotification = {
-              id: Date.now(), // ID temporaire
-              titre: 'Nouvelle notification',
-              message: messageData.contenu,
-              type: 'SYSTEME',
-              lu: false,
-              dateCreation: new Date().toISOString(),
-              donnees: messageData.donnees || {}
-            }
-
-            notifications.value.unshift(nouvelleNotification)
-            calculerStatistiques()
-            afficherMessage('Nouvelle notification reçue', 'success')
-          }
-        })
-      }
-    }
-
-    // Cycle de vie
-    onMounted(() => {
-      chargerNotifications()
-      initWebSocket()
-    })
-
-    onUnmounted(() => {
-      websocketService.disconnect()
-    })
-
-    return {
-      // États
-      notifications,
-      chargement,
-      filtreType,
-      filtreStatut,
-      filtrePeriode,
-      rechercheTexte,
-      actionsEnCours,
-      websocketConnecte,
-      statistiques,
-      message,
-
-      // Computed
-      notificationsFiltrees,
-      hasNotificationsNonLues,
-      hasNotificationsLues,
-
-      // Méthodes
-      formatDate,
-      formatMontant,
-      getTypeIcon,
-      getTypeColor,
-      getTypeLabel,
-      isNouvelle,
-      chargerNotifications,
-      marquerCommeLue,
-      marquerToutesLues,
-      supprimerNotification,
-      supprimerToutesLues,
-      naviguerVersAction,
-      appliquerFiltres,
-      rechercherNotifications,
-      reinitialiserFiltres
-    }
+  } catch (error) {
+    console.error('Erreur chargement notifications:', error)
+    afficherMessage(t('notifications.erreurChargement'), 'error')
+  } finally {
+    chargement.value = false
   }
 }
+
+const calculerStatistiques = () => {
+  statistiques.total = notifications.value.length
+  statistiques.nonLues = notifications.value.filter(n => !n.lu).length
+  statistiques.lues = notifications.value.filter(n => n.lu).length
+  const ajd = new Date().toDateString()
+  statistiques.aujourdhui = notifications.value.filter(n =>
+    new Date(n.dateCreation).toDateString() === ajd
+  ).length
+}
+
+const marquerCommeLue = async (id) => {
+  try {
+    actionsEnCours.value[id] = true
+    const result = await notificationService.marquerCommeLue(id)
+    if (result.success) {
+      const n = notifications.value.find(x => x.id === id)
+      if (n) n.lu = true
+      calculerStatistiques()
+      afficherMessage(t('notifications.msgLue'), 'success')
+    } else {
+      throw new Error(result.message || 'mark_error')
+    }
+  } catch (error) {
+    console.error('Erreur marquer comme lue:', error)
+    afficherMessage(t('notifications.msgErreurMarquage'), 'error')
+  } finally {
+    actionsEnCours.value[id] = false
+  }
+}
+
+const marquerToutesLues = async () => {
+  try {
+    chargement.value = true
+    const result = await notificationService.marquerToutesLues()
+    if (result.success) {
+      notifications.value.forEach(n => { n.lu = true })
+      calculerStatistiques()
+      afficherMessage(t('notifications.msgToutesLues'), 'success')
+    } else {
+      throw new Error(result.message || 'mark_all_error')
+    }
+  } catch (error) {
+    console.error('Erreur marquer toutes comme lues:', error)
+    afficherMessage(t('notifications.msgErreurMarquage'), 'error')
+  } finally {
+    chargement.value = false
+  }
+}
+
+const supprimerNotification = async (id) => {
+  if (!confirm(t('notifications.confirmerSuppression'))) return
+  try {
+    actionsEnCours.value[id] = true
+    const result = await notificationService.supprimerNotification(id)
+    if (result.success) {
+      notifications.value = notifications.value.filter(n => n.id !== id)
+      calculerStatistiques()
+      afficherMessage(t('notifications.msgSupprimee'), 'success')
+    } else {
+      throw new Error(result.message || 'delete_error')
+    }
+  } catch (error) {
+    console.error('Erreur suppression notification:', error)
+    afficherMessage(t('notifications.msgErreurSuppression'), 'error')
+  } finally {
+    actionsEnCours.value[id] = false
+  }
+}
+
+const supprimerToutesLues = async () => {
+  if (!confirm(t('notifications.confirmerSuppressionLues'))) return
+  try {
+    chargement.value = true
+    const result = await notificationService.supprimerToutesLues()
+    if (result.success) {
+      notifications.value = notifications.value.filter(n => !n.lu)
+      calculerStatistiques()
+      afficherMessage(t('notifications.msgLuesSupprimees'), 'success')
+    } else {
+      throw new Error(result.message || 'delete_read_error')
+    }
+  } catch (error) {
+    console.error('Erreur suppression toutes lues:', error)
+    afficherMessage(t('notifications.msgErreurSuppression'), 'error')
+  } finally {
+    chargement.value = false
+  }
+}
+
+const naviguerVersAction = (n) => {
+  if (n.actionUrl) {
+    router.push(n.actionUrl)
+    if (!n.lu) marquerCommeLue(n.id)
+  }
+}
+
+const appliquerFiltres = () => { chargerNotifications() }
+const rechercherNotifications = () => {
+  clearTimeout(window.__notifSearchTimer)
+  window.__notifSearchTimer = setTimeout(() => chargerNotifications(), 500)
+}
+const reinitialiserFiltres = () => {
+  filtreType.value = ''
+  filtreStatut.value = ''
+  filtrePeriode.value = ''
+  rechercheTexte.value = ''
+  chargerNotifications()
+}
+
+// WebSocket temps réel
+const initWebSocket = () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  websocketService.connect(token)
+  websocketConnecte.value = websocketService.connected
+
+  websocketService.subscribeToProject('notifications', (msg) => {
+    if (msg.type === 'NOTIFICATION') {
+      notifications.value.unshift({
+        id: Date.now(),
+        titre: t('notifications.nouvelle'),
+        message: msg.contenu,
+        type: 'SYSTEME',
+        lu: false,
+        dateCreation: new Date().toISOString(),
+        donnees: msg.donnees || {}
+      })
+      calculerStatistiques()
+      afficherMessage(t('notifications.nouvelleRecue'), 'success')
+    }
+  })
+}
+
+// Lifecycle
+onMounted(() => { chargerNotifications(); initWebSocket() })
+onUnmounted(() => { websocketService.disconnect() })
 </script>
 
 <style scoped>
-.notifications-view {
-  min-height: 100vh;
-  padding: 20px 0;
-}
-
-.notification-item {
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.notification-item:hover {
-  background-color: rgba(43, 69, 248, 0.05) !important;
-}
-
+.notifications-view { min-height: 100vh; padding: 20px 0; }
+.notification-item { position: relative; transition: all .3s ease; }
+.notification-item:hover { background-color: rgba(43, 69, 248, 0.05) !important; }
 @media (max-width: 768px) {
-  .notifications-view {
-    padding: 10px;
-  }
-
-  .d-flex.gap-2 {
-    flex-direction: column;
-  }
-
-  .d-flex.gap-2 .btn {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
+  .notifications-view { padding: 10px; }
+  .d-flex.gap-2 { flex-direction: column; }
+  .d-flex.gap-2 .btn { width: 100%; margin-bottom: .5rem; }
 }
 </style>

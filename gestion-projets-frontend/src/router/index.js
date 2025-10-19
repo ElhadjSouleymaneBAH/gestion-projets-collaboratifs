@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // Import direct
 import AccueilView from '@/views/AccueilView.vue'
 
-// Lazy
+// Lazy loading
 const ConnexionView = () => import('@/views/ConnexionView.vue')
 const InscriptionView = () => import('@/views/InscriptionView.vue')
 const MotDePasseOublieView = () => import('@/views/MotDePasseOublieView.vue')
@@ -19,26 +19,37 @@ const AbonnementView = () => import('@/views/AbonnementView.vue')
 const StripeSuccessView = () => import('@/views/StripeSuccessView.vue')
 const StripeCancelView = () => import('@/views/StripeCancelView.vue')
 
+// Tâches (lazy loading)
+const TacheDetailsView = () => import('@/views/TacheDetailsView.vue')
+const TachesProjetView = () => import('@/views/TachesProjetView.vue')
+
 // Helper
 function getSafeUser() {
-  try { return JSON.parse(localStorage.getItem('user')) || {}; }
-  catch { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem('user')) || {}
+  } catch {
+    return {}
+  }
 }
 
 const routes = [
+  // Pages publiques
   { path: '/', name: 'accueil', component: AccueilView },
 
+  // Authentification
   { path: '/connexion', name: 'connexion', component: ConnexionView },
   { path: '/inscription', name: 'inscription', component: InscriptionView },
   { path: '/mot-de-passe-oublie', name: 'mot-de-passe-oublie', component: MotDePasseOublieView },
 
+  // Abonnement Premium
   { path: '/abonnement-premium', name: 'abonnement-premium', component: AbonnementView, meta: { requiresAuth: true } },
   { path: '/abonnement/success', name: 'abonnement-success', component: StripeSuccessView, meta: { requiresAuth: true } },
   { path: '/abonnement/cancel', name: 'abonnement-cancel', component: StripeCancelView, meta: { requiresAuth: true } },
 
-  { path: '/factures', name: 'factures', component: FacturesView, meta: { requiresAuth: true, requiresChefOrAdmin: true } },
-  { path: '/test-facture', redirect: '/factures' },
+  // Factures (F11 : visibles pour MEMBRE / CHEF_PROJET / ADMIN → on laisse le backend gérer l'autorisation)
+  { path: '/factures', name: 'factures', component: FacturesView, meta: { requiresAuth: true } },
 
+  // Tableaux de bord (redirection intelligente)
   {
     path: '/tableau-de-bord',
     name: 'tableau-de-bord',
@@ -52,16 +63,24 @@ const routes = [
     meta: { requiresAuth: true }
   },
 
-  { path: '/tableau-bord-chef-projet', name: 'tableau-bord-chef-projet', component: TableauBordChefProjetView, meta: { requiresAuth: true } },
-  { path: '/tableau-bord-membre', name: 'tableau-bord-membre', component: TableauBordMembreView, meta: { requiresAuth: true } },
+  // Tableaux de bord spécifiques par rôle
+  { path: '/tableau-bord-chef-projet', name: 'tableau-bord-chef-projet', component: TableauBordChefProjetView, meta: { requiresAuth: true, role: 'CHEF_PROJET' } },
+  { path: '/tableau-bord-membre', name: 'tableau-bord-membre', component: TableauBordMembreView, meta: { requiresAuth: true, role: 'MEMBRE' } },
   { path: '/admin/tableau-de-bord', name: 'admin-tableau-de-bord', component: TableauDeBordAdministrateurView, meta: { requiresAuth: true, requiresAdmin: true } },
 
+  // Projets
   { path: '/projets-publics', name: 'projets-publics', component: ProjetsPublicsView },
+  { path: '/projet/:id', name: 'projet-detail', component: ProjetDetailView, meta: { requiresAuth: true } },
+
+  // Tâches
+  { path: '/taches/:id', name: 'tache-details', component: TacheDetailsView, meta: { requiresAuth: true } },
+  { path: '/projets/:idProjet/taches', name: 'projet-taches', component: TachesProjetView, meta: { requiresAuth: true } },
+
+  // Pages légales
   { path: '/conditions', name: 'conditions', component: ConditionsView },
   { path: '/politique-confidentialite', name: 'politique-confidentialite', component: PolitiqueConfidentialiteView },
 
-  { path: '/projet/:id', name: 'projet-detail', component: ProjetDetailView, meta: { requiresAuth: true } },
-
+  // Redirections SEO-friendly
   { path: '/login', redirect: '/connexion' },
   { path: '/register', redirect: '/inscription' },
   { path: '/privacy', redirect: '/politique-confidentialite' },
@@ -70,7 +89,15 @@ const routes = [
   { path: '/abonnement', redirect: '/abonnement-premium' },
   { path: '/subscription', redirect: '/abonnement-premium' },
   { path: '/subscribe', redirect: '/abonnement-premium' },
+  { path: '/test-facture', redirect: '/factures' },
 
+  //  Alias propre pour les liens /projets/:id → /projet/:id
+  { path: '/projets/:id', redirect: to => `/projet/${to.params.id}` },
+
+  //  Route "Nouveau projet" (utilisée par le bouton du dashboard)
+  { path: '/projets/nouveau', redirect: { path: '/tableau-bord-chef-projet', query: { newProject: '1' } } },
+
+  // 404 - Catch all
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
@@ -80,7 +107,7 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 })
 })
 
-// Guards
+// ==================== GUARDS ====================
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const user = getSafeUser()
@@ -101,9 +128,19 @@ router.beforeEach((to, from, next) => {
     return next('/tableau-de-bord')
   }
 
-  // Chef de projet OU Admin
   if (to.meta.requiresChefOrAdmin && !['CHEF_PROJET', 'ADMINISTRATEUR'].includes(user.role)) {
     return next('/tableau-de-bord')
+  }
+
+  // Contrôle de rôle spécifique
+  if (to.meta.role) {
+    if (!user?.role) return next('/connexion')
+    if (user.role !== to.meta.role) {
+      if (user.role === 'CHEF_PROJET') return next('/tableau-bord-chef-projet')
+      if (user.role === 'MEMBRE') return next('/tableau-bord-membre')
+      if (user.role === 'ADMINISTRATEUR') return next('/admin/tableau-de-bord')
+      return next('/connexion')
+    }
   }
 
   // Stripe success sans session_id => redirige
@@ -113,25 +150,21 @@ router.beforeEach((to, from, next) => {
 
   // Accès à /connexion
   if (to.name === 'connexion') {
-    // Forcer le switch si demandé
     if (to.query.switch === '1') {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       return next()
     }
-    // Si connecté en VISITEUR -> on nettoie et on affiche le login
     if (token && user.role === 'VISITEUR') {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       return next()
     }
-    // Token orphelin -> nettoyer et afficher le login
     if (token && (!user || !user.role)) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       return next()
     }
-    // Déjà connecté normal -> tableau de bord
     if (token && user.role) {
       if (user.role === 'CHEF_PROJET') return next('/tableau-bord-chef-projet')
       if (user.role === 'MEMBRE') return next('/tableau-bord-membre')
@@ -143,23 +176,28 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+// ==================== TITRES DE PAGES ====================
 router.afterEach((to) => {
   const titles = {
-    'accueil': 'Gestion de Projets Collaboratifs',
+    'accueil': 'CollabPro - Gestion de Projets Collaboratifs',
+    'connexion': 'Connexion - CollabPro',
+    'inscription': 'Inscription - CollabPro',
+    'mot-de-passe-oublie': 'Mot de passe oublié - CollabPro',
     'abonnement-premium': 'Abonnement Premium - CollabPro',
     'abonnement-success': 'Paiement Réussi - CollabPro',
     'abonnement-cancel': 'Paiement Annulé - CollabPro',
     'factures': 'Mes Factures - CollabPro',
-    'tableau-bord-chef-projet': 'Tableau de Bord Chef de Projet',
-    'tableau-bord-membre': 'Tableau de Bord Membre',
+    'tableau-bord-chef-projet': 'Tableau de Bord Chef de Projet - CollabPro',
+    'tableau-bord-membre': 'Tableau de Bord Membre - CollabPro',
     'admin-tableau-de-bord': 'Administration - CollabPro',
     'projets-publics': 'Projets Publics - CollabPro',
-    'connexion': 'Connexion - CollabPro',
-    'inscription': 'Inscription - CollabPro',
+    'projet-detail': 'Détail du Projet - CollabPro',
+    'tache-details': 'Détail de la Tâche - CollabPro',
+    'projet-taches': 'Tâches du Projet - CollabPro',
     'conditions': 'Conditions Générales d\'Utilisation - CollabPro',
     'politique-confidentialite': 'Politique de Confidentialité - CollabPro'
   }
-  document.title = titles[to.name] || 'Gestion de Projets Collaboratifs'
+  document.title = titles[to.name] || 'CollabPro - Gestion de Projets Collaboratifs'
 })
 
 export default router

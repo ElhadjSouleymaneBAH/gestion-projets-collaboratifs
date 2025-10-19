@@ -1,5 +1,6 @@
 package be.iccbxl.gestionprojets.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +34,7 @@ public class Notification {
     // Relation avec Utilisateur
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_utilisateur", nullable = false)
+    @JsonIgnore  // ← AJOUTÉ pour éviter l'erreur de sérialisation
     private Utilisateur utilisateur;
 
     @PrePersist
@@ -49,14 +51,5 @@ public class Notification {
         this.lu = true;
     }
 
-    /**
-     * Envoyer une notification
-     */
-    public boolean envoyerNotification(String message) {
-        if (message != null && !message.trim().isEmpty()) {
-            this.message = message;
-            return true;
-        }
-        return false;
-    }
+
 }

@@ -21,26 +21,19 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Controller REST pour la gestion des notifications
- * Architecture simple, cohérente avec UtilisateurController
- * Conforme au cahier des charges - Gestion de Projets Collaboratifs
- *
- * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * Controller REST Notifications
+ * + Alias admin /api/notifications/admin/all pour le dashboard.
  */
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 public class NotificationController {
 
     private final NotificationService notificationService;
     private final UtilisateurService utilisateurService;
 
-    /**
-     * DTO simple pour créer une notification
-     */
+    /** DTO simple pour créer une notification */
     public static class CreateNotificationRequest {
         @NotNull(message = "L'ID utilisateur est obligatoire")
         private Long utilisateurId;
@@ -48,41 +41,39 @@ public class NotificationController {
         @NotBlank(message = "Le message est obligatoire")
         private String message;
 
-        // Getters et setters
         public Long getUtilisateurId() { return utilisateurId; }
         public void setUtilisateurId(Long utilisateurId) { this.utilisateurId = utilisateurId; }
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }
     }
 
-    /**
-     * F4 : Récupérer toutes les notifications d'un utilisateur
-     * Pattern IDENTIQUE à UtilisateurController.getParId()
-     * Utilise votre JwtService via Authentication
-     */
+    /** ⇨ AJOUT : alias admin pour le dashboard */
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<List<Notification>> getAllForAdminAlias() {
+        return ResponseEntity.ok(notificationService.obtenirToutes());
+    }
+
+    /** F4 : Récupérer toutes les notifications d'un utilisateur */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Notification>> getNotificationsUtilisateur(
             @PathVariable Long userId,
             Authentication authentication) {
 
         try {
-            // EXACTEMENT la même logique que UtilisateurController
             Optional<Utilisateur> utilisateurDemandeOpt = utilisateurService.obtenirParId(userId);
             if (utilisateurDemandeOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
             Utilisateur utilisateurDemande = utilisateurDemandeOpt.get();
-            String emailConnecte = authentication.getName(); // Extrait par votre JwtService
+            String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un administrateur - CORRIGÉ
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            // Vérifie si c'est son propre profil
             boolean estSonPropreProfil = utilisateurDemande.getEmail().equals(emailConnecte);
 
-            // Autorise si admin OU si c'est son propre profil
             if (estAdmin || estSonPropreProfil) {
                 List<Notification> notifications = notificationService.getNotificationsByUtilisateur(userId);
                 return ResponseEntity.ok(notifications);
@@ -96,17 +87,13 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F5 : Marquer toutes les notifications comme lues
-     * Méthode utilisée mais qui était manquante
-     */
+    /** F5 : Marquer toutes les notifications comme lues */
     @PutMapping("/user/{userId}/mark-all-read")
     public ResponseEntity<Map<String, Object>> marquerToutesCommeLues(
             @PathVariable Long userId,
             Authentication authentication) {
 
         try {
-            // Même logique de sécurité
             Optional<Utilisateur> utilisateurExistantOpt = utilisateurService.obtenirParId(userId);
             if (utilisateurExistantOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -115,7 +102,6 @@ public class NotificationController {
             Utilisateur utilisateurExistant = utilisateurExistantOpt.get();
             String emailConnecte = authentication.getName();
 
-            // CORRIGÉ
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
             boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
@@ -137,16 +123,13 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F4 : Compter les notifications non lues (badge)
-     */
+    /** F4 : Compter les notifications non lues (badge) */
     @GetMapping("/user/{userId}/count")
     public ResponseEntity<Map<String, Long>> getCountNotificationsNonLues(
             @PathVariable Long userId,
             Authentication authentication) {
 
         try {
-            // Même vérification de sécurité que les autres méthodes
             Optional<Utilisateur> utilisateurDemandeOpt = utilisateurService.obtenirParId(userId);
             if (utilisateurDemandeOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -155,7 +138,6 @@ public class NotificationController {
             Utilisateur utilisateurDemande = utilisateurDemandeOpt.get();
             String emailConnecte = authentication.getName();
 
-            // CORRIGÉ
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
             boolean estSonPropreProfil = utilisateurDemande.getEmail().equals(emailConnecte);
@@ -175,11 +157,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F5 : Marquer une notification comme lue
-     * Pattern IDENTIQUE à UtilisateurController.mettreAJour()
-     * Utilise votre JwtService via Authentication
-     */
+    /** F5 : Marquer une notification comme lue */
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<Map<String, String>> marquerCommeLue(
             @PathVariable Long notificationId,
@@ -187,23 +165,18 @@ public class NotificationController {
             Authentication authentication) {
 
         try {
-            // EXACTEMENT la même logique que UtilisateurController.mettreAJour()
             Optional<Utilisateur> utilisateurExistantOpt = utilisateurService.obtenirParId(userId);
             if (utilisateurExistantOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
             Utilisateur utilisateurExistant = utilisateurExistantOpt.get();
-            String emailConnecte = authentication.getName(); // Extrait par votre JwtService
+            String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un admin - CORRIGÉ
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
-
-            // Vérifie si c'est son propre profil
             boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
 
-            // Autorise si admin OU si c'est son propre profil
             if (estAdmin || estSonPropreProfil) {
                 notificationService.marquerCommeLue(notificationId, userId);
 
@@ -220,10 +193,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F6 : Notification création de projet (Chef de Projet)
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** F6 : Notification création de projet (Chef de Projet) */
     @PostMapping("/projet-cree")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> notifierProjetCree(
@@ -244,10 +214,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F7 : Notification assignation de tâche
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** F7 : Notification assignation de tâche */
     @PostMapping("/tache-assignee")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> notifierTacheAssignee(
@@ -269,10 +236,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F8 : Notification ajout à un projet
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** F8 : Notification ajout à un projet */
     @PostMapping("/ajout-projet")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> notifierAjoutProjet(
@@ -293,10 +257,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F10 : Notification paiement abonnement (Chef de Projet)
-     * CORRIGÉ : hasAuthority au lieu de hasRole - C'ÉTAIT LE PROBLÈME PRINCIPAL !
-     */
+    /** F10 : Notification paiement abonnement */
     @PostMapping("/paiement")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> notifierPaiement(
@@ -324,10 +285,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * F11 : Notification génération facture
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** F11 : Notification génération facture */
     @PostMapping("/facture")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> notifierFacture(
@@ -348,11 +306,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * Créer notification système (Admin seulement)
-     * Pattern identique à UtilisateurController.creer()
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** Créer notification système (Admin seulement) */
     @PostMapping
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Notification> creerNotification(@Valid @RequestBody CreateNotificationRequest request) {
@@ -368,11 +322,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * Liste toutes les notifications (Admin seulement)
-     * Pattern identique à UtilisateurController.getTous()
-     * CORRIGÉ : hasAuthority au lieu de hasRole
-     */
+    /** Liste toutes les notifications (Admin) */
     @GetMapping
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<Notification>> getAllNotifications() {
@@ -385,11 +335,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * Supprimer notification (Admin ou propriétaire)
-     * Pattern IDENTIQUE à UtilisateurController.supprimer()
-     * Utilise votre JwtService via Authentication
-     */
+    /** Supprimer notification (Admin ou propriétaire) */
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<Void> supprimerNotification(
             @PathVariable Long notificationId,
@@ -397,23 +343,18 @@ public class NotificationController {
             Authentication authentication) {
 
         try {
-            // EXACTEMENT la même logique que UtilisateurController
             Optional<Utilisateur> utilisateurExistantOpt = utilisateurService.obtenirParId(userId);
             if (utilisateurExistantOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
             Utilisateur utilisateurExistant = utilisateurExistantOpt.get();
-            String emailConnecte = authentication.getName(); // Extrait par votre JwtService
+            String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un admin - CORRIGÉ
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
-
-            // Vérifie si c'est son propre profil
             boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
 
-            // Autorise si admin OU si c'est son propre profil
             if (estAdmin || estSonPropreProfil) {
                 notificationService.supprimerNotification(notificationId, userId);
                 return ResponseEntity.ok().build();
@@ -427,10 +368,7 @@ public class NotificationController {
         }
     }
 
-    /**
-     * Notification de bienvenue après inscription (F1)
-     * Pattern similaire aux endpoints utilitaires de UtilisateurController
-     */
+    /** Notification de bienvenue après inscription (F1) */
     @PostMapping("/bienvenue")
     public ResponseEntity<Map<String, String>> envoyerBienvenue(@RequestParam Long utilisateurId) {
         try {

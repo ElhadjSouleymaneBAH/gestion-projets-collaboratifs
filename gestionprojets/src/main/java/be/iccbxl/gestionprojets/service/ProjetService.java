@@ -17,14 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Service pour la gestion des projets (F3, F6, F8, F9).
- *
- * NOTE IMPORTANTE : l'entité Projet possède désormais un champ
- * {@code Utilisateur createur} (ManyToOne, @JoinColumn(name="id_createur")).
- * Toute la logique doit utiliser {@code setCreateur(...)} et
- * {@code projet.getCreateur().getId()}.
- */
 @Service
 @Transactional
 public class ProjetService {
@@ -42,18 +34,11 @@ public class ProjetService {
     }
 
     // =====================================================================
-    // F3 : CONSULTER PROJETS PUBLICS (VISITEURS NON CONNECTÉS)
+    // F3 : CONSULTER PROJETS PUBLICS
     // =====================================================================
-
-    /**
-     * F3 : Consulter les projets publics (accessible aux visiteurs non connectés).
-     * Respecte le cahier des charges - importance 4/5 - contrainte lecture seule.
-     */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsPublics() {
-        System.out.println("DEBUG: [F3] Récupération des projets publics uniquement");
-
-        return projetRepository.findByPubliqueTrue()
+        return projetRepository.findByPubliqueTrueWithCreateur()
                 .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
@@ -62,11 +47,6 @@ public class ProjetService {
     // =====================================================================
     // F6 : CRÉER / LIRE / MODIFIER / SUPPRIMER
     // =====================================================================
-
-    /**
-     * Créer un nouveau projet à partir d'un DTO contenant l'ID du créateur.
-     * Le DTO garde idCreateur, mais on hydrate l'entité avec createur (Utilisateur).
-     */
     public ProjetDTO creerProjet(ProjetDTO projetDTO) {
         if (projetDTO.getIdCreateur() == null) {
             throw new RuntimeException("Le créateur (idCreateur) est obligatoire");
@@ -74,11 +54,20 @@ public class ProjetService {
         Utilisateur createur = utilisateurRepository.findById(projetDTO.getIdCreateur())
                 .orElseThrow(() -> new RuntimeException("Créateur introuvable: " + projetDTO.getIdCreateur()));
 
+        if (projetDTO.getTitre() == null || projetDTO.getTitre().isBlank()) {
+            throw new RuntimeException("Le titre est obligatoire");
+        }
+        if (projetDTO.getDescription() == null || projetDTO.getDescription().isBlank()) {
+            throw new RuntimeException("La description est obligatoire");
+        }
+
         Projet projet = new Projet();
         projet.setTitre(projetDTO.getTitre());
         projet.setDescription(projetDTO.getDescription());
         projet.setStatut(projetDTO.getStatut() != null ? projetDTO.getStatut() : "ACTIF");
         projet.setCreateur(createur);
+        projet.setPublique(projetDTO.getPublique() != null ? projetDTO.getPublique() : Boolean.FALSE);
+
         if (projet.getDateCreation() == null) {
             projet.setDateCreation(LocalDateTime.now());
         }
@@ -87,7 +76,6 @@ public class ProjetService {
         return convertirEnDTO(saved);
     }
 
-    /** GET tous les projets (F6). */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirTousProjets() {
         return projetRepository.findAll()
@@ -96,49 +84,44 @@ public class ProjetService {
                 .collect(Collectors.toList());
     }
 
-    /** GET un projet par id. */
+    /**
+     * Utilise JOIN FETCH pour charger le créateur
+     */
     @Transactional(readOnly = true)
     public Optional<ProjetDTO> obtenirProjetParId(Long id) {
-        return projetRepository.findById(id).map(this::convertirEnDTO);
+        return projetRepository.findByIdWithCreateur(id).map(this::convertirEnDTO);
     }
 
-    /** Accès entité brute (support F9 temps réel). */
     @Transactional(readOnly = true)
     public Optional<Projet> findById(Long id) {
         return projetRepository.findById(id);
     }
 
-    /** GET projets créés par un utilisateur (via createur.id). */
+    /**
+     * Utilise JOIN FETCH pour charger le créateur
+     */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsParCreateur(Long idCreateur) {
-        return projetRepository.findByCreateurId(idCreateur)
+        return projetRepository.findByCreateurIdWithCreateur(idCreateur)
                 .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * GET projets d'un utilisateur (créés + où il est membre).
-     * Combine F6 (créateur) et F8 (membre).
-     */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsParUtilisateur(Long utilisateurId) {
-        System.out.println("DEBUG: [F6/F8] Recherche projets pour utilisateur ID: " + utilisateurId);
-
         if (!utilisateurRepository.existsById(utilisateurId)) {
             throw new RuntimeException("Utilisateur non trouvé avec ID: " + utilisateurId);
         }
 
-        // 1) Projets créés
-        List<Projet> projetsCrees = projetRepository.findByCreateurId(utilisateurId);
+        // Utilise JOIN FETCH pour les projets créés
+        List<Projet> projetsCrees = projetRepository.findByCreateurIdWithCreateur(utilisateurId);
 
-        // 2) Projets où il est membre
         List<Long> idsCommeMembre = projetUtilisateurRepository.findProjetIdsByUtilisateurId(utilisateurId);
         List<Projet> projetsCommeMembre = idsCommeMembre.isEmpty()
                 ? List.of()
                 : projetRepository.findAllById(idsCommeMembre);
 
-        // 3) Fusion sans doublons
         List<Projet> tous = new ArrayList<>(projetsCrees);
         for (Projet p : projetsCommeMembre) {
             if (tous.stream().noneMatch(x -> x.getId().equals(p.getId()))) {
@@ -149,7 +132,6 @@ public class ProjetService {
         return tous.stream().map(this::convertirEnDTO).collect(Collectors.toList());
     }
 
-    /** PUT projet. */
     public ProjetDTO modifierProjet(Long id, ProjetDTO dto) {
         Projet p = projetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
@@ -159,36 +141,40 @@ public class ProjetService {
         if (dto.getStatut() != null) {
             p.setStatut(dto.getStatut());
         }
+        if (dto.getPublique() != null) {
+            p.setPublique(dto.getPublique());
+        }
 
         Projet saved = projetRepository.save(p);
         return convertirEnDTO(saved);
     }
 
-    /** DELETE projet (+ nettoie la table de jointure). */
     public void supprimerProjet(Long id) {
         if (!projetRepository.existsById(id)) {
             throw new RuntimeException("Projet non trouvé");
         }
-        projetUtilisateurRepository.deleteByProjetId(id); // retirer les membres
+        projetUtilisateurRepository.deleteByProjetId(id);
         projetRepository.deleteById(id);
     }
 
-    // =====================================================================
-    // Surcharges et règles d'autorisation
-    // =====================================================================
-
-    /**
-     * Surcharge création depuis l'email du créateur connecté.
-     */
     public ProjetDTO creerProjet(ProjetDTO dto, String emailCreateur) {
         Utilisateur createur = utilisateurRepository.findByEmail(emailCreateur)
                 .orElseThrow(() -> new RuntimeException("Utilisateur créateur non trouvé"));
+
+        if (dto.getTitre() == null || dto.getTitre().isBlank()) {
+            throw new RuntimeException("Le titre est obligatoire");
+        }
+        if (dto.getDescription() == null || dto.getDescription().isBlank()) {
+            throw new RuntimeException("La description est obligatoire");
+        }
 
         Projet p = new Projet();
         p.setTitre(dto.getTitre());
         p.setDescription(dto.getDescription());
         p.setStatut(dto.getStatut() != null ? dto.getStatut() : "ACTIF");
         p.setCreateur(createur);
+        p.setPublique(dto.getPublique() != null ? dto.getPublique() : Boolean.FALSE);
+
         if (p.getDateCreation() == null) {
             p.setDateCreation(LocalDateTime.now());
         }
@@ -196,7 +182,6 @@ public class ProjetService {
         return convertirEnDTO(projetRepository.save(p));
     }
 
-    /** L'utilisateur (email) peut-il modifier/supprimer ce projet ? */
     @Transactional(readOnly = true)
     public boolean utilisateurPeutModifierProjet(Long projetId, String emailUtilisateur) {
         Optional<Projet> pOpt = projetRepository.findById(projetId);
@@ -209,7 +194,6 @@ public class ProjetService {
         return p.getCreateur() != null && u.getId().equals(p.getCreateur().getId());
     }
 
-    /** L'utilisateur est-il membre du projet (créateur OU via table de jointure) ? */
     @Transactional(readOnly = true)
     public boolean estMembreDuProjet(Long utilisateurId, Long projetId) {
         Optional<Projet> pOpt = projetRepository.findById(projetId);
@@ -222,7 +206,6 @@ public class ProjetService {
     // =====================================================================
     // F8 : Gestion des membres
     // =====================================================================
-
     public void ajouterMembreAuProjet(Long projetId, Long utilisateurId) {
         Projet projet = projetRepository.findById(projetId)
                 .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
@@ -271,7 +254,6 @@ public class ProjetService {
     // =====================================================================
     // Conversions DTO
     // =====================================================================
-
     private ProjetDTO convertirEnDTO(Projet p) {
         ProjetDTO dto = new ProjetDTO();
         dto.setId(p.getId());
@@ -280,8 +262,14 @@ public class ProjetService {
         dto.setStatut(p.getStatut());
         dto.setDateCreation(p.getDateCreation());
         dto.setPublique(p.getPublique());
-        // Le DTO conserve idCreateur pour l'API → on le remplit depuis l'objet createur.
-        dto.setIdCreateur(p.getCreateur() != null ? p.getCreateur().getId() : null);
+
+        if (p.getCreateur() != null) {
+            dto.setIdCreateur(p.getCreateur().getId());
+            dto.setCreateurNom(p.getCreateur().getNom());
+            dto.setCreateurPrenom(p.getCreateur().getPrenom());
+            dto.setCreateurEmail(p.getCreateur().getEmail());
+        }
+
         return dto;
     }
 

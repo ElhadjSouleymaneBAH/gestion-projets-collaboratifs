@@ -1,10 +1,13 @@
 package be.iccbxl.gestionprojets.controller;
 
+import be.iccbxl.gestionprojets.dto.AbonnementDTO;
+import be.iccbxl.gestionprojets.mapper.AbonnementMapper;
 import be.iccbxl.gestionprojets.model.Abonnement;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.service.AbonnementService;
 import be.iccbxl.gestionprojets.service.UtilisateurService;
 import be.iccbxl.gestionprojets.enums.StatutAbonnement;
+import be.iccbxl.gestionprojets.enums.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,25 +17,23 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Contrôleur REST pour la gestion des abonnements.
- *
- * Implémente la fonctionnalité définie dans le cahier des charges :
- * - F10 : Paiements et abonnements (Chefs de Projet et Administrateurs)
- *
- * Supporte le modèle économique défini dans le business plan :
- * - Abonnement mensuel obligatoire pour les Chefs de Projet (10€/mois)
- * - Gestion des statuts d'abonnement (ACTIF, EXPIRE, RESILIE, EN_PAUSE)
- * - Intégration avec Stripe pour les paiements sécurisés
+ * Implémente F10 : Paiements et abonnements.
  *
  * @author ElhadjSouleymaneBAH
- * @version 2.0 - CORS géré par CorsConfig.java
- * @see "Cahier des charges - F10: Paiements et abonnements"
- * @see "Business plan - Modèle freemium 10€/mois"
  */
 @RestController
 @RequestMapping("/api/abonnements")
+@CrossOrigin(
+        origins = {
+                "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5177",
+                "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5177"
+        },
+        allowCredentials = "true"
+)
 public class AbonnementController {
 
     private final AbonnementService abonnementService;
@@ -43,28 +44,26 @@ public class AbonnementController {
         this.utilisateurService = utilisateurService;
     }
 
-    // F10 : SOUSCRIRE UN ABONNEMENT
-
+    // ========== F10 : SOUSCRIRE UN ABONNEMENT ==========
     /**
-     * Souscription d'un nouvel abonnement.
+     * Souscrit ou renouvelle un abonnement pour l'utilisateur connecté.
      *
-     * Fonctionnalité F10 : Paiements et abonnements
-     * Utilisateurs : Chef de Projet (pour devenir Chef de Projet)
-     * Importance : 5/5
-     * Contraintes : Stripe requis (intégration de paiement)
+     * Logique conforme au cahier des charges :
+     * 1. Si abonnement actif existant → Renouvellement automatique (+1 mois)
+     * 2. Si abonnement expiré → Réactivation
+     * 3. Si aucun abonnement → Création nouvel abonnement + Promotion MEMBRE → CHEF_PROJET
      *
-     * @param abonnement Données de l'abonnement à créer
-     * @param authentication Informations d'authentification
-     * @return L'abonnement créé ou message d'erreur
-     * @see "Cahier des charges - F10: Paiements et abonnements"
+     * @param dto Données de l'abonnement (optionnelles, valeurs par défaut appliquées)
+     * @param authentication Utilisateur authentifié via JWT
+     * @return ResponseEntity avec AbonnementDTO créé/renouvelé
      */
     @PostMapping("/souscrire")
-    public ResponseEntity<?> souscrireAbonnement(@Valid @RequestBody Abonnement abonnement,
+    public ResponseEntity<?> souscrireAbonnement(@RequestBody AbonnementDTO dto,
                                                  Authentication authentication) {
         try {
             System.out.println("DEBUG: [F10] Souscription abonnement par: " + authentication.getName());
 
-            // Récupérer l'utilisateur authentifié
+            // Récupérer l'utilisateur connecté
             Optional<Utilisateur> utilisateurOpt = utilisateurService.findByEmail(authentication.getName());
             if (utilisateurOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -73,44 +72,91 @@ public class AbonnementController {
 
             Utilisateur utilisateur = utilisateurOpt.get();
 
-            // Vérifier s'il n'a pas déjà un abonnement actif
-            if (abonnementService.hasActiveSubscription(utilisateur.getId())) {
-                return ResponseEntity.badRequest()
-                        .body("L'utilisateur a déjà un abonnement actif");
+            // Charger l'abonnement avec l'utilisateur pour éviter LazyInitializationException
+            Optional<Abonnement> abonnementExistant = abonnementService.findByUtilisateurIdWithUtilisateur(utilisateur.getId());
+
+            if (abonnementExistant.isPresent()) {
+                Abonnement existant = abonnementExistant.get();
+
+                // CAS 1 : Abonnement actif → Renouvellement automatique
+                if (abonnementService.hasActiveSubscription(utilisateur.getId())) {
+                    System.out.println("DEBUG: [F10] Renouvellement automatique pour utilisateur: " + utilisateur.getId());
+                    Abonnement abonnementRenouvelé = abonnementService.renouvelerAbonnement(existant.getId());
+                    AbonnementDTO response = AbonnementMapper.toDTO(abonnementRenouvelé);
+                    System.out.println("DEBUG: [F10] Abonnement renouvelé avec succès: " + abonnementRenouvelé.getId());
+                    return ResponseEntity.ok(response);
+                }
+
+                // CAS 2 : Abonnement expiré → Réactivation
+                System.out.println("DEBUG: [F10] Réactivation abonnement expiré pour utilisateur: " + utilisateur.getId());
+                Abonnement abonnementReactive = abonnementService.reactiverAbonnement(existant.getId());
+
+                // 🔧 CORRECTION : Remettre le rôle CHEF_PROJET lors de la réactivation
+                if (utilisateur.getRole() != Role.CHEF_PROJET) {
+                    utilisateur.setRole(Role.CHEF_PROJET);
+                    utilisateurService.save(utilisateur);
+                    System.out.println("DEBUG: [F10] Rôle réactivé : MEMBRE → CHEF_PROJET");
+                }
+
+                AbonnementDTO response = AbonnementMapper.toDTO(abonnementReactive);
+                System.out.println("DEBUG: [F10] Abonnement réactivé avec succès: " + abonnementReactive.getId());
+                return ResponseEntity.ok(response);
             }
 
-            // Créer l'abonnement avec l'utilisateur
+            // CAS 3 : Aucun abonnement → Création
+            System.out.println("DEBUG: [F10] Création nouvel abonnement pour utilisateur: " + utilisateur.getId());
+            String nom   = (dto.getNom() == null || dto.getNom().isBlank()) ? "Plan Premium Mensuel" : dto.getNom();
+            Double prix  = (dto.getPrix() == null || dto.getPrix() <= 0) ? 10.0 : dto.getPrix();
+            Integer duree = (dto.getDuree() == null || dto.getDuree() < 1) ? 1 : Math.min(dto.getDuree(), 12);
+            String type  = (dto.getType() == null || dto.getType().isBlank()) ? "premium" : dto.getType();
+
+            Abonnement abonnement = new Abonnement();
+            abonnement.setNom(nom);
+            abonnement.setPrix(prix);
+            abonnement.setDuree(duree);
+            abonnement.setType(type);
             abonnement.setUtilisateur(utilisateur);
+            abonnement.setStatut(StatutAbonnement.ACTIF);
+            abonnement.setDateDebut(java.time.LocalDate.now());
+            abonnement.setDateFin(java.time.LocalDate.now().plusMonths(duree));
+
             Abonnement abonnementCree = abonnementService.save(abonnement);
 
+            // 🔧 CORRECTION MAJEURE : Mise à jour du rôle MEMBRE → CHEF_PROJET
+            // Conforme au cahier des charges : "Chef de projet (Abonné) : Doit souscrire à un abonnement mensuel"
+            if (utilisateur.getRole() != Role.CHEF_PROJET) {
+                utilisateur.setRole(Role.CHEF_PROJET);
+                utilisateurService.save(utilisateur);
+                System.out.println("DEBUG: [F10] Promotion automatique : MEMBRE → CHEF_PROJET");
+            }
+
+            AbonnementDTO response = AbonnementMapper.toDTO(abonnementCree);
+
             System.out.println("DEBUG: [F10] Abonnement créé avec succès: " + abonnementCree.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(abonnementCree);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur souscription abonnement: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de la souscription de l'abonnement");
+                    .body("Erreur lors de la souscription de l'abonnement: " + e.getMessage());
         }
     }
 
-    // F10 : CONSULTER SON ABONNEMENT
-
+    // ========== F10 : CONSULTER SON ABONNEMENT PAR ID ==========
     /**
-     * Consultation de l'abonnement utilisateur.
+     * Récupère un abonnement par son ID.
+     * Accessible uniquement par le propriétaire ou un administrateur.
      *
-     * Fonctionnalité F10 : Consultation du statut d'abonnement
-     * Utilisateurs : Chef de Projet (propriétaire), Administrateur
-     *
-     * @param id L'identifiant de l'abonnement
-     * @param authentication Informations d'authentification
-     * @return L'abonnement ou erreur 403/404
-     * @see "Cahier des charges - F10: Paiements et abonnements"
+     * @param id ID de l'abonnement
+     * @param authentication Utilisateur authentifié
+     * @return ResponseEntity avec AbonnementDTO
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Abonnement> getAbonnementParId(@PathVariable Long id,
-                                                         Authentication authentication) {
+    public ResponseEntity<?> getAbonnementParId(@PathVariable Long id,
+                                                Authentication authentication) {
         try {
-            Optional<Abonnement> abonnementOpt = abonnementService.findById(id);
+            Optional<Abonnement> abonnementOpt = abonnementService.findByIdWithUtilisateur(id);
             if (abonnementOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -118,129 +164,132 @@ public class AbonnementController {
             Abonnement abonnement = abonnementOpt.get();
             String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un administrateur
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
 
-            // Autorise si admin OU si c'est son propre abonnement
             if (estAdmin || estSonAbonnement) {
-                return ResponseEntity.ok(abonnement);
+                AbonnementDTO dto = AbonnementMapper.toDTO(abonnement);
+                return ResponseEntity.ok(dto);
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur consultation abonnement: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // F10 : CONSULTER ABONNEMENT PAR UTILISATEUR
-
+    // ========== F10 : CONSULTER ABONNEMENT PAR UTILISATEUR ==========
     /**
-     * Consultation de l'abonnement d'un utilisateur.
-     * Utilisé pour vérifier les contraintes F6, F7, F8 (abonnement actif requis).
+     * Récupère l'abonnement d'un utilisateur par son ID.
+     * Accessible uniquement par le propriétaire ou un administrateur.
      *
-     * @param utilisateurId L'identifiant de l'utilisateur
-     * @param authentication Informations d'authentification
-     * @return L'abonnement de l'utilisateur ou 404
+     * @param utilisateurId ID de l'utilisateur
+     * @param authentication Utilisateur authentifié
+     * @return ResponseEntity avec AbonnementDTO ou 404 si non trouvé
      */
     @GetMapping("/utilisateur/{utilisateurId}")
-    public ResponseEntity<Abonnement> getAbonnementParUtilisateur(@PathVariable Long utilisateurId,
-                                                                  Authentication authentication) {
+    public ResponseEntity<?> getAbonnementParUtilisateur(@PathVariable Long utilisateurId,
+                                                         Authentication authentication) {
         try {
-            Optional<Abonnement> abonnementOpt = abonnementService.findByUtilisateurId(utilisateurId);
+            Optional<Abonnement> abonnementOpt = abonnementService.findByUtilisateurIdWithUtilisateur(utilisateurId);
             if (abonnementOpt.isEmpty()) {
+                System.out.println("DEBUG: [F10] Aucun abonnement trouvé pour l'utilisateur: " + utilisateurId);
                 return ResponseEntity.notFound().build();
             }
 
             Abonnement abonnement = abonnementOpt.get();
             String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un administrateur
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            // Vérifie si c'est son propre abonnement
-            boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
+            boolean estSonAbonnement = utilisateurService.findByEmail(emailConnecte)
+                    .map(u -> u.getId().equals(utilisateurId))
+                    .orElse(false);
 
             if (estAdmin || estSonAbonnement) {
-                return ResponseEntity.ok(abonnement);
+                AbonnementDTO dto = AbonnementMapper.toDTO(abonnement);
+                System.out.println("DEBUG: [F10] Abonnement trouvé pour utilisateur " + utilisateurId + ": " + abonnement.getId());
+                return ResponseEntity.ok(dto);
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur consultation abonnement utilisateur: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // F10 : RENOUVELER ABONNEMENT
-
+    // ========== F10 : RENOUVELER ABONNEMENT ==========
     /**
-     * Renouvellement d'un abonnement.
-     * Étend la durée de l'abonnement et traite le paiement via Stripe.
+     * Renouvelle un abonnement pour 1mois supplémentaire.
+     * Accessible uniquement par le propriétaire ou un administrateur.
      *
-     * @param id L'identifiant de l'abonnement
-     * @param authentication Informations d'authentification
-     * @return L'abonnement renouvelé ou erreur
+     * @param id ID de l'abonnement
+     * @param authentication Utilisateur authentifié
+     * @return ResponseEntity avec AbonnementDTO renouvelé
      */
     @PutMapping("/{id}/renouveler")
     public ResponseEntity<?> renouvelerAbonnement(@PathVariable Long id,
                                                   Authentication authentication) {
         try {
-            Optional<Abonnement> abonnementOpt = abonnementService.findById(id);
+            System.out.println("DEBUG: [F10] Tentative de renouvellement abonnement ID: " + id);
+
+            Optional<Abonnement> abonnementOpt = abonnementService.findByIdWithUtilisateur(id);
             if (abonnementOpt.isEmpty()) {
+                System.err.println("ERROR: [F10] Abonnement introuvable: " + id);
                 return ResponseEntity.notFound().build();
             }
 
             Abonnement abonnement = abonnementOpt.get();
             String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un admin
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
 
-            if (estAdmin || estSonAbonnement) {
-                // Renouveler l'abonnement (méthode du modèle)
-                abonnement.renouveler();
-                Abonnement abonnementRenouvelé = abonnementService.save(abonnement);
-
-                System.out.println("DEBUG: [F10] Abonnement renouvelé: " + id);
-                return ResponseEntity.ok(abonnementRenouvelé);
-            } else {
+            if (!estAdmin && !estSonAbonnement) {
+                System.err.println("ERROR: [F10] Accès refusé pour renouveler abonnement: " + id);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
+            Abonnement abonnementRenouvelé = abonnementService.renouvelerAbonnement(id);
+            AbonnementDTO dto = AbonnementMapper.toDTO(abonnementRenouvelé);
+
+            System.out.println("DEBUG: [F10] Abonnement renouvelé avec succès: " + id +
+                    " - Nouvelle date fin: " + abonnementRenouvelé.getDateFin());
+            return ResponseEntity.ok(dto);
+
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur renouvellement abonnement: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors du renouvellement");
+                    .body("Erreur lors du renouvellement: " + e.getMessage());
         }
     }
 
-    // F10 : RÉSILIER ABONNEMENT
-
+    // ========== F10 : RÉSILIER ABONNEMENT ==========
     /**
-     * Résiliation d'un abonnement.
-     * Change le statut en RESILIE sans supprimer l'historique.
+     * Résilie un abonnement.
+     * Accessible uniquement par le propriétaire ou un administrateur.
      *
-     * @param id L'identifiant de l'abonnement
-     * @param authentication Informations d'authentification
-     * @return Confirmation de résiliation ou erreur
+     * @param id ID de l'abonnement
+     * @param authentication Utilisateur authentifié
+     * @return ResponseEntity avec AbonnementDTO résilié
      */
     @PutMapping("/{id}/resilier")
     public ResponseEntity<?> resilierAbonnement(@PathVariable Long id,
                                                 Authentication authentication) {
         try {
-            Optional<Abonnement> abonnementOpt = abonnementService.findById(id);
+            Optional<Abonnement> abonnementOpt = abonnementService.findByIdWithUtilisateur(id);
             if (abonnementOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -248,44 +297,44 @@ public class AbonnementController {
             Abonnement abonnement = abonnementOpt.get();
             String emailConnecte = authentication.getName();
 
-            // Vérifie si c'est un admin
             boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRATEUR"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            // Vérifie si c'est son propre abonnement
             boolean estSonAbonnement = abonnement.getUtilisateur().getEmail().equals(emailConnecte);
 
             if (estAdmin || estSonAbonnement) {
-                // Résilier l'abonnement
-                abonnement.setStatut(StatutAbonnement.RESILIE);
-                Abonnement abonnementResilie = abonnementService.save(abonnement);
+                Abonnement abonnementResilie = abonnementService.resilierAbonnement(id);
+
+                // 🔧 CORRECTION : Rétrograder le rôle CHEF_PROJET → MEMBRE lors de la résiliation
+                Utilisateur utilisateur = abonnement.getUtilisateur();
+                if (utilisateur.getRole() == Role.CHEF_PROJET) {
+                    utilisateur.setRole(Role.MEMBRE);
+                    utilisateurService.save(utilisateur);
+                    System.out.println("DEBUG: [F10] Rétrogradation : CHEF_PROJET → MEMBRE");
+                }
+
+                AbonnementDTO dto = AbonnementMapper.toDTO(abonnementResilie);
 
                 System.out.println("DEBUG: [F10] Abonnement résilié: " + id);
-                return ResponseEntity.ok(abonnementResilie);
+                return ResponseEntity.ok(dto);
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur résiliation abonnement: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la résiliation");
         }
     }
 
-    // ENDPOINTS UTILITAIRES
-
-    /**
-     * Vérification du statut d'abonnement actif.
-     * Utilisé par F6, F7, F8 pour vérifier les contraintes d'abonnement.
-     *
-     * @param utilisateurId L'identifiant de l'utilisateur
-     * @return true si l'utilisateur a un abonnement actif
-     */
+    // ========== ENDPOINTS UTILITAIRES ==========
     @GetMapping("/verification-statut/{utilisateurId}")
     public ResponseEntity<Boolean> verifierStatutActif(@PathVariable Long utilisateurId) {
         try {
             boolean hasActiveSubscription = abonnementService.hasActiveSubscription(utilisateurId);
+            System.out.println("DEBUG: [F10] Vérification statut utilisateur " + utilisateurId + ": " + hasActiveSubscription);
             return ResponseEntity.ok(hasActiveSubscription);
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur vérification statut: " + e.getMessage());
@@ -293,56 +342,46 @@ public class AbonnementController {
         }
     }
 
-    // ENDPOINTS ADMINISTRATEUR
-
-    /**
-     * Liste tous les abonnements du système.
-     * Réservé aux administrateurs pour la supervision générale.
-     *
-     * @return Liste de tous les abonnements
-     */
+    // ========== ENDPOINTS ADMINISTRATEUR ==========
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<List<Abonnement>> getTousLesAbonnements() {
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<List<AbonnementDTO>> getTousLesAbonnements() {
         try {
-            List<Abonnement> abonnements = abonnementService.findAll();
-            System.out.println("DEBUG: [F10] Liste abonnements demandée par admin: " + abonnements.size() + " trouvés");
-            return ResponseEntity.ok(abonnements);
+            List<Abonnement> abonnements = abonnementService.findAllWithUtilisateurs();
+
+            List<AbonnementDTO> abonnementsDTO = abonnements.stream()
+                    .map(AbonnementMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            System.out.println("DEBUG: [F10] " + abonnementsDTO.size() + " abonnements retournés avec utilisateurs");
+            return ResponseEntity.ok(abonnementsDTO);
+
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur liste abonnements: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /**
-     * Création d'abonnement par l'administrateur.
-     * Permet à l'admin de créer des abonnements spéciaux.
-     *
-     * @param abonnement L'abonnement à créer
-     * @return L'abonnement créé
-     */
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
-    public ResponseEntity<Abonnement> creerAbonnementAdmin(@Valid @RequestBody Abonnement abonnement) {
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<?> creerAbonnementAdmin(@Valid @RequestBody Abonnement abonnement) {
         try {
             Abonnement abonnementCree = abonnementService.save(abonnement);
+            AbonnementDTO dto = AbonnementMapper.toDTO(abonnementCree);
+
             System.out.println("DEBUG: [F10] Abonnement créé par admin: " + abonnementCree.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(abonnementCree);
+            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur création abonnement admin: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
 
-    /**
-     * Suppression d'abonnement par l'administrateur.
-     * Supprime complètement l'abonnement (à utiliser avec précaution).
-     *
-     * @param id L'identifiant de l'abonnement à supprimer
-     * @return Confirmation de suppression
-     */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimerAbonnement(@PathVariable Long id) {
         try {
             if (!abonnementService.existsById(id)) {
@@ -352,8 +391,10 @@ public class AbonnementController {
             abonnementService.deleteById(id);
             System.out.println("DEBUG: [F10] Abonnement supprimé par admin: " + id);
             return ResponseEntity.ok().build();
+
         } catch (Exception e) {
             System.err.println("ERROR: [F10] Erreur suppression abonnement: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

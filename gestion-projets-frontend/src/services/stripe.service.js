@@ -1,124 +1,127 @@
-// services/stripeService.js
-import { loadStripe } from '@stripe/stripe-js'
-import api from '@/services/api.js'
+// src/services/stripe.service.js
+import api from '@/services/api'
+import { endpoints } from '@/config/endpoints'
 
-// Initialisation Stripe avec clé publique
-const stripePromise = loadStripe('pk_test_51QUuS1G4o2phWc0JMMPWvxd1tzOX5bMqPJoANzrbsHJjm6fXVCBI57Ikdfj1n6fvhVw5zX5YqhzLmRHINYFy2Ly600q3HhwWLe')
-
-// Plans d'abonnement disponibles
-export const SUBSCRIPTION_PLANS = {
-  PREMIUM: {
-    id: 'premium',
-    name: 'Plan Premium Mensuel',
-    price: 10,
-    currency: 'EUR',
-    features: [
-      'Création illimitée de projets',
-      'Gestion complète des équipes',
-      'Collaboration temps réel',
-      'Facturation automatique',
-      'Support prioritaire'
-    ]
-  }
+/** Codes d’erreur (i18n) */
+const ERROR_CODES = {
+  CREATE_PAYMENT_INTENT_FAILED: 'stripe.errors.createPaymentIntentFailed',
+  CONFIRM_PAYMENT_FAILED: 'stripe.errors.confirmPaymentFailed',
+  GET_INVOICES_FAILED: 'stripe.errors.getInvoicesFailed',
+  GET_SUBSCRIPTION_FAILED: 'stripe.errors.getSubscriptionFailed',
+  NETWORK_ERROR: 'stripe.errors.networkError',
+  SERVER_ERROR: 'stripe.errors.serverError',
 }
 
-export const stripeService = {
-  // Obtenir l'instance Stripe
-  async getStripe() {
-    return await stripePromise
-  },
+/** Messages de succès (i18n) */
+const SUCCESS_MESSAGES = {
+  PAYMENT_INTENT_CREATED: 'stripe.success.paymentIntentCreated',
+  PAYMENT_CONFIRMED: 'stripe.success.paymentConfirmed',
+  INVOICES_RETRIEVED: 'stripe.success.invoicesRetrieved',
+  SUBSCRIPTION_RETRIEVED: 'stripe.success.subscriptionRetrieved',
+}
 
-  // Créer une session de paiement Stripe
-  async createCheckoutSession(planId) {
+/* Helpers i18n */
+function getLocalizedErrorMessage(code, t) {
+  if (!t || typeof t !== 'function') return 'Erreur inconnue'
+  return t(code) !== code ? t(code) : t('stripe.errors.general')
+}
+function getLocalizedSuccessMessage(key, t) {
+  if (!t || typeof t !== 'function') return 'Succès'
+  return t(key) !== key ? t(key) : t('stripe.success.general')
+}
+
+export default {
+  /** F10 — Créer un PaymentIntent (10€ / mois) */
+  async createPaymentIntent() {
     try {
-      const response = await api.post('/stripe/create-checkout-session', {
-        planId,
-        successUrl: `${window.location.origin}/abonnement/success`,
-        cancelUrl: `${window.location.origin}/abonnement/cancel`
-      })
-      return response.data
-    } catch (error) {
-      console.error('Erreur création session Stripe:', error)
-      throw error
-    }
-  },
-
-  // Rediriger vers Stripe Checkout
-  async redirectToCheckout(sessionId) {
-    try {
-      const stripe = await this.getStripe()
-      const { error } = await stripe.redirectToCheckout({ sessionId })
-
-      if (error) {
-        console.error('Erreur redirection Stripe:', error)
-        throw error
+      const { data } = await api.post(`${endpoints.stripe}/create-payment-intent`)
+      // data = { payment_intent_id, client_secret }
+      return {
+        success: true,
+        data,
+        messageKey: SUCCESS_MESSAGES.PAYMENT_INTENT_CREATED,
       }
     } catch (error) {
-      console.error('Erreur redirection checkout:', error)
-      throw error
-    }
-  },
-
-  // Processus complet de paiement
-  async processPayment(planId) {
-    try {
-      // 1. Créer la session Stripe
-      const session = await this.createCheckoutSession(planId)
-
-      // 2. Rediriger vers Stripe
-      await this.redirectToCheckout(session.sessionId)
-
-      return { success: true }
-    } catch (error) {
-      console.error('Erreur processus paiement:', error)
+      console.error('createPaymentIntent error:', error)
       return {
         success: false,
-        error: error.response?.data?.message || 'Erreur lors du paiement'
+        errorCode: ERROR_CODES.CREATE_PAYMENT_INTENT_FAILED,
+        message: error.response?.data?.error || 'Erreur création PaymentIntent',
+        error,
       }
     }
   },
 
-  // Vérifier le statut d'un paiement
-  async verifyPayment(sessionId) {
+  /** F10+F11 — Confirmer le paiement (serveur: crée abonnement + génère facture) */
+  async confirmPayment(payment_intent_id) {
     try {
-      const response = await api.get(`/stripe/verify-payment/${sessionId}`)
-      return response.data
+      const payload = { payment_intent_id }
+      const { data } = await api.post(`${endpoints.stripe}/confirm-payment`, payload)
+      // data = {message: "Paiement confirmé et facture générée"}
+      return {
+        success: true,
+        data,
+        messageKey: SUCCESS_MESSAGES.PAYMENT_CONFIRMED,
+      }
     } catch (error) {
-      console.error('Erreur vérification paiement:', error)
-      throw error
+      console.error('confirmPayment error:', error)
+      return {
+        success: false,
+        errorCode: ERROR_CODES.CONFIRM_PAYMENT_FAILED,
+        message: error.response?.data?.error || 'Erreur confirmation paiement',
+        error,
+      }
     }
   },
 
-  // Récupérer l'abonnement actuel de l'utilisateur
-  async getCurrentSubscription() {
-    try {
-      const response = await api.get('/stripe/subscription/current')
-      return response.data
-    } catch (error) {
-      console.error('Erreur récupération abonnement:', error)
-      return null
-    }
-  },
-
-  // Annuler un abonnement
-  async cancelSubscription() {
-    try {
-      const response = await api.post('/stripe/subscription/cancel')
-      return response.data
-    } catch (error) {
-      console.error('Erreur annulation abonnement:', error)
-      throw error
-    }
-  },
-
-  // Obtenir les factures de l'utilisateur
+  /** Factures de l’utilisateur (backend: GET /api/factures/mes-factures) */
   async getInvoices() {
     try {
-      const response = await api.get('/stripe/invoices')
-      return response.data
+      const { data } = await api.get(`${endpoints.factures}/mes-factures`)
+      return {
+        success: true,
+        data,
+        messageKey: SUCCESS_MESSAGES.INVOICES_RETRIEVED,
+      }
     } catch (error) {
-      console.error('Erreur récupération factures:', error)
-      return []
+      console.error('getInvoices error:', error)
+      return {
+        success: false,
+        errorCode: ERROR_CODES.GET_INVOICES_FAILED,
+        message: error.response?.data?.error || 'Erreur récupération factures',
+        data: [],
+      }
     }
-  }
+  },
+
+  /** Abonnement courant par id utilisateur (GET /api/abonnements/utilisateur/{id}) */
+  async getCurrentSubscription(userId) {
+    try {
+      const { data } = await api.get(`${endpoints.abonnements}/utilisateur/${userId}`)
+      return {
+        success: true,
+        data,
+        messageKey: SUCCESS_MESSAGES.SUBSCRIPTION_RETRIEVED,
+      }
+    } catch (error) {
+      console.error('getCurrentSubscription error:', error)
+      return {
+        success: false,
+        errorCode: ERROR_CODES.GET_SUBSCRIPTION_FAILED,
+        message: error.response?.data?.error || 'Erreur récupération abonnement',
+        data: null,
+      }
+    }
+  },
+
+  /* Helpers i18n exposés */
+  getLocalizedErrorMessage(err, t) {
+    return getLocalizedErrorMessage(err?.errorCode, t) || err?.message
+  },
+  getLocalizedSuccessMessage(key, t) {
+    return getLocalizedSuccessMessage(key, t)
+  },
+
+  ERROR_CODES,
+  SUCCESS_MESSAGES,
 }

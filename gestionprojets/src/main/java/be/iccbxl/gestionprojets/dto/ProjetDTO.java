@@ -14,8 +14,11 @@ public class ProjetDTO {
     private Long id;
     private String titre;
     private String description;
-    private Long idCreateur;
     private String statut;
     private LocalDateTime dateCreation;
     private Boolean publique;
+    private Long idCreateur;
+    private String createurNom;
+    private String createurPrenom;
+    private String createurEmail;
 }

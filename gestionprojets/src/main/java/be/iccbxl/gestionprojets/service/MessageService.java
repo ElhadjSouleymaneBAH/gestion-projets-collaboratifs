@@ -15,9 +15,8 @@ import java.util.Optional;
 /**
  * Service pour la gestion des messages de chat
  * Support de F9 : Collaboration en temps réel
- *
- * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * author ElhadjSouleymaneBAH
+ * version 1.0
  */
 @Service
 @RequiredArgsConstructor
@@ -28,35 +27,39 @@ public class MessageService {
 
     // ========== MÉTHODES PRINCIPALES ==========
 
-    /**
-     * Sauvegarder un nouveau message
-     * Utilisé pour F9 : Envoyer des messages temps réel
-     */
+    /** Sauvegarder un nouveau message (F9) */
     public Message sauvegarderMessage(Message message) {
+        if (message.getDateEnvoi() == null) {
+            message.setDateEnvoi(LocalDateTime.now());
+        }
+        if (message.getStatut() == null) {
+            message.setStatut(StatutMessage.ENVOYE);
+        }
+        if (message.getType() == null) {
+            message.setType(TypeMessage.TEXT);
+        }
         return messageRepository.save(message);
     }
 
-    /**
-     * Récupérer tous les messages d'un projet
-     * Utilisé pour F9 : Afficher l'historique du chat
-     */
+    /** ⇨ AJOUT : récupérer tous les messages (alias admin /api/messages/admin/all) */
+    @Transactional(readOnly = true)
+    public List<Message> findAll() {
+        return messageRepository.findAll();
+    }
+
+    /** Récupérer tous les messages d'un projet (F9) */
     @Transactional(readOnly = true)
     public List<Message> getMessagesParProjet(Long projetId) {
         return messageRepository.findByProjetIdOrderByDateEnvoiAsc(projetId);
     }
 
-    /**
-     * Récupérer les derniers messages d'un projet
-     * Utilisé pour F9 : Chat avec pagination
-     */
+    /** Derniers messages d'un projet */
     @Transactional(readOnly = true)
     public List<Message> getDerniersMessagesParProjet(Long projetId) {
         return messageRepository.findByProjetIdOrderByDateEnvoiDesc(projetId);
     }
 
-    /**
-     * Trouver un message par ID
-     */
+    /** Trouver un message par ID */
     @Transactional(readOnly = true)
     public Optional<Message> findById(Long id) {
         return messageRepository.findById(id);
@@ -64,32 +67,21 @@ public class MessageService {
 
     // ========== GESTION DES STATUTS ==========
 
-    /**
-     * Marquer un message comme lu
-     * Utilisé pour F9 : Suivi des messages lus
-     */
-    public void marquerCommeLu(Long messageId, Long utilisateurId) {
-        Optional<Message> messageOpt = messageRepository.findById(messageId);
-        if (messageOpt.isPresent()) {
-            Message message = messageOpt.get();
-            message.marquerCommeLu();
-            messageRepository.save(message);
-        }
+    /** Marquer un message comme lu (F9) — 1 argument */
+    public void marquerCommeLu(Long messageId) {
+        messageRepository.findById(messageId).ifPresent(m -> {
+            m.marquerCommeLu();
+            messageRepository.save(m);
+        });
     }
 
-    /**
-     * Récupérer les messages non lus d'un projet
-     * Utilisé pour F9 : Notifications de messages non lus
-     */
+    /** Messages non lus d'un projet */
     @Transactional(readOnly = true)
     public List<Message> getMessagesNonLus(Long projetId) {
         return messageRepository.findMessagesNonLusByProjet(projetId);
     }
 
-    /**
-     * Compter les messages non lus pour un utilisateur dans un projet
-     * Utilisé pour F9 : Badges de notification
-     */
+    /** Compter messages non lus pour un utilisateur dans un projet */
     @Transactional(readOnly = true)
     public Long compterMessagesNonLus(Long projetId, Long utilisateurId) {
         return messageRepository.countMessagesNonLusByProjetAndNotUtilisateur(projetId, utilisateurId);
@@ -97,47 +89,27 @@ public class MessageService {
 
     // ========== FILTRAGE ET RECHERCHE ==========
 
-    /**
-     * Récupérer les messages par utilisateur
-     * Utilisé pour le profil utilisateur
-     */
     @Transactional(readOnly = true)
     public List<Message> getMessagesParUtilisateur(Long utilisateurId) {
         return messageRepository.findByUtilisateurIdOrderByDateEnvoiDesc(utilisateurId);
     }
 
-    /**
-     * Récupérer les messages par type
-     * Utilisé pour F9 : Filtrer notifications/système
-     */
     @Transactional(readOnly = true)
     public List<Message> getMessagesParType(TypeMessage type) {
         return messageRepository.findByTypeOrderByDateEnvoiDesc(type);
     }
 
-    /**
-     * Récupérer les messages par projet et type
-     * Utilisé pour F9 : Filtrage avancé
-     */
     @Transactional(readOnly = true)
     public List<Message> getMessagesParProjetEtType(Long projetId, TypeMessage type) {
         return messageRepository.findByProjetIdAndTypeOrderByDateEnvoiDesc(projetId, type);
     }
 
-    /**
-     * Récupérer les messages récents d'un projet (dernières 24h)
-     * Utilisé pour F9 : Activité récente
-     */
     @Transactional(readOnly = true)
     public List<Message> getMessagesRecents(Long projetId) {
         LocalDateTime depuis = LocalDateTime.now().minusDays(1);
         return messageRepository.findMessagesRecentsByProjet(projetId, depuis);
     }
 
-    /**
-     * Récupérer les messages récents depuis une date
-     * Utilisé pour F9 : Synchronisation temps réel
-     */
     @Transactional(readOnly = true)
     public List<Message> getMessagesDepuis(Long projetId, LocalDateTime depuis) {
         return messageRepository.findMessagesRecentsByProjet(projetId, depuis);
@@ -145,19 +117,11 @@ public class MessageService {
 
     // ========== STATISTIQUES ==========
 
-    /**
-     * Compter les messages d'un projet
-     * Statistiques pour l'interface
-     */
     @Transactional(readOnly = true)
     public Long compterMessages(Long projetId) {
         return messageRepository.countByProjetId(projetId);
     }
 
-    /**
-     * Récupérer l'activité de tous les projets d'un utilisateur
-     * Utilisé pour le tableau de bord
-     */
     @Transactional(readOnly = true)
     public List<Message> getActiviteUtilisateur(List<Long> projetIds) {
         return messageRepository.findLatestMessagesByProjetIds(projetIds);
@@ -165,18 +129,10 @@ public class MessageService {
 
     // ========== GESTION ==========
 
-    /**
-     * Supprimer un message
-     * Utilisé pour la modération
-     */
     public void supprimerMessage(Long messageId) {
         messageRepository.deleteById(messageId);
     }
 
-    /**
-     * Vérifier si un message existe
-     * Utilisé pour la validation
-     */
     @Transactional(readOnly = true)
     public boolean messageExiste(Long messageId) {
         return messageRepository.existsById(messageId);

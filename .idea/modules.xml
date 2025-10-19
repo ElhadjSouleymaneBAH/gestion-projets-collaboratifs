@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/gestionprojets/gestionprojets.iml" filepath="$PROJECT_DIR$/gestionprojets/gestionprojets.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/projet_collabpro.iml" filepath="$PROJECT_DIR$/.idea/projet_collabpro.iml" />
     </modules>
   </component>

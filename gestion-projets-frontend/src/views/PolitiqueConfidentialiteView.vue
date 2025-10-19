@@ -1,3 +1,4 @@
+
 <template>
   <div class="min-vh-100 bg-light">
     <!-- Header -->
@@ -5,16 +6,16 @@
       <div class="container">
         <div class="d-flex justify-content-between align-items-center">
           <router-link to="/" class="d-flex align-items-center text-decoration-none text-dark">
-            <img src="/logo-collabpro.png" alt="CollabPro" class="me-3" style="height: 40px; width: 40px;">
-            <h1 class="h4 fw-bold text-collabpro mb-0">CollabPro</h1>
+            <img src="/logo-collabpro.png" :alt="$t('commun.nomApplication')" class="me-3" style="height: 48px; width: 48px;">
+            <h1 class="h4 fw-bold text-collabpro mb-0">{{ $t('commun.nomApplication') }}</h1>
           </router-link>
 
           <div class="d-flex align-items-center gap-3">
             <router-link to="/connexion" class="btn btn-link text-collabpro text-decoration-none">
-              Connexion
+              {{ $t('nav.connexion') }}
             </router-link>
             <router-link to="/inscription" class="btn btn-collabpro">
-              Inscription
+              {{ $t('nav.inscription') }}
             </router-link>
           </div>
         </div>
@@ -28,95 +29,109 @@
           <!-- Titre et introduction -->
           <div class="bg-white rounded-3 shadow-sm p-5 mb-4">
             <div class="text-center mb-4">
-              <h1 class="h2 fw-bold text-collabpro mb-3">
-                <i class="fas fa-shield-alt me-3"></i>
-                Politique de Confidentialité
-              </h1>
+              <!-- Titre principal amélioré -->
+              <div class="title-hero mb-4">
+                <div class="d-inline-flex align-items-center bg-success bg-opacity-10 rounded-pill px-4 py-2 mb-3">
+                  <i class="fas fa-shield-alt text-success me-2"></i>
+                  <span class="badge bg-success rounded-pill">{{ $t('politique.rgpd') }}</span>
+                </div>
+                <h1 class="display-5 fw-bold text-dark mb-2">
+                  {{ $t('politique.titre') }}
+                </h1>
+                <div class="title-underline mx-auto"></div>
+              </div>
+
               <p class="lead text-muted">
-                CollabPro s'engage à protéger et respecter votre vie privée
+                {{ $t('politique.sousTitre') }}
               </p>
               <p class="small text-muted">
                 <i class="fas fa-calendar-alt me-2"></i>
-                Dernière mise à jour : 23 août 2025
+                {{ $t('politique.derniereMiseAJour') }}
               </p>
             </div>
 
-            <div class="alert alert-info border-0">
-              <i class="fas fa-info-circle me-2"></i>
-              <strong>Information importante :</strong> Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles conformément au RGPD (Règlement Général sur la Protection des Données).
+            <div class="alert alert-success border-0">
+              <h5 class="h6 fw-bold mb-2">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ $t('politique.conformiteRGPD') }}
+              </h5>
+              <p class="small mb-0">
+                {{ $t('politique.conformiteRGPDDesc') }}
+              </p>
             </div>
           </div>
 
-          <!-- Section 1 : Données collectées -->
+          <!-- 1. Collecte des données -->
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-database text-primary me-2"></i>
-              1. Données Collectées
+              1. {{ $t('politique.donneesCollectees') }}
             </h2>
             <p class="text-muted mb-3">
-              Nous collectons différents types de données pour vous fournir nos services :
+              {{ $t('politique.donneesCollecteesDesc') }}
             </p>
 
             <div class="row g-3">
               <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
+                <div class="card border-0 bg-light">
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-primary mb-2">
                       <i class="fas fa-user me-1"></i>
-                      Données d'identification
+                      {{ $t('politique.donneesIdentification') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Nom et prénom</li>
-                      <li>Adresse e-mail</li>
-                      <li>Mot de passe (crypté)</li>
-                      <li>Type de compte (rôle)</li>
+                      <li>{{ $t('inscription.prenom') }} {{ $t('inscription.nom') }}</li>
+                      <li>{{ $t('inscription.email') }}</li>
+                      <li>{{ $t('inscription.motDePasse') }} ({{ $t('politique.hache') }})</li>
+                      <li>{{ $t('profil.langue') }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
+                <div class="card border-0 bg-light">
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-success mb-2">
-                      <i class="fas fa-credit-card me-1"></i>
-                      Données de paiement
+                      <i class="fas fa-project-diagram me-1"></i>
+                      {{ $t('politique.donneesUtilisation') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Informations de facturation</li>
-                      <li>Historique des transactions</li>
-                      <li>Données Stripe (sécurisées)</li>
+                      <li>{{ $t('projets.titre') }} {{ $t('politique.et') }} {{ $t('politique.contenus') }}</li>
+                      <li>{{ $t('collaboration.chat') }} {{ $t('politique.et') }} {{ $t('politique.messages') }}</li>
+                      <li>{{ $t('taches.titre') }} {{ $t('politique.et') }} {{ $t('commentaires.titre') }}</li>
+                      <li>{{ $t('politique.logsConnexion') }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
+                <div class="card border-0 bg-light">
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-warning mb-2">
-                      <i class="fas fa-chart-line me-1"></i>
-                      Données d'utilisation
+                      <i class="fas fa-credit-card me-1"></i>
+                      {{ $t('politique.donneesPaiement') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Projets créés/participés</li>
-                      <li>Tâches et commentaires</li>
-                      <li>Messages de chat</li>
-                      <li>Logs de connexion</li>
+                      <li>{{ $t('politique.informationsFacturation') }}</li>
+                      <li>{{ $t('politique.historiqueTransactions') }}</li>
+                      <li>{{ $t('politique.donneesStripe') }}</li>
+                      <li>{{ $t('factures.titre') }} {{ $t('politique.generees') }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
+                <div class="card border-0 bg-light">
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-info mb-2">
                       <i class="fas fa-laptop me-1"></i>
-                      Données techniques
+                      {{ $t('politique.donneesTechniques') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Adresse IP</li>
-                      <li>Navigateur et appareil</li>
-                      <li>Pages visitées</li>
-                      <li>Préférences linguistiques</li>
+                      <li>{{ $t('politique.adresseIP') }}</li>
+                      <li>{{ $t('politique.navigateurAppareil') }}</li>
+                      <li>{{ $t('politique.pagesVisitees') }}</li>
+                      <li>{{ $t('politique.preferencesLangue') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -124,518 +139,476 @@
             </div>
           </div>
 
-          <!-- Section 2 : Utilisation des données -->
+          <!-- 2. Finalités du traitement -->
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-cogs text-success me-2"></i>
-              2. Utilisation des Données
+              <i class="fas fa-bullseye text-warning me-2"></i>
+              2. {{ $t('politique.finalitesTraitement') }}
             </h2>
             <p class="text-muted mb-3">
-              Vos données sont utilisées pour les finalités suivantes :
+              {{ $t('politique.finalitesTraitementDesc') }}
             </p>
 
-            <div class="row g-3">
-              <div class="col-12">
-                <div class="d-flex align-items-start mb-3">
-                  <div class="badge bg-primary rounded-pill me-3 mt-1">1</div>
-                  <div>
-                    <h5 class="h6 fw-bold mb-1">Fourniture des services</h5>
-                    <p class="small text-muted mb-0">
-                      Création et gestion de votre compte, accès aux fonctionnalités de collaboration, gestion des projets et tâches.
+            <div class="accordion" id="finalitesAccordion">
+              <div class="accordion-item border-0 mb-2">
+                <h3 class="accordion-header">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#finalite1">
+                    <i class="fas fa-cog me-2"></i>
+                    {{ $t('politique.fournitureServices') }}
+                  </button>
+                </h3>
+                <div id="finalite1" class="accordion-collapse collapse show" data-bs-parent="#finalitesAccordion">
+                  <div class="accordion-body">
+                    <p class="text-muted">
+                      {{ $t('politique.fournitureServicesDesc') }}
                     </p>
+                    <strong>{{ $t('politique.baseLegale') }} :</strong>
+                    <span class="text-muted">{{ $t('politique.executionContrat') }}</span>
                   </div>
                 </div>
+              </div>
 
-                <div class="d-flex align-items-start mb-3">
-                  <div class="badge bg-success rounded-pill me-3 mt-1">2</div>
-                  <div>
-                    <h5 class="h6 fw-bold mb-1">Traitement des paiements</h5>
-                    <p class="small text-muted mb-0">
-                      Gestion des abonnements, facturation, remboursements via notre partenaire sécurisé Stripe.
+              <div class="accordion-item border-0 mb-2">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite2">
+                    <i class="fas fa-credit-card me-2"></i>
+                    {{ $t('politique.gestionPaiements') }}
+                  </button>
+                </h3>
+                <div id="finalite2" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
+                  <div class="accordion-body">
+                    <p class="text-muted">
+                      {{ $t('politique.gestionPaiementsDesc') }}
                     </p>
+                    <strong>{{ $t('politique.baseLegale') }} :</strong>
+                    <span class="text-muted">{{ $t('politique.executionContratObligations') }}</span>
                   </div>
                 </div>
+              </div>
 
-                <div class="d-flex align-items-start mb-3">
-                  <div class="badge bg-warning rounded-pill me-3 mt-1">3</div>
-                  <div>
-                    <h5 class="h6 fw-bold mb-1">Communication</h5>
-                    <p class="small text-muted mb-0">
-                      Notifications de projets, messages système, support client et informations importantes sur le service.
+              <div class="accordion-item border-0 mb-2">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite3">
+                    <i class="fas fa-bell me-2"></i>
+                    {{ $t('politique.communicationNotifications') }}
+                  </button>
+                </h3>
+                <div id="finalite3" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
+                  <div class="accordion-body">
+                    <p class="text-muted">
+                      {{ $t('politique.communicationNotificationsDesc') }}
                     </p>
+                    <strong>{{ $t('politique.baseLegale') }} :</strong>
+                    <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
                   </div>
                 </div>
+              </div>
 
-                <div class="d-flex align-items-start mb-3">
-                  <div class="badge bg-info rounded-pill me-3 mt-1">4</div>
-                  <div>
-                    <h5 class="h6 fw-bold mb-1">Amélioration du service</h5>
-                    <p class="small text-muted mb-0">
-                      Analyse d'usage pour optimiser les performances, développer de nouvelles fonctionnalités et résoudre les problèmes techniques.
+              <div class="accordion-item border-0 mb-2">
+                <h3 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite4">
+                    <i class="fas fa-chart-line me-2"></i>
+                    {{ $t('politique.ameliorationService') }}
+                  </button>
+                </h3>
+                <div id="finalite4" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
+                  <div class="accordion-body">
+                    <p class="text-muted">
+                      {{ $t('politique.ameliorationServiceDesc') }}
                     </p>
-                  </div>
-                </div>
-
-                <div class="d-flex align-items-start">
-                  <div class="badge bg-danger rounded-pill me-3 mt-1">5</div>
-                  <div>
-                    <h5 class="h6 fw-bold mb-1">Sécurité et conformité</h5>
-                    <p class="small text-muted mb-0">
-                      Prévention des fraudes, respect des obligations légales et protection de la plateforme.
-                    </p>
+                    <strong>{{ $t('politique.baseLegale') }} :</strong>
+                    <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Section 3 : Partage des données -->
+          <!-- 3. Durée de conservation -->
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-share-alt text-warning me-2"></i>
-              3. Partage des Données
+              <i class="fas fa-clock text-info me-2"></i>
+              3. {{ $t('politique.dureeConservation') }}
             </h2>
-
-            <div class="alert alert-success border-0 mb-3">
-              <i class="fas fa-shield-alt me-2"></i>
-              <strong>Principe fondamental :</strong> Nous ne vendons jamais vos données personnelles à des tiers.
-            </div>
-
             <p class="text-muted mb-3">
-              Vos données ne sont partagées que dans les cas suivants :
+              {{ $t('politique.dureeConservationDesc') }}
             </p>
-
-            <div class="card border-0 bg-light mb-3">
-              <div class="card-body">
-                <h5 class="h6 fw-bold text-primary mb-2">
-                  <i class="fab fa-stripe me-1"></i>
-                  Partenaires de paiement
-                </h5>
-                <p class="small text-muted mb-0">
-                  Stripe (notre processeur de paiement) accède uniquement aux données nécessaires pour traiter vos transactions de manière sécurisée.
-                </p>
-              </div>
-            </div>
-
-            <div class="card border-0 bg-light mb-3">
-              <div class="card-body">
-                <h5 class="h6 fw-bold text-danger mb-2">
-                  <i class="fas fa-gavel me-1"></i>
-                  Obligations légales
-                </h5>
-                <p class="small text-muted mb-0">
-                  En cas de demande légale des autorités compétentes ou pour protéger nos droits légitimes.
-                </p>
-              </div>
-            </div>
-
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h5 class="h6 fw-bold text-info mb-2">
-                  <i class="fas fa-users me-1"></i>
-                  Membres de projet
-                </h5>
-                <p class="small text-muted mb-0">
-                  Vos informations de profil (nom, prénom) sont visibles par les autres membres des projets auxquels vous participez.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 4 : Conservation -->
-          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
-            <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-archive text-info me-2"></i>
-              4. Conservation des Données
-            </h2>
 
             <div class="table-responsive">
               <table class="table table-sm">
                 <thead class="table-light">
                 <tr>
-                  <th>Type de données</th>
-                  <th>Durée de conservation</th>
-                  <th>Justification</th>
+                  <th>{{ $t('politique.typeDonnees') }}</th>
+                  <th>{{ $t('politique.dureeConservation') }}</th>
+                  <th>{{ $t('politique.justification') }}</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                  <td><strong>Données de compte</strong></td>
-                  <td>Tant que le compte est actif + 3 ans</td>
-                  <td>Fourniture du service et obligations comptables</td>
+                  <td><strong>{{ $t('politique.compteUtilisateur') }}</strong></td>
+                  <td>{{ $t('politique.dureeCompte') }}</td>
+                  <td>{{ $t('politique.gestionService') }}</td>
                 </tr>
                 <tr>
-                  <td><strong>Données de paiement</strong></td>
-                  <td>10 ans après la transaction</td>
-                  <td>Obligations légales et fiscales</td>
+                  <td><strong>{{ $t('factures.titre') }}</strong></td>
+                  <td>{{ $t('politique.dureeFactures') }}</td>
+                  <td>{{ $t('politique.obligationsComptables') }}</td>
                 </tr>
                 <tr>
-                  <td><strong>Logs de connexion</strong></td>
-                  <td>1 an maximum</td>
-                  <td>Sécurité et résolution de problèmes</td>
+                  <td><strong>{{ $t('politique.donneesChat') }}</strong></td>
+                  <td>{{ $t('politique.dureeChat') }}</td>
+                  <td>{{ $t('politique.fonctionnaliteCollaborative') }}</td>
                 </tr>
                 <tr>
-                  <td><strong>Données de projets</strong></td>
-                  <td>Selon les paramètres du projet</td>
-                  <td>Collaboration et historique</td>
+                  <td><strong>{{ $t('politique.donneesConnexion') }}</strong></td>
+                  <td>{{ $t('politique.dureeConnexion') }}</td>
+                  <td>{{ $t('politique.securiteAudit') }}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. Vos droits RGPD -->
+          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3">
+              <i class="fas fa-user-shield text-success me-2"></i>
+              4. {{ $t('politique.vosDroitsRGPD') }}
+            </h2>
+            <p class="text-muted mb-3">
+              {{ $t('politique.vosDroitsRGPDDesc') }}
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card border-0 bg-success bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-success mb-2">
+                      <i class="fas fa-eye me-1"></i>
+                      {{ $t('politique.droitAcces') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitAccesDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-primary bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-primary mb-2">
+                      <i class="fas fa-edit me-1"></i>
+                      {{ $t('politique.droitRectification') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitRectificationDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-danger bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-danger mb-2">
+                      <i class="fas fa-trash me-1"></i>
+                      {{ $t('politique.droitEffacement') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitEffacementDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-warning bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-warning mb-2">
+                      <i class="fas fa-download me-1"></i>
+                      {{ $t('politique.droitPortabilite') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitPortabiliteDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-info bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-info mb-2">
+                      <i class="fas fa-pause me-1"></i>
+                      {{ $t('politique.droitLimitation') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitLimitationDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-secondary bg-opacity-10">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-secondary mb-2">
+                      <i class="fas fa-hand-paper me-1"></i>
+                      {{ $t('politique.droitOpposition') }}
+                    </h5>
+                    <p class="small text-muted mb-0">{{ $t('politique.droitOppositionDesc') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info border-0 mt-3">
+              <strong>{{ $t('politique.commentExercerDroits') }} :</strong>
+              <p class="mb-0">
+                {{ $t('politique.commentExercerDroitsDesc') }}
+                <strong>{{ $t('conditions.protectionEmail') }}</strong>
+                {{ $t('politique.avecPieceIdentite') }}
+                {{ $t('politique.delaiReponse') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- 5. Sécurité et transferts -->
+          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3">
+              <i class="fas fa-lock text-warning me-2"></i>
+              5. {{ $t('politique.securiteTransferts') }}
+            </h2>
+            <p class="text-muted mb-3">
+              {{ $t('politique.securiteTransfertsDesc') }}
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-primary mb-2">
+                      <i class="fas fa-shield-alt me-1"></i>
+                      {{ $t('politique.mesuresTechniques') }}
+                    </h5>
+                    <ul class="small text-muted mb-0">
+                      <li>{{ $t('politique.chiffrementDonnees') }}</li>
+                      <li>{{ $t('politique.hachageMotsPasse') }}</li>
+                      <li>{{ $t('politique.authentificationJWT') }}</li>
+                      <li>{{ $t('politique.sauvegardeReguliere') }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-success mb-2">
+                      <i class="fas fa-users-cog me-1"></i>
+                      {{ $t('politique.mesuresOrganisationnelles') }}
+                    </h5>
+                    <ul class="small text-muted mb-0">
+                      <li>{{ $t('politique.accesLimiteDonnees') }}</li>
+                      <li>{{ $t('politique.formationPersonnel') }}</li>
+                      <li>{{ $t('politique.proceduresIncidents') }}</li>
+                      <li>{{ $t('politique.auditsSecurite') }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-primary border-0 mt-3">
+              <h5 class="h6 fw-bold mb-2">
+                <i class="fab fa-stripe me-2"></i>
+                {{ $t('conditions.securiteStripe') }}
+              </h5>
+              <p class="small mb-0">
+                {{ $t('conditions.securiteStripeDesc') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- 6. Destinataires des données -->
+          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3">
+              <i class="fas fa-share-alt text-info me-2"></i>
+              6. {{ $t('politique.destinatairesDonnees') }}
+            </h2>
+            <p class="text-muted mb-3">
+              {{ $t('politique.destinatairesDonneesDesc') }}
+            </p>
+
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead class="table-light">
+                <tr>
+                  <th>{{ $t('politique.destinataire') }}</th>
+                  <th>{{ $t('politique.finalite') }}</th>
+                  <th>{{ $t('politique.donneesConcernees') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td><strong>{{ $t('membres.titre') }}</strong></td>
+                  <td>{{ $t('collaboration.tempsReel') }}</td>
+                  <td>{{ $t('politique.nomPrenomMessages') }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ $t('politique.stripeInc') }}</strong></td>
+                  <td>{{ $t('abonnement.paiements') }}</td>
+                  <td>{{ $t('politique.donneesPaiementUniquement') }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ $t('politique.hebergeurAWS') }}</strong></td>
+                  <td>{{ $t('politique.hebergementTechnique') }}</td>
+                  <td>{{ $t('politique.toutesdonneesSousTraitant') }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ $t('politique.serviceEmail') }}</strong></td>
+                  <td>{{ $t('notifications.titre') }}</td>
+                  <td>{{ $t('politique.emailNomPrenom') }}</td>
                 </tr>
                 </tbody>
               </table>
             </div>
 
+            <div class="alert alert-warning border-0">
+              <strong>{{ $t('politique.transfertsHorsUE') }} :</strong>
+              {{ $t('politique.transfertsHorsUEDesc') }}
+            </div>
+          </div>
+
+          <!-- 7. Contact et réclamations -->
+          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3">
+              <i class="fas fa-envelope text-success me-2"></i>
+              7. {{ $t('politique.contactReclamations') }}
+            </h2>
+            <p class="text-muted mb-3">
+              {{ $t('politique.contactReclamationsDesc') }}
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center">
+                    <i class="fas fa-user-shield fa-2x text-success mb-2"></i>
+                    <h5 class="h6 fw-bold">{{ $t('politique.delegueDPO') }}</h5>
+                    <p class="small text-muted">{{ $t('conditions.protectionEmail') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center">
+                    <i class="fas fa-gavel fa-2x text-warning mb-2"></i>
+                    <h5 class="h6 fw-bold">{{ $t('politique.autoriteControle') }}</h5>
+                    <p class="small text-muted">{{ $t('politique.commissionEuropeenne') }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="alert alert-info border-0 mt-3">
               <i class="fas fa-info-circle me-2"></i>
-              À l'expiration de ces délais, vos données sont automatiquement supprimées de nos systèmes.
+              <strong>{{ $t('politique.droitReclamation') }} :</strong>
+              {{ $t('politique.droitReclamationDesc') }}
             </div>
           </div>
 
-          <!-- Section 5 : Vos droits -->
-          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
-            <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-user-shield text-primary me-2"></i>
-              5. Vos Droits (RGPD)
-            </h2>
-
-            <p class="text-muted mb-4">
-              Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :
-            </p>
-
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="card border-0 bg-primary bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-primary mb-2">
-                      <i class="fas fa-eye me-1"></i>
-                      Droit d'accès
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Obtenir une copie de toutes les données vous concernant.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-success bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-success mb-2">
-                      <i class="fas fa-edit me-1"></i>
-                      Droit de rectification
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Corriger ou modifier vos données inexactes ou incomplètes.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-danger bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-danger mb-2">
-                      <i class="fas fa-trash me-1"></i>
-                      Droit à l'effacement
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Demander la suppression de vos données dans certaines conditions.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-warning bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-warning mb-2">
-                      <i class="fas fa-pause me-1"></i>
-                      Droit à la limitation
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Restreindre le traitement de vos données en cas de contestation.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-info bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-info mb-2">
-                      <i class="fas fa-download me-1"></i>
-                      Droit à la portabilité
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Récupérer vos données dans un format structuré et lisible.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-secondary bg-opacity-10 h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-secondary mb-2">
-                      <i class="fas fa-ban me-1"></i>
-                      Droit d'opposition
-                    </h5>
-                    <p class="small text-muted mb-0">
-                      Vous opposer au traitement de vos données à des fins légitimes.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="alert alert-primary border-0 mt-4">
-              <h5 class="h6 fw-bold mb-2">
-                <i class="fas fa-question-circle me-2"></i>
-                Comment exercer ces droits ?
-              </h5>
-              <p class="small mb-0">
-                Pour exercer l'un de ces droits, contactez-nous à
-                <strong>privacy@collabpro.com</strong> ou via la section contact ci-dessous.
-                Nous vous répondrons dans les 30 jours.
-              </p>
-            </div>
-          </div>
-
-          <!-- Section 6 : Sécurité -->
-          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
-            <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-lock text-success me-2"></i>
-              6. Sécurité des Données
-            </h2>
-
-            <p class="text-muted mb-3">
-              Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données :
-            </p>
-
-            <div class="row g-3">
-              <div class="col-md-4">
-                <div class="text-center p-3">
-                  <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
-                  <h5 class="h6 fw-bold">Chiffrement</h5>
-                  <p class="small text-muted">Données chiffrées en transit et au repos</p>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="text-center p-3">
-                  <i class="fas fa-key fa-2x text-success mb-2"></i>
-                  <h5 class="h6 fw-bold">Authentification</h5>
-                  <p class="small text-muted">JWT et mots de passe hachés BCrypt</p>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="text-center p-3">
-                  <i class="fas fa-server fa-2x text-info mb-2"></i>
-                  <h5 class="h6 fw-bold">Infrastructure</h5>
-                  <p class="small text-muted">Hébergement sécurisé et surveillance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 7 : Contact -->
-          <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
-            <h2 class="h4 fw-bold text-dark mb-3">
-              <i class="fas fa-envelope text-primary me-2"></i>
-              7. Contact et Questions
-            </h2>
-
-            <div class="row g-4">
-              <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-primary mb-3">
-                      <i class="fas fa-shield-alt me-1"></i>
-                      Délégué à la protection des données
-                    </h5>
-                    <p class="small text-muted mb-2">
-                      <i class="fas fa-envelope me-2"></i>
-                      <strong>privacy@collabpro.com</strong>
-                    </p>
-                    <p class="small text-muted mb-0">
-                      Pour toute question relative à la protection de vos données personnelles.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card border-0 bg-light h-100">
-                  <div class="card-body">
-                    <h5 class="h6 fw-bold text-success mb-3">
-                      <i class="fas fa-headset me-1"></i>
-                      Support technique
-                    </h5>
-                    <p class="small text-muted mb-2">
-                      <i class="fas fa-envelope me-2"></i>
-                      <strong>support@collabpro.com</strong>
-                    </p>
-                    <p class="small text-muted mb-0">
-                      Pour l'assistance technique et les questions générales.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="alert alert-info border-0 mt-4">
-              <i class="fas fa-info-circle me-2"></i>
-              <strong>Autorité de contrôle :</strong> Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une plainte auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) ou de votre autorité de protection des données locale.
-            </div>
-          </div>
-
-          <!-- Navigation et actions -->
+          <!-- Navigation et footer local -->
           <div class="bg-white rounded-3 shadow-sm p-4 text-center">
-            <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
-              <router-link to="/conditions" class="btn btn-outline-primary">
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mb-4">
+              <router-link to="/conditions" class="btn btn-outline-success">
                 <i class="fas fa-file-contract me-2"></i>
-                Voir les CGU
+                {{ $t('conditions.titre') }}
               </router-link>
               <router-link to="/inscription" class="btn btn-collabpro">
                 <i class="fas fa-user-plus me-2"></i>
-                Créer un compte
+                {{ $t('inscription.creerCompte') }}
               </router-link>
               <router-link to="/" class="btn btn-outline-secondary">
                 <i class="fas fa-home me-2"></i>
-                Retour à l'accueil
+                {{ $t('conditions.retourAccueilBtn') }}
               </router-link>
             </div>
 
             <hr class="my-4">
 
             <p class="small text-muted mb-0">
-              <i class="fas fa-calendar-alt me-2"></i>
-              Cette politique de confidentialité peut être mise à jour.
-              La date de dernière modification est indiquée en haut de cette page.
+              <i class="fas fa-shield-alt me-2"></i>
+              {{ $t('politique.conformiteRGPDFooter') }}
             </p>
           </div>
         </div>
       </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-3">
-      <div class="container">
-        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
-          <router-link to="/" class="d-inline-flex align-items-center text-decoration-none text-white">
-            <img src="/logo-collabpro.png" alt="CollabPro" class="me-2" style="height: 24px; width: 24px;">
-            <span class="fw-bold">CollabPro</span>
-          </router-link>
-
-          <div class="text-center">
-            <router-link to="/conditions" class="text-white text-decoration-underline small me-3">
-              CGU
-            </router-link>
-            <router-link to="/politique-confidentialite" class="text-white text-decoration-underline small me-3">
-              Politique de confidentialité
-            </router-link>
-            <span class="small text-white-50">© 2025 Tous droits réservés</span>
-          </div>
-
-          <div class="d-flex align-items-center gap-2">
-            <div class="d-flex align-items-center lang-wrap">
-              <i class="fas fa-globe me-2"></i>
-              <select class="form-select form-select-sm lang-select" aria-label="Sélection de la langue">
-                <option value="fr">Français</option>
-                <option value="en">English</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
 <script>
 export default {
   name: 'PolitiqueConfidentialiteView',
+  methods: {
+    setLocale(locale) {
+      this.$i18n.locale = locale
+      try { localStorage.setItem('locale', locale) } catch (e) {}
+    }
+  },
   mounted() {
-    // Scroll vers le haut au chargement
     window.scrollTo(0, 0)
   }
 }
 </script>
 
 <style scoped>
-.text-collabpro {
-  color: #007bff;
-}
+.text-collabpro { color: #007bff; }
 
 .btn-collabpro {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  transition: all .3s;
+  border: none; color: #fff; font-weight: 600; transition: all .3s;
   box-shadow: 0 2px 8px rgba(0,123,255,.2);
 }
-
 .btn-collabpro:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,123,255,.3);
-  color: #fff;
+  color:#fff;
 }
 
-.card {
-  transition: all .3s ease;
-  border-radius: 8px;
+.card { transition: all .3s ease; border-radius: 8px; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1) !important; }
+
+.accordion-button {
+  border-radius: 8px !important;
+  font-weight: 600;
+}
+.accordion-button:not(.collapsed) {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,.1) !important;
+/* Styles pour le titre amélioré */
+.title-hero {
+  position: relative;
 }
 
-.lang-wrap {
-  color: #fff;
+.title-underline {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border-radius: 2px;
 }
 
-.lang-select {
+/* Lang switch */
+.lang-wrap { color:#fff; }
+.lang-select{
   background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.6);
-  padding: .2rem .5rem;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.6);
+  padding:.2rem .5rem;
   font-size: 0.875rem;
 }
+.lang-select option { color:#000; }
 
-.lang-select option {
-  color: #000;
-}
-
-/* Animation pour les sections */
+/* Animation */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.bg-white {
-  animation: fadeInUp 0.6s ease-out;
-}
+.bg-white { animation: fadeInUp 0.6s ease-out; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .col-lg-8 {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-
-  .table-responsive {
-    font-size: 0.875rem;
-  }
+  .container { padding-left: 1rem; padding-right: 1rem; }
+  .col-lg-8 { padding-left: .5rem; padding-right: .5rem; }
+  .table-responsive { font-size: .875rem; }
+  .display-5 { font-size: 2rem !important; }
 }
 </style>

@@ -24,14 +24,8 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 @CrossOrigin(
         origins = {
-                "http://localhost:5173",
-                "http://localhost:5174",
-                "http://localhost:5175",
-                "http://localhost:5177",
-                "http://127.0.0.1:5173",
-                "http://127.0.0.1:5174",
-                "http://127.0.0.1:5175",
-                "http://127.0.0.1:5177"
+                "http://localhost:5174"
+
         },
         allowCredentials = "true"
 )
@@ -68,9 +62,9 @@ public class AuthController {
             Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByEmail(email);
 
             if (utilisateurOpt.isEmpty()) {
-                System.out.println("❌ ERREUR: Utilisateur non trouvé pour email: [" + email + "]");
+                System.out.println(" ERREUR: Utilisateur non trouvé pour email: [" + email + "]");
 
-                System.out.println("📋 Emails en base de données:");
+                System.out.println(" Emails en base de données:");
                 utilisateurRepository.findAll().forEach(u ->
                         System.out.println("  - [" + u.getEmail() + "] (ID: " + u.getId() + ")")
                 );
@@ -84,14 +78,14 @@ public class AuthController {
             }
 
             Utilisateur utilisateur = utilisateurOpt.get();
-            System.out.println("✅ Utilisateur trouvé: ID=" + utilisateur.getId() + ", Email=" + utilisateur.getEmail());
-            System.out.println("🔐 Hash en base: " + utilisateur.getMotDePasse().substring(0, 20) + "...");
+            System.out.println(" Utilisateur trouvé: ID=" + utilisateur.getId() + ", Email=" + utilisateur.getEmail());
+            System.out.println(" Hash en base: " + utilisateur.getMotDePasse().substring(0, 20) + "...");
 
             boolean motDePasseValide = passwordEncoder.matches(motDePasse, utilisateur.getMotDePasse());
-            System.out.println("🔍 Vérification mot de passe: " + (motDePasseValide ? "✅ VALIDE" : "❌ INVALIDE"));
+            System.out.println(" Vérification mot de passe: " + (motDePasseValide ? "✅ VALIDE" : "❌ INVALIDE"));
 
             if (!motDePasseValide) {
-                System.out.println("❌ Mot de passe incorrect pour: " + email);
+                System.out.println(" Mot de passe incorrect pour: " + email);
 
                 Map<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("message", "Mot de passe incorrect");
@@ -110,7 +104,7 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(token, utilisateur));
 
         } catch (AuthenticationException e) {
-            System.out.println("❌ Échec authentification Spring Security: " + e.getMessage());
+            System.out.println(" Échec authentification Spring Security: " + e.getMessage());
             e.printStackTrace();
 
             Map<String, String> errorResponse = new HashMap<>();
@@ -121,7 +115,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(errorResponse);
 
         } catch (Exception e) {
-            System.out.println("💥 Erreur technique lors de la connexion: " + e.getMessage());
+            System.out.println(" Erreur technique lors de la connexion: " + e.getMessage());
             e.printStackTrace();
 
             Map<String, String> errorResponse = new HashMap<>();

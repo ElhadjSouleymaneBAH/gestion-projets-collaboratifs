@@ -31,10 +31,16 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
     /**
      * Trouve toutes les factures d'un utilisateur via les transactions.
+     * Fetch join pour éviter LazyInitializationException lors du mapping DTO.
      */
-    @Query("SELECT f FROM Facture f WHERE f.transaction.id IN " +
-            "(SELECT t.id FROM Transaction t WHERE t.utilisateur.id = :utilisateurId) " +
-            "ORDER BY f.dateEmission DESC")
+    @Query("""
+           SELECT f
+             FROM Facture f
+             JOIN FETCH f.transaction t
+             JOIN FETCH t.utilisateur u
+            WHERE u.id = :utilisateurId
+         ORDER BY f.dateEmission DESC
+           """)
     List<Facture> findFacturesByUtilisateur(@Param("utilisateurId") Long utilisateurId);
 
     /**
@@ -46,4 +52,34 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
      * Trouve les factures par numéro.
      */
     Optional<Facture> findByNumeroFacture(String numeroFacture);
+
+    // ====== Ajouts fetch-join pour éviter les proxies hors session ======
+
+    @Query("""
+           SELECT f
+             FROM Facture f
+             JOIN FETCH f.transaction t
+             JOIN FETCH t.utilisateur u
+         ORDER BY f.dateEmission DESC
+           """)
+    List<Facture> findAllWithTransactionAndUser();
+
+    @Query("""
+           SELECT f
+             FROM Facture f
+             JOIN FETCH f.transaction t
+             JOIN FETCH t.utilisateur u
+            WHERE f.statut = :statut
+         ORDER BY f.dateEmission DESC
+           """)
+    List<Facture> findByStatutWithJoins(@Param("statut") String statut);
+
+    @Query("""
+           SELECT f
+             FROM Facture f
+             JOIN FETCH f.transaction t
+             JOIN FETCH t.utilisateur u
+            WHERE f.id = :id
+           """)
+    Optional<Facture> findByIdWithTransactionAndUser(@Param("id") Long id);
 }

@@ -1,10 +1,10 @@
 INSERT INTO utilisateurs (id, nom, prenom, email, mot_de_passe, role, adresse, langue, cgu_accepte, date_inscription)
 VALUES
     (1, 'Martin', 'Adele', 'adele.martin@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue des Lilas 12, 5000 Namur', 'fr', 1, '2025-06-08 04:08:59'),
-    (2, 'Bernard', 'Benoit', 'benoit.bernard@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Avenue Louise 45, 1050 Bruxelles', 'fr', 1, '2025-08-11 15:27:10'),
-    (3, 'Thomas', 'Clara', 'clara.thomas@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Chaussée de Wavre 78, 1300 Wavre', 'fr', 1, '2025-04-21 20:22:03'),
-    (4, 'Robert', 'Damien', 'damien.robert@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue du Pont 8, 7000 Mons', 'fr', 1, '2025-05-19 08:02:12'),
-    (5, 'Richard', 'Elise', 'elise.richard@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Place du Marché 16, 4000 Liège', 'fr', 1, '2025-09-15 11:50:23'),
+    (2, 'Bernard', 'Benoit', 'benoit.bernard@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'CHEF_PROJET', 'Avenue Louise 45, 1050 Bruxelles', 'fr', 1, '2025-08-11 15:27:10'),
+    (3, 'Thomas', 'Clara', 'clara.thomas@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'CHEF_PROJET', 'Chaussée de Wavre 78, 1300 Wavre', 'fr', 1, '2025-04-21 20:22:03'),
+    (4, 'Robert', 'Damien', 'damien.robert@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'CHEF_PROJET', 'Rue du Pont 8, 7000 Mons', 'fr', 1, '2025-05-19 08:02:12'),
+    (5, 'Richard', 'Elise', 'elise.richard@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'CHEF_PROJET', 'Place du Marché 16, 4000 Liège', 'fr', 1, '2025-09-15 11:50:23'),
     (6, 'Simon', 'Florian', 'florian.simon@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue Royale 27, 1000 Bruxelles', 'fr', 1, '2025-10-03 00:20:38'),
     (7, 'Michel', 'Guillaume', 'guillaume.michel@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue du Progrès 33, 7500 Tournai', 'fr', 1, '2025-06-10 05:31:58'),
     (8, 'Leroy', 'Hanna', 'hanna.leroy@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Boulevard Tirou 55, 6000 Charleroi', 'fr', 1, '2025-10-06 07:18:45'),
@@ -50,7 +50,7 @@ VALUES
     (48, 'Clement', 'William', 'william.clement@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue des Frères 2, 5030 Gembloux', 'fr', 1, '2025-02-09 17:42:52'),
     (49, 'Pires', 'Xena', 'xena.pires@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue de Bastogne 26, 6700 Arlon', 'fr', 1, '2025-06-27 13:10:45'),
     (50, 'Charpentier', 'Yael', 'yael.charpentier@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue de l’Abbaye 4, 5000 Namur', 'fr', 1, '2025-12-13 15:58:52'),
-    (51, 'admin', 'admin', 'admin@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'ADMINISTRATEUR', 'Rue du Trocadéro 8, 1180 Uccle', 'fr', 1, '2025-12-26 19:06:46'),
+    (51, 'admin', 'admin', 'admin@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'ADMINISTRATEUR', 'Rue du Trocadéro 8, 1180 Uccle', 'fr', 1, '2024-12-01 19:06:46'),
     (52, 'Rolland', 'Amina', 'amina.rolland@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue de l’Avenir 26, 1348 Louvain-la-Neuve', 'fr', 1, '2025-10-18 06:54:46'),
     (53, 'Descamps', 'Brice', 'brice.descamps@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue du Bois 15, 5030 Gembloux', 'fr', 1, '2025-04-01 09:34:20'),
     (54, 'Delcourt', 'Candice', 'candice.delcourt@icc.be', '$2a$10$OQIQE7U/tZ2J0hGp9Et7vuT7Rp0EPOWEE89SSLnsW7MyzjfKv5QMu', 'MEMBRE', 'Rue des Acacias 19, 1000 Bruxelles', 'fr', 1, '2025-06-05 04:26:24'),

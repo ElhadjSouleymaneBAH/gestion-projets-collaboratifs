@@ -1,11 +1,13 @@
 package be.iccbxl.gestionprojets.model;
 
 import be.iccbxl.gestionprojets.enums.StatutTache;
+import be.iccbxl.gestionprojets.enums.PrioriteTache;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.HashSet;
@@ -28,8 +30,8 @@ import java.util.HashSet;
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
- * @since 2025-07-05
  * @see StatutTache
+ * @see PrioriteTache
  * @see Projet
  * @see Utilisateur
  * @see "Cahier des charges - F7: Gérer les tâches"
@@ -79,6 +81,25 @@ public class Tache {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatutTache statut = StatutTache.BROUILLON;
+
+    /**
+     * Priorité de la tâche.
+     * Permet de hiérarchiser les tâches dans le projet.
+     * Par défaut : NORMALE
+     *
+     * @see PrioriteTache
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PrioriteTache priorite = PrioriteTache.NORMALE;
+
+    /**
+     * Date d'échéance de la tâche.
+     * Optionnelle - permet de suivre les délais et identifier les retards.
+     * Utilisée pour les notifications et l'affichage des tâches en retard.
+     */
+    @Column(name = "date_echeance")
+    private LocalDate dateEcheance;
 
     /**
      * Date et heure de création de la tâche.
@@ -207,7 +228,8 @@ public class Tache {
      * - Chef de Projet : peut modifier à tout moment
      * - Membre : peut modifier uniquement ses tâches en statut BROUILLON
      *
-     * @param id L'identifiant de la tâche (pour validation)
+     * IMPORTANT : L'ID de la tâche ne doit jamais être modifié car c'est la clé primaire.
+     *
      * @param titre Le nouveau titre (obligatoire)
      * @param description La nouvelle description (optionnelle)
      * @param statut Le nouveau statut de la tâche
@@ -216,9 +238,8 @@ public class Tache {
      * @see "Cahier des charges - F7: Gérer les tâches - Modification"
      * @see "Diagramme d'état de transition"
      */
-    public boolean modifierTache(Long id, String titre, String description, StatutTache statut) {
-        if (id != null && titre != null && !titre.trim().isEmpty()) {
-            this.id = id;
+    public boolean modifierTache(String titre, String description, StatutTache statut) {
+        if (titre != null && !titre.trim().isEmpty()) {
             this.titre = titre;
             this.description = description;
             if (statut != null) {
@@ -240,25 +261,21 @@ public class Tache {
      * - Chef de Projet : peut supprimer les tâches de son projet
      * - Administrateur : peut supprimer toute tâche
      *
-     * @param id L'identifiant de la tâche à supprimer (pour validation)
      * @return true si la suppression a réussi, false sinon
      * @see "Cahier des charges - F7: Gérer les tâches - Suppression"
      */
-    public boolean supprimerTache(Long id) {
-        if (id != null) {
-            // Nettoyer la relation avec le projet
-            if (this.projet != null) {
-                this.projet.getTaches().remove(this);
-            }
-
-            // Nettoyer la relation avec l'utilisateur assigné
-            if (this.assigneA != null) {
-                this.assigneA.getTachesAssignees().remove(this);
-            }
-
-            return true;
+    public boolean supprimerTache() {
+        // Nettoyer la relation avec le projet
+        if (this.projet != null) {
+            this.projet.getTaches().remove(this);
         }
-        return false;
+
+        // Nettoyer la relation avec l'utilisateur assigné
+        if (this.assigneA != null) {
+            this.assigneA.getTachesAssignees().remove(this);
+        }
+
+        return true;
     }
 
     /**
@@ -267,8 +284,12 @@ public class Tache {
      *
      * Transitions autorisées :
      * - BROUILLON → EN_ATTENTE_VALIDATION (Membre : Compléter)
+     * - BROUILLON → ANNULE (Admin : Annuler)
      * - EN_ATTENTE_VALIDATION → TERMINE (Chef de Projet : Valider)
-     * - Tout état → ANNULE (Admin : Annuler)
+     * - EN_ATTENTE_VALIDATION → BROUILLON (Chef de Projet : Renvoyer en brouillon)
+     * - EN_ATTENTE_VALIDATION → ANNULE (Admin/Chef de Projet : Annuler)
+     * - TERMINE → ANNULE (Admin : Annuler)
+     * - ANNULE → État final (aucune transition possible)
      *
      * @param nouveauStatut Le nouveau statut souhaité
      * @return true si la transition est autorisée et effectuée
@@ -349,11 +370,27 @@ public class Tache {
      * Vérifie si la tâche est en retard.
      * Utilisé pour les notifications et l'affichage dans l'interface.
      *
-     * @return true si la tâche est en retard (à implémenter avec date d'échéance)
+     * Une tâche est considérée en retard si :
+     * - Elle a une date d'échéance définie
+     * - La date actuelle dépasse la date d'échéance
+     * - Elle n'est pas dans un état final (TERMINE ou ANNULE)
+     *
+     * @return true si la tâche est en retard
      */
     public boolean estEnRetard() {
-        // TODO: Implémenter avec un champ dateEcheance si nécessaire
-        return false;
+        // Une tâche sans date d'échéance ne peut pas être en retard
+        if (this.dateEcheance == null) {
+            return false;
+        }
+
+        // Une tâche terminée ou annulée n'est plus considérée en retard
+        if (this.statut == StatutTache.TERMINE || this.statut == StatutTache.ANNULE) {
+            return false;
+        }
+
+        // Vérifier si la date d'échéance est dépassée
+        LocalDate aujourdhui = LocalDate.now();
+        return aujourdhui.isAfter(this.dateEcheance);
     }
 
     /**
@@ -366,7 +403,7 @@ public class Tache {
         return commentaires != null ? commentaires.size() : 0;
     }
 
-    //  MÉTHODES UTILITAIRES
+    // ========== MÉTHODES UTILITAIRES ==========
 
     /**
      * Représentation textuelle de la tâche.
@@ -376,8 +413,8 @@ public class Tache {
      */
     @Override
     public String toString() {
-        return String.format("Tache{id=%d, titre='%s', statut=%s, projet=%s, assigneA=%s}",
-                id, titre, statut,
+        return String.format("Tache{id=%d, titre='%s', statut=%s, priorite=%s, dateEcheance=%s, projet=%s, assigneA=%s}",
+                id, titre, statut, priorite, dateEcheance,
                 projet != null ? projet.getTitre() : "null",
                 assigneA != null ? assigneA.getEmail() : "non assignée");
     }

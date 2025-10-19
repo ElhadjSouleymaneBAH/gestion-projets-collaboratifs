@@ -1,5 +1,6 @@
 package be.iccbxl.gestionprojets.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Locale;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Facture {
 
     @Id
@@ -42,8 +44,9 @@ public class Facture {
     private String statut;
 
     // Relation avec Transaction
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_transaction", nullable = false)
+    @JsonIgnoreProperties({"facture", "utilisateur"})
     private Transaction transaction;
 
     // --------- Champ non persisté, utile à l'UI (pas de colonne en base) ---------

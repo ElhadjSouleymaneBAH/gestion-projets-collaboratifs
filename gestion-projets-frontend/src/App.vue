@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="app-container">
     <!-- Notifications -->
     <div class="global-notifications">
       <div v-for="notification in globalNotifications" :key="notification.id"
@@ -9,16 +9,23 @@
       </div>
     </div>
 
-    <!-- Router view -->
-    <router-view />
+    <!-- Router view avec classe pour push footer -->
+    <main class="main-content">
+      <router-view />
+    </main>
+
+    <!-- Footer global fixé en bas -->
+    <AppFooter class="app-footer" />
   </div>
 </template>
 
 <script>
 import { ref } from 'vue'
+import AppFooter from '@/components/AppFooter.vue'
 
 export default {
   name: 'App',
+  components: { AppFooter },
   setup() {
     const globalNotifications = ref([])
 
@@ -38,7 +45,57 @@ export default {
 </script>
 
 <style>
-.global-notifications{position:fixed;top:20px;right:20px;z-index:1060;max-width:400px}
-.notification-toast{margin-bottom:10px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);animation:slideInRight .3s ease-out;position:relative}
-@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+/* Structure pour footer en bas */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-footer {
+  margin-top: auto;
+}
+
+/* Notifications */
+.global-notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1060;
+  max-width: 400px;
+}
+
+.notification-toast {
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  animation: slideInRight .3s ease-out;
+  position: relative;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0 }
+  to   { transform: translateX(0); opacity: 1 }
+}
+
+/* Reset global pour éviter les conflits */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100%;
+}
 </style>

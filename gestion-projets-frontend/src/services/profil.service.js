@@ -1,292 +1,327 @@
+import utilisateurService from './utilisateur.service.js'
 
+/**
+ * Service pour la gestion des profils utilisateur - Frontend Vue.js
+ * Implémente les fonctionnalités F4 et F5 du cahier des charges
+ * Délègue les appels API au service utilisateur principal
+ * Complètement internationalisé et sans erreur ESLint
+ *
+ * @author Équipe Développement
+ * @version 1.0
+ */
 class ProfilService {
-  constructor() {
-    this.baseURL = '/api/profil'
+
+  /**
+   * Codes d'erreur standardisés pour l'internationalisation
+   */
+  static ERROR_CODES = {
+    PROFILE_LOAD_FAILED: 'erreurs.chargementProfil',
+    PROFILE_UPDATE_FAILED: 'erreurs.miseAJourProfil',
+    PASSWORD_CHANGE_FAILED: 'erreurs.changementMotDePasse',
+    STATISTICS_LOAD_FAILED: 'erreurs.chargementStatistiques',
+    UNAUTHORIZED: 'erreurs.nonAutorise',
+    VALIDATION_ERROR: 'erreurs.validation',
+    EMAIL_EXISTS: 'erreurs.emailExistant'
   }
 
-  // F4 - Consulter son profil
+  /**
+   * F4 : Consulter son profil
+   * Délègue au service utilisateur principal pour cohérence
+   *
+   * @param {number} utilisateurId - ID de l'utilisateur
+   * @returns {Promise<Object>} Données du profil utilisateur
+   */
   async obtenirProfil(utilisateurId) {
     try {
-      // Vérification de l'utilisateur connecté
+      console.log('[F4] Loading profile via profil service for user:', utilisateurId)
+
+      // Vérification sécurité : utilisateur connecté
       const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
       if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
-        throw new Error('Accès non autorisé')
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Accès non autorisé'
+        }
       }
 
-      // Simuler appel API - remplacer par votre vraie API
-      const response = await this.simulerObtenirProfil(utilisateurId)
+      // Déléguer au service utilisateur principal
+      const result = await utilisateurService.obtenirProfil(utilisateurId)
 
-      return {
-        success: true,
-        data: response.data
-      }
+      console.log('[F4] Profile loaded successfully via profil service')
+      return result
     } catch (error) {
-      console.error('Erreur obtention profil:', error)
-      throw new Error(error.message || 'Erreur lors de la récupération du profil')
+      console.error('[F4] Profile loading error via profil service:', error)
+
+      // Si l'erreur vient du service utilisateur, la propager
+      if (error.errorCode) {
+        throw error
+      }
+
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.PROFILE_LOAD_FAILED,
+        message: error.message
+      }
     }
   }
 
-  // F5 - Mettre à jour son profil
+  /**
+   * F5 : Mettre à jour son profil
+   * Délègue au service utilisateur avec validation supplémentaire
+   *
+   * @param {number} utilisateurId - ID de l'utilisateur
+   * @param {Object} donneesModifiees - Nouvelles données du profil
+   * @returns {Promise<Object>} Profil mis à jour
+   */
   async mettreAJourProfil(utilisateurId, donneesModifiees) {
     try {
-      // Validation des données selon votre table utilisateurs
+      console.log('[F5] Updating profile via profil service for user:', utilisateurId)
+
+      // Vérification sécurité : utilisateur connecté
+      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
+      if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Accès non autorisé'
+        }
+      }
+
+      // Validation côté client des données
       this.validerDonneesProfil(donneesModifiees)
 
-      // Vérification de l'utilisateur connecté
-      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
-      if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
-        throw new Error('Accès non autorisé')
+      // Déléguer au service utilisateur principal
+      const result = await utilisateurService.mettreAJourProfil(utilisateurId, donneesModifiees)
+
+      // Mettre à jour le localStorage utilisateur
+      if (result.success && result.data) {
+        const utilisateurMisAJour = {
+          ...utilisateurConnecte,
+          ...result.data,
+          dateModification: new Date().toISOString()
+        }
+        localStorage.setItem('user', JSON.stringify(utilisateurMisAJour))
       }
 
-      // Appel API de mise à jour
-      const response = await this.simulerMettreAJourProfil(utilisateurId, donneesModifiees)
-
-      // Mettre à jour le localStorage et le store Pinia
-      const utilisateurMisAJour = {
-        ...utilisateurConnecte,
-        ...donneesModifiees,
-        dateModification: new Date().toISOString()
-      }
-
-      localStorage.setItem('user', JSON.stringify(utilisateurMisAJour))
-
-      return {
-        success: true,
-        data: utilisateurMisAJour,
-        message: 'Profil mis à jour avec succès'
-      }
+      console.log('[F5] Profile updated successfully via profil service')
+      return result
     } catch (error) {
-      console.error('Erreur mise à jour profil:', error)
-      throw new Error(error.message || 'Erreur lors de la mise à jour du profil')
+      console.error('[F5] Profile update error via profil service:', error)
+
+      // Si l'erreur vient du service utilisateur, la propager
+      if (error.errorCode) {
+        throw error
+      }
+
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.PROFILE_UPDATE_FAILED,
+        message: error.message
+      }
     }
   }
 
-  // Changer mot de passe (sécurité)
+  /**
+   * F5+ : Changer mot de passe (extension logique de F5)
+   * Délègue au service utilisateur avec validation renforcée
+   *
+   * @param {number} utilisateurId - ID de l'utilisateur
+   * @param {Object} donneesMotDePasse - Données de changement de mot de passe
+   * @returns {Promise<Object>} Confirmation du changement
+   */
   async changerMotDePasse(utilisateurId, donneesMotDePasse) {
     try {
-      const { ancienMotDePasse, nouveauMotDePasse, confirmationMotDePasse } = donneesMotDePasse
+      console.log('[F5+] Changing password via profil service for user:', utilisateurId)
 
-      // Validation
-      this.validerChangementMotDePasse(donneesMotDePasse)
-
-      // Vérification utilisateur
+      // Vérification sécurité : utilisateur connecté
       const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
       if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
-        throw new Error('Accès non autorisé')
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Accès non autorisé'
+        }
       }
 
-      // Appel API changement mot de passe
-      const response = await this.simulerChangerMotDePasse(utilisateurId, donneesMotDePasse)
+      // Validation côté client du changement de mot de passe
+      this.validerChangementMotDePasse(donneesMotDePasse)
 
-      return {
-        success: true,
-        message: 'Mot de passe modifié avec succès'
-      }
+      // Déléguer au service utilisateur principal
+      const result = await utilisateurService.changerMotDePasse(utilisateurId, donneesMotDePasse)
+
+      console.log('[F5+] Password changed successfully via profil service')
+      return result
     } catch (error) {
-      console.error('Erreur changement mot de passe:', error)
-      throw new Error(error.message || 'Erreur lors du changement de mot de passe')
+      console.error('[F5+] Password change error via profil service:', error)
+
+      // Si l'erreur vient du service utilisateur, la propager
+      if (error.errorCode) {
+        throw error
+      }
+
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.PASSWORD_CHANGE_FAILED,
+        message: error.message
+      }
     }
   }
 
-  // Obtenir statistiques utilisateur pour affichage profil
+  /**
+   * F4 : Obtenir statistiques du profil (projets actifs selon cahier des charges)
+   * Délègue au service utilisateur principal
+   *
+   * @param {number} utilisateurId - ID de l'utilisateur
+   * @returns {Promise<Object>} Statistiques du profil
+   */
   async obtenirStatistiquesProfil(utilisateurId) {
     try {
-      // Compter projets de l'utilisateur selon son rôle
-      const utilisateur = JSON.parse(localStorage.getItem('user') || 'null')
-      const projets = JSON.parse(localStorage.getItem('projets') || '[]')
-      const taches = JSON.parse(localStorage.getItem('taches') || '[]')
-      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]')
+      console.log('[F4] Loading profile statistics via profil service for user:', utilisateurId)
 
-      let statistiques = {
-        projets: 0,
-        taches: 0,
-        notificationsNonLues: 0
-      }
+      // Déléguer au service utilisateur principal
+      const result = await utilisateurService.obtenirStatistiquesProfil(utilisateurId)
 
-      if (utilisateur.role === 'CHEF_PROJET') {
-        // Projets créés par le chef de projet
-        statistiques.projets = projets.filter(p => p.id_createur === utilisateurId).length
-      } else {
-        // Projets où l'utilisateur est membre
-        statistiques.projets = projets.filter(p =>
-          p.membres && p.membres.includes(utilisateurId)
-        ).length
-      }
-
-      // Tâches assignées à l'utilisateur
-      statistiques.taches = taches.filter(t => t.id_assigne === utilisateurId).length
-
-      // Notifications non lues
-      statistiques.notificationsNonLues = notifications.filter(n =>
-        n.id_utilisateur === utilisateurId && !n.lu
-      ).length
-
-      return {
-        success: true,
-        data: statistiques
-      }
+      console.log('[F4] Profile statistics loaded via profil service')
+      return result
     } catch (error) {
-      console.error('Erreur statistiques profil:', error)
+      console.error('[F4] Statistics loading error via profil service:', error)
+
+      // Fallback avec données par défaut en cas d'erreur
+      console.warn('Falling back to default statistics via profil service')
       return {
         success: false,
-        data: { projets: 0, taches: 0, notificationsNonLues: 0 }
+        errorCode: ProfilService.ERROR_CODES.STATISTICS_LOAD_FAILED,
+        data: {
+          projets: 0,
+          taches: 0,
+          notificationsNonLues: 0
+        }
       }
     }
   }
 
-  // Validation des données profil selon table utilisateurs
+  /**
+   * MÉTHODES DE VALIDATION CÔTÉ CLIENT
+   */
+
+  /**
+   * Validation des données profil selon le cahier des charges
+   * @param {Object} donnees - Données à valider
+   * @throws {Object} Erreur avec code d'erreur si validation échoue
+   */
   validerDonneesProfil(donnees) {
     const { nom, prenom, email, langue } = donnees
 
-    if (nom && (!nom.trim() || nom.trim().length < 2)) {
-      throw new Error('Le nom doit contenir au moins 2 caractères')
+    if (nom !== undefined && (!nom?.trim() || nom.trim().length < 2)) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Le nom doit contenir au moins 2 caractères',
+        field: 'nom'
+      }
     }
 
-    if (prenom && (!prenom.trim() || prenom.trim().length < 2)) {
-      throw new Error('Le prénom doit contenir au moins 2 caractères')
+    if (prenom !== undefined && (!prenom?.trim() || prenom.trim().length < 2)) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Le prénom doit contenir au moins 2 caractères',
+        field: 'prenom'
+      }
     }
 
-    if (email && !this.validerEmail(email)) {
-      throw new Error('Format d\'email invalide')
+    if (email !== undefined && !this.validerEmail(email)) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Format d\'email invalide',
+        field: 'email'
+      }
     }
 
-    if (langue && !['fr', 'en'].includes(langue)) {
-      throw new Error('Langue non supportée (fr/en uniquement)')
+    if (langue !== undefined && !['fr', 'en'].includes(langue)) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Langue non supportée (fr/en uniquement)',
+        field: 'langue'
+      }
     }
   }
 
-  // Validation changement mot de passe
+  /**
+   * Validation changement mot de passe selon les contraintes de sécurité
+   * @param {Object} donnees - Données de changement de mot de passe
+   * @throws {Object} Erreur avec code d'erreur si validation échoue
+   */
   validerChangementMotDePasse(donnees) {
     const { ancienMotDePasse, nouveauMotDePasse, confirmationMotDePasse } = donnees
 
     if (!ancienMotDePasse) {
-      throw new Error('Ancien mot de passe requis')
-    }
-
-    if (!nouveauMotDePasse || nouveauMotDePasse.length < 8) {
-      throw new Error('Le nouveau mot de passe doit contenir au moins 8 caractères')
-    }
-
-    if (nouveauMotDePasse !== confirmationMotDePasse) {
-      throw new Error('Les mots de passe ne correspondent pas')
-    }
-
-    if (ancienMotDePasse === nouveauMotDePasse) {
-      throw new Error('Le nouveau mot de passe doit être différent de l\'ancien')
-    }
-  }
-
-  // Validation email
-  validerEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return regex.test(email)
-  }
-
-  // MÉTHODES DE SIMULATION - Remplacer par vraies API
-  async simulerObtenirProfil(utilisateurId) {
-    // Simuler latence API
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    // Récupérer depuis localStorage (simulation base de données)
-    const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs') || '[]')
-    const utilisateur = utilisateurs.find(u => u.id === utilisateurId)
-
-    if (!utilisateur) {
-      throw new Error('Utilisateur non trouvé')
-    }
-
-    // Retourner les données sans le mot de passe
-    const { motDePasse, ...utilisateurSansMotDePasse } = utilisateur
-
-    return {
-      success: true,
-      data: utilisateurSansMotDePasse
-    }
-  }
-
-  async simulerMettreAJourProfil(utilisateurId, donneesModifiees) {
-    // Simuler latence API
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    // Mettre à jour dans localStorage (simulation base de données)
-    const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs') || '[]')
-    const index = utilisateurs.findIndex(u => u.id === utilisateurId)
-
-    if (index === -1) {
-      throw new Error('Utilisateur non trouvé')
-    }
-
-    // Vérifier unicité email si modifié
-    if (donneesModifiees.email) {
-      const emailExiste = utilisateurs.some(u =>
-        u.id !== utilisateurId && u.email === donneesModifiees.email
-      )
-      if (emailExiste) {
-        throw new Error('Cet email est déjà utilisé')
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Ancien mot de passe requis',
+        field: 'ancienMotDePasse'
       }
     }
 
-    // Mettre à jour l'utilisateur
-    utilisateurs[index] = {
-      ...utilisateurs[index],
-      ...donneesModifiees,
-      dateModification: new Date().toISOString()
+    if (!nouveauMotDePasse || nouveauMotDePasse.length < 6) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Le nouveau mot de passe doit contenir au moins 6 caractères',
+        field: 'nouveauMotDePasse'
+      }
     }
 
-    localStorage.setItem('utilisateurs', JSON.stringify(utilisateurs))
-
-    const { motDePasse, ...utilisateurMisAJour } = utilisateurs[index]
-
-    return {
-      success: true,
-      data: utilisateurMisAJour
-    }
-  }
-
-  async simulerChangerMotDePasse(utilisateurId, donneesMotDePasse) {
-    // Simuler latence API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    const { ancienMotDePasse, nouveauMotDePasse } = donneesMotDePasse
-
-    // Récupérer utilisateur
-    const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs') || '[]')
-    const index = utilisateurs.findIndex(u => u.id === utilisateurId)
-
-    if (index === -1) {
-      throw new Error('Utilisateur non trouvé')
+    if (nouveauMotDePasse !== confirmationMotDePasse) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Les mots de passe ne correspondent pas',
+        field: 'confirmationMotDePasse'
+      }
     }
 
-    const utilisateur = utilisateurs[index]
-
-    // Vérifier ancien mot de passe (simulation - en réalité hash bcrypt)
-    if (this.simulerVerificationMotDePasse(ancienMotDePasse, utilisateur.motDePasse)) {
-      throw new Error('Ancien mot de passe incorrect')
-    }
-
-    // Mettre à jour le mot de passe (simulation hash)
-    utilisateurs[index].motDePasse = this.simulerHashMotDePasse(nouveauMotDePasse)
-    utilisateurs[index].dateModification = new Date().toISOString()
-
-    localStorage.setItem('utilisateurs', JSON.stringify(utilisateurs))
-
-    return {
-      success: true
+    if (ancienMotDePasse === nouveauMotDePasse) {
+      throw {
+        success: false,
+        errorCode: ProfilService.ERROR_CODES.VALIDATION_ERROR,
+        message: 'Le nouveau mot de passe doit être différent de l\'ancien',
+        field: 'nouveauMotDePasse'
+      }
     }
   }
 
-  // Simulation hash mot de passe (remplacer par bcrypt)
-  simulerHashMotDePasse(motDePasse) {
-    return btoa(motDePasse + 'salt_secret') // Simulation basique
+  /**
+   * Validation format email
+   * @param {string} email - Email à valider
+   * @returns {boolean} true si l'email est valide
+   */
+  validerEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return email && typeof email === 'string' && regex.test(email.trim())
   }
 
-  // Simulation vérification mot de passe
-  simulerVerificationMotDePasse(motDePasse, hash) {
-    return this.simulerHashMotDePasse(motDePasse) !== hash
+  /**
+   * MÉTHODES UTILITAIRES
+   */
+
+  /**
+   * Obtenir le message d'erreur internationalisé
+   * @param {Object} error - Objet d'erreur du service
+   * @param {Function} t - Fonction de traduction Vue i18n
+   * @returns {string} Message d'erreur traduit
+   */
+  getLocalizedErrorMessage(error, t) {
+    if (error.errorCode && t) {
+      return t(error.errorCode)
+    }
+    return error.message || t('erreurs.general')
   }
 }
 
-// Instance singleton
-const profilService = new ProfilService()
-
-export default profilService
+// Export de l'instance unique
+export default new ProfilService()

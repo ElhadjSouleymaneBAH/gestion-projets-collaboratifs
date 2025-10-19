@@ -1,3 +1,4 @@
+<!-- src/views/ConditionsView.vue -->
 <template>
   <div class="min-vh-100 bg-light">
     <!-- Header -->
@@ -11,10 +12,10 @@
 
           <div class="d-flex align-items-center gap-3">
             <router-link to="/connexion" class="btn btn-link text-collabpro text-decoration-none">
-              Connexion
+              {{ $t('nav.connexion') }}
             </router-link>
             <router-link to="/inscription" class="btn btn-collabpro">
-              Inscription
+              {{ $t('nav.inscription') }}
             </router-link>
           </div>
         </div>
@@ -30,14 +31,14 @@
             <div class="text-center mb-4">
               <h1 class="h2 fw-bold text-collabpro mb-3">
                 <i class="fas fa-file-contract me-3"></i>
-                Conditions Générales d'Utilisation
+                {{ $t('conditions.titre') }}
               </h1>
               <p class="lead text-muted">
-                Conditions d'usage de la plateforme CollabPro
+                {{ $t('conditions.conditionsUsage') }}
               </p>
               <p class="small text-muted">
                 <i class="fas fa-calendar-alt me-2"></i>
-                Dernière mise à jour : 24 août 2025
+                {{ $t('conditions.documentMisAJour') }}
               </p>
             </div>
           </div>
@@ -46,15 +47,15 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-handshake text-primary me-2"></i>
-              1. Introduction
+              1. {{ $t('conditions.introduction') }}
             </h2>
             <p class="text-muted">
-              Bienvenue sur notre plateforme de gestion de projets collaboratifs destinée aux PME et aux freelances.
-              En utilisant notre application CollabPro, vous acceptez les présentes Conditions Générales d'Utilisation.
+              {{ $t('conditions.introductionText') }}
             </p>
             <div class="alert alert-info border-0 mt-3">
               <i class="fas fa-info-circle me-2"></i>
-              <strong>Important :</strong> L'utilisation de la plateforme vaut acceptation pleine et entière des présentes conditions.
+              <strong>{{ $t('conditions.important') }} :</strong>
+              {{ $t('conditions.importantText') }}
             </div>
           </div>
 
@@ -62,10 +63,10 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-bullseye text-success me-2"></i>
-              2. Objet de l'Application
+              2. {{ $t('conditions.objetApplication') }}
             </h2>
             <p class="text-muted mb-3">
-              Notre application permet la création, la gestion de projets, l'attribution de tâches et l'utilisation d'outils collaboratifs en temps réel.
+              {{ $t('conditions.objetText') }}
             </p>
 
             <div class="row g-3">
@@ -74,9 +75,9 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-primary mb-2">
                       <i class="fas fa-project-diagram me-1"></i>
-                      Gestion de projets
+                      {{ $t('conditions.gestionProjets') }}
                     </h5>
-                    <p class="small text-muted mb-0">Création, modification et suivi des projets collaboratifs</p>
+                    <p class="small text-muted mb-0">{{ $t('conditions.gestionProjetsDesc') }}</p>
                   </div>
                 </div>
               </div>
@@ -85,9 +86,9 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-success mb-2">
                       <i class="fas fa-users me-1"></i>
-                      Collaboration temps réel
+                      {{ $t('conditions.collaborationTempsReel') }}
                     </h5>
-                    <p class="small text-muted mb-0">Chat, notifications et partage instantané</p>
+                    <p class="small text-muted mb-0">{{ $t('conditions.collaborationDesc') }}</p>
                   </div>
                 </div>
               </div>
@@ -98,22 +99,22 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-user-plus text-warning me-2"></i>
-              3. Inscription et Comptes Utilisateurs
+              3. {{ $t('conditions.inscriptionComptes') }}
             </h2>
             <p class="text-muted mb-3">
-              Vous devez fournir des informations exactes lors de l'inscription. Vous acceptez de garder vos identifiants confidentiels.
+              {{ $t('conditions.inscriptionText') }}
             </p>
 
             <div class="card border-0 bg-warning bg-opacity-10">
               <div class="card-body">
                 <h5 class="h6 fw-bold text-warning mb-2">
                   <i class="fas fa-shield-alt me-1"></i>
-                  Responsabilité du compte
+                  {{ $t('conditions.responsabiliteCompte') }}
                 </h5>
                 <ul class="small text-muted mb-0">
-                  <li>Informations d'inscription exactes et à jour</li>
-                  <li>Confidentialité des identifiants de connexion</li>
-                  <li>Notification immédiate en cas d'usage non autorisé</li>
+                  <li>{{ $t('conditions.informationsExactes') }}</li>
+                  <li>{{ $t('conditions.confidentialiteIdentifiants') }}</li>
+                  <li>{{ $t('conditions.notificationUsage') }}</li>
                 </ul>
               </div>
             </div>
@@ -123,10 +124,10 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-gavel text-info me-2"></i>
-              4. Utilisation de l'Application
+              4. {{ $t('conditions.utilisationApplication') }}
             </h2>
             <p class="text-muted mb-3">
-              Vous vous engagez à utiliser l'application de manière légale et conforme aux présentes CGU.
+              {{ $t('conditions.utilisationText') }}
             </p>
 
             <div class="row g-3">
@@ -135,12 +136,12 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-success mb-2">
                       <i class="fas fa-check me-1"></i>
-                      Usages autorisés
+                      {{ $t('conditions.usagesAutorises') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Gestion de projets professionnels</li>
-                      <li>Collaboration en équipe</li>
-                      <li>Communication via les outils intégrés</li>
+                      <li>{{ $t('conditions.gestionProjetsPro') }}</li>
+                      <li>{{ $t('conditions.collaborationEquipe') }}</li>
+                      <li>{{ $t('conditions.communicationOutils') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -150,12 +151,12 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-danger mb-2">
                       <i class="fas fa-times me-1"></i>
-                      Usages interdits
+                      {{ $t('conditions.usagesInterdits') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Contenu illégal ou offensant</li>
-                      <li>Tentatives de piratage</li>
-                      <li>Spam ou sollicitations</li>
+                      <li>{{ $t('conditions.contenuIllegal') }}</li>
+                      <li>{{ $t('conditions.tentativesPiratage') }}</li>
+                      <li>{{ $t('conditions.spamSollicitations') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -167,20 +168,19 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-credit-card text-primary me-2"></i>
-              5. Paiements et Transactions
+              5. {{ $t('conditions.paiementsTransactions') }}
             </h2>
             <p class="text-muted mb-3">
-              Les paiements sont sécurisés via Stripe. Toutes les transactions sont finales et non remboursables sauf mention contraire.
+              {{ $t('conditions.paiementsText') }}
             </p>
 
             <div class="alert alert-primary border-0">
               <h5 class="h6 fw-bold mb-2">
                 <i class="fab fa-stripe me-2"></i>
-                Sécurité Stripe
+                {{ $t('conditions.securiteStripe') }}
               </h5>
               <p class="small mb-0">
-                Tous les paiements sont traités de manière sécurisée par Stripe,
-                leader mondial des solutions de paiement en ligne. CollabPro ne stocke jamais vos informations bancaires.
+                {{ $t('conditions.securiteStripeDesc') }}
               </p>
             </div>
 
@@ -188,26 +188,26 @@
               <table class="table table-sm">
                 <thead class="table-light">
                 <tr>
-                  <th>Type d'abonnement</th>
-                  <th>Prix</th>
-                  <th>Fonctionnalités</th>
+                  <th>{{ $t('conditions.typeAbonnement') }}</th>
+                  <th>{{ $t('admin.prix') }}</th>
+                  <th>{{ $t('abonnement.fonctionnalites') }}</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                  <td><strong>Chef de Projet</strong></td>
-                  <td>10€/mois</td>
-                  <td>Création/gestion projets, équipes, factures</td>
+                  <td><strong>{{ $t('roles.chefProjet') }}</strong></td>
+                  <td>{{ $t('abonnement.prix') }}</td>
+                  <td>{{ $t('conditions.creationGestion') }}</td>
                 </tr>
                 <tr>
-                  <td><strong>Membre</strong></td>
-                  <td>Gratuit</td>
-                  <td>Participation aux projets</td>
+                  <td><strong>{{ $t('roles.membre') }}</strong></td>
+                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                  <td>{{ $t('conditions.participationProjets') }}</td>
                 </tr>
                 <tr>
-                  <td><strong>Visiteur</strong></td>
-                  <td>Gratuit</td>
-                  <td>Consultation projets publics</td>
+                  <td><strong>{{ $t('roles.visiteur') }}</strong></td>
+                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                  <td>{{ $t('conditions.consultationPublics') }}</td>
                 </tr>
                 </tbody>
               </table>
@@ -218,20 +218,22 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-database text-success me-2"></i>
-              6. Protection des Données Personnelles
+              6. {{ $t('conditions.protectionDonnees') }}
             </h2>
             <p class="text-muted mb-3">
-              Nous collectons vos données pour fournir nos services. Vous avez le droit d'accéder, rectifier ou supprimer vos données.
+              {{ $t('conditions.protectionText') }}
             </p>
 
             <div class="alert alert-info border-0">
               <h5 class="h6 fw-bold mb-2">
                 <i class="fas fa-shield-alt me-2"></i>
-                Référence RGPD
+                {{ $t('conditions.referenceRGPD') }}
               </h5>
               <p class="small mb-0">
-                Pour des informations détaillées sur le traitement de vos données personnelles,
-                consultez notre <router-link to="/politique-confidentialite" class="text-decoration-none fw-bold">Politique de Confidentialité</router-link>.
+                {{ $t('conditions.referenceRGPDText') }}
+                <router-link to="/politique-confidentialite" class="text-decoration-none fw-bold">
+                  {{ $t('auth.politiqueConfidentialite') }}
+                </router-link>.
               </p>
             </div>
           </div>
@@ -240,10 +242,10 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-balance-scale text-warning me-2"></i>
-              7. Responsabilités
+              7. {{ $t('conditions.responsabilites') }}
             </h2>
             <p class="text-muted mb-3">
-              Nous nous engageons à assurer la disponibilité de l'application mais ne pouvons garantir une utilisation ininterrompue.
+              {{ $t('conditions.responsabilitesText') }}
             </p>
 
             <div class="row g-3">
@@ -252,12 +254,12 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-primary mb-2">
                       <i class="fas fa-handshake me-1"></i>
-                      Nos engagements
+                      {{ $t('conditions.nosEngagements') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Disponibilité optimale de la plateforme</li>
-                      <li>Sécurité des données</li>
-                      <li>Support technique</li>
+                      <li>{{ $t('conditions.disponibiliteOptimale') }}</li>
+                      <li>{{ $t('conditions.securiteDonnees') }}</li>
+                      <li>{{ $t('conditions.supportTechnique') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -267,12 +269,12 @@
                   <div class="card-body">
                     <h5 class="h6 fw-bold text-secondary mb-2">
                       <i class="fas fa-exclamation-triangle me-1"></i>
-                      Limites de responsabilité
+                      {{ $t('conditions.limitesResponsabilite') }}
                     </h5>
                     <ul class="small text-muted mb-0">
-                      <li>Interruptions techniques</li>
-                      <li>Maintenance programmée</li>
-                      <li>Cas de force majeure</li>
+                      <li>{{ $t('conditions.interruptionsTechniques') }}</li>
+                      <li>{{ $t('conditions.maintenanceProgrammee') }}</li>
+                      <li>{{ $t('conditions.forceMajeure') }}</li>
                     </ul>
                   </div>
                 </div>
@@ -284,16 +286,16 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-edit text-info me-2"></i>
-              8. Modification des CGU
+              8. {{ $t('conditions.modificationsCGU') }}
             </h2>
             <p class="text-muted mb-3">
-              Nous nous réservons le droit de modifier les CGU. Les modifications seront notifiées aux utilisateurs.
+              {{ $t('conditions.modificationsText') }}
             </p>
 
             <div class="alert alert-warning border-0">
               <i class="fas fa-bell me-2"></i>
-              <strong>Notification des changements :</strong> Toute modification sera communiquée par email
-              et/ou notification dans l'application avec un préavis de 30 jours minimum.
+              <strong>{{ $t('conditions.notificationChangements') }} :</strong>
+              {{ $t('conditions.notificationDesc') }}
             </div>
           </div>
 
@@ -301,21 +303,20 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-globe-europe text-primary me-2"></i>
-              9. Loi Applicable
+              9. {{ $t('conditions.loiApplicable') }}
             </h2>
             <p class="text-muted mb-3">
-              Les présentes CGU sont soumises aux lois en vigueur en Europe.
+              {{ $t('conditions.loiText') }}
             </p>
 
             <div class="card border-0 bg-primary bg-opacity-10">
               <div class="card-body">
                 <h5 class="h6 fw-bold text-primary mb-2">
                   <i class="fas fa-gavel me-1"></i>
-                  Juridiction compétente
+                  {{ $t('conditions.juridictionCompetente') }}
                 </h5>
                 <p class="small text-muted mb-0">
-                  Tout litige relatif à l'interprétation ou à l'exécution des présentes CGU relève
-                  de la compétence exclusive des tribunaux européens, conformément au droit applicable dans l'Union Européenne.
+                  {{ $t('conditions.juridictionDesc') }}
                 </p>
               </div>
             </div>
@@ -325,11 +326,11 @@
           <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
             <h2 class="h4 fw-bold text-dark mb-3">
               <i class="fas fa-envelope text-success me-2"></i>
-              10. Contact
+              10. {{ $t('conditions.contact') }}
             </h2>
             <p class="text-muted mb-3">
-              Pour toute question relative aux CGU, contactez-nous à
-              <strong>support@collabpro.com</strong>.
+              {{ $t('conditions.contactText') }}
+              <strong>{{ $t('conditions.supportEmail') }}</strong>.
             </p>
 
             <div class="row g-3">
@@ -337,8 +338,8 @@
                 <div class="card border-0 bg-light">
                   <div class="card-body text-center">
                     <i class="fas fa-headset fa-2x text-primary mb-2"></i>
-                    <h5 class="h6 fw-bold">Support technique</h5>
-                    <p class="small text-muted">support@collabpro.com</p>
+                    <h5 class="h6 fw-bold">{{ $t('conditions.supportTechnique') }}</h5>
+                    <p class="small text-muted">{{ $t('conditions.supportEmail') }}</p>
                   </div>
                 </div>
               </div>
@@ -346,28 +347,28 @@
                 <div class="card border-0 bg-light">
                   <div class="card-body text-center">
                     <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
-                    <h5 class="h6 fw-bold">Protection des données</h5>
-                    <p class="small text-muted">privacy@collabpro.com</p>
+                    <h5 class="h6 fw-bold">{{ $t('conditions.protectionDonnees') }}</h5>
+                    <p class="small text-muted">{{ $t('conditions.protectionEmail') }}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Navigation et footer -->
+          <!-- Navigation et footer local -->
           <div class="bg-white rounded-3 shadow-sm p-4 text-center">
             <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mb-4">
               <router-link to="/politique-confidentialite" class="btn btn-outline-primary">
                 <i class="fas fa-shield-alt me-2"></i>
-                Politique de Confidentialité
+                {{ $t('auth.politiqueConfidentialite') }}
               </router-link>
               <router-link to="/inscription" class="btn btn-collabpro">
                 <i class="fas fa-user-plus me-2"></i>
-                Créer un compte
+                {{ $t('conditions.creerCompteBtn') }}
               </router-link>
               <router-link to="/" class="btn btn-outline-secondary">
                 <i class="fas fa-home me-2"></i>
-                Retour à l'accueil
+                {{ $t('conditions.retourAccueilBtn') }}
               </router-link>
             </div>
 
@@ -375,140 +376,70 @@
 
             <p class="small text-muted mb-0">
               <i class="fas fa-balance-scale me-2"></i>
-              Ces Conditions Générales d'Utilisation sont adaptées à un projet de gestion de projets collaboratifs
-              avec intégration de paiements via Stripe et conformité RGPD.
-            </p>
-
-            <p class="small text-muted mt-2 mb-0">
-              <i class="fas fa-calendar-alt me-2"></i>
-              Document mis à jour le 24 août 2025
+              {{ $t('conditions.adapteProjets') }}
             </p>
           </div>
         </div>
       </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-3">
-      <div class="container">
-        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
-          <router-link to="/" class="d-inline-flex align-items-center text-decoration-none text-white">
-            <img src="/logo-collabpro.png" alt="CollabPro" class="me-2" style="height: 32px; width: 32px;">
-            <span class="fw-bold">CollabPro</span>
-          </router-link>
-
-          <div class="text-center">
-            <router-link to="/conditions" class="text-white text-decoration-underline small me-3">
-              CGU
-            </router-link>
-            <router-link to="/politique-confidentialite" class="text-white text-decoration-underline small me-3">
-              Politique de confidentialité
-            </router-link>
-            <span class="small text-white-50">© 2025 Tous droits réservés</span>
-          </div>
-
-          <div class="d-flex align-items-center">
-            <div class="d-flex align-items-center lang-wrap">
-              <i class="fas fa-globe me-2"></i>
-              <select class="form-select form-select-sm lang-select" aria-label="Sélection de la langue">
-                <option value="fr">Français</option>
-                <option value="en">English</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
 <script>
 export default {
   name: 'ConditionsView',
+  methods: {
+    setLocale(locale) {
+      this.$i18n.locale = locale
+      try { localStorage.setItem('locale', locale) } catch (e) {}
+    }
+  },
   mounted() {
-    // Scroll vers le haut au chargement
     window.scrollTo(0, 0)
   }
 }
 </script>
 
 <style scoped>
-.text-collabpro {
-  color: #007bff;
-}
+.text-collabpro { color: #007bff; }
 
 .btn-collabpro {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  transition: all .3s;
+  border: none; color: #fff; font-weight: 600; transition: all .3s;
   box-shadow: 0 2px 8px rgba(0,123,255,.2);
 }
-
 .btn-collabpro:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,123,255,.3);
-  color: #fff;
+  color:#fff;
 }
 
-.card {
-  transition: all .3s ease;
-  border-radius: 8px;
-}
+.card { transition: all .3s ease; border-radius: 8px; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1) !important; }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,.1) !important;
-}
-
-.lang-wrap {
-  color: #fff;
-}
-
-.lang-select {
+/* Lang switch */
+.lang-wrap { color:#fff; }
+.lang-select{
   background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.6);
-  padding: .2rem .5rem;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.6);
+  padding:.2rem .5rem;
   font-size: 0.875rem;
 }
+.lang-select option { color:#000; }
 
-.lang-select option {
-  color: #000;
-}
-
-/* Animation pour les sections */
+/* Animation */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.bg-white {
-  animation: fadeInUp 0.6s ease-out;
-}
+.bg-white { animation: fadeInUp 0.6s ease-out; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .col-lg-8 {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-
-  .table-responsive {
-    font-size: 0.875rem;
-  }
+  .container { padding-left: 1rem; padding-right: 1rem; }
+  .col-lg-8 { padding-left: .5rem; padding-right: .5rem; }
+  .table-responsive { font-size: .875rem; }
 }
 </style>

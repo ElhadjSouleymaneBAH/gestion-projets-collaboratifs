@@ -13,6 +13,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -157,11 +160,78 @@ public class UtilisateurController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<Utilisateur>> getTous() {
+    public ResponseEntity<?> getTous(
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "") String role,
+            @RequestParam(required = false, defaultValue = "") String statut,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "20") Integer size) {
+
         try {
-            List<Utilisateur> utilisateurs = utilisateurService.obtenirTous();
-            return ResponseEntity.ok(utilisateurs);
+            System.out.println("DEBUG: [ADMIN] getTous() - Paramètres reçus:");
+            System.out.println("  - q: [" + q + "]");
+            System.out.println("  - role: [" + role + "]");
+            System.out.println("  - statut: [" + statut + "]");
+            System.out.println("  - page: " + page);
+            System.out.println("  - size: " + size);
+
+            List<Utilisateur> tousLesUtilisateurs = utilisateurService.obtenirTous();
+
+            // Filtrage
+            List<Utilisateur> utilisateursFiltres = tousLesUtilisateurs.stream()
+                    .filter(u -> {
+                        // Filtrage par terme de recherche
+                        if (q != null && !q.trim().isEmpty()) {
+                            String terme = q.toLowerCase();
+                            String nom = u.getNom() == null ? "" : u.getNom().toLowerCase();
+                            String prenom = u.getPrenom() == null ? "" : u.getPrenom().toLowerCase();
+                            String email = u.getEmail() == null ? "" : u.getEmail().toLowerCase();
+                            if (!nom.contains(terme) && !prenom.contains(terme) && !email.contains(terme)) {
+                                return false;
+                            }
+                        }
+
+                        // Filtrage par rôle
+                        if (role != null && !role.trim().isEmpty()) {
+                            if (!u.getRole().name().equalsIgnoreCase(role)) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    })
+                    .collect(Collectors.toList());
+
+            // Pagination
+            int debut = page * size;
+            int fin = Math.min(debut + size, utilisateursFiltres.size());
+
+            if (debut >= utilisateursFiltres.size()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("content", Collections.emptyList());
+                response.put("totalElements", utilisateursFiltres.size());
+                response.put("totalPages", (int) Math.ceil((double) utilisateursFiltres.size() / size));
+                response.put("number", page);
+                response.put("size", size);
+                return ResponseEntity.ok(response);
+            }
+
+            List<Utilisateur> pageUtilisateurs = utilisateursFiltres.subList(debut, fin);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", pageUtilisateurs);
+            response.put("totalElements", utilisateursFiltres.size());
+            response.put("totalPages", (int) Math.ceil((double) utilisateursFiltres.size() / size));
+            response.put("number", page);
+            response.put("size", size);
+
+            System.out.println("DEBUG: [ADMIN] Retour de " + pageUtilisateurs.size() + " utilisateurs sur " + utilisateursFiltres.size() + " total");
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+            System.err.println("ERROR: [ADMIN] Erreur dans getTous(): " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

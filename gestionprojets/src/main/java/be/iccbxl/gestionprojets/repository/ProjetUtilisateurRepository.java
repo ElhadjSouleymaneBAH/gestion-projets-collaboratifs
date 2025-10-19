@@ -10,11 +10,10 @@ import java.util.List;
 
 /**
  * Repository pour la gestion des associations Projet-Utilisateur.
- *
  * Fonctionnalités cahier des charges :
  * - F8 : Ajouter des membres à un projet (Chef de Projet, Importance 4/5)
  * - F9 : Collaboration temps réel (vérifications accès)
- *
+
  * Contraintes F8 : Membres existants (éviter doublons)
  *
  * @author ElhadjSouleymaneBAH

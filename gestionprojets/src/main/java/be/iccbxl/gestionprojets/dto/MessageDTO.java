@@ -16,6 +16,7 @@ public class MessageDTO {
     private Long utilisateurId;
     private String utilisateurNom;
     private String utilisateurPrenom;
+    private String utilisateurEmail;
     private Long projetId;
     private String projetTitre;
 }

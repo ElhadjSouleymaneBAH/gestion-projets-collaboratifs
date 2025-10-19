@@ -4,6 +4,7 @@ import be.iccbxl.gestionprojets.model.Transaction;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.model.Facture;
 import be.iccbxl.gestionprojets.model.Abonnement;
+import be.iccbxl.gestionprojets.enums.StatutAbonnement;
 import be.iccbxl.gestionprojets.repository.TransactionRepository;
 import be.iccbxl.gestionprojets.repository.FactureRepository;
 import be.iccbxl.gestionprojets.repository.AbonnementRepository;
@@ -23,7 +24,7 @@ import java.util.Map;
  * Service Stripe HYBRIDE pour F10 et F11
  * F10 : Paiements abonnements 10€/mois Chef de Projet
  * F11 : Génération factures automatique après paiement
- * ARCHITECTURE HYBRIDE : SIMULATION  + STRIPE_TEST
+ * ARCHITECTURE HYBRIDE : SIMULATION + STRIPE_TEST
  *
  * @author ElhadjSouleymaneBAH
  */
@@ -190,6 +191,10 @@ public class StripeService {
             abonnement.setPrix(10.0);
             abonnement.setDuree(1);
             abonnement.setUtilisateur(utilisateur);
+            abonnement.setType("premium");
+            abonnement.setStatut(StatutAbonnement.ACTIF);
+            abonnement.setDateDebut(LocalDate.now());
+            abonnement.setDateFin(LocalDate.now().plusMonths(1));
 
             Abonnement savedAbonnement = abonnementRepository.save(abonnement);
             System.out.println(" Abonnement créé - ID=" + savedAbonnement.getId());

@@ -1,6 +1,7 @@
 package be.iccbxl.gestionprojets.dto;
 
 import be.iccbxl.gestionprojets.enums.StatutAbonnement;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 /**
  * DTO pour les abonnements utilisateur.
  * Utilisé pour les échanges API sans exposer l'entité complète.
- *
+
  * Support F10 : Paiements et abonnements
  *
  * @author ElhadjSouleymaneBAH
@@ -69,30 +70,42 @@ public class AbonnementDTO {
     /**
      * Date de début de l'abonnement.
      */
+    @JsonProperty("date_debut")
     private LocalDate dateDebut;
 
     /**
      * Date de fin de l'abonnement.
      */
+    @JsonProperty("date_fin")
     private LocalDate dateFin;
 
     /**
      * Indique si l'abonnement est actuellement actif.
      * Calculé côté serveur.
      */
+    @JsonProperty("est_actif")
     private boolean estActif;
 
     /**
      * ID de l'utilisateur propriétaire.
      * Utilisé pour les liens sans exposer l'entité complète.
      */
+    @JsonProperty("utilisateur_id")
     private Long utilisateurId;
 
     /**
      * Email de l'utilisateur (pour affichage).
      * Information non sensible pour l'administration.
      */
+    @JsonProperty("utilisateur_email")
     private String utilisateurEmail;
+
+    /**
+     * Objet utilisateur complet
+     * Le frontend attend cet objet avec id, nom, prenom, email, role
+     * Évite les "Inconnu" en chargeant dynamiquement depuis la base
+     */
+    private UtilisateurDTO utilisateur;
 
     // CONSTRUCTEURS
 
@@ -114,7 +127,8 @@ public class AbonnementDTO {
     public AbonnementDTO(Long id, String nom, Double prix, Integer duree,
                          String type, StatutAbonnement statut,
                          LocalDate dateDebut, LocalDate dateFin,
-                         boolean estActif, Long utilisateurId, String utilisateurEmail) {
+                         boolean estActif, Long utilisateurId,
+                         String utilisateurEmail, UtilisateurDTO utilisateur) {
         this.id = id;
         this.nom = nom;
         this.prix = prix;
@@ -126,6 +140,7 @@ public class AbonnementDTO {
         this.estActif = estActif;
         this.utilisateurId = utilisateurId;
         this.utilisateurEmail = utilisateurEmail;
+        this.utilisateur = utilisateur;
     }
 
     // MÉTHODES UTILITAIRES
@@ -136,7 +151,7 @@ public class AbonnementDTO {
      */
     public Double getMontantTTC() {
         if (prix == null) return null;
-        double tva = 0.21; // TVA belge 21%
+        double tva = 0.21;
         return prix + (prix * tva);
     }
 
@@ -153,7 +168,7 @@ public class AbonnementDTO {
 
     @Override
     public String toString() {
-        return String.format("AbonnementDTO{id=%d, nom='%s', prix=%.2f€, type='%s', statut=%s, estActif=%s}",
-                id, nom, prix, type, statut, estActif);
+        return String.format("AbonnementDTO{id=%d, nom='%s', prix=%.2f€, type='%s', statut=%s, estActif=%s, utilisateur=%s}",
+                id, nom, prix, type, statut, estActif, utilisateur != null ? utilisateur.toString() : "null");
     }
 }

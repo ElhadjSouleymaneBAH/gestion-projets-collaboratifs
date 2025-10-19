@@ -22,10 +22,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
  * Configuration de sécurité Spring Boot - VERSION PRODUCTION
  * Fonctionnalités ordonnées F1 à F14 selon le cahier des charges
  *
- * ORDRE CRITIQUE: Du plus spécifique au plus générique pour éviter les conflits
  *
  * @author ElhadjSouleymaneBAH
- * @version 3.0 - PRODUCTION
+ * @version 1.0 -
  * @see "Cahier des charges - Application Web de Gestion de Projets Collaboratifs"
  */
 @Configuration
@@ -63,10 +62,9 @@ public class SecurityConfig {
                         // ===================================================================
 
                         // Préflights CORS
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Routes d'erreur et techniques
-
                         .requestMatchers("/error", "/favicon.ico", "/actuator/**").permitAll()
                         .requestMatchers("/", "/static/**", "/assets/**", "/public/**").permitAll()
 
@@ -74,7 +72,6 @@ public class SecurityConfig {
                         // FONCTIONNALITÉ F1 : S'INSCRIRE (Visiteur)
                         // Accès public pour création de compte
                         // ===================================================================
-
 
                         .requestMatchers(HttpMethod.POST, "/api/auth/inscription").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/utilisateurs/inscription").permitAll()
@@ -110,15 +107,23 @@ public class SecurityConfig {
                         // Accès exclusif ADMINISTRATEUR
                         // ===================================================================
 
-                        // Gestion globale des utilisateurs
-                        .requestMatchers("/api/admin/utilisateurs/**").hasAuthority("ADMINISTRATEUR")
-                        .requestMatchers("/api/admin/users/**").hasAuthority("ADMINISTRATEUR")
+                        // Gestion globale des utilisateurs (ADMIN uniquement)
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.POST, "/api/utilisateurs").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/utilisateurs/**").hasAuthority("ADMINISTRATEUR")
 
                         // Gestion globale des abonnements et paiements (F10 + F11 Admin)
                         .requestMatchers("/api/admin/abonnements/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/paiements/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/transactions/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/factures/**").hasAuthority("ADMINISTRATEUR")
+
+                        // ⇨ AJOUTS MINIMAUX pour aligner le front (alias admin/all)
+                        .requestMatchers(HttpMethod.GET, "/api/messages/admin/all").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/taches/admin/all").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/commentaires/admin/all").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/notifications/admin/all").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/transactions/admin/all").hasAuthority("ADMINISTRATEUR")
 
                         // Statistiques et rapports globaux
                         .requestMatchers("/api/admin/stats/**").hasAuthority("ADMINISTRATEUR")
@@ -129,6 +134,27 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/systeme/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/config/**").hasAuthority("ADMINISTRATEUR")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // F10 : PAIEMENTS ET ABONNEMENTS
+                        // MEMBRE peut payer pour devenir CHEF_PROJET
+                        // Logique métier : MEMBRE → paie abonnement → devient CHEF_PROJET
+                        // ===================================================================
+
+                        .requestMatchers("/api/paiements/**").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers("/api/abonnements/**").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers("/api/transactions/**").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers("/api/stripe/**").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // F11 : FACTURES
+                        // ===================================================================
+
+                        .requestMatchers(HttpMethod.GET, "/api/factures/mes-factures").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/factures/toutes").hasAuthority("ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/factures/*/telecharger").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/factures/**").hasAnyAuthority("MEMBRE","CHEF_PROJET","ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.POST, "/api/factures/**").hasAuthority("ADMINISTRATEUR")
 
                         // ===================================================================
                         // ROUTES CHEF DE PROJET (Abonnés premium)
@@ -152,16 +178,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/projets/*/membres/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
                         .requestMatchers(HttpMethod.PUT, "/api/projets/*/membres/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // F10 : Paiements et abonnements (Chef de projet peut gérer ses abonnements)
-                        .requestMatchers("/api/paiements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/abonnements/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/transactions/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/stripe/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-
-                        // F11 : Générer factures (Chef de projet peut voir ses factures)
-                        .requestMatchers(HttpMethod.GET, "/api/factures/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers(HttpMethod.POST, "/api/factures/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
-
                         // Fonctionnalités premium chef de projet
                         .requestMatchers("/api/chef-projet/**").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
@@ -174,6 +190,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/utilisateurs/profil").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
                         .requestMatchers(HttpMethod.PATCH, "/api/utilisateurs/profil").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
                         .requestMatchers("/api/utilisateurs/me").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // ===================================================================
+                        // ROUTES MEMBRES - FONCTIONNALITÉS COLLABORATIVES (F8)
+                        // ===================================================================
+
+                        // Recherche d'utilisateurs pour ajout aux projets
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs/recherche").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs/membresansprojet").hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs/email-disponible").permitAll()
+
+                        // Consultation profils individuels (F4)
+                        .requestMatchers(HttpMethod.GET, "/api/utilisateurs/{id}").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+                        .requestMatchers(HttpMethod.PUT, "/api/utilisateurs/{id}").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
                         // ===================================================================
                         // FONCTIONNALITÉ F6 : CONSULTER PROJETS (Membres authentifiés)
@@ -225,13 +254,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/membre/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
                         // ===================================================================
-                        // ROUTES GÉNÉRIQUES UTILISATEURS (Moins spécifiques)
-                        // ===================================================================
-
-                        .requestMatchers("/api/utilisateurs/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-                        .requestMatchers("/api/users/**").hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
-
-                        // ===================================================================
                         // SÉCURITÉ PAR DÉFAUT
                         // Toute autre requête nécessite une authentification minimum
                         // ===================================================================
@@ -254,7 +276,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Force 12 pour production
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
@@ -262,7 +284,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setHideUserNotFoundExceptions(false); // Pour debug en dev, true en prod
+        provider.setHideUserNotFoundExceptions(false);
         return provider;
     }
 }

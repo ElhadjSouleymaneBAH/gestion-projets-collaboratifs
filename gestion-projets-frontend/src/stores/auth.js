@@ -8,11 +8,11 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // Getters
+  // --- Getters ---
   const isAuthenticated = computed(() => !!token.value)
   const userRole = computed(() => user.value?.role || null)
 
-  // Actions
+  // --- Actions ---
   const login = async (credentials) => {
     loading.value = true
     error.value = null
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       return { success: true }
     } catch (err) {
-      error.value = err.response?.data?.message || 'Erreur lors de l\'inscription'
+      error.value = err.response?.data?.message || "Erreur lors de l'inscription"
       return { success: false, error: error.value }
     } finally {
       loading.value = false
@@ -71,9 +71,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const setUser = (newUser) => {
+    user.value = newUser
+  }
+
   return {
-    token, user, loading, error,
-    isAuthenticated, userRole,
-    login, register, logout, checkAuth
+    token,
+    user,
+    loading,
+    error,
+    isAuthenticated,
+    userRole,
+    login,
+    register,
+    logout,
+    checkAuth,
+    setUser
   }
 })

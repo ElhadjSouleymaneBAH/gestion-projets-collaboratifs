@@ -1,14 +1,15 @@
 package be.iccbxl.gestionprojets.service;
 
-import be.iccbxl.gestionprojets.dto.ConnexionDTO;
 import be.iccbxl.gestionprojets.dto.InscriptionDTO;
 import be.iccbxl.gestionprojets.dto.UtilisateurDTO;
 import be.iccbxl.gestionprojets.enums.Role;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.model.Projet;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
+import be.iccbxl.gestionprojets.repository.TacheRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,18 +46,45 @@ public class UtilisateurService {
     private final PasswordEncoder passwordEncoder;
     private final ProjetRepository projetRepository;
     private final ProjetUtilisateurRepository projetUtilisateurRepository;
+    private final TacheRepository tacheRepository;
 
     public UtilisateurService(UtilisateurRepository utilisateurRepository,
                               PasswordEncoder passwordEncoder,
                               ProjetRepository projetRepository,
-                              ProjetUtilisateurRepository projetUtilisateurRepository) {
+                              ProjetUtilisateurRepository projetUtilisateurRepository,
+                              TacheRepository tacheRepository) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
         this.projetRepository = projetRepository;
         this.projetUtilisateurRepository = projetUtilisateurRepository;
+        this.tacheRepository = tacheRepository;
     }
 
     // ========== MÉTHODES DE BASE ==========
+
+    /**
+     * 🔧 MÉTHODE AJOUTÉE : Sauvegarde ou met à jour un utilisateur.
+     *
+     * CRITIQUE pour F10 : Permet la mise à jour du rôle lors de la souscription/résiliation d'abonnement.
+     *
+     * Utilisations :
+     * - AbonnementController : Promotion MEMBRE → CHEF_PROJET lors de la souscription
+     * - AbonnementController : Rétrogradation CHEF_PROJET → MEMBRE lors de la résiliation
+     * - Mise à jour du profil utilisateur (F5)
+     *
+     * @param utilisateur L'utilisateur à sauvegarder (avec modifications éventuelles de rôle)
+     * @return L'utilisateur sauvegardé avec les modifications persistées
+     */
+    @Transactional
+    public Utilisateur save(Utilisateur utilisateur) {
+        System.out.println("DEBUG: [save] Sauvegarde utilisateur ID: " + utilisateur.getId() +
+                " - Rôle: " + utilisateur.getRole());
+
+        Utilisateur resultat = utilisateurRepository.save(utilisateur);
+
+        System.out.println("SUCCESS: [save] Utilisateur sauvegardé avec succès - ID: " + resultat.getId());
+        return resultat;
+    }
 
     /**
      * Obtient tous les utilisateurs (usage administrateur).
@@ -104,7 +132,7 @@ public class UtilisateurService {
 
             List<UtilisateurDTO> utilisateursFiltrés = utilisateursDisponibles.stream()
                     .filter(u -> !membresExistants.contains(u.getId()))
-                    .map(this::convertirEnDTO)  // CONVERSION EN DTO
+                    .map(this::convertirEnDTO)
                     .collect(Collectors.toList());
 
             System.out.println("SUCCESS: [F8] " + utilisateursFiltrés.size() + " utilisateurs disponibles pour le projet " + projetId);
@@ -113,7 +141,7 @@ public class UtilisateurService {
 
         } catch (Exception e) {
             System.out.println("ERROR: [F8] Erreur recherche utilisateurs disponibles: " + e.getMessage());
-            return List.of(); // Retourner liste vide en cas d'erreur
+            return List.of();
         }
     }
 
@@ -131,12 +159,14 @@ public class UtilisateurService {
         System.out.println("DEBUG: Vérification tâches en cours pour utilisateur " + utilisateurId);
 
         try {
-            // Cette méthode nécessiterait TacheRepository pour une implémentation complète
-            // Pour l'instant, retourner false pour permettre les tests
-            // TODO: À implémenter quand TacheRepository sera disponible
+            List<StatutTache> actifs = List.of(
+                    StatutTache.BROUILLON,
+                    StatutTache.EN_ATTENTE_VALIDATION
+            );
 
-            System.out.println("INFO: Vérification tâches temporairement désactivée");
-            return false;
+            boolean aTachesActives = tacheRepository.existsByAssigneAIdAndTachesActives(utilisateurId, actifs);
+            System.out.println("INFO: Utilisateur " + utilisateurId + " a des tâches actives ? " + aTachesActives);
+            return aTachesActives;
 
         } catch (Exception e) {
             System.out.println("ERROR: Erreur vérification tâches en cours: " + e.getMessage());
@@ -164,7 +194,6 @@ public class UtilisateurService {
     /**
      * Obtient l'ID d'un utilisateur par son email.
      * Utilisé pour l'authentification et les contrôles d'accès.
-     * MÉTHODE AJOUTÉE POUR CORRIGER LES ERREURS TACHECONTROLLER
      */
     @Transactional(readOnly = true)
     public Long obtenirIdParEmail(String email) {
@@ -188,29 +217,23 @@ public class UtilisateurService {
      * 1. ADMINISTRATEUR : accès total à tous les projets
      * 2. Créateur du projet : accès complet à son projet
      * 3. Membre du projet : accès via table projet_utilisateurs
-     *
-     * Utilisé par TacheController pour F7 : Gérer les tâches
-     * MÉTHODE AJOUTÉE POUR CORRIGER LES ERREURS TACHECONTROLLER
      */
     @Transactional(readOnly = true)
     public boolean peutAccederAuProjet(Long utilisateurId, Long projetId) {
         System.out.println("DEBUG: Vérification accès projet " + projetId + " pour utilisateur " + utilisateurId);
 
         try {
-            // 1. Vérifier si l'utilisateur existe
             Optional<Utilisateur> utilisateur = utilisateurRepository.findById(utilisateurId);
             if (utilisateur.isEmpty()) {
                 System.out.println("ERROR: Utilisateur " + utilisateurId + " non trouvé");
                 return false;
             }
 
-            // 2. ADMINISTRATEUR a accès à tout
             if (utilisateur.get().getRole() == Role.ADMINISTRATEUR) {
                 System.out.println("SUCCESS: Accès ADMINISTRATEUR accordé au projet " + projetId);
                 return true;
             }
 
-            // 3. Vérifier si l'utilisateur est le créateur du projet
             Optional<Projet> projet = projetRepository.findById(projetId);
             if (projet.isEmpty()) {
                 System.out.println("ERROR: Projet " + projetId + " non trouvé");
@@ -222,7 +245,6 @@ public class UtilisateurService {
                 return true;
             }
 
-            // 4. Vérifier si l'utilisateur est membre du projet
             boolean estMembre = projetUtilisateurRepository.existsByProjetIdAndUtilisateurIdAndActif(
                     projetId, utilisateurId, true);
 
@@ -242,7 +264,6 @@ public class UtilisateurService {
 
     /**
      * Alias pour compatibilité WebSocket (F9).
-     * Utilise la méthode existante obtenirParEmail.
      */
     @Transactional(readOnly = true)
     public Optional<Utilisateur> findByEmail(String email) {
@@ -255,7 +276,6 @@ public class UtilisateurService {
     public Utilisateur enregistrer(Utilisateur utilisateur) {
         System.out.println("DEBUG: Début enregistrer() pour utilisateur: " + utilisateur.getEmail());
 
-        // Hasher le mot de passe si ce n'est pas déjà fait
         if (utilisateur.getMotDePasse() != null && !utilisateur.getMotDePasse().startsWith("$2a$")) {
             System.out.println("DEBUG: Hachage du mot de passe avec BCrypt...");
             String motDePasseEncode = passwordEncoder.encode(utilisateur.getMotDePasse());
@@ -281,7 +301,6 @@ public class UtilisateurService {
 
     /**
      * Vérifie si un email existe déjà dans le système.
-     * Utilisé pour valider l'unicité lors de l'inscription (F1).
      */
     @Transactional(readOnly = true)
     public boolean existeParEmail(String email) {
@@ -306,16 +325,9 @@ public class UtilisateurService {
      * - Un VISITEUR peut consulter les projets publics (F3)
      * - Un VISITEUR peut être découvert et ajouté par un Chef de Projet (F8)
      * - Quand ajouté à un projet, le VISITEUR devient automatiquement MEMBRE
-     *
-     * @param inscriptionDTO Les données d'inscription validées
-     * @return L'utilisateur créé avec le rôle VISITEUR
-     * @throws RuntimeException si email existant ou données invalides
      */
     public Utilisateur inscrire(InscriptionDTO inscriptionDTO) {
         System.out.println("DEBUG: [F1 - S'inscrire] Début inscription - Email: " + inscriptionDTO.getEmail());
-        System.out.println("DEBUG: Données reçues: " + inscriptionDTO.toString());
-
-        // ========== VALIDATIONS MÉTIER ==========
 
         if (inscriptionDTO.getEmail() == null || inscriptionDTO.getEmail().trim().isEmpty()) {
             System.out.println("ERROR: Email obligatoire manquant");
@@ -323,8 +335,7 @@ public class UtilisateurService {
         }
 
         if (inscriptionDTO.getMotDePasse() == null || inscriptionDTO.getMotDePasse().length() < 6) {
-            System.out.println("ERROR: Mot de passe trop court: " +
-                    (inscriptionDTO.getMotDePasse() != null ? inscriptionDTO.getMotDePasse().length() : 0) + " caractères");
+            System.out.println("ERROR: Mot de passe trop court");
             throw new RuntimeException("Le mot de passe doit contenir au moins 6 caractères");
         }
 
@@ -333,48 +344,35 @@ public class UtilisateurService {
             throw new RuntimeException("L'acceptation des CGU est obligatoire (conformité RGPD)");
         }
 
-        // Vérification unicité email
+        final String emailNormalise = inscriptionDTO.getEmail().trim().toLowerCase();
+
         System.out.println("DEBUG: Vérification unicité de l'email...");
-        if (existeParEmail(inscriptionDTO.getEmail())) {
+        if (existeParEmail(emailNormalise)) {
             System.out.println("ERROR: Email déjà existant dans le système");
             throw new RuntimeException("Un compte existe déjà avec cette adresse email");
         }
-
-        // ========== CRÉATION UTILISATEUR ==========
 
         System.out.println("DEBUG: Toutes les validations passées, création utilisateur VISITEUR...");
 
         Utilisateur nouvelUtilisateur = new Utilisateur();
         nouvelUtilisateur.setNom(inscriptionDTO.getNom());
         nouvelUtilisateur.setPrenom(inscriptionDTO.getPrenom());
-        nouvelUtilisateur.setEmail(inscriptionDTO.getEmail());
+        nouvelUtilisateur.setEmail(emailNormalise);
         nouvelUtilisateur.setMotDePasse(inscriptionDTO.getMotDePasse());
         nouvelUtilisateur.setLangue(inscriptionDTO.getLangue() != null ? inscriptionDTO.getLangue() : "fr");
         nouvelUtilisateur.setCguAccepte(inscriptionDTO.isCguAccepte());
-
-        // LOGIQUE MÉTIER CRUCIALE : Rôle VISITEUR par défaut selon le cahier des charges
         nouvelUtilisateur.setRole(Role.VISITEUR);
-
-        System.out.println("DEBUG: Utilisateur créé avec rôle VISITEUR - Appel enregistrer()...");
 
         Utilisateur resultat = enregistrer(nouvelUtilisateur);
 
         System.out.println("SUCCESS: [F1] Inscription terminée avec succès");
         System.out.println("SUCCESS: Nouvel utilisateur - ID: " + resultat.getId() + ", Rôle: " + resultat.getRole());
-        System.out.println("SUCCESS: L'utilisateur peut maintenant consulter les projets publics et être découvert par les Chefs de Projet");
 
         return resultat;
     }
 
     /**
-     * Promotion d'un VISITEUR vers MEMBRE (F8 - Ajouter des membres à un projet).
-     *
-     * Cette méthode est appelée automatiquement quand un Chef de Projet
-     * ajoute un VISITEUR à son projet. Le VISITEUR devient alors MEMBRE.
-     *
-     * @param utilisateurId ID de l'utilisateur VISITEUR à promouvoir
-     * @return L'utilisateur avec son nouveau rôle MEMBRE
-     * @throws RuntimeException si l'utilisateur n'existe pas
+     * Promotion d'un VISITEUR vers MEMBRE (F8).
      */
     public Utilisateur promouvoirVersMembreParChefProjet(Long utilisateurId) {
         System.out.println("DEBUG: [F8] Promotion VISITEUR → MEMBRE pour utilisateur ID: " + utilisateurId);
@@ -382,30 +380,20 @@ public class UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour promotion"));
 
-        // Promotion uniquement si l'utilisateur est VISITEUR
         if (utilisateur.getRole() == Role.VISITEUR) {
             utilisateur.setRole(Role.MEMBRE);
             Utilisateur resultat = utilisateurRepository.save(utilisateur);
 
             System.out.println("SUCCESS: [F8] Utilisateur " + utilisateur.getEmail() + " promu vers MEMBRE");
-            System.out.println("SUCCESS: L'utilisateur peut maintenant collaborer et gérer des tâches");
-
             return resultat;
         } else {
             System.out.println("INFO: [F8] Utilisateur " + utilisateur.getEmail() + " déjà " + utilisateur.getRole());
-            return utilisateur; // Déjà MEMBRE ou rôle supérieur
+            return utilisateur;
         }
     }
 
     /**
-     * Promotion d'un MEMBRE vers CHEF_PROJET (F10 - Souscription abonnement).
-     *
-     * Un MEMBRE devient CHEF_PROJET après avoir souscrit un abonnement.
-     * Seuls les CHEF_PROJET peuvent créer et gérer des projets.
-     *
-     * @param utilisateurId ID de l'utilisateur MEMBRE à promouvoir
-     * @return L'utilisateur avec son nouveau rôle CHEF_PROJET
-     * @throws RuntimeException si l'utilisateur n'est pas MEMBRE
+     * Promotion MEMBRE → CHEF_PROJET (F10 - Abonnement).
      */
     public Utilisateur promouvoirVersChefProjetAvecAbonnement(Long utilisateurId) {
         System.out.println("DEBUG: [F10] Promotion MEMBRE → CHEF_PROJET pour utilisateur ID: " + utilisateurId);
@@ -413,14 +401,11 @@ public class UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour promotion vers Chef de Projet"));
 
-        // Seuls les MEMBRES peuvent devenir CHEF_PROJET
         if (utilisateur.getRole() == Role.MEMBRE) {
             utilisateur.setRole(Role.CHEF_PROJET);
             Utilisateur resultat = utilisateurRepository.save(utilisateur);
 
             System.out.println("SUCCESS: [F10] Utilisateur " + utilisateur.getEmail() + " promu vers CHEF_PROJET");
-            System.out.println("SUCCESS: L'utilisateur peut maintenant créer des projets et gérer des équipes");
-
             return resultat;
         } else {
             System.out.println("ERROR: [F10] Seuls les MEMBRES peuvent devenir CHEF_PROJET");
@@ -429,8 +414,7 @@ public class UtilisateurService {
     }
 
     /**
-     * Rétrogradation d'un CHEF_PROJET vers MEMBRE (Fin d'abonnement).
-     * Appelée automatiquement quand un abonnement expire.
+     * Rétrogradation CHEF_PROJET → MEMBRE (Fin d'abonnement).
      */
     public Utilisateur retrograderChefProjetVersMembreFinAbonnement(Long utilisateurId) {
         System.out.println("DEBUG: [F10] Rétrogradation CHEF_PROJET → MEMBRE (fin abonnement) pour utilisateur ID: " + utilisateurId);
@@ -442,7 +426,7 @@ public class UtilisateurService {
             utilisateur.setRole(Role.MEMBRE);
             Utilisateur resultat = utilisateurRepository.save(utilisateur);
 
-            System.out.println("INFO: [F10] Utilisateur " + utilisateur.getEmail() + " rétrogradé vers MEMBRE (fin abonnement)");
+            System.out.println("INFO: [F10] Utilisateur " + utilisateur.getEmail() + " rétrogradé vers MEMBRE");
             return resultat;
         }
 
@@ -451,17 +435,11 @@ public class UtilisateurService {
 
     // ========== FONCTIONNALITÉS PROFIL ==========
 
-    /**
-     * Version DTO de l'inscription pour flexibilité API.
-     */
     public UtilisateurDTO inscrireDTO(InscriptionDTO inscriptionDTO) {
         Utilisateur utilisateur = inscrire(inscriptionDTO);
         return convertirEnDTO(utilisateur);
     }
 
-    /**
-     * Consulter le profil utilisateur (F4 - Consulter son profil).
-     */
     @Transactional(readOnly = true)
     public UtilisateurDTO consulterProfil(Long utilisateurId) {
         System.out.println("DEBUG: [F4] Consultation profil utilisateur ID: " + utilisateurId);
@@ -472,16 +450,12 @@ public class UtilisateurService {
         return convertirEnDTO(utilisateur);
     }
 
-    /**
-     * Mettre à jour le profil utilisateur (F5 - Mettre à jour son profil).
-     */
     public UtilisateurDTO mettreAJourProfil(Long utilisateurId, UtilisateurDTO utilisateurDTO) {
         System.out.println("DEBUG: [F5] Mise à jour profil utilisateur ID: " + utilisateurId);
 
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour mise à jour profil"));
 
-        // Mise à jour des champs modifiables selon F5
         utilisateur.setNom(utilisateurDTO.getNom());
         utilisateur.setPrenom(utilisateurDTO.getPrenom());
         utilisateur.setLangue(utilisateurDTO.getLangue());
@@ -495,9 +469,6 @@ public class UtilisateurService {
 
     // ========== MÉTHODES UTILITAIRES ==========
 
-    /**
-     * Convertit un Utilisateur en UtilisateurDTO (sans mot de passe pour sécurité).
-     */
     private UtilisateurDTO convertirEnDTO(Utilisateur utilisateur) {
         UtilisateurDTO dto = new UtilisateurDTO();
         dto.setId(utilisateur.getId());
@@ -510,9 +481,6 @@ public class UtilisateurService {
         return dto;
     }
 
-    /**
-     * Convertit un UtilisateurDTO en Utilisateur.
-     */
     public Utilisateur convertirEnUtilisateur(UtilisateurDTO dto) {
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setId(dto.getId());
@@ -527,9 +495,6 @@ public class UtilisateurService {
 
     // ========== MÉTHODES D'ANALYSE MÉTIER ==========
 
-    /**
-     * Obtient les statistiques des rôles pour le dashboard administrateur.
-     */
     @Transactional(readOnly = true)
     public long compterParRole(Role role) {
         return utilisateurRepository.findAll().stream()
@@ -537,9 +502,6 @@ public class UtilisateurService {
                 .count();
     }
 
-    /**
-     * Vérifie si un utilisateur peut effectuer une action selon son rôle.
-     */
     public boolean peutEffectuerAction(Long utilisateurId, String action) {
         Optional<Utilisateur> utilisateur = obtenirParId(utilisateurId);
         if (utilisateur.isEmpty()) return false;

@@ -1,4 +1,3 @@
-// src/main.js
 import './assets/style.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -9,8 +8,13 @@ import i18n from './i18n'
 
 const app = createApp(App)
 
+const savedLocale = localStorage.getItem('langue')
+if (savedLocale && i18n.global) {
+  i18n.global.locale.value = savedLocale
+}
+
 app.use(createPinia())
-app.use(router)
 app.use(i18n)
+app.use(router)
 
 app.mount('#app')

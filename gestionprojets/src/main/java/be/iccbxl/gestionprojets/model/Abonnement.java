@@ -1,12 +1,14 @@
 package be.iccbxl.gestionprojets.model;
 
 import be.iccbxl.gestionprojets.enums.StatutAbonnement;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Entité représentant un abonnement utilisateur pour les fonctionnalités premium.
@@ -16,7 +18,7 @@ import java.time.LocalDate;
  * mensuel obligatoire pour accéder aux fonctionnalités avancées.
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 1.0- Correction références circulaires JSON
  * @see "Cahier des charges - F10: Paiements et abonnements"
  * @see "Business plan - Abonnement mensuel obligatoire 10€/mois"
  */
@@ -25,6 +27,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "utilisateur"})
 public class Abonnement {
 
     /**
@@ -101,7 +104,7 @@ public class Abonnement {
      * Relation One-to-One bidirectionnelle avec l'entité Utilisateur.
      * UNIQUEMENT pour les Chefs de Projet selon le cahier des charges.
      *
-     * @see Utilisateur#abonnement
+     * @see Utilisateur #abonnement
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id", nullable = false)
@@ -139,6 +142,7 @@ public class Abonnement {
      * @see "Diagramme de classes - Méthode calculMontantTTC()"
      */
     public Double calculMontantTTC() {
+        if (prix == null) return 0.0;
         double tva = 0.21; // TVA belge 21%
         return prix + (prix * tva);
     }
@@ -219,13 +223,13 @@ public class Abonnement {
                 !this.dateFin.isBefore(LocalDate.now());
     }
 
-    // GETTERS/SETTERS SUPPLÉMENTAIRES
+    // GETTERS/SETTERS PERSONNALISÉS (pour éviter conflit Lombok)
 
-    public boolean isEstActif() {
+    public boolean isActif() {
         return estActif;
     }
 
-    public void setEstActif(boolean estActif) {
+    public void setActif(boolean estActif) {
         this.estActif = estActif;
     }
 
@@ -256,7 +260,7 @@ public class Abonnement {
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Abonnement that = (Abonnement) obj;
-        return id != null ? id.equals(that.id) : that.id == null;
+        return Objects.equals(id, that.id);
     }
 
     /**
@@ -267,6 +271,6 @@ public class Abonnement {
      */
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return Objects.hashCode(id);
     }
 }

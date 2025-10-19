@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * DTOs pour les notifications
  * Architecture simple, cohérente avec InscriptionDTO et UtilisateurDTO
- * Conforme au cahier des charges - Gestion de Projets Collaboratifs
+ * Conforme au cahier des charges - Gestion de Projets Collaboratifs (F13)
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
@@ -21,13 +21,14 @@ import java.time.LocalDateTime;
 public class NotificationDTO {
 
     /**
-     * DTO pour afficher une notification (F4 - Consulter son profil)
+     * DTO pour afficher une notification (F13 - Système de notifications)
      * Pattern identique à UtilisateurDTO
      */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class NotificationResponse {
+        @NotNull(message = "L'ID est obligatoire")
         private Long id;
 
         @NotBlank(message = "Le message est obligatoire")
@@ -35,11 +36,16 @@ public class NotificationDTO {
         private String message;
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @NotNull(message = "La date est obligatoire")
         private LocalDateTime date;
 
+        @NotNull(message = "Le statut lu est obligatoire")
         private Boolean lu;
 
+        @NotBlank(message = "L'email de l'utilisateur est obligatoire")
         private String utilisateurEmail;
+
+        @NotNull(message = "L'ID de l'utilisateur est obligatoire")
         private Long utilisateurId;
     }
 
@@ -57,5 +63,6 @@ public class NotificationDTO {
         @NotBlank(message = "Le message est obligatoire")
         @Size(max = 255, message = "Le message ne peut pas dépasser 255 caractères")
         private String message;
+
     }
 }

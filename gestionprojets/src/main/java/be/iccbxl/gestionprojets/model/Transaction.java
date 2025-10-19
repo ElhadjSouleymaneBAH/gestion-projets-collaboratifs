@@ -1,5 +1,6 @@
 package be.iccbxl.gestionprojets.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +13,9 @@ import java.time.LocalDateTime;
  *
  * Représente une transaction financière dans le système de gestion de projets.
  * Gère les paiements d'abonnements et la génération de factures.
- *
  * Fonctionnalités couvertes :
- * - F10 : Effectuer des paiements via Stripe
- * - F11 : Générer des factures automatiquement
+ * F10 : Effectuer des paiements via Stripe
+ * F11 : Générer des factures automatiquement
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.0
@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Transaction {
 
     @Id
@@ -56,8 +57,9 @@ public class Transaction {
      * Utilisateur qui a effectué la transaction.
      * Relation Many-to-One avec l'entité Utilisateur.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_utilisateur", nullable = false)
+    @JsonIgnoreProperties({"transactions", "projets", "abonnement", "notifications", "commentaires", "tachesAssignees", "motDePasse"})
     private Utilisateur utilisateur;
 
     /**
@@ -65,6 +67,7 @@ public class Transaction {
      * Relation One-to-One bidirectionnelle avec l'entité Facture.
      */
     @OneToOne(mappedBy = "transaction", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("transaction")
     private Facture facture;
 
     // ========== CONSTRUCTEURS ==========
@@ -93,8 +96,8 @@ public class Transaction {
      */
     @PrePersist
     protected void onCreate() {
-        if (dateCreation == null) {  // ← CORRIGÉ : utilise dateCreation au lieu de date
-            dateCreation = LocalDateTime.now();  // ← CORRIGÉ : utilise dateCreation
+        if (dateCreation == null) {
+            dateCreation = LocalDateTime.now();
         }
     }
 
@@ -119,7 +122,7 @@ public class Transaction {
             this.tva = montant * 0.21; // TVA belge 21%
             this.montantTTC = montantHT + tva;
             this.statut = "COMPLETE";
-            this.dateCreation = LocalDateTime.now(); // ← CORRIGÉ : utilise dateCreation
+            this.dateCreation = LocalDateTime.now();
             return true;
         }
         return false;
