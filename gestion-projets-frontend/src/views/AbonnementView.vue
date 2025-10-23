@@ -147,8 +147,12 @@
                           <label class="form-label">{{
                               $t('paiement.cvv')
                             }}</label>
+                          <!-- 🔒 CVV masqué uniquement (modif demandée) -->
                           <input
                             class="form-control"
+                            type="password"
+                            autocomplete="cc-csc"
+                            inputmode="numeric"
                             :placeholder="$t('paiement.cvvPlaceholder')"
                             v-model="paiement.cvv"
                             maxlength="3"

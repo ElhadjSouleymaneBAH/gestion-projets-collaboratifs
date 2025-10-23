@@ -27,6 +27,7 @@ public class UtilisateurDTO {
     private String email;
     private Role role;
     private String langue;
+    private String adresse;
     private LocalDateTime dateInscription;
 
     // Constructeur pour AbonnementMapper

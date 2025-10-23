@@ -3,7 +3,6 @@ package be.iccbxl.gestionprojets.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 
 /**
@@ -31,4 +30,10 @@ public class FactureDTO {
      * Contient id, nom, prenom, email, role
      */
     private UtilisateurDTO utilisateur;
+
+    // --- Informations entreprise ---
+    private String entrepriseNom;
+    private String entrepriseAdresse;
+    private String entrepriseTVA;
+    private String entrepriseEmail;
 }

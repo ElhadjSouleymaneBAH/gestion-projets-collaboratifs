@@ -3,7 +3,6 @@ package be.iccbxl.gestionprojets.controller;
 import be.iccbxl.gestionprojets.dto.FactureDTO;
 import be.iccbxl.gestionprojets.mapper.FactureMapper;
 import be.iccbxl.gestionprojets.model.Facture;
-import be.iccbxl.gestionprojets.model.Transaction;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.service.FactureService;
 import be.iccbxl.gestionprojets.service.PdfGenerator;
@@ -17,9 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Contrôleur pour F11 : Générer les factures.
@@ -28,8 +25,8 @@ import java.util.Optional;
  * Importance : 4/5
  * Contraintes : Après paiement
  *
- * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @author
+ * @version 1.2 (corrigée - cohérence francisation)
  */
 @RestController
 @RequestMapping("/api/factures")
@@ -50,10 +47,7 @@ public class FactureController {
         this.pdfGenerator = pdfGenerator;
     }
 
-    /**
-     * Endpoint principal pour factureAPI.getFactures(params)
-     * Compatible avec pagination et filtres du frontend
-     */
+    // ========== Récupération des factures (toutes ou filtrées) ==========
     @GetMapping
     public ResponseEntity<?> getFactures(
             @RequestParam(defaultValue = "0") int page,
@@ -77,14 +71,10 @@ public class FactureController {
 
             Long targetUserId = (userId != null) ? userId : utilisateurId;
 
-            // Vérification des permissions
+            // Vérification d’accès
             if (!estAdmin && targetUserId != null) {
-                Optional<Utilisateur> userOpt = utilisateurService.findByEmail(emailConnecte);
-                if (userOpt.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(Map.of("error", "Utilisateur connecté introuvable en base : " + emailConnecte));
-                }
-                if (!userOpt.get().getId().equals(targetUserId)) {
+                Optional<Utilisateur> userOpt = utilisateurService.obtenirParEmail(emailConnecte);
+                if (userOpt.isEmpty() || !userOpt.get().getId().equals(targetUserId)) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                             .body(Map.of("error", "Accès interdit aux factures d'un autre utilisateur"));
                 }
@@ -100,7 +90,7 @@ public class FactureController {
                 factures = factureService.findAll();
             }
 
-            // Filtrage recherche
+            // Recherche textuelle
             if (recherche != null && !recherche.trim().isEmpty()) {
                 String rechLower = recherche.toLowerCase();
                 factures = factures.stream()
@@ -109,25 +99,22 @@ public class FactureController {
                         .toList();
             }
 
-            // Filtrage période
+            // Filtrage par période
             if (periode != null && !periode.trim().isEmpty()) {
                 factures = factures.stream()
                         .filter(f -> f.getPeriode() != null && f.getPeriode().contains(periode))
                         .toList();
             }
 
-            // Pagination
+            // Pagination manuelle
             int start = page * size;
             int end = Math.min(start + size, factures.size());
-            List<Facture> facturesPaginee = (start < factures.size())
-                    ? factures.subList(start, end) : List.of();
+            List<Facture> facturesPaginee = (start < factures.size()) ? factures.subList(start, end) : List.of();
 
-            // Conversion DTO
             List<FactureDTO> facturesDTO = facturesPaginee.stream()
                     .map(FactureMapper::toDTO)
                     .toList();
 
-            // Réponse type "Page"
             Map<String, Object> response = Map.of(
                     "content", facturesDTO,
                     "number", page,
@@ -145,10 +132,7 @@ public class FactureController {
         }
     }
 
-    /**
-     * Route explicitement appelée par le front pour l'admin
-     * On réutilise la logique de getFactures(...) ci-dessus.
-     */
+    // ========== ADMIN : Voir toutes les factures ==========
     @GetMapping("/toutes")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<?> getToutes(
@@ -163,40 +147,28 @@ public class FactureController {
         return getFactures(page, size, statut, periode, recherche, userId, utilisateurId, authentication);
     }
 
-    /**
-     * NOUVEAU : Endpoint pour factureAPI.getDonneesPDF(factureId)
-     * Retourne toutes les données structurées pour génération PDF frontend
-     */
+    // ========== Données PDF ==========
     @GetMapping("/{id}/pdf-data")
     public ResponseEntity<?> getDonneesPDF(@PathVariable Long id, Authentication authentication) {
         try {
-
             Optional<Facture> factureOpt = factureService.findByIdWithJoins(id);
-            if (factureOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+            if (factureOpt.isEmpty()) return ResponseEntity.notFound().build();
 
             Facture facture = factureOpt.get();
-
-            // Vérification sécurité
             String emailConnecte = authentication.getName();
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin) {
-                if (facture.getTransaction() == null
-                        || facture.getTransaction().getUtilisateur() == null
-                        || !facture.getTransaction().getUtilisateur().getEmail().equals(emailConnecte)) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(Map.of("error", "Accès interdit à cette facture"));
-                }
+            if (!estAdmin && (facture.getTransaction() == null
+                    || facture.getTransaction().getUtilisateur() == null
+                    || !facture.getTransaction().getUtilisateur().getEmail().equals(emailConnecte))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Accès interdit à cette facture"));
             }
 
             Map<String, Object> donneesPDF = factureService.getDonneesFacturePDF(id);
             return ResponseEntity.ok(donneesPDF);
 
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             System.err.println("ERROR: Erreur données PDF facture: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -204,44 +176,43 @@ public class FactureController {
         }
     }
 
-    /**
-     * Téléchargement de la facture en PDF avec support multilingue.
-     * Alias supportés pour éviter un 404 côté front :
-     * - /api/factures/{id}/telecharger
-     * - /api/factures/telecharger/{id}
-     */
+    // ========== Téléchargement PDF localisé ==========
     @GetMapping(value = {"/{id}/telecharger", "/telecharger/{id}"})
     public ResponseEntity<?> telecharger(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "fr") String langue,
+            @RequestParam(required = false) String langue,
+            @RequestHeader(value = "Accept-Language", required = false) String headerLang,
             Authentication authentication) {
         try {
             Optional<Facture> factureOpt = factureService.findByIdWithJoins(id);
-            if (factureOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+            if (factureOpt.isEmpty()) return ResponseEntity.notFound().build();
 
             Facture facture = factureOpt.get();
-
-            // Vérification sécurité (ADMIN ou propriétaire)
             String emailConnecte = authentication.getName();
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin) {
-                if (facture.getTransaction() == null
-                        || facture.getTransaction().getUtilisateur() == null
-                        || !facture.getTransaction().getUtilisateur().getEmail().equals(emailConnecte)) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body(Map.of("error", "Accès interdit à cette facture"));
-                }
+            if (!estAdmin && (facture.getTransaction() == null
+                    || facture.getTransaction().getUtilisateur() == null
+                    || !facture.getTransaction().getUtilisateur().getEmail().equals(emailConnecte))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Accès interdit à cette facture"));
             }
 
-            // Génération PDF (backend) avec langue
-            Map<String, Object> data = factureService.getDonneesFacturePDF(id);
-            byte[] pdfBytes = pdfGenerator.generate(data, langue);
+            // Langue
+            String effectiveLang = (langue != null && !langue.isBlank())
+                    ? langue
+                    : (headerLang != null ? headerLang : "fr");
 
-            String fileName = (facture.getNumeroFacture() != null ? facture.getNumeroFacture() : "facture-" + id) + ".pdf";
+            effectiveLang = effectiveLang.toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "fr";
+
+            // Génération du PDF
+            Map<String, Object> data = factureService.getDonneesFacturePDF(id);
+            byte[] pdfBytes = pdfGenerator.generate(data, effectiveLang);
+
+            String fileName = (facture.getNumeroFacture() != null
+                    ? facture.getNumeroFacture()
+                    : "facture-" + id) + "-" + effectiveLang + ".pdf";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -256,12 +227,8 @@ public class FactureController {
         }
     }
 
-    /**
-     * Récupération des factures d'un utilisateur.
-     * Liste toutes les factures de l'utilisateur connecté (MEMBRE, CHEF_PROJET ou ADMIN).
-     */
+    // ========== Factures de l’utilisateur connecté ==========
     @GetMapping("/mes-factures")
-
     public ResponseEntity<?> mesFactures(Authentication authentication) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -269,7 +236,7 @@ public class FactureController {
         }
 
         String email = authentication.getName();
-        Optional<Utilisateur> utilisateurOpt = utilisateurService.findByEmail(email);
+        Optional<Utilisateur> utilisateurOpt = utilisateurService.obtenirParEmail(email);
         if (utilisateurOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Utilisateur connecté introuvable en base : " + email));

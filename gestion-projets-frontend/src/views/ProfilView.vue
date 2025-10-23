@@ -72,8 +72,20 @@
               type="email"
               :placeholder="$t('profil.emailPlaceholder')"
               required
-              :disabled="sauvegardeEnCours"
+              :disabled="true"
             />
+          </div>
+
+          <!-- ✅ Champ adresse ajouté -->
+          <div class="form-group">
+            <label for="adresse">{{ $t('profil.adresse') }}</label>
+            <textarea
+              id="adresse"
+              v-model="formulaire.adresse"
+              :placeholder="$t('profil.adressePlaceholder')"
+              :disabled="sauvegardeEnCours"
+              rows="3"
+            ></textarea>
           </div>
 
           <div class="form-group">
@@ -205,18 +217,14 @@ export default {
   name: 'ProfilView',
   setup() {
     const { t, locale } = useI18n()
-
-    // Configuration depuis les variables d'environnement
     const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE || 'fr'
     const motDePasseMinLength = parseInt(import.meta.env.VITE_PASSWORD_MIN_LENGTH || '8')
 
-    // Langues disponibles (configuration dynamique)
     const languesDisponibles = [
       { code: 'fr', label: 'langues.francais' },
       { code: 'en', label: 'langues.anglais' }
     ]
 
-    // États
     const chargement = ref(true)
     const sauvegardeEnCours = ref(false)
     const changementMotDePasseEnCours = ref(false)
@@ -226,29 +234,32 @@ export default {
 
     const message = reactive({ texte: '', type: '' })
     const messageCss = computed(() =>
-      message.type === 'success' ? 'alert-success'
-        : message.type === 'error' ? 'alert-danger'
+      message.type === 'success'
+        ? 'alert-success'
+        : message.type === 'error'
+          ? 'alert-danger'
           : 'alert-info'
     )
 
-    // Formulaires
     const formulaire = reactive({
       nom: '',
       prenom: '',
       email: '',
-      langue: defaultLocale
+      langue: defaultLocale,
+      adresse: ''
     })
     const formulaireOriginal = reactive({})
+
     const motDePasseForm = reactive({
       ancienMotDePasse: '',
       nouveauMotDePasse: '',
       confirmationMotDePasse: ''
     })
 
-    // Computed
     const formulaireModifie = computed(() =>
       Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
     )
+
     const motDePasseFormValide = computed(() =>
       motDePasseForm.ancienMotDePasse &&
       motDePasseForm.nouveauMotDePasse &&
@@ -257,7 +268,6 @@ export default {
       motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
     )
 
-    // Helpers
     const afficherMessage = (texte, type = 'success') => {
       message.texte = texte
       message.type = type
@@ -281,7 +291,8 @@ export default {
           nom: utilisateur.value.nom || '',
           prenom: utilisateur.value.prenom || '',
           email: utilisateur.value.email || '',
-          langue: utilisateur.value.langue || locale.value || defaultLocale
+          langue: utilisateur.value.langue || locale.value || defaultLocale,
+          adresse: utilisateur.value.adresse || ''
         })
         Object.assign(formulaireOriginal, { ...formulaire })
 
@@ -310,7 +321,6 @@ export default {
           Object.assign(utilisateur.value, reponse.data)
           Object.assign(formulaireOriginal, { ...formulaire })
 
-          // sync localStorage user (utile pour la langue)
           const stored = JSON.parse(localStorage.getItem('user') || '{}')
           localStorage.setItem('user', JSON.stringify({ ...stored, ...reponse.data }))
 
@@ -347,20 +357,14 @@ export default {
     const formaterDate = (str) => {
       if (!str) return ''
       const langueActuelle = formulaire.langue || defaultLocale
-      const localeMap = {
-        fr: 'fr-FR',
-        en: 'en-US'
-      }
+      const localeMap = { fr: 'fr-FR', en: 'en-US' }
       return new Date(str).toLocaleDateString(localeMap[langueActuelle] || localeMap[defaultLocale], {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        year: 'numeric', month: 'long', day: 'numeric'
       })
     }
 
     onMounted(chargerProfil)
 
-    // Changement de langue
     watch(() => formulaire.langue, (lang) => {
       if (!lang) return
       locale.value = lang
@@ -372,17 +376,12 @@ export default {
     })
 
     return {
-      // états
       chargement, sauvegardeEnCours, changementMotDePasseEnCours,
       utilisateur, statistiques, message, messageCss,
       formulaire, motDePasseForm,
-      // configuration
       languesDisponibles, motDePasseMinLength,
-      // computed
       formulaireModifie, motDePasseFormValide,
-      // méthodes
-      mettreAJourProfil, changerMotDePasse, annulerModifications, formaterDate,
-      t
+      mettreAJourProfil, changerMotDePasse, annulerModifications, formaterDate, t
     }
   }
 }

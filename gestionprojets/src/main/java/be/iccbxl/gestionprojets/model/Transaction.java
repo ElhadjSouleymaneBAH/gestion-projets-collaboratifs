@@ -1,6 +1,7 @@
 package be.iccbxl.gestionprojets.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -99,6 +100,20 @@ public class Transaction {
         if (dateCreation == null) {
             dateCreation = LocalDateTime.now();
         }
+    }
+
+    // ========== GETTERS PERSONNALISÉS POUR LE FRONTEND ==========
+
+    /**
+     * Retourne l'ID de l'utilisateur pour le frontend.
+     * Permet au frontend d'accéder directement à l'ID sans charger l'objet complet.
+     * Utilisé dans le tableau de bord admin pour afficher le nom de l'utilisateur.
+     *
+     * @return L'ID de l'utilisateur ou null si aucun utilisateur n'est associé
+     */
+    @JsonProperty("idUtilisateur")
+    public Long getIdUtilisateur() {
+        return utilisateur != null ? utilisateur.getId() : null;
     }
 
     // ========== MÉTHODES MÉTIER ==========

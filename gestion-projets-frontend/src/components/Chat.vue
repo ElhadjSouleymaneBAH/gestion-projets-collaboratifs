@@ -16,9 +16,9 @@
           v-for="message in messages"
           :key="message.id"
           class="p-3 border-bottom"
-          :class="message.type === 'TEXT' ? 'text-message' :
-                   message.type === 'SYSTEM' ? 'system-message' :
-                   message.type === 'NOTIFICATION' ? 'notification-message' : ''"
+          :class="message.type === 'TEXT' ? 'text-message'
+                 : message.type === 'SYSTEM' ? 'system-message'
+                 : message.type === 'NOTIFICATION' ? 'notification-message' : ''"
         >
           <template v-if="message.type === 'TEXT'">
             <strong>{{ message.utilisateurNom }}</strong> :
@@ -33,7 +33,9 @@
             <span class="notification">{{ message.contenu }}</span>
           </template>
 
-          <div class="text-end text-muted small mt-1">{{ formatDate(message.dateEnvoi) }}</div>
+          <div class="text-end text-muted small mt-1">
+            {{ formatDate(message.dateEnvoi) }}
+          </div>
         </div>
       </div>
 
@@ -61,7 +63,6 @@
         </router-link>
       </div>
 
-      <!-- Membres en ligne (optionnel) -->
       <div v-if="membresEnLigne.length > 0" class="mt-3 text-center">
         <small class="text-muted">
           {{ $t('online_members') }}:
@@ -75,10 +76,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, defineOptions } from 'vue'
 import { useRoute } from 'vue-router'
 import WebSocketService from '@/services/websocket.service.js'
 import { useAuthStore } from '@/stores/auth.js'
+
+/** ✅ corrige l'avertissement ESLint (nom multi-mots) */
+defineOptions({ name: 'ProjectChat' })
 
 const messages = ref([])
 const newMessage = ref('')
@@ -88,14 +92,14 @@ const projectId = ref(parseInt(route.params.id))
 const messageBox = ref(null)
 
 const authStore = useAuthStore()
-const token = authStore.token
-const userNom = authStore.user.nom
+const token = authStore?.token
+const userNom = authStore?.user?.nom || ''
 
 const envoyerMessage = () => {
-  if (newMessage.value.trim()) {
-    WebSocketService.sendMessage(projectId.value, newMessage.value)
-    newMessage.value = ''
-  }
+  const text = newMessage.value.trim()
+  if (!text) return
+  WebSocketService.sendMessage(projectId.value, text)
+  newMessage.value = ''
 }
 
 const envoyerNotification = () => {
@@ -105,11 +109,12 @@ const envoyerNotification = () => {
   )
 }
 
-const formatDate = iso => {
-  return new Date(iso).toLocaleTimeString('fr-BE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+const formatDate = (iso) => {
+  try {
+    return new Date(iso).toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return ''
+  }
 }
 
 const scrollToBottom = () => {
@@ -120,9 +125,17 @@ const scrollToBottom = () => {
   })
 }
 
-onMounted(() => {
+/** 🔹 nouvel helper pour charger l'historique (corrige l'erreur no-undef) */
+const chargerHistoriqueMessages = async () => {
+  const historique = await WebSocketService.getHistorique(projectId.value)
+  messages.value = Array.isArray(historique) ? historique : []
+  scrollToBottom()
+}
+
+onMounted(async () => {
+  await chargerHistoriqueMessages()
   WebSocketService.connect(token)
-  WebSocketService.subscribeToProject(projectId.value, msg => {
+  WebSocketService.subscribeToProject(projectId.value, (msg) => {
     messages.value.push(msg)
     scrollToBottom()
   })
@@ -135,82 +148,32 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.text-message {
-  color: #222;
-}
-
-.system-message {
-  color: #555;
-  font-style: italic;
-}
-
+.text-message { color: #222; }
+.system-message { color: #555; font-style: italic; }
 .notification-message {
   background-color: #fff8e1;
   border-left: 4px solid var(--collabpro-blue);
   padding-left: 10px;
 }
-
-.notification {
-  font-weight: 600;
-  color: var(--collabpro-blue);
-  display: block;
-}
+.notification { font-weight: 600; color: var(--collabpro-blue); display: block; }
 
 .btn-collabpro {
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+  color: #fff; border: none; padding: 10px 20px; border-radius: 8px;
+  font-weight: 500; transition: all .3s ease;
+  box-shadow: 0 2px 8px rgba(0,123,255,.3);
 }
+.btn-collabpro:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,123,255,.4); }
 
-.btn-collabpro:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
-}
+.card-collabpro { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.1); border: none; }
+.bg-collabpro-light { background: linear-gradient(135deg,#f8faff 0%,#e3f2fd 100%); min-height: 100vh; }
+.fade-in { animation: fadeIn .5s ease-in; }
+@keyframes fadeIn { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform: none;} }
 
-.card-collabpro {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: none;
-}
-
-.bg-collabpro-light {
-  background: linear-gradient(135deg, #f8faff 0%, #e3f2fd 100%);
-  min-height: 100vh;
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 600px) {
-  .chat-container .container {
-    padding: 1rem 0.5rem;
-  }
-
-  .input-group {
-    flex-direction: column;
-  }
-
-  .btn-collabpro,
-  .btn-secondary {
-    width: 100%;
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .d-flex {
-    flex-direction: column;
-  }
+@media (max-width: 600px){
+  .chat-container .container { padding: 1rem .5rem; }
+  .input-group { flex-direction: column; }
+  .btn-collabpro, .btn-secondary { width: 100%; font-size: .95rem; margin-bottom: .5rem; }
+  .d-flex { flex-direction: column; }
 }
 </style>

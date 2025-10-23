@@ -8,7 +8,7 @@ import be.iccbxl.gestionprojets.model.Utilisateur;
 
 /**
  * Mapper Facture ↔ FactureDTO.
- * Support F11 : Générer les factures
+ * Support F11 : Générer les factures.
  */
 public class FactureMapper {
 
@@ -35,8 +35,6 @@ public class FactureMapper {
             Utilisateur u = tr.getUtilisateur();
             if (u != null) {
                 dto.setUtilisateurId(u.getId());
-
-                // Convertir utilisateur en DTO complet
                 dto.setUtilisateur(new UtilisateurDTO(
                         u.getId(),
                         u.getNom(),
@@ -46,6 +44,11 @@ public class FactureMapper {
                 ));
             }
         }
+
+        dto.setEntrepriseNom("CollabPro Solutions");
+        dto.setEntrepriseAdresse("Avenue de l’Innovation 123, 1000 Bruxelles, Belgique");
+        dto.setEntrepriseTVA("BE0123.456.789");
+        dto.setEntrepriseEmail("contact@collabpro.be");
 
         return dto;
     }

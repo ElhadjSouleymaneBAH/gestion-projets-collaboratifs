@@ -10,9 +10,12 @@
             <span class="badge bg-gradient-warning text-dark">PREMIUM</span>
           </h1>
           <p class="text-white-75 mb-0">
-            {{ $t('commun.bienvenue') }} {{ utilisateur?.prenom || utilisateur?.firstName }} {{ utilisateur?.nom || utilisateur?.lastName }}
+            {{ $t('commun.bienvenue') }}
+            {{ utilisateur?.prenom || utilisateur?.firstName }}
+            {{ utilisateur?.nom || utilisateur?.lastName }}
           </p>
         </div>
+
         <div class="d-flex align-items-center gap-2">
           <div v-if="abonnement" class="subscription-status">
             <span class="badge" :class="abonnementActif ? 'bg-success' : 'bg-danger'">
@@ -21,7 +24,6 @@
             <small class="text-white-50 d-block" v-if="abonnement?.date_fin || abonnement?.dateFin">
               {{ $t('abonnement.expire') }} {{ formatDate(abonnement.date_fin || abonnement.dateFin) }}
             </small>
-
           </div>
           <button class="btn btn-outline-light" @click="seDeconnecter">
             <i class="fas fa-sign-out-alt me-2"></i>{{ $t('nav.deconnexion') }}
@@ -73,6 +75,7 @@
             </div>
           </div>
         </div>
+
         <div class="col-md-3">
           <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='taches'">
             <div class="card-body d-flex align-items-center gap-3">
@@ -87,6 +90,7 @@
             </div>
           </div>
         </div>
+
         <div class="col-md-3">
           <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='equipe'">
             <div class="card-body d-flex align-items-center gap-3">
@@ -101,6 +105,7 @@
             </div>
           </div>
         </div>
+
         <div class="col-md-3">
           <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='notifications'">
             <div class="card-body d-flex align-items-center gap-3">
@@ -170,10 +175,12 @@
               <i class="fas fa-plus me-2"></i>{{ $t('projets.nouveauProjet') }}
             </button>
           </div>
+
           <div class="card-body">
             <div v-if="chargementProjets" class="text-center py-4">
               <div class="spinner-border text-success"></div>
             </div>
+
             <div v-else-if="mesProjets.length===0" class="text-center py-5">
               <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
               <h5 class="text-muted">{{ $t('projets.aucunProjet') }}</h5>
@@ -182,6 +189,7 @@
                 <i class="fas fa-plus me-2"></i>{{ $t('projets.creerProjet') }}
               </button>
             </div>
+
             <div v-else class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -206,13 +214,13 @@
                   <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ p.statut }}</span></td>
                   <td>
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" :title="$t('commun.consulter')">
+                      <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" :title="$t('commun.consulter')" aria-label="Consulter">
                         <i class="fas fa-eye"></i>
                       </button>
-                      <button v-if="peutModifierProjet(p)" class="btn btn-sm btn-outline-success" @click="modifierProjet(p)" :title="$t('commun.modifier')">
+                      <button v-if="peutModifierProjet(p)" class="btn btn-sm btn-outline-success" @click="modifierProjet(p)" :title="$t('commun.modifier')" aria-label="Modifier">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button v-if="peutSupprimerProjet(p)" class="btn btn-sm btn-outline-danger" @click="supprimerProjet(p.id)" :title="$t('commun.supprimer')">
+                      <button v-if="peutSupprimerProjet(p)" class="btn btn-sm btn-outline-danger" @click="supprimerProjet(p.id)" :title="$t('commun.supprimer')" aria-label="Supprimer">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -221,6 +229,7 @@
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>
@@ -232,14 +241,17 @@
             <h5 class="mb-0">{{ $t('factures.mesFactures') }}</h5>
             <small class="text-muted">{{ $t('factures.historiquePaiements') }}</small>
           </div>
+
           <div class="card-body">
             <div v-if="chargementFactures" class="text-center py-4">
               <div class="spinner-border text-success"></div>
             </div>
-            <div v-else-if="factures.length===0" class="text-center py-5">
+
+            <div v-else-if="factures.length === 0" class="text-center py-5">
               <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
               <h5 class="text-muted">{{ $t('factures.aucuneFacture') }}</h5>
             </div>
+
             <div v-else class="table-responsive">
               <table class="table table-hover align-middle">
                 <thead class="table-light">
@@ -248,29 +260,49 @@
                   <th>{{ $t('factures.dateEmission') }}</th>
                   <th>{{ $t('factures.montantHT') }}</th>
                   <th>{{ $t('factures.tva') }}</th>
-                  <th>{{ $t('factures.montantTTC') }}</th>
+                  <th>{{ $t('factures.totalTTC') }}</th>
                   <th>{{ $t('factures.statut') }}</th>
                   <th>{{ $t('commun.actions') }}</th>
                 </tr>
                 </thead>
+
                 <tbody>
                 <tr v-for="f in factures" :key="f.id">
                   <td class="fw-semibold">{{ f.numeroFacture }}</td>
                   <td>{{ formatDate(f.dateEmission) }}</td>
-                  <td>{{ formatPrix(f.montantHt) }}</td>
-                  <td>{{ formatPrix(f.tva) }}</td>
-                  <td class="fw-bold">{{ formatPrix(f.montantTtc) }}</td>
+
+                  <!-- ✅ Montant HT -->
+                  <td>{{ formatPrix(f.montantHT ?? f.montantHt ?? 0) }}</td>
+
+                  <!-- ✅ TVA : affiche celle du backend, sinon calcule 21 % du HT -->
                   <td>
-                <span class="badge" :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-danger'">
+                    21 % ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})
+                  </td>
+
+                  <!-- ✅ Total TTC -->
+                  <td class="fw-bold">
+                    {{ formatPrix(f.montantTtc ?? ((f.montantHT ?? f.montantHt ?? 0) + (f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)))) }}
+                  </td>
+
+                  <!-- ✅ Statut -->
+                  <td>
+                <span
+                  class="badge rounded-pill"
+                  :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-secondary'"
+                >
                   {{ f.statut }}
                 </span>
                   </td>
+
+                  <!-- ✅ Téléchargement -->
                   <td>
                     <button
                       class="btn btn-sm btn-outline-primary"
                       @click="telechargerFacture(f)"
-                      :title="$t('factures.telechargerPDF')">
-                      <i class="fas fa-download me-1"></i>{{ $t('factures.telecharger') }}
+                      :title="$t('factures.telechargerPDF')"
+                    >
+                      <i class="fas fa-download me-1"></i>
+                      {{ $t('factures.telecharger') }}
                     </button>
                   </td>
                 </tr>
@@ -281,9 +313,273 @@
         </div>
       </div>
 
+      <!-- =========================== -->
+      <!-- 1) F7: TÂCHES (NOUVEAU)     -->
+      <!-- =========================== -->
+      <div v-if="onglet==='taches'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex align-items-center gap-2">
+            <h5 class="mb-0">{{ $t('nav.taches') }} ({{ tachesFiltrees.length }})</h5>
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <select class="form-select form-select-sm" v-model="filtreProjetTache" style="width:280px">
+                <option value="">{{ $t('projets.tousLesProjets') }}</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p.id">{{ p.titre }}</option>
+              </select>
+            </div>
+          </div>
 
-    </div>
+          <div class="card-body">
+            <div v-if="chargementTaches" class="text-center py-4">
+              <div class="spinner-border text-warning"></div>
+            </div>
 
+            <div v-else-if="tachesFiltrees.length===0" class="text-center py-5 text-muted">
+              <i class="fas fa-tasks fa-3x mb-3"></i>
+              <div>{{ $t('taches.aucuneTache') }}</div>
+            </div>
+
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>{{ $t('taches.titre') }}</th>
+                  <th>{{ $t('projets.projet') }}</th>
+                  <th>{{ $t('taches.assigneA') }}</th>
+                  <th>{{ $t('taches.statut') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="t in tachesFiltrees" :key="t.id">
+                  <td class="fw-semibold">{{ t.titre }}</td>
+                  <td>{{ getProjetNom(t.id_projet || t.projetId) }}</td>
+                  <td>{{ getAssigneNom(t.id_assigne || t.assigneId) }}</td>
+                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ t.statut }}</span></td>
+                  <td class="text-end">
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-success" @click="validerTache(t)">
+                        <i class="fas fa-check"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="renvoyerEnBrouillon(t)">
+                        <i class="fas fa-undo"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-warning" @click="annulerTache(t)">
+                        <i class="fas fa-ban"></i>
+                      </button>
+                      <button v-if="peutSupprimerTache(t)" class="btn btn-sm btn-outline-danger" @click="supprimerTache(t.id)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================== -->
+      <!-- 2) F6: ÉQUIPE (NOUVEAU)     -->
+      <!-- =========================== -->
+      <div v-if="onglet==='equipe'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">{{ $t('equipe.collaborateurs') }} ({{ totalMembres }})</h5>
+              <small class="text-muted">{{ $t('equipe.tousLesprojets') }}</small>
+            </div>
+            <button class="btn btn-success" @click="ouvrirModalAjouterMembre" :disabled="mesProjets.length===0 || !abonnementActif">
+              <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div v-if="mesProjets.length===0" class="text-center py-5 text-muted">
+              <i class="fas fa-users fa-3x mb-3"></i>
+              <div>{{ $t('projets.aucunProjet') }}</div>
+            </div>
+
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>{{ $t('projets.projet') }}</th>
+                  <th>{{ $t('equipe.membres') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="p in mesProjets" :key="p.id">
+                  <td class="fw-semibold">{{ p.titre }}</td>
+                  <td>
+                      <span v-for="m in getMembresProjet(p.id)" :key="m.id" class="badge bg-light text-dark me-1">
+                        {{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}
+                      </span>
+                    <span v-if="getMembresProjet(p.id).length===0" class="text-muted">—</span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-success" @click="ajouterMembreAuProjet(p)">
+                        <i class="fas fa-user-plus"></i>
+                      </button>
+                      <button
+                        v-if="getMembresProjet(p.id).length"
+                        class="btn btn-sm btn-outline-danger"
+                        @click="retirerMembreProjet(p.id, getMembresProjet(p.id)[0].id)"
+                      >
+                        <i class="fas fa-user-minus"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================== -->
+      <!-- 3) F8: COLLABORATION / CHAT  -->
+      <!-- ===================================== -->
+      <div v-if="onglet==='chat'">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
+              </div>
+              <div class="list-group list-group-flush">
+                <button
+                  v-for="p in mesProjets"
+                  :key="p.id"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
+                  @click="ouvrirChatProjet(p)"
+                >
+                  <span class="text-truncate">{{ p.titre }}</span>
+                  <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
+                </button>
+                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white d-flex align-items-center gap-2">
+                <h6 class="mb-0">
+                  <i class="fas fa-comments me-2"></i>
+                  {{ projetChatActuel ? projetChatActuel.titre : $t('nav.collaboration') }}
+                </h6>
+              </div>
+
+              <div class="card-body d-flex flex-column" style="height:420px">
+                <div class="flex-grow-1 overflow-auto messages-container">
+                  <div v-if="!projetChatActuel" class="text-center text-muted py-5">
+                    {{ $t('projets.choisirProjet') }}
+                  </div>
+
+                  <div v-else>
+                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">—</div>
+
+                    <div
+                      v-for="m in messagesChat"
+                      :key="m.id"
+                      class="p-2 rounded mb-2 chat-bubble"
+                      :class="getMessageClass(m)"
+                      style="max-width:80%"
+                    >
+                      <div class="small opacity-75 mb-1">
+                        {{ m.auteur?.prenom || m.utilisateurNom || '—' }}
+                        · {{ formatTime(m.date || m.createdAt) }}
+                      </div>
+                      <div>{{ m.contenu }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-top" v-if="projetChatActuel">
+                  <div class="input-group">
+                    <input
+                      class="form-control"
+                      v-model.trim="nouveauMessage"
+                      :placeholder="$t('collaboration.ecrireMessage')"
+                      @keyup.enter="envoyerMessage"
+                    >
+                    <button class="btn btn-success" :disabled="envoyantMessage || !nouveauMessage" @click="envoyerMessage">
+                      <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
+                      <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =============================== -->
+      <!-- 4) F9: NOTIFICATIONS (NOUVEAU)  -->
+      <!-- =============================== -->
+      <div v-if="onglet==='notifications'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ $t('nav.notifications') }}</h5>
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              @click="marquerToutesLues"
+              :disabled="notificationsNonLues.length===0"
+            >
+              <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div v-if="chargementNotifications" class="text-center py-4">
+              <div class="spinner-border text-info"></div>
+            </div>
+
+            <div v-else-if="notifications.length===0" class="text-center text-muted py-5">
+              <i class="fas fa-bell-slash fa-3x mb-3"></i>
+              <div>{{ $t('notifications.aucuneNotification') }}</div>
+            </div>
+
+            <div v-else class="list-group">
+              <div
+                v-for="n in notifications"
+                :key="n.id"
+                class="list-group-item d-flex align-items-start gap-3 notification-item"
+              >
+                <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
+                  <i :class="getNotificationIcon(n.type)"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{ n.titre || n.title || '—' }}</div>
+                  <div class="small text-muted">{{ n.message || n.contenu }}</div>
+                  <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
+                </div>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-outline-success" v-if="!n.lu" @click="marquerNotificationLue(n)">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" @click="supprimerNotification(n)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /Content -->
 
     <!-- Modal création projet -->
     <div v-if="showCreateProject" class="modal d-block" style="background:rgba(0,0,0,.5);z-index:1060">
@@ -331,14 +627,15 @@
             </div>
             <div class="mb-3">
               <label class="form-label">{{ $t('equipe.rechercherUtilisateur') }}</label>
-              <input class="form-control" v-model="rechercheUtilisateur"
-                     @input="rechercherUtilisateurs"
-                     :placeholder="$t('equipe.tapezEmail')">
+              <input class="form-control" v-model="rechercheUtilisateur" @input="rechercherUtilisateurs" :placeholder="$t('equipe.tapezEmail')">
             </div>
             <div v-if="utilisateursRecherche.length > 0" class="list-group">
-              <button v-for="u in utilisateursRecherche" :key="u.id"
-                      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                      @click="ajouterUtilisateurAuProjet(u)">
+              <button
+                v-for="u in utilisateursRecherche"
+                :key="u.id"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                @click="ajouterUtilisateurAuProjet(u)"
+              >
                 <div>
                   <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
                   <small class="text-muted">{{ u.email }}</small>
@@ -350,20 +647,14 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
 import { useAuthStore } from '@/stores/auth'
-import {
-  projectAPI,
-  taskAPI,
-  userAPI,
-  abonnementAPI,
-  factureAPI,
-  messagesAPI,
-  notificationAPI
-} from '@/services/api'
+import { projectAPI, taskAPI, userAPI, abonnementAPI, factureAPI, messagesAPI, notificationAPI } from '@/services/api'
+import WebSocketService from '@/services/websocket.service.js'
 
 export default {
   name: 'TableauBordChefProjet',
@@ -378,6 +669,7 @@ export default {
       chargementNotifications: false,
       sauvegardeProfil: false,
       envoyantMessage: false,
+
       mesProjets: [],
       totalTaches: [],
       abonnement: null,
@@ -385,6 +677,7 @@ export default {
       notifications: [],
       messagesChat: [],
       membresParProjet: {},
+
       utilisateursRecherche: [],
       filtreProjetTache: '',
       projetChatActuel: null,
@@ -393,26 +686,22 @@ export default {
       projetSelectionne: null,
       rechercheUtilisateur: '',
       erreurBackend: null,
+
       showCreateProject: false,
       projetForm: { titre: '', description: '' },
+      subscribedTopics: new Set(),
     }
   },
   computed: {
-    utilisateur() {
-      return useAuthStore().user
-    },
+    utilisateur() { return useAuthStore().user },
     abonnementActif() {
       if (!this.abonnement) return false
       const maintenant = new Date()
       const dateFin = new Date(this.abonnement.date_fin || this.abonnement.dateFin)
       return (this.abonnement.statut || 'ACTIF') === 'ACTIF' && dateFin > maintenant
     },
-    projetsActifs() {
-      return this.mesProjets.filter(p => p.statut !== 'TERMINE' && p.statut !== 'ANNULE')
-    },
-    tachesEnAttente() {
-      return this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION')
-    },
+    projetsActifs() { return this.mesProjets.filter(p => p.statut !== 'TERMINE' && p.statut !== 'ANNULE') },
+    tachesEnAttente() { return this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION') },
     tachesFiltrees() {
       if (this.filtreProjetTache) {
         return this.totalTaches.filter(t => (t.id_projet || t.projetId) == this.filtreProjetTache)
@@ -422,13 +711,11 @@ export default {
     totalMembres() {
       const membresUniques = new Set()
       Object.values(this.membresParProjet).forEach(membres => {
-        membres.forEach(m => membresUniques.add(m.id))
+        membres.forEach(m => membresUniques.add(this.normalizeId(m.id)))
       })
       return membresUniques.size
     },
-    notificationsNonLues() {
-      return this.notifications.filter(n => !n.lu)
-    }
+    notificationsNonLues() { return this.notifications.filter(n => !n.lu) }
   },
   async mounted() {
     this.verifierEtNettoyerUtilisateur()
@@ -441,20 +728,30 @@ export default {
         console.error('Erreur parsing user:', e)
       }
     }
-
     // Autoriser MEMBRE et CHEF_PROJET
     if (!store.user || (store.user.role !== 'CHEF_PROJET' && store.user.role !== 'MEMBRE')) {
       this.erreurBackend = this.$t('erreurs.accesReserveChefsProjets')
       this.chargementGlobal = false
       return
     }
-
     await this.chargerToutesDonnees()
+    this.initWebsocket()
 
-    /* ===== (C) Ouvrir le modal si ?newProject=1 ===== */
+    // (C) Ouvrir le modal si ?newProject=1
     if (this.$route.query.newProject === '1') this.ouvrirModalProjet()
   },
+  watch: {
+    // Lazy-load doux des listes
+    onglet(nv) {
+      if (nv === 'notifications' && this.notifications.length === 0) this.chargerNotifications()
+      if (nv === 'taches' && this.totalTaches.length === 0) this.chargerTaches()
+      if (nv === 'chat' && !this.projetChatActuel && this.mesProjets[0]) this.ouvrirChatProjet(this.mesProjets[0])
+    }
+  },
   methods: {
+    // ---- Helpers ----
+    normalizeId(v) { return v == null ? v : String(v).split(':')[0] },
+
     /* ===== AJOUT : Déconnexion ===== */
     seDeconnecter() {
       try { useAuthStore().logout?.() } catch {}
@@ -478,40 +775,45 @@ export default {
         console.error('Erreur vérification utilisateur:', e)
       }
     },
+
     async chargerToutesDonnees() {
       this.chargementGlobal = true
       this.erreurBackend = null
       try {
         await Promise.all([
           this.chargerProjets(),
-          this.chargerAbonnement(),
           this.chargerTaches(),
           this.chargerFactures(),
           this.chargerNotifications()
         ])
+
+
+        setTimeout(async () => {
+          try {
+            await this.chargerAbonnement()
+          } catch (err) {
+            console.warn('Rechargement abonnement différé échoué :', err)
+          }
+        }, 800)
       } catch (e) {
         console.error(e)
         this.erreurBackend = this.$t('erreurs.chargementDonnees')
       } finally {
         this.chargementGlobal = false
       }
+
+
     },
 
     async chargerProjets() {
       this.chargementProjets = true
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         const r = await projectAPI.byUser(userId)
         let projets = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
-
-        this.mesProjets = projets.map(p => ({
-          ...p,
-          id: String(p.id).split(':')[0]
-        }))
-
-        for (const projet of this.mesProjets) {
-          await this.chargerMembresProjet(projet.id)
-        }
+        this.mesProjets = projets.map(p => ({ ...p, id: this.normalizeId(p.id) }))
+        // Charger les membres en parallèle
+        await Promise.all(this.mesProjets.map(projet => this.chargerMembresProjet(projet.id)))
       } catch (e) {
         console.error(e)
         this.mesProjets = []
@@ -534,14 +836,14 @@ export default {
     async chargerTaches() {
       this.chargementTaches = true
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         const r = await taskAPI.byChefProjet(userId)
         let taches = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
         this.totalTaches = taches.map(t => ({
           ...t,
-          id: String(t.id).split(':')[0],
-          id_projet: t.id_projet ? String(t.id_projet).split(':')[0] : t.id_projet,
-          projetId: t.projetId ? String(t.projetId).split(':')[0] : t.projetId
+          id: this.normalizeId(t.id),
+          id_projet: t.id_projet ? this.normalizeId(t.id_projet) : t.id_projet,
+          projetId: t.projetId ? this.normalizeId(t.projetId) : t.projetId
         }))
       } catch (e) {
         console.error(e)
@@ -555,7 +857,7 @@ export default {
       try {
         const u = this.utilisateur
         if (!u || !u.id) return
-        const userId = String(u.id).split(':')[0]
+        const userId = this.normalizeId(u.id)
         const r = await abonnementAPI.getByUserId(userId)
         this.abonnement = r.data
       } catch (e) {
@@ -569,23 +871,25 @@ export default {
     },
 
     // === F11: FACTURES ===
-
     async chargerFactures() {
       this.chargementFactures = true
       try {
         const r = await factureAPI.getMesFactures()
         const arr = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
         this.factures = arr.map(f => {
-          const id = String(f.id ?? '').split(':')[0] || f.id
-          const montantHt = Number(f.montantHt ?? f.montant_ht ?? 0)
-          const tva = Number(f.tva ?? 0)
+          const id = this.normalizeId(f.id ?? f.id)
+          // 🔧 Correction : lire la clé backend `montantHT` (camel-case), avec fallback
+          const montantHT = Number(f.montantHT ?? f.montantHt ?? f.montant_ht ?? 0)
+          // Utiliser la TVA fournie par le backend si présente, sinon calcul (21 % du HT)
+          const tva = Number(f.tva ?? (montantHT * 0.21))
           return {
             id,
             numeroFacture: f.numeroFacture ?? f.numero_facture ?? `FAC-${id}`,
             dateEmission: f.dateEmission ?? f.date_emission ?? null,
-            montantHt,
+            montantHT,            // garde la clé conforme backend
+            montantHt: montantHT, // compat descendante avec la vue
             tva,
-            montantTtc: montantHt + tva,
+            montantTtc: montantHT + tva,
             statut: f.statut ?? 'GENEREE'
           }
         })
@@ -597,11 +901,10 @@ export default {
       }
     },
 
-
     async chargerNotifications() {
       this.chargementNotifications = true
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         const r = await notificationAPI.list(userId)
         this.notifications = Array.isArray(r.data) ? r.data : []
       } catch (e) {
@@ -611,22 +914,64 @@ export default {
         this.chargementNotifications = false
       }
     },
+    initWebsocket() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        WebSocketService.connect(token)
+
+        // ✅ F13: Topic personnalisé pour notifications
+        const userId = this.normalizeId(this.utilisateur.id)
+        const topicUser = `/user/${userId}/topic/notifications`
+
+        if (!this.subscribedTopics.has(topicUser)) {
+          WebSocketService.subscribe(topicUser, (msg) => {
+            console.log('[F13] Notification WebSocket reçue:', msg)
+
+            if (msg?.type === 'NOTIFICATION') {
+              this.notifications.unshift({
+                id: msg.id || Date.now(),
+                message: msg.message || msg.contenu,
+                titre: msg.titre || 'Notification',
+                date: msg.createdAt || new Date().toISOString(),
+                lu: false,
+                type: msg.sousType || msg.type || 'SYSTEME'
+              })
+
+              // Notification visuelle browser
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(msg.titre || 'Notification', {
+                  body: msg.message || msg.contenu,
+                  icon: '/favicon.ico'
+                })
+              }
+            }
+          })
+          this.subscribedTopics.add(topicUser)
+          console.log(`[F13] ✅ Chef abonné au topic: ${topicUser}`)
+        }
+      } catch (error) {
+        console.error('[F13] Erreur WebSocket:', error)
+      }
+    },
+
 
     peutModifierProjet(projet) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
-      const estCreateur = projet.idCreateur === this.utilisateur?.id
+      const estCreateur = this.normalizeId(projet.idCreateur) == this.normalizeId(this.utilisateur?.id)
       return estAdmin || estCreateur
     },
     peutSupprimerProjet(projet) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
-      const estCreateur = projet.idCreateur === this.utilisateur?.id
+      const estCreateur = this.normalizeId(projet.idCreateur) == this.normalizeId(this.utilisateur?.id)
       return estAdmin || estCreateur
     },
     peutSupprimerTache(tache) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
-      const projetId = tache.id_projet || tache.projetId
-      const projet = this.mesProjets.find(p => p.id == projetId)
-      const estCreateurProjet = projet?.idCreateur === this.utilisateur?.id
+      const projetId = this.normalizeId(tache.id_projet || tache.projetId)
+      const projet = this.mesProjets.find(p => this.normalizeId(p.id) == projetId)
+      const estCreateurProjet = this.normalizeId(projet?.idCreateur) == this.normalizeId(this.utilisateur?.id)
       return estAdmin || estCreateurProjet
     },
 
@@ -637,19 +982,18 @@ export default {
       }
       this.ouvrirModalProjet()
     },
+
     /* ===== AJOUT ===== */
     ouvrirModalProjet() { this.showCreateProject = true },
+
     async sauvegarderNouveauProjet() {
       if (!this.projetForm.titre.trim()) return
       try {
-        const r = await projectAPI.create({
-          titre: this.projetForm.titre,
-          description: this.projetForm.description
-        })
+        const r = await projectAPI.create({ titre: this.projetForm.titre, description: this.projetForm.description })
         await this.chargerProjets()
         this.showCreateProject = false
         this.projetForm = { titre: '', description: '' }
-        const id = String(r.data?.id ?? '').split(':')[0]
+        const id = this.normalizeId(r.data?.id)
         if (id) this.$router.push(`/projet/${id}`)
       } catch (e) {
         console.error(e)
@@ -658,7 +1002,7 @@ export default {
     },
 
     consulterProjet(p) {
-      const id = String(p.id).split(':')[0]
+      const id = this.normalizeId(p.id)
       this.$router.push(`/projet/${id}`)
     },
 
@@ -668,11 +1012,7 @@ export default {
       const nouvelleDesc = prompt(' Nouvelle description:', p.description)
       if (nouvelleDesc === null) return
       try {
-        await projectAPI.update(p.id, {
-          ...p,
-          titre: nouveauTitre,
-          description: nouvelleDesc
-        })
+        await projectAPI.update(p.id, { ...p, titre: nouveauTitre, description: nouvelleDesc })
         p.titre = nouveauTitre
         p.description = nouvelleDesc
         alert(' Projet modifié avec succès !')
@@ -692,7 +1032,7 @@ export default {
       }
       try {
         await projectAPI.delete(id)
-        this.mesProjets = this.mesProjets.filter(p => p.id != id)
+        this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
         alert(' Projet supprimé avec succès !')
       } catch (e) {
         console.error(' Erreur suppression projet:', e.response?.data || e)
@@ -700,7 +1040,7 @@ export default {
           alert(' Vous n\'avez pas l\'autorisation de supprimer ce projet')
         } else if (e.response?.status === 404) {
           alert(' Projet introuvable')
-          this.mesProjets = this.mesProjets.filter(p => p.id != id)
+          this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
         } else {
           alert(' Erreur lors de la suppression du projet')
         }
@@ -718,6 +1058,7 @@ export default {
         alert(this.$t('erreurs.validationTache'))
       }
     },
+
     async renvoyerEnBrouillon(tache) {
       try {
         await taskAPI.updateStatus(tache.id, 'BROUILLON')
@@ -728,6 +1069,7 @@ export default {
         alert(this.$t('erreurs.modificationTache'))
       }
     },
+
     async annulerTache(tache) {
       if (!confirm(this.$t('taches.confirmerAnnulation'))) return
       try {
@@ -739,11 +1081,12 @@ export default {
         alert(this.$t('erreurs.annulationTache'))
       }
     },
+
     async supprimerTache(id) {
       if (!confirm(this.$t('taches.confirmerSuppression'))) return
       try {
         await taskAPI.delete(id)
-        this.totalTaches = this.totalTaches.filter(t => t.id != id)
+        this.totalTaches = this.totalTaches.filter(t => this.normalizeId(t.id) != this.normalizeId(id))
         alert(this.$t('taches.supprimee'))
       } catch (e) {
         console.error('Erreur suppression tâche:', e.response?.data || e)
@@ -762,12 +1105,14 @@ export default {
       }
       this.modalAjoutMembre = true
     },
+
     fermerModalAjoutMembre() {
       this.modalAjoutMembre = false
       this.projetSelectionne = null
       this.rechercheUtilisateur = ''
       this.utilisateursRecherche = []
     },
+
     async rechercherUtilisateurs() {
       if (this.rechercheUtilisateur.length < 2) {
         this.utilisateursRecherche = []
@@ -781,6 +1126,7 @@ export default {
         this.utilisateursRecherche = []
       }
     },
+
     async ajouterUtilisateurAuProjet(utilisateur) {
       if (!this.projetSelectionne) {
         alert(this.$t('projets.selectionnerProjetAvant'))
@@ -796,10 +1142,12 @@ export default {
         alert(this.$t('erreurs.ajoutMembre'))
       }
     },
+
     ajouterMembreAuProjet(projet) {
       this.projetSelectionne = projet
       this.ouvrirModalAjouterMembre()
     },
+
     async retirerMembreProjet(projetId, membreId) {
       if (!confirm(this.$t('equipe.confirmerRetrait'))) return
       try {
@@ -816,6 +1164,7 @@ export default {
       this.projetChatActuel = projet
       await this.chargerMessagesProjet(projet.id)
     },
+
     async chargerMessagesProjet(projetId) {
       try {
         const r = await messagesAPI.byProjet(projetId)
@@ -825,6 +1174,7 @@ export default {
         this.messagesChat = []
       }
     },
+
     async envoyerMessage() {
       if (!this.nouveauMessage.trim() || !this.projetChatActuel) return
       this.envoyantMessage = true
@@ -843,9 +1193,11 @@ export default {
         this.envoyantMessage = false
       }
     },
+
     estMonMessage(m) {
-      return (m.utilisateur_id || m.authorId) === this.utilisateur.id
+      return this.normalizeId(m.utilisateur_id || m.authorId) == this.normalizeId(this.utilisateur?.id)
     },
+
     getMessageClass(m) {
       return this.estMonMessage(m) ? 'bg-primary text-white ms-auto' : 'bg-white border shadow-sm'
     },
@@ -853,47 +1205,40 @@ export default {
     async telechargerFacture(facture) {
       try {
         // 1) Déterminer la langue courante (FR/EN)
-        const raw =
-          (this.$i18n && this.$i18n.locale) ||
-          localStorage.getItem('lang') ||
-          navigator.language ||
-          'fr';
-        const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en';
-
-        // 2) Appeler l’API en passant la langue (param + header déjà gérés côté factureAPI)
-        const response = await factureAPI.telechargerPDF(facture.id, langue);
-
+        const raw = (this.$i18n && this.$i18n.locale) || localStorage.getItem('lang') || navigator.language || 'fr'
+        const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
+        // 2) Appeler l’API (assure responseType: 'blob' côté service)
+        const response = await factureAPI.telechargerPDF(facture.id, langue)
         // 3) Déclencher le téléchargement
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const fileName = facture.numeroFacture
-          ? `${facture.numeroFacture}.pdf`
-          : `facture-${facture.id}.pdf`;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        const blob = new Blob([response.data], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        const fileName = facture.numeroFacture ? `${facture.numeroFacture}.pdf` : `facture-${facture.id}.pdf`
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
       } catch (e) {
-        console.error('Erreur téléchargement facture:', e);
-        alert(this.$t('erreurs.telechargementFacture'));
+        console.error('Erreur téléchargement facture:', e)
+        alert(this.$t('erreurs.telechargementFacture'))
       }
     },
 
     async marquerNotificationLue(n) {
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         await notificationAPI.markAsRead(n.id, userId)
         n.lu = true
       } catch (e) {
         console.error(e)
       }
     },
+
     async marquerToutesLues() {
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         await notificationAPI.markAllAsRead(userId)
         this.notifications.forEach(n => n.lu = true)
         alert(this.$t('notifications.toutesMarquees'))
@@ -901,23 +1246,24 @@ export default {
         console.error(e)
       }
     },
+
     async supprimerNotification(n) {
       if (!confirm(this.$t('notifications.confirmerSuppression'))) return
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         await notificationAPI.delete(n.id, userId)
         this.notifications = this.notifications.filter(x => x.id !== n.id)
       } catch (e) {
         console.error(e)
       }
     },
-    async actualiserNotifications() {
-      await this.chargerNotifications()
-    },
+
+    async actualiserNotifications() { await this.chargerNotifications() },
+
     async sauvegarderProfil() {
       this.sauvegardeProfil = true
       try {
-        const userId = String(this.utilisateur.id).split(':')[0]
+        const userId = this.normalizeId(this.utilisateur.id)
         await userAPI.updateProfile(userId, {
           nom: this.utilisateur.nom,
           prenom: this.utilisateur.prenom,
@@ -935,19 +1281,16 @@ export default {
       }
     },
 
-    getMembresProjet(projetId) {
-      return this.membresParProjet[projetId] || []
-    },
-    getTachesProjet(projetId) {
-      return this.totalTaches.filter(t => (t.id_projet || t.projetId) == projetId)
-    },
+    getMembresProjet(projetId) { return this.membresParProjet[projetId] || [] },
+    getTachesProjet(projetId) { return this.totalTaches.filter(t => (t.id_projet || t.projetId) == projetId) },
     getProjetNom(projetId) {
-      const p = this.mesProjets.find(x => x.id == projetId)
+      const p = this.mesProjets.find(x => this.normalizeId(x.id) == this.normalizeId(projetId))
       return p ? p.titre : this.$t('projets.projetInconnu')
     },
     getAssigneNom(userId) {
+      const targetId = this.normalizeId(userId)
       for (const membres of Object.values(this.membresParProjet)) {
-        const utilisateur = membres.find(m => m.id == userId)
+        const utilisateur = membres.find(m => this.normalizeId(m.id) == targetId)
         if (utilisateur) {
           return `${utilisateur.prenom || utilisateur.firstName} ${utilisateur.nom || utilisateur.lastName}`
         }
@@ -959,9 +1302,8 @@ export default {
       const nom = utilisateur.nom || utilisateur.lastName || ''
       return (prenom.charAt(0) || '') + (nom.charAt(0) || '')
     },
-    getMessagesNonLusProjet() {
-      return 0
-    },
+    getMessagesNonLusProjet() { return 0 },
+
     getStatutProjetClass(statut) {
       const classes = {
         'ACTIF': 'bg-success',
@@ -998,6 +1340,7 @@ export default {
       }
       return icons[type] || 'fas fa-bell'
     },
+
     formatDate(date) {
       if (!date) return '—'
       const d = new Date(date)
@@ -1022,17 +1365,18 @@ export default {
     formatTime(timestamp) {
       if (!timestamp) return ''
       return new Date(timestamp).toLocaleTimeString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
+        hour: '2-digit', minute: '2-digit'
       })
     },
     formatPrix(prix) {
       if (!prix && prix !== 0) return '—'
       return new Intl.NumberFormat(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', {
-        style: 'currency',
-        currency: 'EUR'
+        style: 'currency', currency: 'EUR'
       }).format(prix)
     }
+  },
+  beforeUnmount() {
+    WebSocketService.disconnect()
   }
 }
 </script>
@@ -1056,7 +1400,6 @@ export default {
 
 .notification-item { transition: all 0.2s ease; }
 .notification-item:hover { transform: translateX(5px); }
-
 .notification-icon {
   width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; color:white;
 }
@@ -1069,7 +1412,7 @@ export default {
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .table th { border-top: none; font-weight: 600; font-size: .875rem; color: #495057; }

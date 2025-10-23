@@ -74,8 +74,9 @@ export const authAPI = {
 export const stripeAPI = {
   createPaymentIntent: () =>
     api.post(`${endpoints.stripe}/create-payment-intent`),
-  confirmPayment: (sessionId) =>
-    api.post(`${endpoints.stripe}/confirm-payment`, { sessionId }),
+  // le backend attend payment_intent_id (ou paymentIntentId)
+  confirmPayment: (paymentIntentId) =>
+    api.post(`${endpoints.stripe}/confirm-payment`, { payment_intent_id: paymentIntentId }),
   listMyTransactions: () => api.get(`${endpoints.stripe}/mes-transactions`),
 }
 
@@ -151,7 +152,7 @@ export const taskAPI = {
   // ADMIN F7 - Voir toutes les tâches (maintenance plateforme + annulation)
   getAllAdmin: () => api.get(`${endpoints.tasks}/admin/all`),
 
-  // ADMIN F7 - Annuler une tâche à tout moment (CDC explicite)
+  // ADMIN F7 - Annuler une tâche à tout moment
   annulerParAdmin: (id) => api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
 }
 
@@ -159,10 +160,16 @@ export const taskAPI = {
 export const userAPI = {
   list: ({ q = '', role = '', statut = '', page = 0, size = 20 } = {}) =>
     api.get(endpoints.users, { params: { q, role, statut, page, size } }),
+
   create: (payload) => api.post(endpoints.users, payload),
   updateProfile: (id, payload) =>
     api.put(`${endpoints.users}/${cleanId(id)}`, payload),
-  search: (email) => api.get(`${endpoints.users}/search`, { params: { email } }),
+
+  search: (q) =>
+    api.get(`${endpoints.users}/recherche`, {
+      params: { q: String(q || '').trim() },
+    }),
+
   updateRole: (id, role) =>
     api.put(`${endpoints.users}/${cleanId(id)}/role`, { role }),
   getById: (id) => api.get(`${endpoints.users}/${cleanId(id)}`),

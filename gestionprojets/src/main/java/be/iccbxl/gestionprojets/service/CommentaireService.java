@@ -1,6 +1,8 @@
 package be.iccbxl.gestionprojets.service;
 
+import be.iccbxl.gestionprojets.controller.NotificationWebSocketController;
 import be.iccbxl.gestionprojets.dto.CommentaireDTO;
+import be.iccbxl.gestionprojets.dto.NotificationDTO;
 import be.iccbxl.gestionprojets.model.Commentaire;
 import be.iccbxl.gestionprojets.model.Tache;
 import be.iccbxl.gestionprojets.model.Utilisateur;
@@ -16,14 +18,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Service de gestion des commentaires
- * Conforme au cahier des charges F12 + F13
+ * Service de gestion des commentaires (F12) avec notifications temps réel (F13)
  *
- * F12 : Commenter les tâches/projets
- * F13 : Système de notifications (génération automatique)
+ * ✅ CORRECTION: Intégration WebSocket pour notifications instantanées
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 1.1 - Ajout WebSocket
  */
 @Service
 @Transactional
@@ -34,15 +34,18 @@ public class CommentaireService {
     private final TacheRepository tacheRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final NotificationService notificationService;
+    private final NotificationWebSocketController webSocketController;
 
     public CommentaireService(CommentaireRepository commentaireRepository,
                               TacheRepository tacheRepository,
                               UtilisateurRepository utilisateurRepository,
-                              NotificationService notificationService) {
+                              NotificationService notificationService,
+                              NotificationWebSocketController webSocketController) {
         this.commentaireRepository = commentaireRepository;
         this.tacheRepository = tacheRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.notificationService = notificationService;
+        this.webSocketController = webSocketController;
     }
 
     // ============================================================================
@@ -50,12 +53,7 @@ public class CommentaireService {
     // ============================================================================
 
     /**
-     * Créer un nouveau commentaire (F12)
-     * Génère automatiquement une notification (F13)
-     *
-     * Conforme au cahier des charges :
-     * - "Permet d'ajouter des commentaires sur les tâches et les projets"
-     * - "Chaque message ou action génère automatiquement des notifications"
+     * ✅ Créer un nouveau commentaire (F12) + Notification temps réel (F13)
      */
     public CommentaireDTO creerCommentaire(CommentaireDTO commentaireDTO, String emailAuteur) {
         log.info("[F12] Création commentaire par {}", emailAuteur);
@@ -84,33 +82,37 @@ public class CommentaireService {
         log.info("[F12] ✅ Commentaire créé avec ID: {}", commentaireSauvegarde.getId());
 
         // ========================================================================
-        // F13 : GÉNÉRATION AUTOMATIQUE DE NOTIFICATION
+        // ✅ F13 : NOTIFICATION TEMPS RÉEL VIA WEBSOCKET
         // ========================================================================
-        // Conforme au cahier des charges :
-        // "Les notifications peuvent être consultées dans l'interface et/ou
-        //  envoyées par e-mail. Chaque message ou action génère automatiquement
-        //  des notifications pour les membres concernés."
-
-        // NOTE : Utilisation de assigneA (Utilisateur) tel que défini dans l'entité Tache
         if (tache.getAssigneA() != null && !tache.getAssigneA().getId().equals(auteur.getId())) {
             try {
                 String nomCompletAuteur = auteur.getPrenom() + " " + auteur.getNom();
+                String titre = "Nouveau commentaire";
                 String message = String.format(
                         "Nouveau commentaire de %s sur '%s'",
                         nomCompletAuteur,
                         tache.getTitre()
                 );
 
-                // Créer la notification pour l'utilisateur assigné
+                // 1. Créer notification en base de données
                 notificationService.creerNotification(tache.getAssigneA().getId(), message);
 
-                log.info("[F13] ✅ Notification créée automatiquement pour utilisateur {}", tache.getAssigneA().getId());
+                // 2. ✅ CORRECTION: Envoyer notification WebSocket en temps réel
+                webSocketController.envoyerNotificationUtilisateur(
+                        tache.getAssigneA().getId(),
+                        titre,
+                        message
+                );
+
+                log.info("[F13] ✅ Notification temps réel envoyée à l'utilisateur {}",
+                        tache.getAssigneA().getId());
+
             } catch (Exception e) {
-                log.error("[F13] ❌ Échec création notification: {}", e.getMessage());
+                log.error("[F13] ❌ Échec notification: {}", e.getMessage());
                 // On continue même si la notification échoue (robustesse)
             }
         } else {
-            log.debug("[F13] ℹ️ Aucune notification créée (pas d'assigné ou auto-commentaire)");
+            log.debug("[F13] ℹ️ Aucune notification (pas d'assigné ou auto-commentaire)");
         }
 
         return convertirEnDTO(commentaireSauvegarde);
@@ -118,7 +120,6 @@ public class CommentaireService {
 
     /**
      * Obtenir tous les commentaires d'une tâche (F12)
-     * Tri chronologique pour faciliter la lecture
      */
     @Transactional(readOnly = true)
     public List<CommentaireDTO> obtenirCommentairesTache(Long tacheId) {

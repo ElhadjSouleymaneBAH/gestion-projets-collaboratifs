@@ -173,7 +173,7 @@
         <li class="nav-item">
           <a class="nav-link" :class="{active:ongletActuel==='utilisateurs'}" @click="changerOnglet('utilisateurs')" href="javascript:void(0)">
             <i class="fas fa-users me-2"></i>{{ $t('admin.utilisateurs') }}
-            <span class="badge bg-secondary ms-2">{{ utilisateurs.length }}</span>
+            <span class="badge bg-secondary ms-2">{{ totalUtilisateursApi }}</span>
           </a>
         </li>
         <li class="nav-item">
@@ -195,6 +195,7 @@
           </a>
         </li>
       </ul>
+
       <!-- Utilisateurs -->
       <div v-if="ongletActuel==='utilisateurs'" ref="utilisateursSection">
         <div class="card border-0 shadow-sm">
@@ -691,6 +692,7 @@ export default {
       totalUtilisateursApi: 0,
       userCache: {},
       factureSelectionnee: null,
+      _debouncedLoadUsers: null,
     }
   },
 
@@ -722,34 +724,27 @@ export default {
       const maintenant = new Date()
       const dans7jours = new Date()
       dans7jours.setDate(dans7jours.getDate() + 7)
-
       return this.abonnementsActifs.filter(a => {
         const dateFin = new Date(this.getDateFin(a))
         return dateFin >= maintenant && dateFin <= dans7jours
       })
     },
 
-    paiementsEchecs() {
-      return this.factures.filter(f => f.statut === 'ECHEC')
-    },
+    paiementsEchecs() { return this.factures.filter(f => f.statut === 'ECHEC') },
 
     nouveauxUtilisateurs24h() {
-      const hier = new Date()
-      hier.setDate(hier.getDate() - 1)
-
+      const hier = new Date(); hier.setDate(hier.getDate() - 1)
       return this.utilisateurs.filter(u => {
-        const dateInscription = new Date(u.dateInscription || u.date_inscription)
-        return dateInscription >= hier
+        const d = new Date(u.dateInscription || u.date_inscription)
+        return d >= hier
       }).length
     },
 
     nouveauxAbonnements24h() {
-      const hier = new Date()
-      hier.setDate(hier.getDate() - 1)
-
+      const hier = new Date(); hier.setDate(hier.getDate() - 1)
       return this.abonnements.filter(a => {
-        const dateDebut = new Date(this.getDateDebut(a))
-        return dateDebut >= hier
+        const d = new Date(this.getDateDebut(a))
+        return d >= hier
       }).length
     },
 
@@ -781,24 +776,32 @@ export default {
     toItem() { return Math.min(this.pageIndex * this.pageSize + this.pageSize, this.projetsFiltres.length) },
 
     facturesFiltrees() {
-      if (!this.filtreFactureUserId) {
-        return this.factures
-      }
-      return this.factures.filter(f =>
-        (f.utilisateurId || f.userId) === this.filtreFactureUserId
-      )
+      if (!this.filtreFactureUserId) return this.factures
+      return this.factures.filter(f => (f.utilisateurId || f.userId) === this.filtreFactureUserId)
     },
 
     hasDownloadAPI() { return typeof (factureAPI?.telechargerPDF) === 'function' }
   },
 
   watch: {
-    filtreUtilisateur() { this.userPageIndex = 0; this.chargerUtilisateurs() },
-    filtreRole() { this.userPageIndex = 0; this.chargerUtilisateurs() },
-    userPageSize() { this.userPageIndex = 0; this.chargerUtilisateurs() },
+    filtreUtilisateur() {
+      this.userPageIndex = 0
+      this._debouncedLoadUsers?.()
+    },
+    filtreRole() {
+      this.userPageIndex = 0
+      this.chargerUtilisateurs()
+    },
+    userPageSize() {
+      this.userPageIndex = 0
+      this.chargerUtilisateurs()
+    },
   },
 
   async mounted() {
+    // init debounce (sans dépendance externe)
+    this._debouncedLoadUsers = this.debounce(() => this.chargerUtilisateurs(), 300)
+
     const store = useAuthStore()
     if (!store.user && localStorage.getItem('user')) {
       try { store.setUser(JSON.parse(localStorage.getItem('user'))) } catch {}
@@ -811,6 +814,15 @@ export default {
   },
 
   methods: {
+    // petit utilitaire debounce
+    debounce(fn, delay = 300) {
+      let t = null
+      return (...args) => {
+        clearTimeout(t)
+        t = setTimeout(() => fn.apply(this, args), delay)
+      }
+    },
+
     goTo(onglet) {
       this.ongletActuel = onglet
       this.$nextTick(() => {
@@ -831,9 +843,13 @@ export default {
     },
 
     formatDate(date) {
-      if (!date) return '—'
-      try { return new Date(date).toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US') }
-      catch { return '—' }
+      if (date == null) return '—'
+      try {
+        const d = (typeof date === 'number')
+          ? new Date(date)
+          : new Date(String(date))
+        return isNaN(d) ? '—' : d.toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US')
+      } catch { return '—' }
     },
 
     formatPrix(prix) { return (prix || prix === 0) ? `${Number(prix).toFixed(2)} €` : '—' },
@@ -842,7 +858,6 @@ export default {
       try {
         this.chargementGlobal = true
         this.erreurBackend = ''
-
         await Promise.all([
           this.chargerUtilisateurs(),
           this.chargerAbonnements(),
@@ -851,7 +866,6 @@ export default {
           this.chargerTransactions(),
           this.chargerTaches()
         ])
-
       } catch (e) {
         console.error('Erreur chargement global:', e)
         this.erreurBackend = this.$t('erreurs.chargementDonnees')
@@ -877,6 +891,7 @@ export default {
           this.utilisateurs = Array.isArray(res.data) ? res.data : []
           this.totalUtilisateursApi = this.utilisateurs.length
         }
+        // hydrate un cache local pour résoudre les noms sans N+1 appels
         this.utilisateurs.forEach(u => { this.userCache[u.id] = u })
       } catch (e) {
         console.error('Erreur utilisateurs:', e)
@@ -983,38 +998,24 @@ export default {
     getDescription(p) { return (p.description || '').substring(0, 80) },
     getDateCreation(p) { return p.dateCreation || p.date_creation || p.createdAt },
 
+    // S'appuie sur la page chargée + cache
     getUserName(userId) {
       if (!userId) return this.$t('commun.inconnu')
-      const inList = this.utilisateurs.find(u => u.id === userId)
-      if (inList) {
-        const p = inList.prenom || inList.firstName || ''
-        const n = inList.nom || inList.lastName || ''
-        return (p + ' ' + n).trim() || this.$t('commun.inconnu')
+      const fromList = this.utilisateurs.find(u => u.id === userId)
+      const u = fromList || this.userCache[userId]
+      if (u) {
+        const p = u.prenom || u.firstName || ''
+        const n = u.nom || u.lastName || ''
+        const full = (p + ' ' + n).trim()
+        return full || `Utilisateur #${userId}`
       }
-      const cached = this.userCache[userId]
-      if (cached) {
-        const p = cached.prenom || cached.firstName || ''
-        const n = cached.nom || cached.lastName || ''
-        return (p + ' ' + n).trim() || this.$t('commun.inconnu')
-      }
-      this.ensureUserCached(userId)
-      return this.$t('commun.inconnu')
+      return `Utilisateur #${userId}`
     },
 
     getProjetName(projetId) {
       if (!projetId) return '—'
       const projet = this.projets.find(p => p.id === projetId)
       return projet ? projet.titre : `Projet #${projetId}`
-    },
-
-    async ensureUserCached(userId) {
-      if (this.userCache[userId]) return
-      try {
-        const r = await userAPI.getById(userId)
-        if (r?.data?.id) this.$set ? this.$set(this.userCache, userId, r.data) : (this.userCache[userId] = r.data)
-      } catch (e) {
-        // silence
-      }
     },
 
     getProprietaireName(p) {
@@ -1030,9 +1031,7 @@ export default {
     getStatutUtilisateurClass(statut) { return statut === 'SUSPENDU' ? 'bg-warning text-dark' : 'bg-success' },
     getStatutUtilisateurLabel(statut) { return statut === 'SUSPENDU' ? this.$t('admin.suspendu') : this.$t('commun.actifs') },
 
-    getStatutAbonnementClass(statut) {
-      return (statut || 'ACTIF') === 'ACTIF' ? 'bg-success' : 'bg-danger'
-    },
+    getStatutAbonnementClass(statut) { return (statut || 'ACTIF') === 'ACTIF' ? 'bg-success' : 'bg-danger' },
 
     getStatutProjetClass(statut) {
       const classes = { ACTIF:'bg-success', TERMINE:'bg-secondary', SUSPENDU:'bg-warning text-dark', ARCHIVE:'bg-dark' }
@@ -1061,7 +1060,6 @@ export default {
         this.$toast?.error?.(this.$t('erreurs.projetIntrouvable'))
         return
       }
-
       try {
         console.log('Navigation vers projet ID:', id)
         await this.router.push(`/projet/${id}`)
@@ -1074,11 +1072,7 @@ export default {
     voirFacturesUtilisateur(userId) {
       this.ongletActuel = 'finance'
       this.sousOngletFinance = 'factures'
-
-      if (userId) {
-        this.filtreFactureUserId = userId
-      }
-
+      if (userId) this.filtreFactureUserId = userId
       this.$nextTick(() => {
         const el = this.$refs.facturesSection
         if (el?.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -1101,16 +1095,11 @@ export default {
       if (!confirm(this.$t('admin.confirmerAnnulationTache') || 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.')) {
         return
       }
-
       try {
         console.log('INFO: Admin annule tâche ID:', id)
         const res = await taskAPI.annulerParAdmin(id)
-
         const index = this.taches.findIndex(t => t.id === id)
-        if (index !== -1) {
-          this.taches[index] = res.data
-        }
-
+        if (index !== -1) this.taches[index] = res.data
         this.$toast?.success?.(this.$t('admin.tacheAnnulee') || 'Tâche annulée avec succès')
       } catch (e) {
         console.error('Erreur annulation tâche:', e)
@@ -1118,10 +1107,17 @@ export default {
       }
     },
 
+
     async telechargerFacture(id) {
       try {
         if (!this.hasDownloadAPI) throw new Error('no_download_api')
-        const res = await factureAPI.telechargerPDF(id)
+
+        // ✅ Déterminer la langue courante (FR/EN)
+        const raw = (this.$i18n && this.$i18n.locale) || localStorage.getItem('lang') || navigator.language || 'fr'
+        const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
+
+        // ✅ Passer la langue à l'API
+        const res = await factureAPI.telechargerPDF(id, langue)
         if (!res?.data) throw new Error('download_failed')
 
         const blob = new Blob([res.data], { type: 'application/pdf' })
@@ -1143,9 +1139,7 @@ export default {
       }
     },
 
-    voirDetailFacture(f) {
-      this.factureSelectionnee = f
-    },
+    voirDetailFacture(f) { this.factureSelectionnee = f },
 
     async genererRapportFactures() {
       try {

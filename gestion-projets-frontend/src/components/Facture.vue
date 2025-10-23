@@ -148,6 +148,7 @@ export default {
     const chargement = ref(false)
     const actionEnCours = ref(null)
 
+    // ✅ CORRECTION : Pas de valeurs en dur, tout vient du backend
     const details = reactive({
       entrepriseNom: '',
       entrepriseAdresse: '',
@@ -230,7 +231,13 @@ export default {
       try {
         actionEnCours.value = 'pdf'
         const id = props.facture?.id
-        const res = await factureAPI.telechargerPDF(id)
+
+        // ✅ Déterminer la langue courante
+        const raw = locale.value || localStorage.getItem('lang') || 'fr'
+        const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
+
+        // ✅ Passer la langue à l'API
+        const res = await factureAPI.telechargerPDF(id, langue)
         if (!res?.data) throw new Error('Aucun contenu')
         const blob = new Blob([res.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
