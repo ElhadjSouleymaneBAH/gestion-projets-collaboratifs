@@ -103,6 +103,7 @@ export const factureAPI = {
       headers: { 'Accept-Language': shortLang(langue) },
     }),
   getDonneesPDF: (id) => api.get(`${endpoints.factures}/${cleanId(id)}/pdf-data`),
+  getById: (id) => api.get(`${endpoints.factures}/${cleanId(id)}`),
 }
 
 /* ===================== PROJETS ===================== */

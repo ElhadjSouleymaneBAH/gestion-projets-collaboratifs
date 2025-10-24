@@ -25,8 +25,8 @@ import java.util.*;
  * Importance : 4/5
  * Contraintes : Après paiement
  *
- * @author
- * @version 1.2 (corrigée - cohérence francisation)
+ * @author ElhadjSouleymaneBah
+ * @version 1.0
  */
 @RestController
 @RequestMapping("/api/factures")
@@ -167,6 +167,14 @@ public class FactureController {
             }
 
             Map<String, Object> donneesPDF = factureService.getDonneesFacturePDF(id);
+
+            // Ajout infos fixes entreprise si manquantes
+            donneesPDF.putIfAbsent("entrepriseNom", "CollabPro Solutions");
+            donneesPDF.putIfAbsent("entrepriseAdresse", "Rue du Projet 42, 1000 Bruxelles");
+            donneesPDF.putIfAbsent("entrepriseTva", "BE0123.456.789");
+            donneesPDF.putIfAbsent("entrepriseEmail", "support@collabpro.com");
+            donneesPDF.putIfAbsent("logoPath", "/logo-collabpro.png");
+
             return ResponseEntity.ok(donneesPDF);
 
         } catch (Exception e) {

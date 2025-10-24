@@ -400,7 +400,16 @@ export default {
       if (page >= 0 && page < pagination.totalPages) chargerFactures(page)
     }
 
-    const voirFacture = (facture) => { factureSelectionnee.value = facture }
+    const voirFacture = async (facture) => {
+      try {
+        const res = await factureAPI.getById(facture.id)
+        factureSelectionnee.value = res?.data || facture
+      } catch (e) {
+        console.warn(' Impossible de charger le détail complet de la facture :', e)
+        factureSelectionnee.value = facture
+      }
+    }
+
     const fermerModalFacture = () => { factureSelectionnee.value = null }
 
     // Téléchargement PDF (langue + filename RFC5987)
