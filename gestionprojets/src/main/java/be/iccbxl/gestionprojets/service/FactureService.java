@@ -67,7 +67,7 @@ public class FactureService {
     }
 
     /**
-     * NOUVEAU : Récupérer les données complètes pour affichage PDF
+     * Récupérer les données complètes pour affichage PDF
      */
     public Map<String, Object> getDonneesFacturePDF(Long factureId) {
         Optional<Facture> factureOpt = findByIdWithJoins(factureId);
@@ -104,16 +104,26 @@ public class FactureService {
         donnees.put("entrepriseTva", entrepriseTva);
         donnees.put("logoPath", "/logo-collabpro.png");
 
+        // Informations de paiement
+        donnees.put("ibanEntreprise", "BE99 9999 9999 9999");
+        donnees.put("bicEntreprise", "GEBABEBB");
+
         // Client
         if (facture.getTransaction() != null && facture.getTransaction().getUtilisateur() != null) {
             var utilisateur = facture.getTransaction().getUtilisateur();
-            donnees.put("clientNom",
-                    (utilisateur.getPrenom() != null ? utilisateur.getPrenom() : "") + " " +
-                            (utilisateur.getNom() != null ? utilisateur.getNom() : ""));
-            donnees.put("clientEmail", utilisateur.getEmail());
-            //  Adresse issue du profil utilisateur
-            donnees.put("clientAdresse",
-                    utilisateur.getAdresse() != null ? utilisateur.getAdresse() : "");
+
+            // Nom complet du client
+            String prenom = utilisateur.getPrenom() != null ? utilisateur.getPrenom().trim() : "";
+            String nom = utilisateur.getNom() != null ? utilisateur.getNom().trim() : "";
+            String nomComplet = (prenom + " " + nom).trim();
+            donnees.put("clientNom", !nomComplet.isEmpty() ? nomComplet : "Client");
+
+            // Email du client
+            donnees.put("clientEmail", utilisateur.getEmail() != null ? utilisateur.getEmail() : "");
+
+            // Adresse du client
+            donnees.put("clientAdresse", utilisateur.getAdresse() != null ? utilisateur.getAdresse().trim() : "");
+
             donnees.put("transactionId", facture.getTransaction().getId());
         } else {
             donnees.put("clientNom", "");

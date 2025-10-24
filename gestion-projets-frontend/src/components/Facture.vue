@@ -18,21 +18,22 @@
           class="logo-facture"
         />
         <div class="entreprise-info">
-          <h2 class="entreprise-nom">{{ details.entrepriseNom || $t('facture.entrepriseNomDefaut') }}</h2>
-          <p class="entreprise-addr">{{ details.entrepriseAdresse }}</p>
-          <p class="entreprise-addr">{{ details.entrepriseVille }}</p>
-          <p class="entreprise-addr">TVA: {{ details.entrepriseTva }}</p>
-          <p class="entreprise-addr">Email: {{ details.entrepriseEmail }}</p>
+          <h2 class="entreprise-nom">{{ details.entrepriseNom || 'CollabPro Solutions' }}</h2>
+          <p class="entreprise-addr">{{ details.entrepriseAdresse || 'Avenue de l\'innovation 123' }}</p>
+          <p class="entreprise-addr">{{ details.entrepriseVille || '1000 Bruxelles, Belgique' }}</p>
+          <p class="entreprise-addr">TVA: {{ details.entrepriseTva || 'BE0123.456.789' }}</p>
+          <p class="entreprise-addr">Email: {{ details.entrepriseEmail || 'contact@collabpro.be' }}</p>
         </div>
       </div>
 
       <!-- Titre FACTURE + infos client -->
       <div class="titre-client-section">
-        <h1 class="titre-facture">{{ $t('facture.facture') }}</h1>
+        <h1 class="titre-facture">{{ $t('facture.facture') || 'FACTURE' }}</h1>
         <div class="client-bloc">
-          <p class="client-label">{{ $t('facture.factureA') }}</p>
-          <div class="client-nom">{{ details.clientNom || $t('facture.clientDefaut') }}</div>
+          <p class="client-label">{{ $t('facture.factureA') || 'Facturé à :' }}</p>
+          <div class="client-nom">{{ details.clientNom || $t('facture.clientDefaut') || 'Client' }}</div>
           <div v-if="details.clientAdresse" class="client-addr">{{ details.clientAdresse }}</div>
+          <div v-if="details.clientVille" class="client-addr">{{ details.clientVille }}</div>
           <div v-if="details.clientEmail" class="client-addr">{{ details.clientEmail }}</div>
         </div>
       </div>
@@ -40,15 +41,15 @@
       <!-- Références facture -->
       <div class="refs-grid">
         <div class="ref-item">
-          <span class="ref-label">{{ $t('facture.numeroFacture') }}</span>
-          <span class="ref-value">{{ details.numeroFacture || facture.numeroFacture }}</span>
+          <span class="ref-label">{{ $t('facture.numeroFacture') || 'Numéro' }}</span>
+          <span class="ref-value">{{ details.numeroFacture || facture.numeroFacture || 'N/A' }}</span>
         </div>
         <div class="ref-item">
-          <span class="ref-label">{{ $t('facture.date') }}</span>
+          <span class="ref-label">{{ $t('facture.date') || 'Date' }}</span>
           <span class="ref-value">{{ formatDateSafe(details.dateEmission || facture.dateEmission || facture.createdAt || facture.date_emission) }}</span>
         </div>
         <div class="ref-item">
-          <span class="ref-label">{{ $t('facture.echeance') }}</span>
+          <span class="ref-label">{{ $t('facture.echeance') || 'Échéance' }}</span>
           <span class="ref-value">{{ formatDateSafe(details.dateEcheance || facture.dateEcheance || facture.date_echeance) }}</span>
         </div>
       </div>
@@ -57,27 +58,27 @@
       <table class="table-facture">
         <thead>
         <tr>
-          <th class="text-left">{{ $t('facture.description') }}</th>
-          <th class="text-right">{{ $t('facture.montantHT') }}</th>
-          <th class="text-right">{{ $t('facture.tva') }}</th>
-          <th class="text-right">{{ $t('facture.totalTTC') }}</th>
+          <th class="text-left">{{ $t('facture.description') || 'Description' }}</th>
+          <th class="text-right">{{ $t('facture.montantHT') || 'Montant HT' }}</th>
+          <th class="text-right">{{ $t('facture.tva') || 'TVA' }}</th>
+          <th class="text-right">{{ $t('facture.totalTTC') || 'Total TTC' }}</th>
         </tr>
         </thead>
         <tbody>
         <tr>
           <td class="text-left">
-            {{ details.description || facture.description || $t('facture.descriptionDefaut') }}
+            {{ details.description || facture.description || 'Abonnement Premium Mensuel - Plateforme CollabPro' }}
             <div v-if="details.periode || facture.periode" class="desc-periode">
-              {{ $t('facture.periode') }} {{ details.periode || facture.periode }}
+              {{ $t('facture.periode') || 'Période' }} : {{ details.periode || facture.periode }}
             </div>
           </td>
-          <td class="text-right">{{ formatMontant(details.montantHT ?? facture.montantHT) }}</td>
+          <td class="text-right">{{ formatMontant(details.montantHT ?? facture.montantHT ?? 0) }}</td>
           <td class="text-right">
-            {{ formatMontant(details.tva ?? facture.tva) }}
+            {{ formatMontant(details.tva ?? facture.tva ?? 0) }}
             <span v-if="details.tauxTva || facture.tauxTva"> ({{ (details.tauxTva ?? facture.tauxTva) || 21 }}%)</span>
           </td>
           <td class="text-right text-bold">
-            {{ formatMontant(details.montantTTC ?? facture.montantTTC) }}
+            {{ formatMontant(details.montantTTC ?? facture.montantTTC ?? 0) }}
           </td>
         </tr>
         </tbody>
@@ -85,20 +86,20 @@
 
       <!-- Total -->
       <div class="total-ttl">
-        {{ $t('facture.total') }} {{ formatMontant(details.montantTTC ?? facture.montantTTC) }}
+        {{ $t('facture.total') || 'Total' }} : {{ formatMontant(details.montantTTC ?? facture.montantTTC ?? 0) }}
       </div>
 
       <!-- Mentions légales -->
       <div class="mentions-legales">
-        <p><strong>{{ $t('facture.informationsPaiement') }}</strong></p>
-        <p>{{ $t('facture.iban') }}</p>
-        <p>{{ $t('facture.bic') }}</p>
-        <p class="mt-3"><small>{{ $t('facture.mentionLegale') }}</small></p>
+        <p><strong>{{ $t('facture.informationsPaiement') || 'Informations de paiement :' }}</strong></p>
+        <p>IBAN : {{ details.ibanEntreprise || 'BE99 9999 9999 9999' }}</p>
+        <p>BIC : {{ details.bicEntreprise || 'GEBABEBB' }}</p>
+        <p class="mt-3"><small>{{ $t('facture.mentionLegale') || 'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.' }}</small></p>
       </div>
 
       <!-- Date de génération -->
       <div class="date-generation">
-        {{ $t('facture.genereeLe') }} {{ formatDateSafe(new Date()) }}
+        {{ $t('facture.genereeLe') || 'Générée le' }} {{ formatDateSafe(new Date()) }}
       </div>
 
       <!-- Actions -->
@@ -107,14 +108,14 @@
           class="btn btn-success"
           @click="telechargerPDF"
           :disabled="actionEnCours === 'pdf'"
-          :title="$t('facture.telechargerPDFTitle')"
+          :title="$t('facture.telechargerPDFTitle') || 'Télécharger le PDF'"
         >
           <span v-if="actionEnCours === 'pdf'" class="spinner-border spinner-border-sm me-2"></span>
           <i v-else class="fas fa-download mr-2"></i>
-          {{ $t('facture.telechargerPDF') }}
+          {{ $t('facture.telechargerPDF') || 'Télécharger PDF' }}
         </button>
         <button class="btn btn-outline" @click="fermerFacture">
-          <i class="fas fa-times mr-2"></i> {{ $t('facture.fermer') }}
+          <i class="fas fa-times mr-2"></i> {{ $t('facture.fermer') || 'Fermer' }}
         </button>
       </div>
     </div>
@@ -122,7 +123,7 @@
     <!-- State: chargement -->
     <div v-if="afficherFacture && chargement" class="loading">
       <div class="spinner-border text-primary"></div>
-      <p class="mt-2">{{ $t('facture.chargementDetails') }}</p>
+      <p class="mt-2">{{ $t('facture.chargementDetails') || 'Chargement des détails...' }}</p>
     </div>
   </div>
 </template>
@@ -148,17 +149,25 @@ export default {
     const chargement = ref(false)
     const actionEnCours = ref(null)
 
-    // ✅ CORRECTION : Pas de valeurs en dur, tout vient du backend
+    // ✅ CORRECTION : Initialisation avec valeurs par défaut
     const details = reactive({
+      // Entreprise
       entrepriseNom: '',
       entrepriseAdresse: '',
       entrepriseVille: '',
       entrepriseEmail: '',
       entrepriseTva: '',
       logoPath: '',
+      ibanEntreprise: '',
+      bicEntreprise: '',
+
+      // Client
       clientNom: '',
       clientAdresse: '',
+      clientVille: '',
       clientEmail: '',
+
+      // Facture
       factureId: props.facture?.id,
       numeroFacture: props.facture?.numeroFacture,
       dateEmission: props.facture?.dateEmission,
@@ -193,23 +202,57 @@ export default {
       ).format(n)
     }
 
+    // ✅ CORRECTION : Mapping complet pour tous les formats possibles (snake_case, camelCase, PascalCase)
     const merge = (src) => {
       if (!src || typeof src !== 'object') return
 
       const mappings = {
+        // Dates et montants
         'date_emission': 'dateEmission',
         'date_echeance': 'dateEcheance',
         'montant_ht': 'montantHT',
         'montant_ttc': 'montantTTC',
         'numero_facture': 'numeroFacture',
         'taux_tva': 'tauxTva',
+
+        // Entreprise - snake_case
+        'entreprise_nom': 'entrepriseNom',
+        'entreprise_adresse': 'entrepriseAdresse',
+        'entreprise_ville': 'entrepriseVille',
+        'entreprise_email': 'entrepriseEmail',
+        'entreprise_tva': 'entrepriseTva',
+        'logo_path': 'logoPath',
+        'iban_entreprise': 'ibanEntreprise',
+        'bic_entreprise': 'bicEntreprise',
+
+        // Client - snake_case
+        'client_nom': 'clientNom',
+        'client_adresse': 'clientAdresse',
+        'client_ville': 'clientVille',
+        'client_email': 'clientEmail',
+
+        // Variantes possibles avec majuscules
+        'entrepriseTVA': 'entrepriseTva',
+        'entrepriseEmail': 'entrepriseEmail',
+        'ibanEntreprise': 'ibanEntreprise',
+        'bicEntreprise': 'bicEntreprise',
       }
 
+      // ✅ Parcourir toutes les clés reçues du backend
       Object.keys(src).forEach(k => {
         const val = src[k]
+
+        // Ignorer les valeurs null/undefined
         if (val === undefined || val === null) return
+
+        // Utiliser le mapping si disponible, sinon garder la clé telle quelle
         const targetKey = mappings[k] || k
+
+        // Affecter la valeur
         details[targetKey] = val
+
+        // Debug pour voir ce qui est reçu
+        console.log(` Mapping: ${k} => ${targetKey} = ${val}`)
       })
     }
 
@@ -217,11 +260,22 @@ export default {
       try {
         chargement.value = true
         const id = props.facture?.id
-        if (!id) return
+        if (!id) {
+          console.warn(' Aucun ID de facture fourni')
+          return
+        }
+
+        console.log('🔄 Chargement des détails de la facture', id)
         const resp = await api.get(`${endpoints.factures}/${id}/pdf-data`)
+
+        console.log('✅ Réponse backend reçue:', resp?.data)
+
+        // Merger les données reçues
         merge(resp?.data || {})
+
+        console.log('✅ Détails après merge:', details)
       } catch (e) {
-        console.error('Erreur chargement détails facture:', e)
+        console.error('❌ Erreur chargement détails facture:', e)
       } finally {
         chargement.value = false
       }
@@ -236,9 +290,12 @@ export default {
         const raw = locale.value || localStorage.getItem('lang') || 'fr'
         const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
 
+        console.log('📥 Téléchargement PDF pour facture', id, 'langue:', langue)
+
         // ✅ Passer la langue à l'API
         const res = await factureAPI.telechargerPDF(id, langue)
         if (!res?.data) throw new Error('Aucun contenu')
+
         const blob = new Blob([res.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -246,9 +303,11 @@ export default {
         a.download = `${details.numeroFacture || 'facture'}.pdf`
         a.click()
         window.URL.revokeObjectURL(url)
+
+        console.log('✅ PDF téléchargé avec succès')
         emit('action-terminee', { type: 'telechargement', success: true })
       } catch (e) {
-        console.error('Erreur téléchargement facture:', e)
+        console.error('❌ Erreur téléchargement facture:', e)
         emit('action-terminee', { type: 'telechargement', success: false })
       } finally {
         actionEnCours.value = null
@@ -261,7 +320,10 @@ export default {
     }
 
     onMounted(() => {
-      if (afficherFacture.value) chargerDetails()
+      if (afficherFacture.value) {
+        console.log('🚀 Composant Facture monté, chargement des détails...')
+        chargerDetails()
+      }
     })
 
     return {
@@ -381,11 +443,12 @@ export default {
   gap:12px;
   justify-content:center;
 }
-.btn{padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px}
-.btn-primary{background:#0d6efd;color:#fff;border:none}
-.btn-success{background:#28a745;color:#fff;border:none}
+.btn{padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;border:none}
+.btn-primary{background:#0d6efd;color:#fff}
+.btn-success{background:#28a745;color:#fff}
 .btn-outline{border:2px solid #6b7280;background:#fff;color:#6b7280}
 .btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
 
 @media (max-width:768px){
   .header-entreprise{flex-direction:column;align-items:center;text-align:center}
