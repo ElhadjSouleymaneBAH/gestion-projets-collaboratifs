@@ -123,7 +123,7 @@
             </div>
           </div>
 
-          <!-- ✅ CORRECTION F12: Intégration des commentaires -->
+          <!--  F12: Intégration des commentaires -->
           <div class="card shadow-sm">
             <div class="card-header bg-light">
               <h5 class="mb-0">
@@ -131,7 +131,7 @@
               </h5>
             </div>
             <div class="card-body">
-              <CommentairesTache :tache-id="tacheId" />
+              <Commentaires :tache-id="tacheId" />
             </div>
           </div>
         </div>
@@ -224,7 +224,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { taskAPI } from '@/services/api'
-import CommentairesTache from '@/components/CommentairesTache.vue'
+import Commentaires from '@/components/Commentaires.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
