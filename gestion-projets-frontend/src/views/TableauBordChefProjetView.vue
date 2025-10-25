@@ -857,14 +857,26 @@ export default {
       try {
         const u = this.utilisateur
         if (!u || !u.id) return
+
         const userId = this.normalizeId(u.id)
-        const r = await abonnementAPI.getByUserId(userId)
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('[F10] Aucun token JWT trouvé pour la requête abonnement.')
+          return
+        }
+
+        const r = await abonnementAPI.getByUserId(userId, token)
         this.abonnement = r.data
+        console.log('[F10] Abonnement chargé avec succès :', this.abonnement)
       } catch (e) {
         if (e?.response?.status === 404) {
+          console.warn('[F10] Aucun abonnement trouvé pour cet utilisateur.')
+          this.abonnement = null
+        } else if (e?.response?.status === 401) {
+          console.error('[F10] Non autorisé - token manquant ou invalide.')
           this.abonnement = null
         } else {
-          console.error('Erreur chargement abonnement:', e)
+          console.error('Erreur lors du chargement de l’abonnement :', e)
           this.abonnement = null
         }
       }

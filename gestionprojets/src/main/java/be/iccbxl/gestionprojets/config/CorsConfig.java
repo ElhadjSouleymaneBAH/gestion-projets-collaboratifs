@@ -24,25 +24,26 @@ public class CorsConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Origins autorisés (Démo locale + Déploiement)
+        // 🌐 Origines autorisées (local + production)
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "http://localhost:3000",
-                "https://*.vercel.app",
-                "https://*.netlify.app"
+                "https://gestion-projets-collaboratifs.vercel.app",
+                "https://gestion-projets-collab-git-4c7a64-elhadsouleymanebahs-projects.vercel.app",
+                "https://gestion-projets-collaboratifs-production.up.railway.app"
         ));
 
-        // Méthodes HTTP
+        //  Méthodes HTTP autorisées
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        // Headers
+        //  Headers autorisés
         configuration.addAllowedHeader("*");
 
-        // Credentials pour JWT (cookies/Authorization)
+        // 🔐 Autoriser les cookies et tokens JWT
         configuration.setAllowCredentials(true);
 
-        // Cache préflight
+        // ⏱ Cache de la requête preflight
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -57,8 +58,9 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://localhost:*",
                         "http://127.0.0.1:*",
                         "http://localhost:3000",
-                        "https://*.vercel.app",
-                        "https://*.netlify.app"
+                        "https://gestion-projets-collaboratifs.vercel.app",
+                        "https://gestion-projets-collab-git-4c7a64-elhadsouleymanebahs-projects.vercel.app",
+                        "https://gestion-projets-collaboratifs-production.up.railway.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")

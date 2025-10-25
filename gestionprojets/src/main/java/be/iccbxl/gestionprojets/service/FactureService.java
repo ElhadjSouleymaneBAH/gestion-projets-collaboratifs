@@ -124,11 +124,15 @@ public class FactureService {
             // Adresse du client
             donnees.put("clientAdresse", utilisateur.getAdresse() != null ? utilisateur.getAdresse().trim() : "");
 
+            // Ville non disponible dans la classe Utilisateur (valeur vide pour cohérence frontend)
+            donnees.put("clientVille", "");
+
             donnees.put("transactionId", facture.getTransaction().getId());
         } else {
             donnees.put("clientNom", "");
             donnees.put("clientEmail", "");
             donnees.put("clientAdresse", "");
+            donnees.put("clientVille", "");
         }
 
         return donnees;

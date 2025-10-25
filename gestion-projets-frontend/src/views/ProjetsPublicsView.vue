@@ -17,14 +17,12 @@
     </header>
 
     <div class="container py-4">
-      <!-- Titre simple -->
+      <!-- Titre principal -->
       <div class="text-center mb-4">
         <h2 class="h2 fw-bold text-primary mb-2">
           <i class="fas fa-globe me-2"></i>{{ $t('projetsPublics.titre') }}
         </h2>
-        <p class="text-muted">
-          {{ $t('projetsPublics.sousTitre') }}
-        </p>
+        <p class="text-muted">{{ $t('projetsPublics.sousTitre') }}</p>
       </div>
 
       <!-- Filtres -->
@@ -53,7 +51,7 @@
         </span>
       </div>
 
-      <!-- Loading -->
+      <!-- Chargement -->
       <div v-if="chargement" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
         <p class="mt-2 text-muted">{{ $t('commun.chargement') }}</p>
@@ -92,12 +90,22 @@
                   </small>
                 </div>
               </div>
+
+              <!-- 🔍 Bouton "Voir détails" (optionnel pour navigation libre) -->
+              <div class="text-center mt-3">
+                <router-link
+                  :to="`/projets/${projet.id}`"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  {{ $t('projets.voirDetails') }}
+                </router-link>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- État vide -->
+      <!-- Aucun projet -->
       <div v-else class="text-center py-5">
         <i class="fas fa-folder-open fa-3x text-muted mb-3 opacity-50"></i>
         <h5 class="text-muted">{{ $t('projetsPublics.aucuneProjetTrouve') }}</h5>
@@ -109,18 +117,19 @@
         <button
           v-if="rechercheTexte || filtreStatut"
           @click="reinitialiserFiltres"
-          class="btn btn-outline-primary">
+          class="btn btn-outline-primary"
+        >
           {{ $t('factures.reinitialiserFiltres') }}
         </button>
       </div>
 
-      <!-- Message info avec lien fonctionnel -->
+      <!-- Message info (mode consultation) -->
       <div v-if="!chargement" class="alert alert-info mt-4">
         <div class="text-center">
           <i class="fas fa-info-circle me-2"></i>
           {{ $t('projetsPublics.modeConsultationDescription') }}
           <router-link to="/connexion" class="text-decoration-none fw-bold ms-1">
-            {{ $t('nav.connexion') }}
+            {{ $t('nav.connecter') }}
           </router-link>
           {{ $t('commun.pourParticiper') }} !
         </div>
@@ -129,7 +138,8 @@
       <!-- Retour accueil -->
       <div class="text-center mt-4">
         <router-link to="/" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left me-2"></i>{{ $t('commun.retour') }} {{ $t('nav.accueil').toLowerCase() }}
+          <i class="fas fa-arrow-left me-2"></i>
+          {{ $t('commun.retour') }} {{ $t('nav.accueil').toLowerCase() }}
         </router-link>
       </div>
     </div>
@@ -145,8 +155,6 @@ export default {
   name: 'ProjetsPublicsView',
   setup() {
     const { t, locale } = useI18n()
-
-    // État du composant
     const projets = ref([])
     const chargement = ref(false)
     const erreur = ref(null)
@@ -154,8 +162,9 @@ export default {
     const filtreStatut = ref('')
     const currentLocale = ref(locale.value)
 
-    // Computed
+    // ✅ Sécurisation : éviter undefined
     const projetsFiltres = computed(() => {
+      if (!projets.value || !Array.isArray(projets.value)) return []
       let filtres = projets.value
 
       if (rechercheTexte.value) {
@@ -173,23 +182,19 @@ export default {
       return filtres
     })
 
-    // Méthodes
     const chargerProjets = async () => {
       try {
         chargement.value = true
         erreur.value = null
-
         const response = await projectAPI.getPublics()
 
-        projets.value = (response.data || [])
-          .map(projet => ({
-            ...projet,
-            createurNom:
-              (projet.createurPrenom && projet.createurNom)
-                ? `${projet.createurPrenom} ${projet.createurNom}`
-                : t('commun.utilisateur')
-          }))
-          .sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
+        projets.value = (response?.data || []).map(projet => ({
+          ...projet,
+          createurNom:
+            (projet.createurPrenom && projet.createurNom)
+              ? `${projet.createurPrenom} ${projet.createurNom}`
+              : t('commun.utilisateur')
+        })).sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
       } catch (error) {
         console.error('Erreur chargement projets publics:', error)
         erreur.value = t('projetsPublics.erreurChargement')
@@ -198,7 +203,7 @@ export default {
       }
     }
 
-    const formatDate = (dateString) => {
+    const formatDate = dateString => {
       if (!dateString) return 'N/A'
       const localeString = locale.value === 'fr' ? 'fr-FR' : 'en-US'
       return new Date(dateString).toLocaleDateString(localeString, {
@@ -208,12 +213,12 @@ export default {
       })
     }
 
-    const getStatutBadgeClass = (statut) => {
+    const getStatutBadgeClass = statut => {
       const classes = {
-        'ACTIF': 'bg-success',
-        'TERMINE': 'bg-primary',
-        'PAUSE': 'bg-warning text-dark',
-        'ANNULE': 'bg-danger'
+        ACTIF: 'bg-success',
+        TERMINE: 'bg-primary',
+        PAUSE: 'bg-warning text-dark',
+        ANNULE: 'bg-danger'
       }
       return classes[statut] || 'bg-secondary'
     }

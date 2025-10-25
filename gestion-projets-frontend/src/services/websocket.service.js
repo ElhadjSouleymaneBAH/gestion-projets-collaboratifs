@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 
-/**  Codes d'erreur i18n */
+/** 🔒 Codes d'erreur i18n */
 const ERROR_CODES = {
   CONNECTION_FAILED: 'websocket.errors.connectionFailed',
   CONNECTION_NOT_ESTABLISHED: 'websocket.errors.connectionNotEstablished',
@@ -25,7 +25,7 @@ const SUCCESS_MESSAGES = {
   DISCONNECTED: 'websocket.success.disconnected'
 }
 
-/**  Base API (selon ton .env) */
+/** 🌐 Base API (selon ton .env) */
 const RAW_BASE = import.meta.env?.VITE_API_URL ?? ''
 const API_BASE = (RAW_BASE === '/api' ? '' : RAW_BASE).replace(/\/$/, '')
 const apiUrl = `${API_BASE}/api`
@@ -37,12 +37,12 @@ class WebSocketService {
     this.subscriptions = new Map()
   }
 
-  /**  Connexion WebSocket sécurisée */
+  /**  Connexion WebSocket sécurisée avec JWT */
   connect(token) {
     try {
       this.client = new Client({
         brokerURL: 'ws://localhost:8080/ws-native',
-        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {}, //  JWT envoyé ici
         debug: str => console.log('[STOMP]', str),
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
@@ -56,6 +56,11 @@ class WebSocketService {
 
       this.client.onStompError = frame => {
         console.error(' Erreur STOMP:', frame)
+      }
+
+      this.client.onWebSocketClose = evt => {
+        console.warn(' WebSocket fermé:', evt.reason || 'Session fermée')
+        this.connected = false
       }
 
       this.client.activate()
@@ -85,39 +90,39 @@ class WebSocketService {
       this.subscriptions.set(projectId, subscription)
       return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
     } catch (e) {
-      console.error('Erreur abonnement:', e)
+      console.error('Erreur abonnement projet:', e)
       return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
     }
   }
 
-  /**  Abonnement générique à un topic (pour notifications F13) */
+  /**  Abonnement générique à un topic (ex : notifications globales) */
   subscribe(topic, callback) {
     try {
       if (!this.client || !this.connected) {
-        console.warn(' WebSocket non connecté, attente...')
+        console.warn(' WebSocket non connecté')
         return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
       }
 
-      console.log(`[F13] Abonnement au topic: ${topic}`)
+      console.log(`[WS] Abonnement au topic: ${topic}`)
 
       const subscription = this.client.subscribe(topic, (message) => {
         try {
           const payload = JSON.parse(message.body)
           callback(payload)
         } catch (error) {
-          console.error('[F13] Erreur parsing message:', error)
+          console.error('[WS] Erreur parsing message:', error)
         }
       })
 
       this.subscriptions.set(topic, subscription)
       return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
     } catch (e) {
-      console.error('[F13] Erreur abonnement topic:', e)
+      console.error('[WS] Erreur abonnement topic:', e)
       return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
     }
   }
 
-  /**  Envoi d'un message texte */
+  /** 💬 Envoi d’un message texte sur un projet */
   sendMessage(projectId, content) {
     try {
       if (!this.connected) {
@@ -142,7 +147,7 @@ class WebSocketService {
     }
   }
 
-  /** Envoi du message "Utilisateur rejoint le projet" */
+  /**  Envoi du message système "Utilisateur rejoint le projet" */
   sendJoinMessage(projectId, userName) {
     try {
       if (!this.connected) {
@@ -155,7 +160,7 @@ class WebSocketService {
       this.client.publish({
         destination: '/app/message.send',
         body: JSON.stringify({
-          contenu: `${userName} a rejoint le projet`,
+          contenu: `${userName} a rejoint le projet.`,
           projetId: projectId,
           type: 'SYSTEM'
         })
@@ -167,7 +172,7 @@ class WebSocketService {
     }
   }
 
-  /**  Envoi d'une notification temps réel */
+  /** 🔔 Envoi d’une notification temps réel */
   sendNotification(projectId, content) {
     try {
       if (!this.connected) {
@@ -187,12 +192,12 @@ class WebSocketService {
       })
       return { success: true, messageKey: SUCCESS_MESSAGES.NOTIFICATION_SENT }
     } catch (e) {
-      console.error('Erreur envoi notif:', e)
+      console.error('Erreur envoi notification:', e)
       return { success: false, errorCode: ERROR_CODES.NOTIFICATION_SEND_FAILED }
     }
   }
 
-  /**  Récupération de l'historique des messages */
+  /**  Récupération de l’historique des messages */
   async getHistorique(projectId) {
     try {
       if (!projectId) {
@@ -208,7 +213,7 @@ class WebSocketService {
       })
 
       if (!response.ok) {
-        console.warn(' HTTP', response.status, '→ fallback local')
+        console.warn(` HTTP ${response.status} — fallback local`)
         return {
           success: true,
           data: [
@@ -236,12 +241,14 @@ class WebSocketService {
     }
   }
 
+  /**  Déconnexion propre du WebSocket */
   disconnect() {
     try {
       if (this.client) {
         this.subscriptions.clear()
         this.client.deactivate()
         this.connected = false
+        console.log('🔌 WebSocket déconnecté proprement')
       }
       return { success: true, messageKey: SUCCESS_MESSAGES.DISCONNECTED }
     } catch (e) {

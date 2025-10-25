@@ -93,7 +93,9 @@ export default {
     tous: 'Tous',
     toutes: 'Toutes',
     membre: 'Membre',
-    reinitialiser: 'Réinitialiser'
+    reinitialiser: 'Réinitialiser',
+    // ✅ ajouté pour liste des tâches
+    affichageResultats: 'Affichage {debut}–{fin} sur {total}'
   },
 
   // ==================== LANGUES ====================
@@ -199,6 +201,11 @@ export default {
     aucunProjetDescription: 'Aucun projet public n\'est disponible pour le moment',
     modeConsultationDescription: 'Vous êtes en mode consultation. Veuillez vous',
     erreurChargement: 'Erreur lors du chargement des projets publics'
+  },
+
+  // (petite section pour libellés de projet singulier)
+  projet: {
+    creeLe: 'Créé le'
   },
 
   // ==================== GESTION DE PROJETS ====================
@@ -335,9 +342,21 @@ export default {
     voirDetails: 'Voir les détails',
     liste: {
       titre: 'Liste des tâches',
+      description: 'Toutes les tâches du projet, avec filtres et tri.',
       dateCreation: 'Date de création',
       assigneeA: 'Assigné à',
       aucuneTache: 'Aucune tâche trouvée'
+    },
+    // ✅ filtres pour la vue liste
+    filtres: {
+      statut: 'Statut',
+      tous: 'Tous',
+      recherche: 'Recherche',
+      placeholderRecherche: 'Rechercher une tâche...',
+      tri: 'Tri',
+      plusRecent: 'Plus récent',
+      plusAncien: 'Plus ancien',
+      parTitre: 'Par titre'
     },
     statuts: {
       brouillon: 'Brouillon',
@@ -359,7 +378,9 @@ export default {
       moyenne: 'Moyenne',
       haute: 'Haute',
       critique: 'Critique'
-    }
+    },
+    // bouton si aucune tache
+    creerPremiere: 'Créer la première tâche'
   },
 
   // ==================== GESTION DES ÉQUIPES ====================
@@ -410,9 +431,18 @@ export default {
     selectionnerProjet: 'Sélectionnez un projet pour commencer'
   },
 
+  // ==================== CHAT (pour vue ProjetPublic) ====================
+  chat: {
+    titre: 'Chat du projet',
+    placeholder: 'Écrire un message...',
+    aucunMessage: 'Aucun message pour le moment',
+    commencerConversation: 'Commencez la conversation'
+  },
+
   // ==================== COMMENTAIRES ====================
   commentaires: {
     titre: 'Commentaires',
+    titrePage: 'Commentaires du projet',
     ajouter: 'Ajouter un commentaire',
     ecrire: 'Rédigez votre commentaire...',
     publier: 'Publier',
@@ -803,7 +833,16 @@ export default {
     },
     devenirChefProjet: 'Devenir Chef de Projet',
     creerProjetGererEquipes: 'Créez vos projets et gérez vos équipes',
-    passerPremium: 'Passer à Premium'
+    passerPremium: 'Passer à Premium',
+    // ✅ clés pour la modale d'ajout dans ProjetPublic.vue
+    infoAbonnement: 'Les invitations de membres sont réservées aux chefs de projet avec abonnement actif.',
+    rechercherUtilisateur: 'Rechercher un utilisateur',
+    placeholderRecherche: 'Tapez un nom ou un email...',
+    minimum3caracteres: 'Saisissez au moins 3 caractères',
+    resultatsTrouves: '{count} résultat(s) trouvé(s)',
+    dejaMembre: 'Déjà membre',
+    instructionsRecherche: 'Utilisez la recherche ci-dessus pour trouver des utilisateurs.',
+    membreAjouteAvecNotification: 'Membre {nom} ajouté et notifié'
   },
 
   // ==================== TABLEAUX DE BORD ====================

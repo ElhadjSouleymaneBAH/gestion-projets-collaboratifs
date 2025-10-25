@@ -10,7 +10,6 @@
 
     <!-- Contenu facture -->
     <div v-if="afficherFacture && !chargement" class="facture-pdf">
-
       <div class="header-entreprise">
         <img
           :src="details.logoPath || '/logo-collabpro.png'"
@@ -19,7 +18,7 @@
         />
         <div class="entreprise-info">
           <h2 class="entreprise-nom">{{ details.entrepriseNom || 'CollabPro Solutions' }}</h2>
-          <p class="entreprise-addr">{{ details.entrepriseAdresse || 'Avenue de l\'innovation 123' }}</p>
+          <p class="entreprise-addr">{{ details.entrepriseAdresse || "Avenue de l'innovation 123" }}</p>
           <p class="entreprise-addr">{{ details.entrepriseVille || '1000 Bruxelles, Belgique' }}</p>
           <p class="entreprise-addr">TVA: {{ details.entrepriseTva || 'BE0123.456.789' }}</p>
           <p class="entreprise-addr">Email: {{ details.entrepriseEmail || 'contact@collabpro.be' }}</p>
@@ -31,10 +30,14 @@
         <h1 class="titre-facture">{{ $t('facture.facture') || 'FACTURE' }}</h1>
         <div class="client-bloc">
           <p class="client-label">{{ $t('facture.factureA') || 'Facturé à :' }}</p>
-          <div class="client-nom">{{ details.clientNom || $t('facture.clientDefaut') || 'Client' }}</div>
-          <div v-if="details.clientAdresse" class="client-addr">{{ details.clientAdresse }}</div>
-          <div v-if="details.clientVille" class="client-addr">{{ details.clientVille }}</div>
-          <div v-if="details.clientEmail" class="client-addr">{{ details.clientEmail }}</div>
+
+          <!-- Bloc client dynamique -->
+          <div class="client-info">
+            <p class="client-nom">{{ details.clientNom || 'Client' }}</p>
+            <p class="client-adresse" v-if="details.clientAdresse">{{ details.clientAdresse }}</p>
+            <p v-if="details.clientVille">{{ details.clientVille }}</p>
+            <p class="client-email" v-if="details.clientEmail">{{ details.clientEmail }}</p>
+          </div>
         </div>
       </div>
 
@@ -75,7 +78,9 @@
           <td class="text-right">{{ formatMontant(details.montantHT ?? facture.montantHT ?? 0) }}</td>
           <td class="text-right">
             {{ formatMontant(details.tva ?? facture.tva ?? 0) }}
-            <span v-if="details.tauxTva || facture.tauxTva"> ({{ (details.tauxTva ?? facture.tauxTva) || 21 }}%)</span>
+            <span v-if="details.tauxTva || facture.tauxTva">
+                ({{ (details.tauxTva ?? facture.tauxTva) || 21 }}%)
+              </span>
           </td>
           <td class="text-right text-bold">
             {{ formatMontant(details.montantTTC ?? facture.montantTTC ?? 0) }}
@@ -86,7 +91,8 @@
 
       <!-- Total -->
       <div class="total-ttl">
-        {{ $t('facture.total') || 'Total' }} : {{ formatMontant(details.montantTTC ?? facture.montantTTC ?? 0) }}
+        {{ $t('facture.total') || 'Total' }} :
+        {{ formatMontant(details.montantTTC ?? facture.montantTTC ?? 0) }}
       </div>
 
       <!-- Mentions légales -->
@@ -94,12 +100,17 @@
         <p><strong>{{ $t('facture.informationsPaiement') || 'Informations de paiement :' }}</strong></p>
         <p>IBAN : {{ details.ibanEntreprise || 'BE99 9999 9999 9999' }}</p>
         <p>BIC : {{ details.bicEntreprise || 'GEBABEBB' }}</p>
-        <p class="mt-3"><small>{{ $t('facture.mentionLegale') || 'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.' }}</small></p>
+        <p class="mt-3">
+          <small>
+            {{ $t('facture.mentionLegale') || 'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.' }}
+          </small>
+        </p>
       </div>
 
       <!-- Date de génération -->
       <div class="date-generation">
-        {{ $t('facture.genereeLe') || 'Générée le' }} {{ formatDateSafe(new Date()) }}
+        {{ $t('facture.genereeLe') || 'Générée le' }}
+        {{ formatDateSafe(new Date()) }}
       </div>
 
       <!-- Actions -->
@@ -131,9 +142,7 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import api from '@/services/api'
-import { endpoints } from '@/config/endpoints'
-import { factureAPI } from '@/services/api'
+import api, { endpoints, factureAPI } from '@/services/api'
 
 export default {
   name: 'Facture',
@@ -142,138 +151,52 @@ export default {
     mode: { type: String, default: '' },
   },
   emits: ['action-terminee', 'facture-fermee'],
-  setup (props, { emit }) {
+  setup(props, { emit }) {
     const { locale } = useI18n()
-
     const afficherFacture = ref(props.mode === 'direct')
     const chargement = ref(false)
     const actionEnCours = ref(null)
 
-    // ✅ CORRECTION : Initialisation avec valeurs par défaut
-    const details = reactive({
-      // Entreprise
-      entrepriseNom: '',
-      entrepriseAdresse: '',
-      entrepriseVille: '',
-      entrepriseEmail: '',
-      entrepriseTva: '',
-      logoPath: '',
-      ibanEntreprise: '',
-      bicEntreprise: '',
-
-      // Client
-      clientNom: '',
-      clientAdresse: '',
-      clientVille: '',
-      clientEmail: '',
-
-      // Facture
-      factureId: props.facture?.id,
-      numeroFacture: props.facture?.numeroFacture,
-      dateEmission: props.facture?.dateEmission,
-      dateEcheance: props.facture?.dateEcheance,
-      periode: props.facture?.periode,
-      montantHT: props.facture?.montantHT,
-      tva: props.facture?.tva,
-      montantTTC: props.facture?.montantTTC,
-      tauxTva: props.facture?.tauxTva ?? 21,
-      description: props.facture?.description,
-    })
+    const details = reactive({})
 
     const formatDateSafe = (dateStr) => {
       if (!dateStr) return '—'
       try {
         const date = new Date(dateStr)
         if (isNaN(date.getTime())) return '—'
-        return date.toLocaleDateString(
-          locale.value === 'fr' ? 'fr-FR' : 'en-US',
-          { day: '2-digit', month: '2-digit', year: 'numeric' }
-        )
+        return date.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
       } catch {
         return '—'
       }
     }
 
-    const formatMontant = (m) => {
-      const n = Number(m ?? 0)
-      return new Intl.NumberFormat(
-        locale.value === 'fr' ? 'fr-FR' : 'en-US',
-        { style: 'currency', currency: 'EUR' }
-      ).format(n)
-    }
+    const formatMontant = (m) =>
+      new Intl.NumberFormat(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
+        style: 'currency',
+        currency: 'EUR',
+      }).format(Number(m ?? 0))
 
-    // ✅ CORRECTION : Mapping complet pour tous les formats possibles (snake_case, camelCase, PascalCase)
     const merge = (src) => {
       if (!src || typeof src !== 'object') return
-
-      const mappings = {
-        // Dates et montants
-        'date_emission': 'dateEmission',
-        'date_echeance': 'dateEcheance',
-        'montant_ht': 'montantHT',
-        'montant_ttc': 'montantTTC',
-        'numero_facture': 'numeroFacture',
-        'taux_tva': 'tauxTva',
-
-        // Entreprise - snake_case
-        'entreprise_nom': 'entrepriseNom',
-        'entreprise_adresse': 'entrepriseAdresse',
-        'entreprise_ville': 'entrepriseVille',
-        'entreprise_email': 'entrepriseEmail',
-        'entreprise_tva': 'entrepriseTva',
-        'logo_path': 'logoPath',
-        'iban_entreprise': 'ibanEntreprise',
-        'bic_entreprise': 'bicEntreprise',
-
-        // Client - snake_case
-        'client_nom': 'clientNom',
-        'client_adresse': 'clientAdresse',
-        'client_ville': 'clientVille',
-        'client_email': 'clientEmail',
-
-        // Variantes possibles avec majuscules
-        'entrepriseTVA': 'entrepriseTva',
-        'entrepriseEmail': 'entrepriseEmail',
-        'ibanEntreprise': 'ibanEntreprise',
-        'bicEntreprise': 'bicEntreprise',
-      }
-
-      // ✅ Parcourir toutes les clés reçues du backend
-      Object.keys(src).forEach(k => {
-        const val = src[k]
-
-        // Ignorer les valeurs null/undefined
-        if (val === undefined || val === null) return
-
-        // Utiliser le mapping si disponible, sinon garder la clé telle quelle
-        const targetKey = mappings[k] || k
-
-        // Affecter la valeur
-        details[targetKey] = val
-
-        // Debug pour voir ce qui est reçu
-        console.log(` Mapping: ${k} => ${targetKey} = ${val}`)
-      })
+      Object.assign(details, src)
     }
 
     const chargerDetails = async () => {
       try {
         chargement.value = true
         const id = props.facture?.id
-        if (!id) {
-          console.warn(' Aucun ID de facture fourni')
-          return
-        }
-
+        if (!id) return
         console.log('🔄 Chargement des détails de la facture', id)
-        const resp = await api.get(`${endpoints.factures}/${id}/pdf-data`)
-
+        const token = localStorage.getItem('token')
+        const resp = await api.get(`${endpoints.factures}/${id}/pdf-data`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         console.log('✅ Réponse backend reçue:', resp?.data)
-
-        // Merger les données reçues
         merge(resp?.data || {})
-
-        console.log('✅ Détails après merge:', details)
       } catch (e) {
         console.error('❌ Erreur chargement détails facture:', e)
       } finally {
@@ -285,17 +208,9 @@ export default {
       try {
         actionEnCours.value = 'pdf'
         const id = props.facture?.id
-
-        // ✅ Déterminer la langue courante
-        const raw = locale.value || localStorage.getItem('lang') || 'fr'
-        const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
-
-        console.log('📥 Téléchargement PDF pour facture', id, 'langue:', langue)
-
-        // ✅ Passer la langue à l'API
+        const langue = locale.value.startsWith('fr') ? 'fr' : 'en'
         const res = await factureAPI.telechargerPDF(id, langue)
         if (!res?.data) throw new Error('Aucun contenu')
-
         const blob = new Blob([res.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -303,8 +218,6 @@ export default {
         a.download = `${details.numeroFacture || 'facture'}.pdf`
         a.click()
         window.URL.revokeObjectURL(url)
-
-        console.log('✅ PDF téléchargé avec succès')
         emit('action-terminee', { type: 'telechargement', success: true })
       } catch (e) {
         console.error('❌ Erreur téléchargement facture:', e)
@@ -337,123 +250,207 @@ export default {
       fermerFacture,
       chargerDetails,
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
-.facture-container{max-width:960px;margin:auto}
-.facture-pdf{background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.loading{text-align:center;padding:40px}
-
-.header-entreprise{
-  display:flex;
-  align-items:flex-start;
-  gap:24px;
-  margin-bottom:32px;
-  padding-bottom:20px;
-  border-bottom:3px solid #e5e7eb;
+.facture-container {
+  max-width: 960px;
+  margin: auto;
 }
-.logo-facture{
-  height:200px;
-  width:auto;
-  object-fit:contain;
-  flex-shrink:0;
+.facture-pdf {
+  background: #fff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-.entreprise-info{flex:1}
-.entreprise-nom{color:#0b5ed7;font-weight:700;font-size:28px;margin:0 0 12px 0}
-.entreprise-addr{margin:4px 0;color:#374151;font-size:15px}
-
-.titre-client-section{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:24px;
+.loading {
+  text-align: center;
+  padding: 40px;
 }
-.titre-facture{margin:0;font-size:48px;font-weight:800;letter-spacing:.5px;color:#1f2937}
-.client-bloc{
-  border-left:3px solid #0b5ed7;
-  padding-left:16px;
-  max-width:360px;
-  text-align:left;
+.header-entreprise {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid #e5e7eb;
 }
-.client-label{font-weight:700;font-size:14px;color:#6b7280;margin-bottom:8px}
-.client-nom{font-weight:700;font-size:16px;margin-bottom:4px}
-.client-addr{color:#374151;font-size:14px;margin:2px 0}
-
-.refs-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:12px;
-  margin:24px 0;
-  background:#f9fafb;
-  padding:16px;
-  border-radius:8px;
+.logo-facture {
+  height: 200px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
 }
-.ref-item{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:8px 0}
-.ref-label{font-weight:600;color:#6b7280}
-.ref-value{font-weight:700;color:#1f2937}
-
-.table-facture{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-  border:2px solid #e5e7eb;
+.entreprise-info {
+  flex: 1;
 }
-.table-facture th,.table-facture td{padding:14px 16px;border-bottom:1px solid #e5e7eb}
-.table-facture thead th{background:#f3f6ff;font-weight:700;color:#1f2937}
-.text-left{text-align:left}
-.text-right{text-align:right}
-.text-bold{font-weight:700}
-.desc-periode{color:#6b7280;font-size:.9rem;margin-top:6px;font-style:italic}
-
-.total-ttl{
-  text-align:right;
-  font-weight:800;
-  font-size:1.3rem;
-  margin-top:16px;
-  padding:12px 16px;
-  background:#f3f6ff;
-  border-radius:8px;
+.entreprise-nom {
+  color: #0b5ed7;
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0 0 12px 0;
 }
-
-.mentions-legales{
-  margin-top:32px;
-  padding:16px;
-  background:#fefce8;
-  border-left:4px solid #fbbf24;
-  border-radius:6px;
-  font-size:13px;
-  color:#78350f;
+.entreprise-addr {
+  margin: 4px 0;
+  color: #374151;
+  font-size: 15px;
 }
-.mentions-legales strong{color:#78350f}
-.mentions-legales p{margin:6px 0}
-
-.date-generation{
-  text-align:center;
-  margin-top:20px;
-  font-size:13px;
-  color:#6b7280;
-  font-style:italic;
+.titre-client-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
 }
-
-.actions{
-  margin-top:28px;
-  display:flex;
-  gap:12px;
-  justify-content:center;
+.titre-facture {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 800;
+  color: #1f2937;
 }
-.btn{padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;border:none}
-.btn-primary{background:#0d6efd;color:#fff}
-.btn-success{background:#28a745;color:#fff}
-.btn-outline{border:2px solid #6b7280;background:#fff;color:#6b7280}
-.btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
-.btn:disabled{opacity:0.6;cursor:not-allowed}
-
-@media (max-width:768px){
-  .header-entreprise{flex-direction:column;align-items:center;text-align:center}
-  .logo-facture{height:150px}
-  .titre-client-section{flex-direction:column;align-items:flex-start;gap:20px}
-  .refs-grid{grid-template-columns:1fr;gap:8px}
+.client-bloc {
+  border-left: 3px solid #0b5ed7;
+  padding-left: 16px;
+  max-width: 360px;
+  text-align: left;
+}
+.client-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+.client-info p {
+  margin: 2px 0;
+  color: #374151;
+  font-size: 14px;
+}
+.refs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin: 24px 0;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+}
+.ref-item {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 0;
+}
+.ref-label {
+  font-weight: 600;
+  color: #6b7280;
+}
+.ref-value {
+  font-weight: 700;
+  color: #1f2937;
+}
+.table-facture {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  border: 2px solid #e5e7eb;
+}
+.table-facture th,
+.table-facture td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.table-facture thead th {
+  background: #f3f6ff;
+  font-weight: 700;
+  color: #1f2937;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.text-bold {
+  font-weight: 700;
+}
+.total-ttl {
+  text-align: right;
+  font-weight: 800;
+  font-size: 1.3rem;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f3f6ff;
+  border-radius: 8px;
+}
+.mentions-legales {
+  margin-top: 32px;
+  padding: 16px;
+  background: #fefce8;
+  border-left: 4px solid #fbbf24;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #78350f;
+}
+.date-generation {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+}
+.actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+}
+.btn-primary {
+  background: #0d6efd;
+  color: #fff;
+}
+.btn-success {
+  background: #28a745;
+  color: #fff;
+}
+.btn-outline {
+  border: 2px solid #6b7280;
+  background: #fff;
+  color: #6b7280;
+}
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+@media (max-width: 768px) {
+  .header-entreprise {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .logo-facture {
+    height: 150px;
+  }
+  .titre-client-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .refs-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 </style>
