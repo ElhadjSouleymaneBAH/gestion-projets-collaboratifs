@@ -1,6 +1,6 @@
 import { Client } from '@stomp/stompjs'
 
-/** 🔒 Codes d'erreur i18n */
+/** Codes d'erreur i18n */
 const ERROR_CODES = {
   CONNECTION_FAILED: 'websocket.errors.connectionFailed',
   CONNECTION_NOT_ESTABLISHED: 'websocket.errors.connectionNotEstablished',
@@ -15,7 +15,7 @@ const ERROR_CODES = {
   NETWORK_ERROR: 'websocket.errors.networkError'
 }
 
-/**  Messages de succès i18n */
+/** Messages de succès i18n */
 const SUCCESS_MESSAGES = {
   CONNECTED: 'websocket.success.connected',
   SUBSCRIBED: 'websocket.success.subscribed',
@@ -25,7 +25,7 @@ const SUCCESS_MESSAGES = {
   DISCONNECTED: 'websocket.success.disconnected'
 }
 
-/** 🌐 Base API (selon ton .env) */
+/** Base API */
 const RAW_BASE = import.meta.env?.VITE_API_URL ?? ''
 const API_BASE = (RAW_BASE === '/api' ? '' : RAW_BASE).replace(/\/$/, '')
 const apiUrl = `${API_BASE}/api`
@@ -35,224 +35,170 @@ class WebSocketService {
     this.client = null
     this.connected = false
     this.subscriptions = new Map()
+    this.forcedDisconnect = false
   }
 
-  /**  Connexion WebSocket sécurisée avec JWT */
+  /** Connexion STOMP sécurisée avec JWT */
   connect(token) {
     try {
+      if (this.client && this.connected) {
+        return { success: true, messageKey: SUCCESS_MESSAGES.CONNECTED }
+      }
+
       this.client = new Client({
         brokerURL: 'ws://localhost:8080/ws-native',
-        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {}, //  JWT envoyé ici
-        debug: str => console.log('[STOMP]', str),
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+        debug: (str) => console.log('[STOMP]', str),
+        reconnectDelay: 4000,
+        heartbeatIncoming: 8000,
+        heartbeatOutgoing: 8000
       })
 
-      this.client.onConnect = frame => {
-        console.log(' WebSocket connecté', frame)
+      this.client.onConnect = () => {
+        console.log('[WS] Connecté au serveur STOMP')
         this.connected = true
+        this.forcedDisconnect = false
       }
 
-      this.client.onStompError = frame => {
-        console.error(' Erreur STOMP:', frame)
+      this.client.onStompError = (frame) => {
+        console.error('[WS] Erreur STOMP :', frame.headers?.message || frame.body)
       }
 
-      this.client.onWebSocketClose = evt => {
-        console.warn(' WebSocket fermé:', evt.reason || 'Session fermée')
+      this.client.onWebSocketClose = () => {
         this.connected = false
+        if (!this.forcedDisconnect) {
+          console.warn('[WS] Connexion perdue, reconnexion...')
+          const savedToken = localStorage.getItem('token')
+          if (savedToken) setTimeout(() => this.connect(savedToken), 2500)
+        } else {
+          console.log('[WS] Fermeture volontaire.')
+        }
       }
 
       this.client.activate()
       return { success: true, messageKey: SUCCESS_MESSAGES.CONNECTED }
     } catch (e) {
-      console.error('Erreur connexion WS:', e)
+      console.error('[WS] Erreur connexion :', e)
       return { success: false, errorCode: ERROR_CODES.CONNECTION_FAILED }
     }
   }
 
-  /**  Abonnement à un projet spécifique */
-  subscribeToProject(projectId, callback) {
+  /**  Abonnement générique (corrige l'erreur) */
+  subscribe(destination, callback) {
     try {
       if (!this.connected) {
         return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
       }
-      if (!projectId) {
-        return { success: false, errorCode: ERROR_CODES.INVALID_PROJECT_ID }
-      }
-
-      const destination = `/topic/projet/${projectId}`
-      const subscription = this.client.subscribe(destination, msg => {
-        const data = JSON.parse(msg.body)
-        callback(data)
-      })
-
-      this.subscriptions.set(projectId, subscription)
-      return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
-    } catch (e) {
-      console.error('Erreur abonnement projet:', e)
-      return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
-    }
-  }
-
-  /**  Abonnement générique à un topic (ex : notifications globales) */
-  subscribe(topic, callback) {
-    try {
-      if (!this.client || !this.connected) {
-        console.warn(' WebSocket non connecté')
-        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
-      }
-
-      console.log(`[WS] Abonnement au topic: ${topic}`)
-
-      const subscription = this.client.subscribe(topic, (message) => {
+      const sub = this.client.subscribe(destination, (msg) => {
         try {
-          const payload = JSON.parse(message.body)
-          callback(payload)
-        } catch (error) {
-          console.error('[WS] Erreur parsing message:', error)
+          const data = JSON.parse(msg.body)
+          callback(data)
+        } catch {
+          console.warn('[WS] Message non JSON reçu sur', destination, msg.body)
+          callback(msg.body)
         }
       })
-
-      this.subscriptions.set(topic, subscription)
+      this.subscriptions.set(destination, sub)
+      console.log(`[WS] Abonné au topic : ${destination}`)
       return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
     } catch (e) {
-      console.error('[WS] Erreur abonnement topic:', e)
+      console.error('[WS] Erreur abonnement générique :', e)
       return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
     }
   }
 
-  /** 💬 Envoi d’un message texte sur un projet */
+  /** Abonnement au chat d’un projet */
+  subscribeToProject(projectId, callback) {
+    try {
+      if (!this.connected)
+        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
+      const dest = `/topic/projet/${projectId}`
+      const sub = this.client.subscribe(dest, (msg) => callback(JSON.parse(msg.body)))
+      this.subscriptions.set(`projet-${projectId}`, sub)
+      return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
+    } catch (e) {
+      console.error('[WS] Erreur abonnement projet :', e)
+      return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
+    }
+  }
+
+  /** Abonnement spécifique au chef de projet */
+  subscribeChefProjet(chefId, callback) {
+    try {
+      if (!this.connected)
+        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
+      const dest = `/topic/notifications/chef-projet/${chefId}`
+      const sub = this.client.subscribe(dest, (msg) => callback(JSON.parse(msg.body)))
+      this.subscriptions.set(`chef-${chefId}`, sub)
+      console.log(`[WS] Chef ${chefId} abonné à ses notifications`)
+      return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
+    } catch (e) {
+      console.error('[WS] Erreur abonnement chef projet :', e)
+      return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
+    }
+  }
+
+  /** ✉ Envoi d’un message normal */
   sendMessage(projectId, content) {
     try {
-      if (!this.connected) {
+      if (!this.connected)
         return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
-      }
-      if (!projectId || !content) {
-        return { success: false, errorCode: ERROR_CODES.INVALID_MESSAGE_CONTENT }
-      }
-
       this.client.publish({
         destination: '/app/message.send',
-        body: JSON.stringify({
-          contenu: content,
-          projetId: projectId,
-          type: 'TEXT'
-        })
+        body: JSON.stringify({ contenu: content, projetId: projectId, type: 'TEXT' })
       })
       return { success: true, messageKey: SUCCESS_MESSAGES.MESSAGE_SENT }
     } catch (e) {
-      console.error('Erreur envoi message:', e)
+      console.error('[WS] Erreur envoi message:', e)
       return { success: false, errorCode: ERROR_CODES.MESSAGE_SEND_FAILED }
     }
   }
 
-  /**  Envoi du message système "Utilisateur rejoint le projet" */
-  sendJoinMessage(projectId, userName) {
-    try {
-      if (!this.connected) {
-        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
-      }
-      if (!projectId || !userName) {
-        return { success: false, errorCode: ERROR_CODES.INVALID_MESSAGE_CONTENT }
-      }
-
-      this.client.publish({
-        destination: '/app/message.send',
-        body: JSON.stringify({
-          contenu: `${userName} a rejoint le projet.`,
-          projetId: projectId,
-          type: 'SYSTEM'
-        })
-      })
-      return { success: true, messageKey: SUCCESS_MESSAGES.JOIN_MESSAGE_SENT }
-    } catch (e) {
-      console.error('Erreur envoi join:', e)
-      return { success: false, errorCode: ERROR_CODES.JOIN_MESSAGE_FAILED }
-    }
-  }
-
-  /** 🔔 Envoi d’une notification temps réel */
+  /** Envoi notification système (optionnel) */
   sendNotification(projectId, content) {
     try {
-      if (!this.connected) {
+      if (!this.connected)
         return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
-      }
-      if (!projectId || !content) {
-        return { success: false, errorCode: ERROR_CODES.INVALID_MESSAGE_CONTENT }
-      }
-
       this.client.publish({
         destination: '/app/message.send',
-        body: JSON.stringify({
-          contenu: content,
-          projetId: projectId,
-          type: 'NOTIFICATION'
-        })
+        body: JSON.stringify({ contenu: content, projetId: projectId, type: 'NOTIFICATION' })
       })
       return { success: true, messageKey: SUCCESS_MESSAGES.NOTIFICATION_SENT }
     } catch (e) {
-      console.error('Erreur envoi notification:', e)
+      console.error('[WS] Erreur notif :', e)
       return { success: false, errorCode: ERROR_CODES.NOTIFICATION_SEND_FAILED }
     }
   }
 
-  /**  Récupération de l’historique des messages */
+  /** Historique du chat */
   async getHistorique(projectId) {
     try {
-      if (!projectId) {
-        return { success: false, errorCode: ERROR_CODES.INVALID_PROJECT_ID }
-      }
-
       const token = localStorage.getItem('token') || ''
-      const response = await fetch(`${apiUrl}/messages/projet/${projectId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
+      const res = await fetch(`${apiUrl}/messages/projet/${projectId}`, {
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       })
-
-      if (!response.ok) {
-        console.warn(` HTTP ${response.status} — fallback local`)
-        return {
-          success: true,
-          data: [
-            {
-              id: 1,
-              contenu: 'Bienvenue dans le projet !',
-              dateEnvoi: new Date().toISOString(),
-              type: 'SYSTEM',
-              utilisateurNom: 'Système',
-              utilisateurEmail: ''
-            }
-          ]
-        }
-      }
-
-      const data = await response.json()
+      if (!res.ok) throw new Error('Erreur réseau')
+      const data = await res.json()
       return { success: true, data }
     } catch (e) {
-      console.error('Erreur historique:', e)
-      return {
-        success: false,
-        errorCode: ERROR_CODES.NETWORK_ERROR,
-        message: 'Erreur réseau ou serveur'
-      }
+      console.error('[WS] Erreur historique:', e)
+      return { success: false, errorCode: ERROR_CODES.NETWORK_ERROR }
     }
   }
 
-  /**  Déconnexion propre du WebSocket */
+  /** Déconnexion propre */
   disconnect() {
     try {
       if (this.client) {
+        this.forcedDisconnect = true
         this.subscriptions.clear()
         this.client.deactivate()
         this.connected = false
-        console.log('🔌 WebSocket déconnecté proprement')
       }
+      console.log('[WS] Déconnexion propre effectuée.')
       return { success: true, messageKey: SUCCESS_MESSAGES.DISCONNECTED }
     } catch (e) {
-      console.error('Erreur déconnexion:', e)
+      console.error('[WS] Erreur déconnexion:', e)
       return { success: false, errorCode: ERROR_CODES.DISCONNECT_FAILED }
     }
   }

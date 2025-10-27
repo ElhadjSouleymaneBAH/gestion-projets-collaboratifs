@@ -25,11 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controller WebSocket + REST pour F9 : Collaboration en temps réel
- * Corrections : permissions selon rôles, endpoints REST utilisés par la vue,
- * et alias admin /api/messages/admin/all pour le tableau de bord.
- */
 @Controller
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -83,21 +78,13 @@ public class MessageController {
         }
 
         public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
         public String getContenu() { return contenu; }
-        public void setContenu(String contenu) { this.contenu = contenu; }
         public String getUtilisateurNom() { return utilisateurNom; }
-        public void setUtilisateurNom(String utilisateurNom) { this.utilisateurNom = utilisateurNom; }
         public String getUtilisateurEmail() { return utilisateurEmail; }
-        public void setUtilisateurEmail(String utilisateurEmail) { this.utilisateurEmail = utilisateurEmail; }
         public Long getProjetId() { return projetId; }
-        public void setProjetId(Long projetId) { this.projetId = projetId; }
         public String getType() { return type; }
-        public void setType(String type) { this.type = type; }
         public String getStatut() { return statut; }
-        public void setStatut(String statut) { this.statut = statut; }
         public LocalDateTime getDateEnvoi() { return dateEnvoi; }
-        public void setDateEnvoi(LocalDateTime dateEnvoi) { this.dateEnvoi = dateEnvoi; }
     }
 
     /** Vérification des permissions selon le cahier des charges */
@@ -122,7 +109,6 @@ public class MessageController {
 
             Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
             Projet projet = projetService.findById(messageRequest.getProjetId())
                     .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
 
@@ -130,125 +116,84 @@ public class MessageController {
                 throw new RuntimeException("Utilisateur non autorisé pour ce projet");
             }
 
-            TypeMessage typeMessage;
+            TypeMessage typeMessage = TypeMessage.TEXT;
             try {
-                typeMessage = messageRequest.getType() != null
-                        ? TypeMessage.valueOf(messageRequest.getType().toUpperCase())
-                        : TypeMessage.TEXT;
-            } catch (IllegalArgumentException e) {
-                typeMessage = TypeMessage.TEXT;
-            }
+                if (messageRequest.getType() != null)
+                    typeMessage = TypeMessage.valueOf(messageRequest.getType().toUpperCase());
+            } catch (IllegalArgumentException ignored) {}
 
             Message message = new Message(messageRequest.getContenu(), utilisateur, projet, typeMessage);
-            Message savedMessage = messageService.sauvegarderMessage(message);
+            Message saved = messageService.sauvegarderMessage(message);
 
-            MessageResponse response = new MessageResponse(savedMessage);
+            MessageResponse response = new MessageResponse(saved);
+
+            // Envoi à tous les membres du projet
             messagingTemplate.convertAndSend("/topic/projet/" + messageRequest.getProjetId(), response);
+
+            //  Envoi direct au chef de projet si c’est un membre qui écrit
+            if (!utilisateur.getId().equals(projet.getIdCreateur())) {
+                messagingTemplate.convertAndSend(
+                        "/topic/notifications/chef-projet/" + projet.getIdCreateur(),
+                        response
+                );
+            }
+
+            //  Envoi direct aux membres si c’est le chef qui répond
+            if (utilisateur.getId().equals(projet.getIdCreateur())) {
+                projetService.listerMembres(projet.getId())
+                        .forEach(m -> messagingTemplate.convertAndSendToUser(
+                                m.getEmail(),
+                                "/topic/chat",
+                                response
+                        ));
+            }
 
         } catch (Exception e) {
             System.err.println("ERROR WS send: " + e.getMessage());
         }
     }
 
-    @MessageMapping("/message.join")
-    public void rejoindreChatProjet(MessageRequest messageRequest, Principal principal) {
-        try {
-            if (principal == null) return;
-
-            Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
-            Projet projet = projetService.findById(messageRequest.getProjetId())
-                    .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
-
-            if (!verifierAccesProjet(utilisateur, projet)) {
-                throw new RuntimeException("Utilisateur non autorisé pour ce projet");
-            }
-
-            Message messageConnexion = new Message(
-                    utilisateur.getNom() + " " + utilisateur.getPrenom() + " a rejoint le chat",
-                    utilisateur, projet, TypeMessage.SYSTEM
-            );
-            Message saved = messageService.sauvegarderMessage(messageConnexion);
-            messagingTemplate.convertAndSend("/topic/projet/" + messageRequest.getProjetId(), new MessageResponse(saved));
-
-        } catch (Exception e) {
-            System.err.println("ERROR WS join: " + e.getMessage());
-        }
-    }
-
     // ==================== REST ====================
 
-    /** Alias admin pour le dashboard : toutes les conversations */
-    @GetMapping("/admin/all")
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
-    @ResponseBody
-    public ResponseEntity<List<MessageResponse>> getAllForAdmin() {
-        // Requiert messageService.findAll() → si absent, ajouter une méthode read-only qui retourne repository.findAll()
-        List<Message> messages = messageService.findAll();
-        List<MessageResponse> out = messages.stream().map(MessageResponse::new).toList();
-        return ResponseEntity.ok(out);
-    }
-
-    /** Envoyer un message via REST (format initial : body contient projetId) */
-    @PostMapping
-    @ResponseBody
-    public ResponseEntity<Object> envoyerMessageREST(@RequestBody MessageRequest messageRequest, Principal principal) {
-        try {
-            if (principal == null) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("message", "Non authentifié");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(m);
-            }
-
-            Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
-            Projet projet = projetService.findById(messageRequest.getProjetId())
-                    .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
-
-            if (!verifierAccesProjet(utilisateur, projet)) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("message", "Accès refusé à ce projet");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(m);
-            }
-
-            TypeMessage typeMessage;
-            try {
-                typeMessage = messageRequest.getType() != null
-                        ? TypeMessage.valueOf(messageRequest.getType().toUpperCase())
-                        : TypeMessage.TEXT;
-            } catch (IllegalArgumentException e) {
-                typeMessage = TypeMessage.TEXT;
-            }
-
-            Message saved = messageService.sauvegarderMessage(
-                    new Message(messageRequest.getContenu(), utilisateur, projet, typeMessage)
-            );
-
-            MessageResponse response = new MessageResponse(saved);
-            messagingTemplate.convertAndSend("/topic/projet/" + messageRequest.getProjetId(), response);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("message", "Erreur: " + e.getMessage());
-            return ResponseEntity.badRequest().body(m);
-        }
-    }
-
-    /**
-     * **Format utilisé par la vue**
-     * POST /api/messages/projet/{projetId}  body: {contenu}
-     */
     @PostMapping("/projet/{projetId}")
     @ResponseBody
     public ResponseEntity<Object> envoyerMessagePourProjet(
             @PathVariable Long projetId,
             @RequestBody Map<String, String> body,
             Principal principal) {
-        MessageRequest req = new MessageRequest(body.getOrDefault("contenu", ""), projetId, "TEXT");
-        return envoyerMessageREST(req, principal);
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Non authentifié");
+            }
+
+            Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+            Projet projet = projetService.findById(projetId)
+                    .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+
+            if (!verifierAccesProjet(utilisateur, projet)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès non autorisé");
+            }
+
+            Message message = new Message(body.get("contenu"), utilisateur, projet, TypeMessage.TEXT);
+            Message saved = messageService.sauvegarderMessage(message);
+            MessageResponse response = new MessageResponse(saved);
+
+            messagingTemplate.convertAndSend("/topic/projet/" + projetId, response);
+
+            //  Envoi au chef si message d’un membre
+            if (!utilisateur.getId().equals(projet.getIdCreateur())) {
+                messagingTemplate.convertAndSend(
+                        "/topic/notifications/chef-projet/" + projet.getIdCreateur(),
+                        response
+                );
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
     }
 
     /** Historique des messages d’un projet */
@@ -257,83 +202,22 @@ public class MessageController {
     @Transactional(readOnly = true)
     public ResponseEntity<Object> getMessagesProjet(@PathVariable Long projetId, Principal principal) {
         try {
-            if (principal == null) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("message", "Non authentifié");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(m);
-            }
+            if (principal == null)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Non authentifié");
 
             Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
             Projet projet = projetService.findById(projetId)
                     .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
 
-            if (!verifierAccesProjet(utilisateur, projet)) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("message", "Accès non autorisé à ce projet");
-                m.put("userRole", utilisateur.getRole().name());
-                m.put("projetId", projetId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(m);
-            }
+            if (!verifierAccesProjet(utilisateur, projet))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès non autorisé");
 
             List<Message> messages = messageService.getMessagesParProjet(projetId);
-            List<MessageResponse> out = messages.stream().map(MessageResponse::new).toList();
-            return ResponseEntity.ok(out);
+            return ResponseEntity.ok(messages.stream().map(MessageResponse::new).toList());
 
         } catch (Exception e) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("message", "Erreur: " + e.getMessage());
-            return ResponseEntity.badRequest().body(m);
-        }
-    }
-
-    /** Marquer un message comme lu */
-    @PutMapping("/{messageId}/lu")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> marquerCommeLu(@PathVariable Long messageId, Principal principal) {
-        try {
-            if (principal == null) {
-                Map<String, Object> m = new HashMap<>();
-                m.put("success", false);
-                m.put("error", "Non authentifié");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(m);
-            }
-
-            utilisateurService.findByEmail(principal.getName())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
-            messageService.marquerCommeLu(messageId);
-
-            Map<String, Object> m = new HashMap<>();
-            m.put("success", true);
-            m.put("message", "Message marqué comme lu");
-            return ResponseEntity.ok(m);
-
-        } catch (Exception e) {
-            Map<String, Object> m = new HashMap<>();
-            m.put("success", false);
-            m.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(m);
-        }
-    }
-
-    /** Notification WS à tous les membres d'un projet */
-    public void envoyerNotificationProjet(Long projetId, String contenu, Principal principal) {
-        try {
-            if (principal == null) return;
-
-            Utilisateur utilisateur = utilisateurService.findByEmail(principal.getName())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-            Projet projet = projetService.findById(projetId)
-                    .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
-
-            Message notification = new Message(contenu, utilisateur, projet, TypeMessage.NOTIFICATION);
-            Message saved = messageService.sauvegarderMessage(notification);
-            messagingTemplate.convertAndSend("/topic/projet/" + projetId, new MessageResponse(saved));
-
-        } catch (Exception e) {
-            System.err.println("ERROR notif: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
         }
     }
 }

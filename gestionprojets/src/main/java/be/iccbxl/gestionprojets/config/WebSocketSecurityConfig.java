@@ -1,6 +1,8 @@
 package be.iccbxl.gestionprojets.config;
 
 import be.iccbxl.gestionprojets.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -17,13 +19,14 @@ import java.util.List;
 
 /**
  * Sécurisation des connexions WebSocket (STOMP) avec JWT.
- *  Objectif :
- *  - Intercepter la commande CONNECT envoyée par le client STOMP.
- *  - Extraire le token JWT du header "Authorization".
- *  - Valider le token et injecter l’utilisateur dans le contexte Spring Security.
- * Fonctionne en complément de JwtFilter pour les requêtes HTTP REST.
- * Ce fichier résout l’erreur "Session closed." visible dans la console.
+
+ * Objectif :
+ * - Intercepter la commande CONNECT envoyée par le client STOMP.
+ * - Extraire le token JWT du header "Authorization".
+ * - Valider le token et injecter l’utilisateur dans le contexte Spring Security.
  *
+ * Ce module complète le filtre HTTP JwtFilter pour les communications WebSocket.
+
  * @author
  *   Elhadj Souleymane BAH
  * @version 1.0
@@ -31,25 +34,21 @@ import java.util.List;
 @Configuration
 public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
 
+    private static final Logger log = LoggerFactory.getLogger(WebSocketSecurityConfig.class);
+
     private final JwtService jwtService;
 
     public WebSocketSecurityConfig(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
-    /**
-     * Intercepteur STOMP appliqué au canal d’entrée WebSocket.
-     * Vérifie et authentifie le token JWT lors du handshake STOMP (CONNECT).
-     */
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
-
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-                // Seule la commande CONNECT est concernée
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
 
@@ -61,7 +60,6 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                             if (jwtService.validateToken(token)) {
                                 String role = jwtService.extractRole(token);
 
-                                // Création de l’objet d’authentification
                                 UsernamePasswordAuthenticationToken userAuth =
                                         new UsernamePasswordAuthenticationToken(
                                                 username,
@@ -69,21 +67,18 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                                                 List.of(new SimpleGrantedAuthority(role))
                                         );
 
-                                // Injection dans le contexte de sécurité
                                 SecurityContextHolder.getContext().setAuthentication(userAuth);
-
-                                // Association à la session WebSocket
                                 accessor.setUser(userAuth);
 
-                                System.out.println(" [WS-SECURITY] Connexion WebSocket authentifiée pour : " + username);
+                                log.debug("[WS-SECURITY] Connexion WebSocket authentifiée pour : {}", username);
                             } else {
-                                System.err.println(" [WS-SECURITY] Token invalide reçu via WebSocket");
+                                log.warn("[WS-SECURITY] Token invalide reçu via WebSocket");
                             }
                         } catch (Exception e) {
-                            System.err.println(" [WS-SECURITY] Erreur validation JWT WebSocket : " + e.getMessage());
+                            log.error("[WS-SECURITY] Erreur validation JWT WebSocket : {}", e.getMessage());
                         }
                     } else {
-                        System.err.println(" [WS-SECURITY] Aucun header Authorization trouvé dans la connexion STOMP");
+                        log.warn("[WS-SECURITY] Aucun header Authorization trouvé dans la connexion STOMP");
                     }
                 }
 

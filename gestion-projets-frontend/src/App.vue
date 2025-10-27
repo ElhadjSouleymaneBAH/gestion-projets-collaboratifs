@@ -1,31 +1,38 @@
 <template>
   <div id="app" class="app-container">
+    <!-- Header global -->
+    <AppHeader />
+
     <!-- Notifications -->
     <div class="global-notifications">
-      <div v-for="notification in globalNotifications" :key="notification.id"
-           :class="['alert', `alert-${notification.type}`, 'notification-toast']">
+      <div
+        v-for="notification in globalNotifications"
+        :key="notification.id"
+        :class="['alert', `alert-${notification.type}`, 'notification-toast']"
+      >
         <button @click="removeNotification(notification.id)" class="btn-close"></button>
         {{ notification.message }}
       </div>
     </div>
 
-    <!-- Router view avec classe pour push footer -->
+    <!-- Contenu principal -->
     <main class="main-content">
       <router-view />
     </main>
 
-    <!-- Footer global fixé en bas -->
+    <!-- Footer global -->
     <AppFooter class="app-footer" />
   </div>
 </template>
 
 <script>
 import { ref } from 'vue'
+import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
 export default {
   name: 'App',
-  components: { AppFooter },
+  components: { AppHeader, AppFooter },
   setup() {
     const globalNotifications = ref([])
 
@@ -45,7 +52,7 @@ export default {
 </script>
 
 <style>
-/* Structure pour footer en bas */
+/* Structure principale */
 .app-container {
   min-height: 100vh;
   display: flex;
@@ -56,6 +63,7 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding-top: 56px; /* espace pour le header fixé */
 }
 
 .app-footer {
@@ -76,15 +84,14 @@ export default {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
   animation: slideInRight .3s ease-out;
-  position: relative;
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0 }
-  to   { transform: translateX(0); opacity: 1 }
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
 }
 
-/* Reset global pour éviter les conflits */
+/* Reset */
 * {
   box-sizing: border-box;
 }
@@ -93,6 +100,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: #f8f9fa;
 }
 
 #app {

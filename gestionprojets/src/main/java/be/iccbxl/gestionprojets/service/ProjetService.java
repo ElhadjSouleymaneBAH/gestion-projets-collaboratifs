@@ -284,4 +284,17 @@ public class ProjetService {
         dto.setDateInscription(u.getDateInscription());
         return dto;
     }
+
+    // =====================================================================
+    // Utilisé par le WebSocket (envoi chef → membres)
+    // =====================================================================
+    @Transactional(readOnly = true)
+    public List<Utilisateur> listerMembres(Long projetId) {
+        if (!projetRepository.existsById(projetId)) {
+            throw new RuntimeException("Projet non trouvé");
+        }
+
+        List<Long> utilisateurIds = projetUtilisateurRepository.findUtilisateurIdsByProjetId(projetId);
+        return utilisateurRepository.findAllById(utilisateurIds);
+    }
 }

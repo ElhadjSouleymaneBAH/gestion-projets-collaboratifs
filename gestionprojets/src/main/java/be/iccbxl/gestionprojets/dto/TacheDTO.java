@@ -24,4 +24,7 @@ public class TacheDTO {
     private LocalDateTime dateCreation;
     private Long idProjet;
     private Long idAssigne;
+    private String nomProjet;
+    private String nomAssigne;
+
 }

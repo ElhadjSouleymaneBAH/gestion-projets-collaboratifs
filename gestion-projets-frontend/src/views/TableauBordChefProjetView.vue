@@ -33,8 +33,10 @@
     </div>
 
     <!-- Alerte abonnement expiré -->
-    <div v-if="!abonnementActif" class="alert alert-danger mb-4">
-      <div class="d-flex justify-content-between align-items-center">
+    <div v-if="!chargementGlobal && abonnement && !abonnementActif" class="subscription-status">
+
+
+    <div class="d-flex justify-content-between align-items-center">
         <div>
           <h6 class="mb-1">
             <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('abonnement.abonnementExpire') }}
@@ -294,7 +296,7 @@
                 </span>
                   </td>
 
-                  <!-- ✅ Téléchargement -->
+                  <!--  Téléchargement -->
                   <td>
                     <button
                       class="btn btn-sm btn-outline-primary"
@@ -779,22 +781,15 @@ export default {
     async chargerToutesDonnees() {
       this.chargementGlobal = true
       this.erreurBackend = null
+
       try {
         await Promise.all([
           this.chargerProjets(),
           this.chargerTaches(),
           this.chargerFactures(),
-          this.chargerNotifications()
+          this.chargerNotifications(),
+          this.chargerAbonnement(),
         ])
-
-
-        setTimeout(async () => {
-          try {
-            await this.chargerAbonnement()
-          } catch (err) {
-            console.warn('Rechargement abonnement différé échoué :', err)
-          }
-        }, 800)
       } catch (e) {
         console.error(e)
         this.erreurBackend = this.$t('erreurs.chargementDonnees')
@@ -803,7 +798,7 @@ export default {
       }
 
 
-    },
+  },
 
     async chargerProjets() {
       this.chargementProjets = true
@@ -880,6 +875,11 @@ export default {
           this.abonnement = null
         }
       }
+
+      if (!this.abonnement) {
+        this.abonnement = { statut: 'INACTIF', date_fin: null }
+      }
+
     },
 
     // === F11: FACTURES ===
@@ -890,7 +890,7 @@ export default {
         const arr = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
         this.factures = arr.map(f => {
           const id = this.normalizeId(f.id ?? f.id)
-          // 🔧 Correction : lire la clé backend `montantHT` (camel-case), avec fallback
+          //   lire la clé backend `montantHT` (camel-case), avec fallback
           const montantHT = Number(f.montantHT ?? f.montantHt ?? f.montant_ht ?? 0)
           // Utiliser la TVA fournie par le backend si présente, sinon calcul (21 % du HT)
           const tva = Number(f.tva ?? (montantHT * 0.21))
@@ -933,7 +933,7 @@ export default {
 
         WebSocketService.connect(token)
 
-        // ✅ F13: Topic personnalisé pour notifications
+        //  F13: Topic personnalisé pour notifications
         const userId = this.normalizeId(this.utilisateur.id)
         const topicUser = `/user/${userId}/topic/notifications`
 
@@ -961,7 +961,7 @@ export default {
             }
           })
           this.subscribedTopics.add(topicUser)
-          console.log(`[F13] ✅ Chef abonné au topic: ${topicUser}`)
+          console.log(`[F13]  Chef abonné au topic: ${topicUser}`)
         }
       } catch (error) {
         console.error('[F13] Erreur WebSocket:', error)

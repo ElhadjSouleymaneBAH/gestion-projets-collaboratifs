@@ -138,7 +138,8 @@ export const taskAPI = {
   create: (payload) => api.post(endpoints.tasks, payload),
   update: (id, payload) => api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
   updateStatus: (id, statut) =>
-    api.put(`${endpoints.tasks}/${cleanId(id)}/statut`, { statut }),
+    api.patch(`${endpoints.tasks}/${cleanId(id)}/statut`, { statut }),
+
   delete: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
   byUser: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),

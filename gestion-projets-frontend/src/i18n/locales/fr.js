@@ -19,7 +19,8 @@ export default {
     mesFactures: 'Mes factures',
     taches: 'Tâches',
     equipe: 'Équipe',
-    collaboration: 'Collaboration'
+    collaboration: 'Collaboration',
+    connecter: "Se connecter"
   },
 
   // ==================== APPLICATION ====================
@@ -110,6 +111,11 @@ export default {
       tagline: 'Application Web de Gestion de Projets Collaboratifs',
       description:
         'Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l\'attribution de tâches avec intégration d\'outils de collaboration en temps réel.'
+    },
+
+    cta: {
+      titre: 'Prêt à démarrer ?',
+      sousTitre: 'Créez votre compte et lancez vos projets collaboratifs.'
     }
   },
 
@@ -125,6 +131,7 @@ export default {
     chefProjetPremium: 'Chef de projet (Premium)',
     membreGratuit: 'Membre (Gratuit)',
     visiteurConsultation: 'Visiteur (Consultation)',
+    connectezVous: 'Connectez-vous pour accéder à cette fonctionnalité',
     creezMotDePasse: 'Créez un mot de passe',
     auMoinsNCaracteres: 'Au moins {n} caractères',
     confirmezMotDePasse: 'Confirmez votre mot de passe',
@@ -347,7 +354,7 @@ export default {
       assigneeA: 'Assigné à',
       aucuneTache: 'Aucune tâche trouvée'
     },
-    // ✅ filtres pour la vue liste
+    //  filtres pour la vue liste
     filtres: {
       statut: 'Statut',
       tous: 'Tous',
@@ -885,6 +892,17 @@ export default {
     confirmerSoumission: 'Soumettre cette tâche pour validation ?',
     soumiseValidation: 'Tâche soumise pour validation',
     chatEquipe: 'Chat d\'équipe',
+    // ✅ Ajout d'une section "sections" pour libellés d'onglets du tableau de bord membre
+    sections: {
+      projets: 'Mes projets',
+      taches: 'Mes tâches assignées',
+      collaboration: 'Collaboration'
+    },
+    // ✅ Ajout d'un bloc dédié au chat sur le tableau de bord membre
+    chat: {
+      description: 'Messagerie d’équipe en temps réel',
+      placeholder: 'Écrire un message...'
+    },
     promoPremium: {
       titre: 'Passez à Premium !',
       description: 'Devenez Chef de Projet et créez vos propres équipes',
@@ -892,10 +910,14 @@ export default {
     },
     kpi: {
       projetsRejoints: 'Projets rejoints',
+      // existant pour d’autres vues
       tachesAssignees: 'Tâches assignées',
       tachesTerminees: 'Tâches terminées',
       urgentes: 'urgentes',
-      reussite: 'réussite'
+      reussite: 'réussite',
+      // ✅ Ajouts pour TableauBordMembre.vue
+      tachesAttribuees: 'Tâches attribuées',
+      messages: 'Messages'
     },
     projets: {
       titre: 'Mes projets',

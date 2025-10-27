@@ -16,25 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Service de gestion des tâches.
- *
- * Implémente la fonctionnalité F7 du cahier des charges :
- * - F7 : Gérer les tâches (Chef de Projet, Membre, Administrateur)
- * - Utilisateurs : Chef de Projet, Membre, Administrateur
- * - Importance : 5/5
- * - Contraintes : Tâches assignées uniquement (pour les membres)
- *
- * Logique métier :
- * - Respect du diagramme d'état des tâches
- * - Assignation selon les permissions
- * - Validation des transitions de statut
- * - Admin peut annuler à tout moment
- * - Gestion des priorités et dates d'échéance
- *
- * @author ElhadjSouleymaneBAH
- * @version 1.0
- */
 @Service
 @Transactional
 public class TacheService {
@@ -49,15 +30,6 @@ public class TacheService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
-    // ========== F7 : CRÉATION DE TÂCHES ==========
-
-    /**
-     * Crée une nouvelle tâche.
-     *
-     * @param tacheDTO les données de la tâche
-     * @return la tâche créée
-     * @throws RuntimeException si le projet n'existe pas ou données invalides
-     */
     public TacheDTO creerTache(TacheDTO tacheDTO) {
         System.out.println("DEBUG: [F7] Début création tâche - Titre: " + tacheDTO.getTitre() +
                 ", Projet: " + tacheDTO.getIdProjet());
@@ -87,19 +59,16 @@ public class TacheService {
             throw new RuntimeException("Impossible de créer la tâche : données invalides");
         }
 
-        // Définir la priorité (par défaut NORMALE)
         if (tacheDTO.getPriorite() != null) {
             tache.setPriorite(tacheDTO.getPriorite());
         } else {
             tache.setPriorite(PrioriteTache.NORMALE);
         }
 
-        // Définir la date d'échéance (optionnelle)
         if (tacheDTO.getDateEcheance() != null) {
             tache.setDateEcheance(tacheDTO.getDateEcheance());
         }
 
-        // Assigner à un utilisateur (optionnel)
         if (tacheDTO.getIdAssigne() != null) {
             System.out.println("DEBUG: [F7] Assignation lors de la création à l'utilisateur: " + tacheDTO.getIdAssigne());
 
@@ -117,16 +86,15 @@ public class TacheService {
         return convertirEnDTO(tacheSauvee);
     }
 
-    // ========== F7 : CONSULTATION DE TÂCHES ==========
-
-    /**
-     * Récupère toutes les tâches (usage administrateur).
-     */
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirToutesLesTaches() {
         System.out.println("DEBUG: [F7] Consultation toutes tâches (ADMIN)");
 
-        List<Tache> taches = tacheRepository.findAll();
+        List<Tache> taches = tacheRepository.findAll()
+                .stream()
+                .map(t -> tacheRepository.findByIdWithRelations(t.getId()).orElse(t))
+                .collect(Collectors.toList());
+
         System.out.println("DEBUG: [F7] " + taches.size() + " tâches trouvées au total");
 
         return taches.stream()
@@ -134,9 +102,6 @@ public class TacheService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupère une tâche par son ID avec JOIN FETCH
-     */
     @Transactional(readOnly = true)
     public Optional<TacheDTO> obtenirTacheParId(Long id) {
         System.out.println("DEBUG: [F7] Recherche tâche par ID: " + id);
@@ -152,9 +117,6 @@ public class TacheService {
         return tache.map(this::convertirEnDTO);
     }
 
-    /**
-     * Récupère les tâches d'un projet avec JOIN FETCH
-     */
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirTachesParProjet(Long idProjet) {
         System.out.println("DEBUG: [F7] Recherche tâches pour projet ID: " + idProjet);
@@ -167,9 +129,6 @@ public class TacheService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupère les tâches assignées à un utilisateur avec JOIN FETCH
-     */
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirTachesParUtilisateur(Long idUtilisateur) {
         System.out.println("DEBUG: [F7] Recherche tâches assignées à l'utilisateur ID: " + idUtilisateur);
@@ -182,9 +141,6 @@ public class TacheService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupère les tâches en retard d'un projet
-     */
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirTachesEnRetard(Long idProjet) {
         System.out.println("DEBUG: [F7] Recherche tâches en retard pour projet ID: " + idProjet);
@@ -201,18 +157,15 @@ public class TacheService {
                 .collect(Collectors.toList());
     }
 
-    // ========== F7 : MODIFICATION DE TÂCHES ==========
-
     public TacheDTO modifierTache(Long id, TacheDTO tacheDTO) {
         System.out.println("DEBUG: [F7] Début modification tâche ID: " + id);
 
-        Tache tache = tacheRepository.findById(id)
+        Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
         System.out.println("DEBUG: [F7] Tâche existante trouvée: " + tache.getTitre() +
                 " (Statut actuel: " + tache.getStatut() + ")");
 
-        // Modification des champs de base
         boolean modificationReussie = tache.modifierTache(
                 tacheDTO.getTitre(),
                 tacheDTO.getDescription(),
@@ -223,19 +176,16 @@ public class TacheService {
             throw new RuntimeException("Impossible de modifier la tâche : données invalides ou transition non autorisée");
         }
 
-        // Mise à jour de la priorité (si fournie)
         if (tacheDTO.getPriorite() != null) {
             tache.setPriorite(tacheDTO.getPriorite());
             System.out.println("DEBUG: [F7] Priorité mise à jour: " + tacheDTO.getPriorite());
         }
 
-        // Mise à jour de la date d'échéance (si fournie)
         if (tacheDTO.getDateEcheance() != null) {
             tache.setDateEcheance(tacheDTO.getDateEcheance());
             System.out.println("DEBUG: [F7] Date d'échéance mise à jour: " + tacheDTO.getDateEcheance());
         }
 
-        // Gestion de l'assignation
         if (tacheDTO.getIdAssigne() != null) {
             System.out.println("DEBUG: [F7] Assignation/réassignation à l'utilisateur: " + tacheDTO.getIdAssigne());
 
@@ -256,12 +206,10 @@ public class TacheService {
         return convertirEnDTO(tacheSauvee);
     }
 
-    // ========== F7 : GESTION DES STATUTS ==========
-
     public TacheDTO changerStatutTache(Long id, StatutTache nouveauStatut) {
         System.out.println("DEBUG: [F7] Changement statut tâche " + id + " vers " + nouveauStatut);
 
-        Tache tache = tacheRepository.findById(id)
+        Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
         StatutTache ancienStatut = tache.getStatut();
@@ -280,29 +228,15 @@ public class TacheService {
         return convertirEnDTO(tacheSauvee);
     }
 
-    // ========== F7 : ANNULATION PAR ADMIN ==========
-
-    /**
-     * Annule une tâche par un administrateur.
-     * Conforme à F7 : "Administrateur (à tout moment)"
-     *
-     * L'administrateur peut annuler n'importe quelle tâche quel que soit son statut,
-     * conformément au workflow défini dans le cahier des charges.
-     *
-     * @param tacheId L'identifiant de la tâche à annuler
-     * @return La tâche annulée
-     * @throws RuntimeException si la tâche n'existe pas
-     */
     public TacheDTO annulerParAdmin(Long tacheId) {
         System.out.println("DEBUG: [F7-ADMIN] Admin annule tâche ID: " + tacheId);
 
-        Tache tache = tacheRepository.findById(tacheId)
+        Tache tache = tacheRepository.findByIdWithRelations(tacheId)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
 
         StatutTache ancienStatut = tache.getStatut();
         System.out.println("DEBUG: [F7-ADMIN] Statut actuel: " + ancienStatut);
 
-        // L'admin peut annuler à tout moment selon F7
         boolean reussi = tache.changerStatut(StatutTache.ANNULE);
 
         if (!reussi) {
@@ -316,12 +250,10 @@ public class TacheService {
         return convertirEnDTO(tacheSauvee);
     }
 
-    // ========== F7 : SUPPRESSION DE TÂCHES ==========
-
     public void supprimerTache(Long id) {
         System.out.println("DEBUG: [F7] Début suppression tâche ID: " + id);
 
-        Tache tache = tacheRepository.findById(id)
+        Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
         System.out.println("DEBUG: [F7] Tâche trouvée pour suppression: " + tache.getTitre() +
@@ -337,8 +269,6 @@ public class TacheService {
         System.out.println("SUCCESS: [F7] Tâche " + id + " supprimée avec succès");
     }
 
-    // ========== F7 : MÉTHODES UTILITAIRES ==========
-
     private TacheDTO convertirEnDTO(Tache tache) {
         TacheDTO dto = new TacheDTO();
         dto.setId(tache.getId());
@@ -347,9 +277,12 @@ public class TacheService {
 
         if (tache.getProjet() != null) {
             dto.setIdProjet(tache.getProjet().getId());
+            dto.setNomProjet(tache.getProjet().getTitre());
         }
+
         if (tache.getAssigneA() != null) {
             dto.setIdAssigne(tache.getAssigneA().getId());
+            dto.setNomAssigne(tache.getAssigneA().getPrenom() + " " + tache.getAssigneA().getNom());
         }
 
         dto.setStatut(tache.getStatut());
@@ -359,8 +292,6 @@ public class TacheService {
 
         return dto;
     }
-
-    // ========== F7 : MÉTHODES D'ANALYSE ==========
 
     @Transactional(readOnly = true)
     public long compterTachesParStatut(Long idProjet, StatutTache statut) {
