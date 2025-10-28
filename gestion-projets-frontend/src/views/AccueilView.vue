@@ -139,8 +139,8 @@
           <div class="col-lg-4 col-md-6">
             <div class="card h-100 border-0 shadow-sm text-center p-4">
               <div class="mb-4"><i class="fas fa-file-invoice fa-3x text-danger"></i></div>
-              <h4 class="h5 fw-bold mb-3">{{ $t('factures.titre') }}</h4> <!-- Utilisation de factures.titre -->
-              <p class="text-muted mb-0">{{ $t('factures.descriptionPdf') }}</p> <!-- Utilisation de factures.descriptionPdf -->
+              <h4 class="h5 fw-bold mb-3">{{ $t('factures.titre') }}</h4>
+              <p class="text-muted mb-0">{{ $t('factures.descriptionPdf') }}</p>
             </div>
           </div>
         </div>
@@ -154,14 +154,14 @@
         <p class="lead mb-4">
           {{ $t('commun.rejoindreCollabPro') }}
         </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <!-- Message d’accroche + un seul bouton -->
+        <p class="fw-semibold mb-4">
+          {{ $t('commun.invitationUnique') }}
+        </p>
+        <div class="d-flex justify-content-center">
           <router-link to="/inscription" class="btn btn-light btn-lg text-primary px-4 py-3">
             <i class="fas fa-user-plus me-2"></i>
             {{ $t('auth.creerMonCompte') }}
-          </router-link>
-          <router-link to="/connexion" class="btn btn-outline-light btn-lg px-4 py-3">
-            <i class="fas fa-sign-in-alt me-2"></i>
-            {{ $t('connexion.seConnecter') }}
           </router-link>
         </div>
       </div>
@@ -178,7 +178,7 @@ export default {
       try {
         localStorage.setItem('locale', locale);
       } catch (error) {
-        console.log('Erreur lors du stockage de la locale:', error); // Gestion de l'erreur
+        console.log('Erreur lors du stockage de la locale:', error);
       }
     }
   }
@@ -229,7 +229,7 @@ export default {
   box-shadow: 0 15px 35px rgba(0,0,0,.1) !important;
 }
 
-/* Sélecteur de langue pour s'intégrer visuellement au footer sombre */
+/* Sélecteur de langue */
 .lang-wrap {
   color:#fff;
 }

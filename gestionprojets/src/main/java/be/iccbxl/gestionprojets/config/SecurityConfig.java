@@ -55,6 +55,16 @@ public class SecurityConfig {
                         .requestMatchers("/error", "/favicon.ico", "/actuator/**").permitAll()
                         .requestMatchers("/", "/static/**", "/assets/**", "/public/**").permitAll()
 
+                        // ✅ Routes publiques front-end (accessibles sans JWT)
+                        .requestMatchers(
+                                "/index.html",
+                                "/conditions",
+                                "/politique-confidentialite",
+                                "/connexion",
+                                "/inscription",
+                                "/api/public/**"
+                        ).permitAll()
+
                         // ===================================================================
                         // F1 : INSCRIPTION
                         // ===================================================================
@@ -105,19 +115,16 @@ public class SecurityConfig {
                         // ===================================================================
                         // ACCÈS MEMBRE EN LECTURE (conformité CdC F7/F9/F12)
                         // ===================================================================
-                        // "Mes projets" et "Mes tâches"
                         .requestMatchers(HttpMethod.GET,
                                 "/api/projets/utilisateur/**",
                                 "/api/taches/utilisateur/**")
                         .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // Détail d'un projet + liste des membres du projet
                         .requestMatchers(HttpMethod.GET,
                                 "/api/projets/*",
                                 "/api/projets/*/membres/**")
                         .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // Création de tâche (brouillon pour Membre)
                         .requestMatchers(HttpMethod.POST, "/api/taches")
                         .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
@@ -136,9 +143,7 @@ public class SecurityConfig {
                         // ===================================================================
                         // F9-F12 : COLLABORATION TEMPS RÉEL
                         // ===================================================================
-                        // Handshakes STOMP et topics
                         .requestMatchers("/ws/**", "/ws-native/**", "/topic/**", "/queue/**").permitAll()
-
                         .requestMatchers("/api/messages/**", "/api/chat/**",
                                 "/api/commentaires/**", "/api/comments/**")
                         .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")

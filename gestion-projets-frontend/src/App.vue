@@ -1,9 +1,6 @@
 <template>
   <div id="app" class="app-container">
-    <!-- Header global -->
-    <AppHeader />
-
-    <!-- Notifications -->
+    <!-- Notifications globales -->
     <div class="global-notifications">
       <div
         v-for="notification in globalNotifications"
@@ -27,12 +24,11 @@
 
 <script>
 import { ref } from 'vue'
-import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
 export default {
   name: 'App',
-  components: { AppHeader, AppFooter },
+  components: { AppFooter },
   setup() {
     const globalNotifications = ref([])
 
@@ -52,25 +48,26 @@ export default {
 </script>
 
 <style>
-/* Structure principale */
+/* -------- STRUCTURE GLOBALE -------- */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #f8f9fa;
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-top: 56px; /* espace pour le header fixé */
 }
 
+/* -------- FOOTER -------- */
 .app-footer {
   margin-top: auto;
 }
 
-/* Notifications */
+/* -------- NOTIFICATIONS -------- */
 .global-notifications {
   position: fixed;
   top: 20px;
@@ -91,7 +88,7 @@ export default {
   to   { transform: translateX(0); opacity: 1; }
 }
 
-/* Reset */
+/* -------- RESET & BASE -------- */
 * {
   box-sizing: border-box;
 }
@@ -100,7 +97,8 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
+  color: #212529;
 }
 
 #app {

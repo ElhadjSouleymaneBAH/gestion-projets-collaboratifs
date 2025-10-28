@@ -354,8 +354,9 @@
                 <tbody>
                 <tr v-for="t in tachesFiltrees" :key="t.id">
                   <td class="fw-semibold">{{ t.titre }}</td>
-                  <td>{{ getProjetNom(t.id_projet || t.projetId) }}</td>
-                  <td>{{ getAssigneNom(t.id_assigne || t.assigneId) }}</td>
+                  <td>{{ t.nomProjet || getProjetNom(t.id_projet || t.projetId) }}</td>
+                  <td>{{ t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId) }}</td>
+
                   <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ t.statut }}</span></td>
                   <td class="text-end">
                     <div class="btn-group">
@@ -1395,43 +1396,122 @@ export default {
 
 <style scoped>
 .chef-header {
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: linear-gradient(135deg, #b88a00, #403707); /* Dégradé doré premium */
   border-radius: 12px;
   padding: 20px;
+  color: #000; /* Texte noir pour contraste sur fond doré */
+}
+
+.text-white-75 {
+  color: rgba(0, 0, 0, 0.75); /* Texte secondaire assombri */
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #ffd700, #554208); /* Dégradé doré pour les badges et boutons */
+}
+
+/* Cartes et effets */
+.metric-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Navigation (onglets) */
+.nav-pills .nav-link {
+  border-radius: 8px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
+}
+.nav-pills .nav-link.active {
+  background: linear-gradient(135deg, #b88a00, #ffd700);
+  color: #000;
+  font-weight: 600;
+  transform: translateY(-1px);
+}
+
+/* Notifications */
+.notification-item {
+  transition: all 0.2s ease;
+}
+.notification-item:hover {
+  transform: translateX(5px);
+}
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
 }
-.text-white-75 { color: rgba(255, 255, 255, 0.75); }
-.bg-gradient-warning { background: linear-gradient(135deg, #ffc107, #e0a800); }
 
-.metric-card { transition: all 0.3s ease; cursor: pointer; }
-.metric-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
-
-.card { border-radius: 12px; overflow: hidden; }
-.nav-pills .nav-link { border-radius: 8px; margin: 0 2px; transition: all 0.2s ease; }
-.nav-pills .nav-link.active { background: linear-gradient(135deg, #28a745, #20c997); transform: translateY(-1px); }
-
-.notification-item { transition: all 0.2s ease; }
-.notification-item:hover { transform: translateX(5px); }
-.notification-icon {
-  width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; color:white;
+/* Chat */
+.chat-bubble {
+  animation: slideIn 0.3s ease;
+}
+.messages-container {
+  scroll-behavior: smooth;
+}
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+.messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.messages-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
 }
 
-.chat-bubble { animation: slideIn 0.3s ease; }
-.messages-container { scroll-behavior: smooth; }
-.messages-container::-webkit-scrollbar { width: 6px; }
-.messages-container::-webkit-scrollbar-track { background: #f1f1f1; }
-.messages-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
-
+/* Animation */
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.table th { border-top: none; font-weight: 600; font-size: .875rem; color: #495057; }
-.table-hover tbody tr:hover { background-color: rgba(40,167,69,.05); }
-.badge { font-size: .75rem; padding: .375rem .75rem; }
-.btn-group .btn { border-radius: 6px; margin: 0 1px; }
-.modal { backdrop-filter: blur(5px); }
-.avatar-large { font-size: 1.5rem; font-weight: 600; }
-.subscription-status { text-align: center; }
+/* Table et badges */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+}
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 215, 0, 0.08); /* léger reflet doré au survol */
+}
+.badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+.btn-group .btn {
+  border-radius: 6px;
+  margin: 0 1px;
+}
+
+/* Autres */
+.modal {
+  backdrop-filter: blur(5px);
+}
+.avatar-large {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.subscription-status {
+  text-align: center;
+}
 </style>
