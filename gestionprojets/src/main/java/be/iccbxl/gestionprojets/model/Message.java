@@ -26,7 +26,7 @@ import java.util.Objects;
  * @author ElhadjSouleymaneBAH
  * @version 1.0
  * @since 2025-07-14
- * @see "Cahier des charges - F9: Collaborer en temps réel"
+ * @see "Cahier des charges - F9 : Collaborer en temps réel"
  */
 @Entity
 @Table(name = "messages")

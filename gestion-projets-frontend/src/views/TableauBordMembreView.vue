@@ -46,13 +46,46 @@
     <div v-else>
       <!-- KPIs -->
       <div class="row g-3 mb-4">
-        <div class="col-md-3" v-for="(item, i) in stats" :key="i">
+        <div class="col-md-3">
           <div class="card kpi-card border-0 shadow-sm h-100">
             <div class="card-body text-center">
-              <i :class="item.icon + ' fa-2x mb-2 ' + item.color"></i>
-              <h3 class="fw-bold mb-0">{{ item.value }}</h3>
-              <p class="text-muted mb-0 small">{{ item.label }}</p>
-              <small v-if="item.sub" class="text-primary">{{ item.sub }}</small>
+              <i class="fas fa-project-diagram fa-2x mb-2 text-primary"></i>
+              <h3 class="fw-bold mb-0">{{ mesProjets.length }}</h3>
+              <p class="text-muted mb-0 small">{{ $t('membre.kpi.projetsRejoints') }}</p>
+              <small class="text-primary">{{ mesProjets.filter(p=>p.statut==='ACTIF').length }} {{ $t('commun.actifs') }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-tasks fa-2x mb-2 text-warning"></i>
+              <h3 class="fw-bold mb-0">{{ mesTaches.length }}</h3>
+              <p class="text-muted mb-0 small">{{ $t('membre.kpi.tachesAttribuees') }}</p>
+              <small class="text-warning">{{ mesTaches.filter(t=>t.statut==='EN_COURS').length }} {{ $t('taches.enCours') }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+              <h3 class="fw-bold mb-0">{{ mesTaches.filter(t=>t.statut==='TERMINE').length }}</h3>
+              <p class="text-muted mb-0 small">{{ $t('membre.kpi.tachesTerminees') }}</p>
+              <small class="text-success">{{ tauxReussite }}% {{ $t('membre.kpi.reussite') }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card kpi-card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-bell fa-2x mb-2 text-info"></i>
+              <h3 class="fw-bold mb-0">{{ notifications.filter(n=>!n.lu).length }}</h3>
+              <p class="text-muted mb-0 small">{{ $t('membre.kpi.notifications') }}</p>
+              <small class="text-info">{{ notifications.length }} {{ $t('commun.total') }}</small>
             </div>
           </div>
         </div>
@@ -61,9 +94,27 @@
       <!-- NAV ONGLET -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
         <ul class="nav nav-pills bg-light rounded p-2">
-          <li v-for="tab in tabs" :key="tab.key" class="nav-item">
-            <a class="nav-link" :class="{active:onglet===tab.key}" @click="onglet=tab.key">
-              <i :class="tab.icon + ' me-2'"></i>{{ tab.label }}
+          <li class="nav-item">
+            <a class="nav-link" :class="{active:onglet==='projets'}" @click="onglet='projets'">
+              <i class="fas fa-folder-open me-2"></i>{{ $t('nav.mesProjets') }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{active:onglet==='taches'}" @click="onglet='taches'">
+              <i class="fas fa-tasks me-2"></i>{{ $t('nav.mesTaches') }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{active:onglet==='notifications'}" @click="onglet='notifications'">
+              <i class="fas fa-bell me-2"></i>{{ $t('nav.notifications') }}
+              <span v-if="notifications.filter(n=>!n.lu).length>0" class="badge bg-danger ms-1">
+                {{ notifications.filter(n=>!n.lu).length }}
+              </span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{active:onglet==='collaboration'}" @click="onglet='collaboration'">
+              <i class="fas fa-comments me-2"></i>{{ $t('nav.collaboration') }}
             </a>
           </li>
         </ul>
@@ -87,33 +138,36 @@
             <table v-else class="table table-hover align-middle mb-0">
               <thead class="table-light">
               <tr>
-                <th>Projet</th>
-                <th>Chef de Projet</th>
-                <th>Statut</th>
-                <th>Progression</th>
-                <th>Mes Tâches</th>
-                <th>Dernière Activité</th>
-                <th class="text-end">Actions</th>
+                <th>{{ $t('projets.projet') }}</th>
+                <th>{{ $t('projets.chefProjet') }}</th>
+                <th>{{ $t('projets.statut') }}</th>
+                <th>{{ $t('projets.progression') }}</th>
+                <th>{{ $t('membre.mesTaches') }}</th>
+                <th>{{ $t('projets.derniereActivite') }}</th>
+                <th class="text-end">{{ $t('commun.actions') }}</th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="p in mesProjets" :key="p.id">
-                <td><strong>{{ p.titre }}</strong><br><small class="text-muted">{{ p.description }}</small></td>
+                <td>
+                  <strong>{{ p.titre }}</strong><br>
+                  <small class="text-muted">{{ (p.description || '').substring(0, 50) }}...</small>
+                </td>
                 <td>{{ p.createur?.prenom }} {{ p.createur?.nom }}</td>
-                <td><span class="badge bg-success">Actif</span></td>
+                <td><span class="badge bg-success">{{ p.statut || 'ACTIF' }}</span></td>
                 <td>
                   <div class="progress" style="height:6px;">
-                    <div class="progress-bar bg-success" role="progressbar" :style="{width:(p.progression||Math.floor(Math.random()*100))+'%'}"></div>
+                    <div class="progress-bar bg-success" role="progressbar" :style="{width:(p.progression||0)+'%'}"></div>
                   </div>
-                  <small>{{ p.progression || Math.floor(Math.random()*100) }}%</small>
+                  <small>{{ p.progression || 0 }}%</small>
                 </td>
-                <td><span class="badge bg-warning text-dark">{{ p.tachesCount || 0 }}</span></td>
-                <td><small class="text-muted">{{ p.dernierUpdate || '—' }}</small></td>
+                <td><span class="badge bg-warning text-dark">{{ getTachesProjet(p.id) }}</span></td>
+                <td><small class="text-muted">{{ formatDate(p.dateModification) }}</small></td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary me-1" @click="consulterProjet(p)">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-success" @click="onglet='collaboration'">
+                  <button class="btn btn-sm btn-outline-success" @click="ouvrirChatProjet(p)">
                     <i class="fas fa-comments"></i>
                   </button>
                 </td>
@@ -136,9 +190,12 @@
               <p>{{ $t('membre.taches.aucuneTache') }}</p>
             </div>
             <ul v-else class="list-group">
-              <li v-for="t in mesTaches" :key="t.id" class="list-group-item d-flex justify-content-between">
-                <div><strong>{{ t.titre }}</strong><br><small class="text-muted">{{ t.description }}</small></div>
-                <span class="badge bg-light text-dark">{{ t.statut }}</span>
+              <li v-for="t in mesTaches" :key="t.id" class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ t.titre }}</strong><br>
+                  <small class="text-muted">{{ t.description }}</small>
+                </div>
+                <span class="badge" :class="getStatutTacheClass(t.statut)">{{ t.statut }}</span>
               </li>
             </ul>
           </div>
@@ -148,43 +205,121 @@
       <!-- ONGLET NOTIFICATIONS -->
       <div v-else-if="onglet==='notifications'">
         <div class="card shadow-sm border-0">
-          <div class="card-header bg-white">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{{ $t('membre.sections.notifications') }}</h5>
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              @click="marquerToutesLues"
+              :disabled="notifications.filter(n=>!n.lu).length===0"
+            >
+              <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
+            </button>
           </div>
           <div class="card-body">
             <div v-if="notifications.length===0" class="text-center text-muted py-4">
               <i class="fas fa-bell fa-3x mb-2"></i>
               <p>{{ $t('membre.notifications.vide') || 'Aucune notification pour le moment' }}</p>
             </div>
-            <ul v-else class="list-group">
-              <li v-for="n in notifications" :key="n.id" class="list-group-item d-flex justify-content-between">
-                <div><strong>{{ n.titre }}</strong><br><small class="text-muted">{{ n.message }}</small></div>
-                <small class="text-muted">{{ n.date }}</small>
-              </li>
-            </ul>
+            <div v-else class="list-group">
+              <div
+                v-for="n in notifications"
+                :key="n.id"
+                class="list-group-item d-flex justify-content-between align-items-start"
+              >
+                <div class="flex-grow-1">
+                  <strong>{{ n.titre || n.title }}</strong><br>
+                  <small class="text-muted">{{ n.message || n.contenu }}</small><br>
+                  <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
+                </div>
+                <div class="btn-group">
+                  <button v-if="!n.lu" class="btn btn-sm btn-outline-success" @click="marquerNotificationLue(n)">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" @click="supprimerNotification(n)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- ONGLET COLLABORATION -->
       <div v-else-if="onglet==='collaboration'">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-comments me-2"></i>{{ $t('membre.sections.collaboration') }}</h5>
-            <small class="text-muted">{{ $t('membre.chat.description') }}</small>
-          </div>
-          <div class="card-body">
-            <div class="chat-box">
-              <div v-for="m in messagesChat" :key="m.id" class="chat-message" :class="{'sent':m.senderId===utilisateur.id}">
-                <strong>{{ m.senderName }} :</strong> <span>{{ m.contenu }}</span>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
+              </div>
+              <div class="list-group list-group-flush">
+                <button
+                  v-for="p in mesProjets"
+                  :key="p.id"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
+                  @click="ouvrirChatProjet(p)"
+                >
+                  <span class="text-truncate">{{ p.titre }}</span>
+                  <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
+                </button>
+                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">—</div>
               </div>
             </div>
-            <form class="d-flex mt-3" @submit.prevent="envoyerMessage">
-              <input v-model="nouveauMessage" type="text" class="form-control me-2" :placeholder="$t('membre.chat.placeholder')">
-              <button class="btn btn-primary" :disabled="!nouveauMessage.trim()">
-                <i class="fas fa-paper-plane"></i>
-              </button>
-            </form>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white d-flex align-items-center gap-2">
+                <h6 class="mb-0">
+                  <i class="fas fa-comments me-2"></i>
+                  {{ projetChatActuel ? projetChatActuel.titre : $t('nav.collaboration') }}
+                </h6>
+              </div>
+
+              <div class="card-body d-flex flex-column" style="height:420px">
+                <div class="flex-grow-1 overflow-auto messages-container">
+                  <div v-if="!projetChatActuel" class="text-center text-muted py-5">
+                    {{ $t('projets.choisirProjet') }}
+                  </div>
+
+                  <div v-else>
+                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">—</div>
+
+                    <div
+                      v-for="m in messagesChat"
+                      :key="m.id"
+                      class="p-2 rounded mb-2 chat-bubble"
+                      :class="getMessageClass(m)"
+                      style="max-width:80%"
+                    >
+                      <div class="small opacity-75 mb-1">
+                        {{ m.utilisateurNom || '—' }}
+                        · {{ formatTime(m.dateEnvoi) }}
+                      </div>
+                      <div>{{ m.contenu }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-top" v-if="projetChatActuel">
+                  <div class="input-group">
+                    <input
+                      class="form-control"
+                      v-model.trim="nouveauMessage"
+                      :placeholder="$t('collaboration.ecrireMessage')"
+                      @keyup.enter="envoyerMessage"
+                    >
+                    <button class="btn btn-success" :disabled="envoyantMessage || !nouveauMessage" @click="envoyerMessage">
+                      <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
+                      <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
@@ -193,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { projectAPI, taskAPI, notificationAPI, messagesAPI } from '@/services/api'
@@ -209,66 +344,244 @@ const mesProjets = ref([])
 const mesTaches = ref([])
 const notifications = ref([])
 const messagesChat = ref([])
+const messagesParProjet = ref({})  // ✅ AJOUTÉ
 const nouveauMessage = ref('')
 const abonnementActif = ref(true)
 const erreurBackend = ref('')
 const chargementGlobal = ref(true)
 const onglet = ref('projets')
+const projetChatActuel = ref(null)
+const envoyantMessage = ref(false)
 
-const tabs = [
-  { key: 'projets', label: t('nav.mesProjets'), icon: 'fas fa-folder-open' },
-  { key: 'taches', label: t('nav.mesTaches'), icon: 'fas fa-tasks' },
-  { key: 'notifications', label: t('nav.notifications'), icon: 'fas fa-bell' },
-  { key: 'collaboration', label: t('nav.collaboration'), icon: 'fas fa-comments' }
-]
+const tauxReussite = computed(() => {
+  if (mesTaches.value.length === 0) return 0
+  const terminees = mesTaches.value.filter(t => t.statut === 'TERMINE').length
+  return Math.round((terminees / mesTaches.value.length) * 100)
+})
 
-const stats = [
-  { icon: 'fas fa-project-diagram', color: 'text-primary', label: t('membre.kpi.projetsRejoints'), value: mesProjets.value.length, sub: `${mesProjets.value.filter(p=>p.actif).length} actifs` },
-  { icon: 'fas fa-tasks', color: 'text-warning', label: t('membre.kpi.tachesAttribuees'), value: mesTaches.value.length, sub: '0 urgentes' },
-  { icon: 'fas fa-check-circle', color: 'text-success', label: t('membre.kpi.tachesTerminees'), value: mesTaches.value.filter(t=>t.statut==='Terminée').length, sub: '0% de réussite' },
-  { icon: 'fas fa-bell', color: 'text-info', label: t('membre.kpi.notifications'), value: notifications.value.length, sub: `${notifications.value.length} total` }
-]
+// ✅ AJOUTÉ : Normalisation des IDs
+const normalizeId = (v) => v == null ? v : String(v).split(':')[0]
 
 const chargerToutesDonnees = async () => {
+  chargementGlobal.value = true
+  erreurBackend.value = ''
+
   try {
+    const userId = normalizeId(utilisateur.value.id)
     const [p, t, n] = await Promise.all([
-      projectAPI.byUser(utilisateur.value.id),
-      taskAPI.byUser(utilisateur.value.id),
-      notificationAPI.list(utilisateur.value.id)
+      projectAPI.byUser(userId),
+      taskAPI.byUser(userId),
+      notificationAPI.list(userId)
     ])
-    mesProjets.value = p.data || []
-    mesTaches.value = t.data || []
-    notifications.value = n.data || []
+
+    mesProjets.value = Array.isArray(p.data) ? p.data : []
+    mesTaches.value = Array.isArray(t.data) ? t.data : []
+    notifications.value = Array.isArray(n.data) ? n.data : []
   } catch (e) {
+    console.error(e)
     erreurBackend.value = t('erreurs.chargementDonnees')
   } finally {
     chargementGlobal.value = false
   }
 }
 
+// ✅ AJOUTÉ : Charger les messages d'un projet
+const chargerMessagesProjet = async (projetId) => {
+  try {
+    const r = await messagesAPI.byProjet(projetId)
+    messagesChat.value = Array.isArray(r.data) ? r.data : []
+    messagesParProjet.value[projetId] = messagesChat.value  // ✅ Stocker pour comptage non-lus
+  } catch (e) {
+    console.error(e)
+    messagesChat.value = []
+  }
+}
+
 const initWebsocket = () => {
   const token = localStorage.getItem('token')
   if (!token) return
+
   WebSocketService.connect(token)
-  const topicChat = `/user/${utilisateur.value.id}/topic/chat`
-  WebSocketService.subscribe(topicChat, (msg) => {
-    if (msg?.contenu) messagesChat.value.push(msg)
+
+  // ✅ Topic unifié pour notifications
+  const userId = normalizeId(utilisateur.value.id)
+  const topicNotifications = `/user/${userId}/topic/notifications`
+
+  WebSocketService.subscribe(topicNotifications, (msg) => {
+    console.log('[WS] Notification reçue:', msg)
+
+    if (msg?.type === 'NOTIFICATION') {
+      notifications.value.unshift({
+        id: msg.id || Date.now(),
+        titre: msg.titre || 'Notification',
+        message: msg.message || msg.contenu,
+        date: msg.createdAt || new Date().toISOString(),
+        lu: false,
+        type: msg.sousType || 'SYSTEME'
+      })
+
+      // Notification browser
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(msg.titre || 'Notification', {
+          body: msg.message || msg.contenu,
+          icon: '/favicon.ico'
+        })
+      }
+    }
   })
+
+  // ✅ Topic pour les messages de chat du projet actuel
+  if (projetChatActuel.value) {
+    const topicProjet = `/topic/projet/${projetChatActuel.value.id}`
+    WebSocketService.subscribe(topicProjet, (msg) => {
+      console.log('[WS] Message chat reçu:', msg)
+      messagesChat.value.push(msg)
+      if (messagesParProjet.value[projetChatActuel.value.id]) {
+        messagesParProjet.value[projetChatActuel.value.id].push(msg)
+      }
+    })
+  }
 }
 
 const envoyerMessage = async () => {
-  if (!nouveauMessage.value.trim()) return
-  const msg = { senderId: utilisateur.value.id, contenu: nouveauMessage.value, senderName: utilisateur.value.prenom }
-  messagesChat.value.push(msg)
-  await messagesAPI.send(msg)
-  nouveauMessage.value = ''
+  if (!nouveauMessage.value.trim() || !projetChatActuel.value) return
+
+  envoyantMessage.value = true
+  try {
+    const r = await messagesAPI.send({
+      projetId: projetChatActuel.value.id,
+      contenu: nouveauMessage.value,
+      type: 'TEXT'
+    })
+
+    messagesChat.value.push(r.data)
+    nouveauMessage.value = ''
+  } catch (e) {
+    console.error(e)
+    alert(t('erreurs.envoyerMessage'))
+  } finally {
+    envoyantMessage.value = false
+  }
 }
 
-const consulterProjet = (p) => router.push(`/projet/${p.id}`)
-const seDeconnecter = () => { localStorage.clear(); router.push('/connexion') }
+const ouvrirChatProjet = async (projet) => {
+  projetChatActuel.value = projet
+  onglet.value = 'collaboration'
+  await chargerMessagesProjet(projet.id)
+}
 
-onMounted(async () => { await chargerToutesDonnees(); initWebsocket() })
-onBeforeUnmount(() => WebSocketService.disconnect())
+const consulterProjet = (p) => {
+  const id = normalizeId(p.id)
+  router.push(`/projet/${id}`)
+}
+
+const seDeconnecter = () => {
+  try { useAuthStore().logout?.() } catch {}
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  router.replace({ path: '/connexion', query: { switch: '1' } })
+}
+
+// ✅ AJOUTÉ : Méthode pour compter les messages non lus par projet
+const getMessagesNonLusProjet = (projetId) => {
+  const messages = messagesParProjet.value[projetId] || []
+  return messages.filter(m => m.statut !== 'LU').length
+}
+
+const getTachesProjet = (projetId) => {
+  return mesTaches.value.filter(t =>
+    normalizeId(t.projetId || t.id_projet) == normalizeId(projetId)
+  ).length
+}
+
+const getStatutTacheClass = (statut) => {
+  const classes = {
+    'BROUILLON': 'bg-secondary',
+    'EN_COURS': 'bg-warning text-dark',
+    'EN_ATTENTE_VALIDATION': 'bg-info',
+    'TERMINE': 'bg-success',
+    'ANNULE': 'bg-danger'
+  }
+  return classes[statut] || 'bg-secondary'
+}
+
+const getMessageClass = (m) => {
+  const monId = normalizeId(utilisateur.value?.id)
+  const auteurId = normalizeId(m.utilisateurId || m.authorId)
+  return auteurId == monId ? 'bg-primary text-white ms-auto' : 'bg-white border shadow-sm'
+}
+
+const marquerNotificationLue = async (n) => {
+  try {
+    const userId = normalizeId(utilisateur.value.id)
+    await notificationAPI.markAsRead(n.id, userId)
+    n.lu = true
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const marquerToutesLues = async () => {
+  try {
+    const userId = normalizeId(utilisateur.value.id)
+    await notificationAPI.markAllAsRead(userId)
+    notifications.value.forEach(n => n.lu = true)
+    alert(t('notifications.toutesMarquees'))
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const supprimerNotification = async (n) => {
+  if (!confirm(t('notifications.confirmerSuppression'))) return
+  try {
+    const userId = normalizeId(utilisateur.value.id)
+    await notificationAPI.delete(n.id, userId)
+    notifications.value = notifications.value.filter(x => x.id !== n.id)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const formatDate = (date) => {
+  if (!date) return '—'
+  const d = new Date(date)
+  const jour = String(d.getDate()).padStart(2, '0')
+  const mois = String(d.getMonth() + 1).padStart(2, '0')
+  const annee = d.getFullYear()
+  return `${jour}/${mois}/${annee}`
+}
+
+const formatDateRelative = (date) => {
+  if (!date) return '—'
+  const now = new Date()
+  const diff = now - new Date(date)
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (minutes < 1) return t('temps.maintenant')
+  if (minutes < 60) return `${t('temps.ilYa')} ${minutes}${t('temps.min')}`
+  if (hours < 24) return `${t('temps.ilYa')} ${hours}${t('temps.h')}`
+  if (days < 7) return `${t('temps.ilYa')} ${days}${t('temps.j')}`
+  return formatDate(date)
+}
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleTimeString('fr-FR', {
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+onMounted(async () => {
+  await chargerToutesDonnees()
+  initWebsocket()
+})
+
+onBeforeUnmount(() => {
+  WebSocketService.disconnect()
+})
 </script>
 
 <style scoped>
@@ -278,27 +591,87 @@ onBeforeUnmount(() => WebSocketService.disconnect())
   padding: 20px;
   color: white;
 }
+
+.text-white-75 {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 .kpi-card {
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
+
 .kpi-card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
-.chat-box {
-  max-height: 350px;
-  overflow-y: auto;
-  padding: 10px;
-  border: 1px solid #ddd;
+
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.nav-pills .nav-link {
   border-radius: 8px;
+  margin: 0 2px;
+  transition: all 0.2s ease;
 }
-.chat-message {
-  margin-bottom: 8px;
+
+.nav-pills .nav-link.active {
+  background: linear-gradient(135deg, #119c72, #96ddc8);
+  color: white;
+  font-weight: 600;
 }
-.chat-message.sent {
-  text-align: right;
-  color: #007bff;
+
+.chat-bubble {
+  animation: slideIn 0.3s ease;
 }
+
+.messages-container {
+  scroll-behavior: smooth;
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(17, 156, 114, 0.08);
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+
 .progress {
   background-color: #e9ecef;
   border-radius: 4px;

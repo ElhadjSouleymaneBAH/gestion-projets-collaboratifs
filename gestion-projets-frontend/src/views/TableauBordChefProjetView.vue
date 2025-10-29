@@ -679,6 +679,7 @@ export default {
       factures: [],
       notifications: [],
       messagesChat: [],
+      messagesParProjet: {},
       membresParProjet: {},
 
       utilisateursRecherche: [],
@@ -1182,6 +1183,8 @@ export default {
       try {
         const r = await messagesAPI.byProjet(projetId)
         this.messagesChat = Array.isArray(r.data) ? r.data : []
+
+        this.messagesParProjet[projetId] = this.messagesChat
       } catch (e) {
         console.error(e)
         this.messagesChat = []
@@ -1315,7 +1318,10 @@ export default {
       const nom = utilisateur.nom || utilisateur.lastName || ''
       return (prenom.charAt(0) || '') + (nom.charAt(0) || '')
     },
-    getMessagesNonLusProjet() { return 0 },
+    getMessagesNonLusProjet(projetId) {
+      const messages = this.messagesParProjet[projetId] || []
+      return messages.filter(m => m.statut !== 'LU').length
+    },
 
     getStatutProjetClass(statut) {
       const classes = {

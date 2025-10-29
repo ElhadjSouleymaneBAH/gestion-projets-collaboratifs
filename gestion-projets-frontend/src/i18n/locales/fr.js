@@ -62,6 +62,7 @@ export default {
     fonctionnalites: 'Fonctionnalités',
     pretCommencer: 'Prêt à commencer ?',
     rejoindreCollabPro: 'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
+    invitationUnique: 'Rejoignez notre communauté et transformez votre façon de collaborer',
     gratuit: 'Gratuit',
     inconnu: 'Inconnu',
     actions: 'Actions',
@@ -95,24 +96,30 @@ export default {
     toutes: 'Toutes',
     membre: 'Membre',
     reinitialiser: 'Réinitialiser',
-    // ✅ ajouté pour liste des tâches
     affichageResultats: 'Affichage {debut}–{fin} sur {total}'
   },
 
   // ==================== LANGUES ====================
-  langues: { francais: 'Français', anglais: 'English' },
+  langues: {
+    francais: 'Français',
+    anglais: 'English'
+  },
 
   // ==================== TEMPS ET DATES ====================
-  temps: { maintenant: 'À l\'instant', ilYa: 'Il y a', min: 'min', h: 'h', j: 'j' },
+  temps: {
+    maintenant: 'À l\'instant',
+    ilYa: 'Il y a',
+    min: 'min',
+    h: 'h',
+    j: 'j'
+  },
 
   // ==================== PAGE D'ACCUEIL ====================
   home: {
     hero: {
       tagline: 'Application Web de Gestion de Projets Collaboratifs',
-      description:
-        'Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l\'attribution de tâches avec intégration d\'outils de collaboration en temps réel.'
+      description: 'Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l\'attribution de tâches avec intégration d\'outils de collaboration en temps réel.'
     },
-
     cta: {
       titre: 'Prêt à démarrer ?',
       sousTitre: 'Créez votre compte et lancez vos projets collaboratifs.'
@@ -210,7 +217,7 @@ export default {
     erreurChargement: 'Erreur lors du chargement des projets publics'
   },
 
-  // (petite section pour libellés de projet singulier)
+  // ==================== PROJET (SINGULIER) ====================
   projet: {
     creeLe: 'Créé le'
   },
@@ -354,7 +361,6 @@ export default {
       assigneeA: 'Assigné à',
       aucuneTache: 'Aucune tâche trouvée'
     },
-    //  filtres pour la vue liste
     filtres: {
       statut: 'Statut',
       tous: 'Tous',
@@ -386,7 +392,6 @@ export default {
       haute: 'Haute',
       critique: 'Critique'
     },
-    // bouton si aucune tache
     creerPremiere: 'Créer la première tâche'
   },
 
@@ -527,7 +532,11 @@ export default {
       invitation: 'Invitation',
       systeme: 'Système'
     },
-    periodes: { ajd: 'Aujourd\'hui', semaine: 'Cette semaine', mois: 'Ce mois' }
+    periodes: {
+      ajd: 'Aujourd\'hui',
+      semaine: 'Cette semaine',
+      mois: 'Ce mois'
+    }
   },
 
   // ==================== ABONNEMENTS ====================
@@ -567,10 +576,8 @@ export default {
     abonnementExpire: 'Abonnement expiré',
     renouvelerPourContinuer: 'Renouvelez pour continuer',
     abonnementPremiumRequis: 'Abonnement Premium Requis',
-    pourAccederFonctionnalites:
-      'Pour accéder aux fonctionnalités Chef de Projet, un abonnement Premium est requis.',
-    accepterConditions:
-      'J\'accepte les conditions d\'abonnement et autorise le prélèvement mensuel de 10€',
+    pourAccederFonctionnalites: 'Pour accéder aux fonctionnalités Chef de Projet, un abonnement Premium est requis.',
+    accepterConditions: 'J\'accepte les conditions d\'abonnement et autorise le prélèvement mensuel de 10€',
     souscrirePremium: 'Souscrire à Premium ({prix})',
     devenirChef: 'Devenir Chef de Projet',
     avantagesChef: 'Créez vos projets et gérez vos équipes',
@@ -737,8 +744,7 @@ export default {
     informationsPaiement: 'Informations de paiement :',
     iban: 'IBAN : BE99 9999 9999 9999',
     bic: 'BIC : GEBABEBB',
-    mentionLegale:
-      'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.',
+    mentionLegale: 'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.',
     genereeLe: 'Générée le',
     chargementDetails: 'Chargement des détails de la facture…',
     total: 'TOTAL TTC :'
@@ -841,7 +847,6 @@ export default {
     devenirChefProjet: 'Devenir Chef de Projet',
     creerProjetGererEquipes: 'Créez vos projets et gérez vos équipes',
     passerPremium: 'Passer à Premium',
-    // ✅ clés pour la modale d'ajout dans ProjetPublic.vue
     infoAbonnement: 'Les invitations de membres sont réservées aux chefs de projet avec abonnement actif.',
     rechercherUtilisateur: 'Rechercher un utilisateur',
     placeholderRecherche: 'Tapez un nom ou un email...',
@@ -892,15 +897,25 @@ export default {
     confirmerSoumission: 'Soumettre cette tâche pour validation ?',
     soumiseValidation: 'Tâche soumise pour validation',
     chatEquipe: 'Chat d\'équipe',
-    // ✅ Ajout d'une section "sections" pour libellés d'onglets du tableau de bord membre
+
+    mesTaches: 'Mes tâches',
+    profil: 'Mon profil',
+
+    profilSelection: {
+      titre: 'Mon profil',
+      informations: 'Informations personnelles',
+      statistiques: 'Statistiques',
+      preferences: 'Préférences'
+    },
+
     sections: {
       projets: 'Mes projets',
       taches: 'Mes tâches assignées',
       collaboration: 'Collaboration'
     },
-    // ✅ Ajout d'un bloc dédié au chat sur le tableau de bord membre
+
     chat: {
-      description: 'Messagerie d’équipe en temps réel',
+      description: 'Messagerie d\'équipe en temps réel',
       placeholder: 'Écrire un message...'
     },
     promoPremium: {
@@ -910,14 +925,13 @@ export default {
     },
     kpi: {
       projetsRejoints: 'Projets rejoints',
-      // existant pour d’autres vues
       tachesAssignees: 'Tâches assignées',
       tachesTerminees: 'Tâches terminées',
       urgentes: 'urgentes',
       reussite: 'réussite',
-      // ✅ Ajouts pour TableauBordMembre.vue
       tachesAttribuees: 'Tâches attribuées',
-      messages: 'Messages'
+      messages: 'Messages',
+      notifications: 'Notifications'
     },
     projets: {
       titre: 'Mes projets',
@@ -940,7 +954,8 @@ export default {
       titre: 'Devenez Chef de Projet',
       description: 'Créez vos projets et gérez vos équipes',
       bouton: 'Passer à Premium'
-    }
+    },
+
   },
 
   // ==================== CHEF DE PROJET SPÉCIFIQUE ====================
@@ -966,7 +981,9 @@ export default {
       tachesEnValidation: 'Tâches en validation',
       equipes: 'équipes'
     },
-    projets: { creationGestionSupervision: 'Création, gestion et supervision' },
+    projets: {
+      creationGestionSupervision: 'Création, gestion et supervision'
+    },
     equipes: {
       ajouterMembre: 'Ajouter un membre',
       emailMembre: 'E-mail du membre',
@@ -1049,8 +1066,7 @@ export default {
     voirFactures: 'Voir les factures',
     exporterFactures: 'Exporter les factures',
     confirmerAnnulation: 'Êtes-vous sûr de vouloir annuler cet abonnement ?',
-    confirmerAnnulationTache:
-      'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
+    confirmerAnnulationTache: 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
     tacheAnnulee: 'Tâche annulée avec succès',
     erreurAnnulationTache: 'Erreur lors de l\'annulation de la tâche',
     annulerTache: 'Annuler cette tâche',
@@ -1070,33 +1086,27 @@ export default {
     retourAccueil: 'Retour à l\'accueil',
     mission: {
       titre: 'Notre mission',
-      description1:
-        'CollabPro a été conçu pour simplifier la gestion de projets collaboratifs et offrir aux ',
+      description1: 'CollabPro a été conçu pour simplifier la gestion de projets collaboratifs et offrir aux ',
       cible: 'PME et freelances',
-      description2:
-        ' une solution intuitive et complète pour organiser leur travail en équipe.'
+      description2: ' une solution intuitive et complète pour organiser leur travail en équipe.'
     },
     fonctionnalites: {
       titre: 'Fonctionnalités principales',
       gestionProjets: {
         titre: 'Gestion de projets',
-        description:
-          'Créez, organisez et suivez vos projets avec une interface intuitive et des outils de collaboration avancés.'
+        description: 'Créez, organisez et suivez vos projets avec une interface intuitive et des outils de collaboration avancés.'
       },
       gestionTaches: {
         titre: 'Gestion des tâches',
-        description:
-          'Assignez des tâches, suivez leur progression et validez les résultats avec un workflow d\'approbation complet.'
+        description: 'Assignez des tâches, suivez leur progression et validez les résultats avec un workflow d\'approbation complet.'
       },
       collaborationEquipe: {
         titre: 'Collaboration en équipe',
-        description:
-          'Invitez des membres, gérez les rôles et facilitez la communication au sein de vos équipes projet.'
+        description: 'Invitez des membres, gérez les rôles et facilitez la communication au sein de vos équipes projet.'
       },
       tempsReel: {
         titre: 'Communication temps réel',
-        description:
-          'Échangez instantanément avec votre équipe grâce au chat intégré et aux notifications automatiques.'
+        description: 'Échangez instantanément avec votre équipe grâce au chat intégré et aux notifications automatiques.'
       }
     },
     technologies: {
@@ -1118,9 +1128,18 @@ export default {
     },
     conformite: {
       titre: 'Conformité et sécurité',
-      rgpd: { titre: 'Conformité RGPD', description: 'Protection des données personnelles selon la réglementation européenne' },
-      securite: { titre: 'Sécurité', description: 'Chiffrement des données et authentification sécurisée' },
-      paiements: { titre: 'Paiements sécurisés', description: 'Traitement des paiements via Stripe, certifié PCI DSS' }
+      rgpd: {
+        titre: 'Conformité RGPD',
+        description: 'Protection des données personnelles selon la réglementation européenne'
+      },
+      securite: {
+        titre: 'Sécurité',
+        description: 'Chiffrement des données et authentification sécurisée'
+      },
+      paiements: {
+        titre: 'Paiements sécurisés',
+        description: 'Traitement des paiements via Stripe, certifié PCI DSS'
+      }
     },
     contact: {
       developpePar: 'Développé par',
@@ -1139,28 +1158,23 @@ export default {
     conditionsUsage: 'Conditions d\'utilisation de CollabPro',
     documentMisAJour: 'Document mis à jour en septembre 2025',
     introduction: 'Introduction',
-    introductionText:
-      'Les présentes conditions générales d\'utilisation régissent l\'accès et l\'utilisation de la plateforme CollabPro. En utilisant nos services, vous acceptez sans réserve ces conditions.',
+    introductionText: 'Les présentes conditions générales d\'utilisation régissent l\'accès et l\'utilisation de la plateforme CollabPro. En utilisant nos services, vous acceptez sans réserve ces conditions.',
     important: 'Important',
-    importantText:
-      'L\'utilisation de CollabPro implique l\'acceptation intégrale de ces conditions. Si vous n\'acceptez pas ces termes, veuillez ne pas utiliser notre plateforme.',
+    importantText: 'L\'utilisation de CollabPro implique l\'acceptation intégrale de ces conditions. Si vous n\'acceptez pas ces termes, veuillez ne pas utiliser notre plateforme.',
     objetApplication: 'Objet de l\'application',
-    objetText:
-      'CollabPro est une plateforme de gestion de projets collaboratifs destinée aux PME et freelances, offrant les fonctionnalités suivantes :',
+    objetText: 'CollabPro est une plateforme de gestion de projets collaboratifs destinée aux PME et freelances, offrant les fonctionnalités suivantes :',
     gestionProjets: 'Gestion de projets',
     gestionProjetsDesc: 'Création, organisation et suivi de projets professionnels',
     collaborationTempsReel: 'Collaboration temps réel',
     collaborationDesc: 'Communication instantanée et partage de documents entre membres',
     inscriptionComptes: 'Inscription et comptes',
-    inscriptionText:
-      'L\'inscription sur CollabPro est gratuite pour les membres. Les fonctionnalités Chef de Projet nécessitent un abonnement Premium.',
+    inscriptionText: 'L\'inscription sur CollabPro est gratuite pour les membres. Les fonctionnalités Chef de Projet nécessitent un abonnement Premium.',
     responsabiliteCompte: 'Responsabilité du compte',
     informationsExactes: 'Fournir des informations exactes et à jour',
     confidentialiteIdentifiants: 'Maintenir la confidentialité de vos identifiants',
     notificationUsage: 'Notifier tout usage non autorisé de votre compte',
     utilisationApplication: 'Utilisation de l\'application',
-    utilisationText:
-      'L\'utilisation de CollabPro doit respecter les lois en vigueur et les présentes conditions.',
+    utilisationText: 'L\'utilisation de CollabPro doit respecter les lois en vigueur et les présentes conditions.',
     usagesAutorises: 'Usages autorisés',
     gestionProjetsPro: 'Gestion de projets professionnels',
     collaborationEquipe: 'Collaboration d\'équipe',
@@ -1172,20 +1186,17 @@ export default {
     paiementsTransactions: 'Paiements et transactions',
     paiementsText: 'Les paiements sont traités de manière sécurisée via notre partenaire Stripe.',
     securiteStripe: 'Sécurité Stripe',
-    securiteStripeDesc:
-      'Les paiements sont traités via Stripe, certifié PCI DSS. CollabPro ne stocke aucune information bancaire.',
+    securiteStripeDesc: 'Les paiements sont traités via Stripe, certifié PCI DSS. CollabPro ne stocke aucune information bancaire.',
     typeAbonnement: 'Type d\'abonnement',
     creationGestion: 'Création et gestion de projets illimités',
     participationProjets: 'Participation aux projets existants',
     consultationPublics: 'Consultation des projets publics',
     protectionDonnees: 'Protection des données',
-    protectionText:
-      'CollabPro s\'engage à protéger vos données personnelles conformément au RGPD.',
+    protectionText: 'CollabPro s\'engage à protéger vos données personnelles conformément au RGPD.',
     referenceRGPD: 'Référence RGPD',
     referenceRGPDText: 'Pour plus de détails sur le traitement de vos données, consultez notre ',
     responsabilites: 'Responsabilités',
-    responsabilitesText:
-      'CollabPro met tout en œuvre pour assurer la disponibilité et la sécurité de la plateforme.',
+    responsabilitesText: 'CollabPro met tout en œuvre pour assurer la disponibilité et la sécurité de la plateforme.',
     nosEngagements: 'Nos engagements',
     disponibiliteOptimale: 'Disponibilité optimale du service',
     securiteDonnees: 'Sécurité des données',
@@ -1195,17 +1206,13 @@ export default {
     maintenanceProgrammee: 'Maintenance programmée',
     forceMajeure: 'Cas de force majeure',
     modificationsCGU: 'Modifications des CGU',
-    modificationsText:
-      'CollabPro se réserve le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés de tout changement significatif.',
+    modificationsText: 'CollabPro se réserve le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés de tout changement significatif.',
     notificationChangements: 'Notification des changements',
-    notificationDesc:
-      'Les modifications importantes seront notifiées par email et affichées sur la plateforme.',
+    notificationDesc: 'Les modifications importantes seront notifiées par email et affichées sur la plateforme.',
     loiApplicable: 'Loi applicable',
-    loiText:
-      'Les présentes conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux compétents de Belgique.',
+    loiText: 'Les présentes conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux compétents de Belgique.',
     juridictionCompetente: 'Juridiction compétente',
-    juridictionDesc:
-      'En cas de litige, les tribunaux de Bruxelles sont exclusivement compétents.',
+    juridictionDesc: 'En cas de litige, les tribunaux de Bruxelles sont exclusivement compétents.',
     contact: 'Contact',
     contactText: 'Pour toute question concernant ces conditions, contactez-nous à ',
     supportEmail: 'support@collabpro.com',
@@ -1222,11 +1229,9 @@ export default {
     rgpd: 'RGPD',
     derniereMiseAJour: 'Dernière mise à jour : septembre 2025',
     conformiteRGPD: 'Conformité RGPD',
-    conformiteRGPDDesc:
-      'Cette politique est conforme au Règlement Général sur la Protection des Données (RGPD) en vigueur dans l\'Union Européenne.',
+    conformiteRGPDDesc: 'Cette politique est conforme au Règlement Général sur la Protection des Données (RGPD) en vigueur dans l\'Union Européenne.',
     donneesCollectees: 'Données collectées',
-    donneesCollecteesDesc:
-      'Nous collectons uniquement les données nécessaires à la création de votre compte et à l\'utilisation de nos services.',
+    donneesCollecteesDesc: 'Nous collectons uniquement les données nécessaires à la création de votre compte et à l\'utilisation de nos services.',
     donneesIdentification: 'Données d\'identification',
     hache: 'haché',
     donneesUtilisation: 'Données d\'utilisation',
@@ -1245,26 +1250,21 @@ export default {
     pagesVisitees: 'Pages visitées',
     preferencesLangue: 'Préférences de langue',
     finalitesTraitement: 'Finalités du traitement',
-    finalitesTraitementDesc:
-      'Vos données sont utilisées exclusivement pour le bon fonctionnement de la plateforme.',
+    finalitesTraitementDesc: 'Vos données sont utilisées exclusivement pour le bon fonctionnement de la plateforme.',
     fournitureServices: 'Fourniture des services',
-    fournitureServicesDesc:
-      'Création de compte, gestion de projets, collaboration en temps réel',
+    fournitureServicesDesc: 'Création de compte, gestion de projets, collaboration en temps réel',
     baseLegale: 'Base légale',
     executionContrat: 'Exécution du contrat',
     gestionPaiements: 'Gestion des paiements',
     gestionPaiementsDesc: 'Traitement des abonnements et facturation via Stripe',
     executionContratObligations: 'Exécution du contrat et obligations légales',
     communicationNotifications: 'Communication et notifications',
-    communicationNotificationsDesc:
-      'Envoi de notifications relatives aux projets et activités',
+    communicationNotificationsDesc: 'Envoi de notifications relatives aux projets et activités',
     interetLegitime: 'Intérêt légitime',
     ameliorationService: 'Amélioration du service',
-    ameliorationServiceDesc:
-      'Analyse d\'utilisation pour améliorer nos fonctionnalités',
+    ameliorationServiceDesc: 'Analyse d\'utilisation pour améliorer nos fonctionnalités',
     dureeConservation: 'Durée de conservation',
-    dureeConservationDesc:
-      'Nous conservons vos données uniquement pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées.',
+    dureeConservationDesc: 'Nous conservons vos données uniquement pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées.',
     typeDonnees: 'Type de données',
     justification: 'Justification',
     compteUtilisateur: 'Compte utilisateur',
@@ -1279,13 +1279,11 @@ export default {
     dureeConnexion: '12 mois',
     securiteAudit: 'Sécurité et audit',
     vosDroitsRGPD: 'Vos droits RGPD',
-    vosDroitsRGPDDesc:
-      'Conformément au RGPD, vous disposez de plusieurs droits sur vos données personnelles.',
+    vosDroitsRGPDDesc: 'Conformément au RGPD, vous disposez de plusieurs droits sur vos données personnelles.',
     droitAcces: 'Droit d\'accès',
     droitAccesDesc: 'Obtenir une copie de vos données personnelles',
     droitRectification: 'Droit de rectification',
-    droitRectificationDesc:
-      'Corriger vos données inexactes ou incomplètes',
+    droitRectificationDesc: 'Corriger vos données inexactes ou incomplètes',
     droitEffacement: 'Droit à l\'effacement',
     droitEffacementDesc: 'Demander la suppression de vos données',
     droitPortabilite: 'Droit à la portabilité',
@@ -1293,15 +1291,13 @@ export default {
     droitLimitation: 'Droit à la limitation',
     droitLimitationDesc: 'Limiter le traitement de vos données',
     droitOpposition: 'Droit d\'opposition',
-    droitOppositionDesc:
-      'Vous opposer au traitement de vos données',
+    droitOppositionDesc: 'Vous opposer au traitement de vos données',
     commentExercerDroits: 'Comment exercer vos droits',
     commentExercerDroitsDesc: 'Pour exercer vos droits, contactez-nous à',
     avecPieceIdentite: 'avec une pièce d\'identité',
     delaiReponse: 'Délai de réponse : 1 mois maximum',
     securiteTransferts: 'Sécurité et transferts',
-    securiteTransfertsDesc:
-      'Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.',
+    securiteTransfertsDesc: 'Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.',
     mesuresTechniques: 'Mesures techniques',
     chiffrementDonnees: 'Chiffrement des données (HTTPS)',
     hachageMotsPasse: 'Hachage des mots de passe (BCrypt)',
@@ -1313,8 +1309,7 @@ export default {
     proceduresIncidents: 'Procédures en cas d\'incident',
     auditsSecurite: 'Audits de sécurité',
     destinatairesDonnees: 'Destinataires des données',
-    destinatairesDonneesDesc:
-      'Vos données peuvent être partagées avec les destinataires suivants :',
+    destinatairesDonneesDesc: 'Vos données peuvent être partagées avec les destinataires suivants :',
     destinataire: 'Destinataire',
     finalite: 'Finalité',
     donneesConcernees: 'Données concernées',
@@ -1327,19 +1322,15 @@ export default {
     serviceEmail: 'Service email',
     emailNomPrenom: 'Email, nom, prénom',
     transfertsHorsUE: 'Transferts hors UE',
-    transfertsHorsUEDesc:
-      'Certains partenaires peuvent être situés hors UE avec garanties de protection adéquates (clauses contractuelles types).',
+    transfertsHorsUEDesc: 'Certains partenaires peuvent être situés hors UE avec garanties de protection adéquates (clauses contractuelles types).',
     contactReclamations: 'Contact et réclamations',
-    contactReclamationsDesc:
-      'Pour toute question concernant vos données personnelles :',
+    contactReclamationsDesc: 'Pour toute question concernant vos données personnelles :',
     delegueDPO: 'Délégué à la protection des données',
     autoriteControle: 'Autorité de contrôle',
     commissionEuropeenne: 'Commission de la protection de la vie privée (Belgique)',
     droitReclamation: 'Droit de réclamation',
-    droitReclamationDesc:
-      'Vous avez le droit d\'introduire une réclamation auprès de l\'autorité de contrôle si vous estimez que vos droits ne sont pas respectés.',
-    conformiteRGPDFooter:
-      'CollabPro est conforme au RGPD et s\'engage à protéger vos données personnelles.'
+    droitReclamationDesc: 'Vous avez le droit d\'introduire une réclamation auprès de l\'autorité de contrôle si vous estimez que vos droits ne sont pas respectés.',
+    conformiteRGPDFooter: 'CollabPro est conforme au RGPD et s\'engage à protéger vos données personnelles.'
   },
 
   // ==================== ERREURS GÉNÉRALES ====================
@@ -1358,13 +1349,9 @@ export default {
     chargementDonnees: 'Erreur lors du chargement des données',
     projetIntrouvable: 'Projet introuvable',
     navigationProjet: 'Erreur lors de la navigation vers le projet',
-
-    // Project errors
     creationProjet: 'Erreur lors de la création du projet',
     modificationProjet: 'Erreur lors de la modification du projet',
     suppressionProjet: 'Erreur lors de la suppression du projet',
-
-    // Task errors
     pasAutoriseSupprimerTache: 'Vous n\'êtes pas autorisé à supprimer cette tâche',
     suppressionTache: 'Erreur lors de la suppression de la tâche',
     validationTache: 'Erreur lors de la validation de la tâche',
@@ -1372,19 +1359,11 @@ export default {
     annulationTache: 'Erreur lors de l\'annulation de la tâche',
     creationTache: 'Erreur lors de la création de la tâche',
     soumissionTache: 'Erreur lors de la soumission de la tâche',
-
-    // Team errors
     ajoutMembre: 'Erreur lors de l\'ajout du membre',
     retraitMembre: 'Erreur lors du retrait du membre',
-
-    // Communication errors
     ajoutCommentaire: 'Erreur lors de l\'ajout du commentaire',
     envoyerMessage: 'Erreur lors de l\'envoi du message',
-
-    // Profile errors
     sauvegardeProfile: 'Erreur lors de la sauvegarde du profil',
-
-    // Invoice errors
     telechargementFacture: 'Erreur lors du téléchargement de la facture'
   },
 
@@ -1413,18 +1392,16 @@ export default {
   stripe: {
     cancel: {
       titre: 'Paiement annulé',
-      description:
-        'Votre paiement n\'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.',
+      description: 'Votre paiement n\'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.',
       retour: 'Retour au tableau de bord',
       supportEmail: 'support@collabpro.com'
     },
     success: {
       titre: 'Paiement réussi',
-      description:
-        'Votre abonnement Premium est maintenant actif ! Merci pour votre confiance.',
+      description: 'Votre abonnement Premium est maintenant actif ! Merci pour votre confiance.',
       felicitations: 'Félicitations{prenom, select, undefined{} other{, {prenom}}} !',
       abonnementActif: 'Votre abonnement Premium est actif.',
-      detailsAbonnement: 'Détails de l’abonnement',
+      detailsAbonnement: 'Détails de l\'abonnement',
       plan: 'Plan',
       planPremiumMensuel: 'Plan Premium Mensuel',
       statut: 'Statut',

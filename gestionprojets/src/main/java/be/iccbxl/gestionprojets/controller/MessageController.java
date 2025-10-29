@@ -130,7 +130,7 @@ public class MessageController {
             // Envoi à tous les membres du projet
             messagingTemplate.convertAndSend("/topic/projet/" + messageRequest.getProjetId(), response);
 
-            //  Envoi direct au chef de projet si c’est un membre qui écrit
+            //  Envoi direct au chef de projet si c'est un membre qui écrit
             if (!utilisateur.getId().equals(projet.getIdCreateur())) {
                 messagingTemplate.convertAndSend(
                         "/topic/notifications/chef-projet/" + projet.getIdCreateur(),
@@ -138,7 +138,7 @@ public class MessageController {
                 );
             }
 
-            //  Envoi direct aux membres si c’est le chef qui répond
+            //  Envoi direct aux membres si c'est le chef qui répond
             if (utilisateur.getId().equals(projet.getIdCreateur())) {
                 projetService.listerMembres(projet.getId())
                         .forEach(m -> messagingTemplate.convertAndSendToUser(
@@ -181,7 +181,7 @@ public class MessageController {
 
             messagingTemplate.convertAndSend("/topic/projet/" + projetId, response);
 
-            //  Envoi au chef si message d’un membre
+            //  Envoi au chef si message d'un membre
             if (!utilisateur.getId().equals(projet.getIdCreateur())) {
                 messagingTemplate.convertAndSend(
                         "/topic/notifications/chef-projet/" + projet.getIdCreateur(),
@@ -196,7 +196,7 @@ public class MessageController {
         }
     }
 
-    /** Historique des messages d’un projet */
+    /** Historique des messages d'un projet */
     @GetMapping("/projet/{projetId}")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -215,6 +215,28 @@ public class MessageController {
 
             List<Message> messages = messageService.getMessagesParProjet(projetId);
             return ResponseEntity.ok(messages.stream().map(MessageResponse::new).toList());
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Marquer un message comme lu (F9)
+     * Endpoint: PUT /api/messages/{messageId}/marquer-lu
+     */
+    @PutMapping("/{messageId}/marquer-lu")
+    @ResponseBody
+    public ResponseEntity<Object> marquerCommeLu(
+            @PathVariable Long messageId,
+            Principal principal) {
+        try {
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Non authentifié");
+            }
+
+            messageService.marquerCommeLu(messageId);
+            return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
