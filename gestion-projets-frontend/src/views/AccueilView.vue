@@ -154,10 +154,6 @@
         <p class="lead mb-4">
           {{ $t('commun.rejoindreCollabPro') }}
         </p>
-        <!-- Message d’accroche + un seul bouton -->
-        <p class="fw-semibold mb-4">
-          {{ $t('commun.invitationUnique') }}
-        </p>
         <div class="d-flex justify-content-center">
           <router-link to="/inscription" class="btn btn-light btn-lg text-primary px-4 py-3">
             <i class="fas fa-user-plus me-2"></i>
