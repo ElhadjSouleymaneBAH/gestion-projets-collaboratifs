@@ -47,7 +47,10 @@
       <!-- KPIs -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm h-100">
+          <div
+            class="card kpi-card border-0 shadow-sm h-100"
+            @click="onglet = 'projets'"
+          >
             <div class="card-body text-center">
               <i class="fas fa-project-diagram fa-2x mb-2 text-primary"></i>
               <h3 class="fw-bold mb-0">{{ mesProjets.length }}</h3>
@@ -57,8 +60,12 @@
           </div>
         </div>
 
+        <!-- ✅ Carte Tâches attribuées cliquable -->
         <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm h-100">
+          <div
+            class="card kpi-card border-0 shadow-sm h-100"
+            @click="onglet = 'taches'"
+          >
             <div class="card-body text-center">
               <i class="fas fa-tasks fa-2x mb-2 text-warning"></i>
               <h3 class="fw-bold mb-0">{{ mesTaches.length }}</h3>
@@ -69,7 +76,10 @@
         </div>
 
         <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm h-100">
+          <div
+            class="card kpi-card border-0 shadow-sm h-100"
+            @click="onglet = 'taches'"
+          >
             <div class="card-body text-center">
               <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
               <h3 class="fw-bold mb-0">{{ mesTaches.filter(t=>t.statut==='TERMINE').length }}</h3>
@@ -80,7 +90,10 @@
         </div>
 
         <div class="col-md-3">
-          <div class="card kpi-card border-0 shadow-sm h-100">
+          <div
+            class="card kpi-card border-0 shadow-sm h-100"
+            @click="onglet = 'notifications'"
+          >
             <div class="card-body text-center">
               <i class="fas fa-bell fa-2x mb-2 text-info"></i>
               <h3 class="fw-bold mb-0">{{ notifications.filter(n=>!n.lu).length }}</h3>
@@ -326,6 +339,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'

@@ -24,7 +24,9 @@ public class CorsConfig implements WebMvcConfigurer {
                 "https://gestion-projets-collaboratifs.vercel.app",
                 "https://gestion-projets-collab-git-4c7a64-elhadsouleymanebahs-projects.vercel.app",
                 "https://gestion-projets-collaboratifs-production.up.railway.app",
-                "https://gestion-projets-collaboratifs-1cz3v6vkc.vercel.app"
+                "https://gestion-projets-collaboratifs-1cz3v6vkc.vercel.app",
+                "https://gestion-projets-collaboratifs-middp13nb.vercel.app",
+                "https://*.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
@@ -47,7 +49,9 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://gestion-projets-collaboratifs.vercel.app",
                         "https://gestion-projets-collab-git-4c7a64-elhadsouleymanebahs-projects.vercel.app",
                         "https://gestion-projets-collaboratifs-production.up.railway.app",
-                        "https://gestion-projets-collaboratifs-1cz3v6vkc.vercel.app"
+                        "https://gestion-projets-collaboratifs-1cz3v6vkc.vercel.app",
+                        "https://gestion-projets-collaboratifs-middp13nb.vercel.app",
+                        "https://*.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
