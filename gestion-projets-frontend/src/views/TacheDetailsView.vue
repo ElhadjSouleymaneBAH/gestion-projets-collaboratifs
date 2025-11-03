@@ -42,7 +42,7 @@
               <div class="d-flex flex-wrap gap-2 align-items-center">
                 <span :class="['badge fs-6 px-3 py-2', getStatutBadgeClass(tache.statut)]">
                   <i :class="getStatutIcon(tache.statut)" class="me-1"></i>
-                  {{ t(`taches.statuts.${mapStatutKey(tache.statut)}`) }}
+                  {{ translateTaskStatus(tache.statut) }}
                 </span>
                 <small class="text-muted">
                   <i class="far fa-calendar-alt me-1"></i>
@@ -220,6 +220,7 @@
 </template>
 
 <script setup>
+import { useDataTranslation } from '@/composables/useDataTranslation'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -227,6 +228,7 @@ import { taskAPI } from '@/services/api'
 import Commentaires from '@/components/Commentaires.vue'
 
 const { t, locale } = useI18n()
+const { translateTaskStatus } = useDataTranslation()
 const route = useRoute()
 const router = useRouter()
 

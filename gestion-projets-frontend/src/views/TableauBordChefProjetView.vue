@@ -158,11 +158,7 @@
             <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">{{ notificationsNonLues.length }}</span>
           </a>
         </li>
-        <li class="nav-item ms-auto">
-          <a class="nav-link" :class="{active:onglet==='profil'}" @click="onglet='profil'">
-            <i class="fas fa-user-cog me-2"></i>{{ $t('nav.monProfil') }}
-          </a>
-        </li>
+
       </ul>
 
       <!-- F6: GESTION PROJETS -->
@@ -213,7 +209,8 @@
                   <td><small class="text-muted">{{ (p.description || '').substring(0, 60) }}...</small></td>
                   <td><span class="badge bg-primary">{{ getMembresProjet(p.id).length }}</span></td>
                   <td><span class="badge bg-warning">{{ getTachesProjet(p.id).length }}</span></td>
-                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ p.statut }}</span></td>
+                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ translateData('status', p.statut) }}
+</span></td>
                   <td>
                     <div class="btn-group">
                       <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" :title="$t('commun.consulter')" aria-label="Consulter">
@@ -273,20 +270,23 @@
                   <td class="fw-semibold">{{ f.numeroFacture }}</td>
                   <td>{{ formatDate(f.dateEmission) }}</td>
 
-                  <!-- ✅ Montant HT -->
+                  <!--  Montant HT -->
                   <td>{{ formatPrix(f.montantHT ?? f.montantHt ?? 0) }}</td>
 
-                  <!-- ✅ TVA : affiche celle du backend, sinon calcule 21 % du HT -->
+                  <!-- TVA : affiche celle du backend, sinon calcule 21 % du HT -->
                   <td>
                     21 % ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})
                   </td>
 
-                  <!-- ✅ Total TTC -->
+                  <!--  Total TTC -->
                   <td class="fw-bold">
                     {{ formatPrix(f.montantTtc ?? ((f.montantHT ?? f.montantHt ?? 0) + (f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)))) }}
                   </td>
+                  <td>
+                    {{ translateData('invoiceStatus', f.statut) }}
+                  </td>
 
-                  <!-- ✅ Statut -->
+                  <!--  Statut -->
                   <td>
                 <span
                   class="badge rounded-pill"
@@ -357,7 +357,8 @@
                   <td>{{ t.nomProjet || getProjetNom(t.id_projet || t.projetId) }}</td>
                   <td>{{ t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId) }}</td>
 
-                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ t.statut }}</span></td>
+                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ translateData('taskStatus', t.statut) }}
+</span></td>
                   <td class="text-end">
                     <div class="btn-group">
                       <button class="btn btn-sm btn-outline-success" @click="validerTache(t)">
@@ -497,7 +498,7 @@
                       style="max-width:80%"
                     >
                       <div class="small opacity-75 mb-1">
-                        {{ m.auteur?.prenom || m.utilisateurNom || '—' }}
+                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || '—' }}
                         · {{ formatTime(m.date || m.createdAt) }}
                       </div>
                       <div>{{ m.contenu }}</div>
@@ -655,6 +656,7 @@
 </template>
 
 <script>
+import { useDataTranslation } from '@/composables/useDataTranslation'
 import { useAuthStore } from '@/stores/auth'
 import { projectAPI, taskAPI, userAPI, abonnementAPI, factureAPI, messagesAPI, notificationAPI } from '@/services/api'
 import WebSocketService from '@/services/websocket.service.js'
@@ -694,6 +696,8 @@ export default {
       showCreateProject: false,
       projetForm: { titre: '', description: '' },
       subscribedTopics: new Set(),
+      //translateStatus: null,
+      //translateTaskStatus: null,
     }
   },
   computed: {
@@ -738,6 +742,9 @@ export default {
       this.chargementGlobal = false
       return
     }
+    const { translateData } = useDataTranslation()
+    this.translateData = translateData
+
     await this.chargerToutesDonnees()
     this.initWebsocket()
 
@@ -1175,8 +1182,29 @@ export default {
     },
 
     async ouvrirChatProjet(projet) {
+      // Désabonner ancien projet
+      if (this.projetChatActuel) {
+        const oldTopic = `/topic/projet/${this.projetChatActuel.id}`
+        WebSocketService.unsubscribe(oldTopic)
+        this.subscribedTopics.delete(oldTopic)
+      }
+
       this.projetChatActuel = projet
       await this.chargerMessagesProjet(projet.id)
+
+      // Souscrire nouveau projet
+      const topicProjet = `/topic/projet/${projet.id}`
+      if (!this.subscribedTopics.has(topicProjet)) {
+        WebSocketService.subscribe(topicProjet, (msg) => {
+          console.log('[WS] Message chat reçu:', msg)
+          this.messagesChat.push(msg)
+          if (this.messagesParProjet[projet.id]) {
+            this.messagesParProjet[projet.id].push(msg)
+          }
+        })
+        this.subscribedTopics.add(topicProjet)
+        console.log(`[WS] Chef abonné au topic: ${topicProjet}`)
+      }
     },
 
     async chargerMessagesProjet(projetId) {

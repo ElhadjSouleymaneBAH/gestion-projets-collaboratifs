@@ -76,7 +76,6 @@
             />
           </div>
 
-          <!-- ✅ Champ adresse ajouté -->
           <div class="form-group">
             <label for="adresse">{{ $t('profil.adresse') }}</label>
             <textarea
@@ -109,7 +108,7 @@
             <label for="role">{{ $t('profil.role') }}</label>
             <input
               id="role"
-              :value="$t(`roles.${utilisateur.role}`)"
+              :value="getRoleLabel(utilisateur.role)"
               type="text"
               readonly
               class="readonly"
@@ -363,6 +362,17 @@ export default {
       })
     }
 
+    const getRoleLabel = (role) => {
+      if (!role) return '—'
+
+      const labels = {
+        'CHEF_PROJET': t('roles.chefProjet') || 'Chef de Projet',
+        'MEMBRE': t('roles.membre') || 'Membre',
+        'ADMINISTRATEUR': t('roles.administrateur') || 'Administrateur'
+      }
+      return labels[role] || role
+    }
+
     onMounted(chargerProfil)
 
     watch(() => formulaire.langue, (lang) => {
@@ -381,7 +391,9 @@ export default {
       formulaire, motDePasseForm,
       languesDisponibles, motDePasseMinLength,
       formulaireModifie, motDePasseFormValide,
-      mettreAJourProfil, changerMotDePasse, annulerModifications, formaterDate, t
+      mettreAJourProfil, changerMotDePasse, annulerModifications, formaterDate,
+      getRoleLabel,
+      t
     }
   }
 }
@@ -393,7 +405,6 @@ export default {
 .profil-header h1 { font-size: 2.5rem; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
 .profil-subtitle { color: #718096; font-size: 1.1rem; }
 
-/* Alertes (Bootstrap classes pour éviter les warnings) */
 .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
 .alert-success { background-color: #f0fff4; color: #38a169; border: 1px solid #9ae6b4; }
 .alert-danger { background-color: #fed7d7; color: #e53e3e; border: 1px solid #feb2b2; }
@@ -403,23 +414,22 @@ export default {
 .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
 
-/* Statistiques */
+
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
 .stat-card { background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); text-align: center; border: 1px solid #e2e8f0; }
 .stat-number { font-size: 2.5rem; font-weight: 700; color: #4299e1; margin-bottom: 8px; }
 .stat-label { color: #718096; font-weight: 500; text-transform: uppercase; font-size: .875rem; letter-spacing: .05em; }
 
-/* Formulaires */
 .profil-form-container, .mot-de-passe-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); border: 1px solid #e2e8f0; margin-bottom: 30px; }
 .profil-form-container h2, .mot-de-passe-section h2 { font-size: 1.5rem; font-weight: 600; color: #2d3748; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 6px; font-size: .95rem; }
-.form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: all .2s; background: #fff; }
-.form-group input:focus, .form-group select:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,.1); }
-.form-group input:disabled, .form-group select:disabled { background: #f7fafc; cursor: not-allowed; opacity: .6; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: all .2s; background: #fff; font-family: inherit; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,.1); }
+.form-group input:disabled, .form-group select:disabled, .form-group textarea:disabled { background: #f7fafc; cursor: not-allowed; opacity: .6; }
 .form-group input.readonly { background: #f7fafc; color: #718096; cursor: default; }
+.form-group textarea { resize: vertical; min-height: 80px; }
 
-/* Boutons */
 .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
 .btn-primary, .btn-secondary { padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: .95rem; cursor: pointer; transition: all .2s; border: 2px solid transparent; display: flex; align-items: center; gap: 8px; }
 .btn-primary { background: #4299e1; color: #fff; border-color: #4299e1; }
@@ -429,7 +439,6 @@ export default {
 .btn-primary:disabled, .btn-secondary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 .btn-spinner { width: 16px; height: 16px; border: 2px solid transparent; border-top: 2px solid currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
 
-/* Responsive */
 @media (max-width: 768px) {
   .profil-container { padding: 16px; }
   .profil-form-container, .mot-de-passe-section { padding: 20px; }

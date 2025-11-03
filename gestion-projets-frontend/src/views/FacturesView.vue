@@ -94,7 +94,7 @@
                     <p class="facture-date">{{ formatDate(facture.dateEmission) }}</p>
                   </div>
                   <span :class="getStatutClass(facture.statut)">
-                    {{ $t(`factures.statuts.${facture.statut}`) }}
+                    {{ translateInvoiceStatus(facture.statut) }}
                   </span>
                 </div>
               </div>
@@ -104,11 +104,11 @@
                 <div class="facture-info">
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.periode') }}:</span>
-                    <span class="info-value">{{ facture.periode || '—' }}</span>
+                    <span class="info-value">{{ translatePeriod(facture.periode) || '—' }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.description') }}:</span>
-                    <span class="info-value">{{ facture.description || '—' }}</span>
+                    <span class="info-value">{{ translateSubscriptionDescription(facture.description) || '—' }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.echeance') }}:</span>
@@ -225,6 +225,7 @@
 <script>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useDataTranslation } from '@/composables/useDataTranslation'
 import { useRoute } from 'vue-router'
 import { factureAPI } from '@/services/api'
 import Facture from '@/components/Facture.vue'
@@ -234,6 +235,7 @@ export default {
   components: { Facture },
   setup() {
     const { t, locale } = useI18n()
+    const { translateInvoiceStatus, translatePeriod, translateSubscriptionDescription } = useDataTranslation()
     const route = useRoute()
 
     // 🇫🇷/🇬🇧 : plus robuste (gère fr, fr-BE, vide, null)
@@ -480,7 +482,10 @@ export default {
       formatDate, formatMontant, getStatutClass,
       chargerFactures, rechercherFactures, changerPage,
       voirFacture, fermerModalFacture, telechargerPDF,
-      reinitialiserFiltres, onActionTerminee
+      reinitialiserFiltres, onActionTerminee,
+      translateInvoiceStatus,
+      translatePeriod,
+      translateSubscriptionDescription
     }
   }
 }

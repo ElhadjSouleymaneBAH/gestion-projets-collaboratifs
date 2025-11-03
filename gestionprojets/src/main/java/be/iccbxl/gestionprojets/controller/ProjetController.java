@@ -65,6 +65,32 @@ public class ProjetController {
         }
     }
 
+    /**
+     * ✅ Nouvelle méthode ajoutée (lecture publique d’un projet)
+     * Accessible sans authentification (conformément au cahier des charges - F3)
+     */
+    @GetMapping("/public/{id}")
+    public ResponseEntity<ProjetDTO> obtenirProjetPublicParId(@PathVariable Long id) {
+        try {
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
+
+            if (projetOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            ProjetDTO projet = projetOpt.get();
+
+            if (!Boolean.TRUE.equals(projet.getPublique())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+
+            return ResponseEntity.ok(projet);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     // ---------- CRUD ----------
     @PostMapping
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")

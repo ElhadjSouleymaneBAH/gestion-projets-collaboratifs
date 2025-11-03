@@ -98,7 +98,7 @@
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
               <span :class="['badge', getStatutBadgeClass(tache.statut)]">
                 <i :class="getStatutIcon(tache.statut)" class="me-1"></i>
-                {{ t(`taches.statuts.${mapStatutKey(tache.statut)}`) }}
+                {{ translateTaskStatus(tache.statut) }}
               </span>
               <div class="dropdown" v-if="peutGererTache(tache)">
                 <button
@@ -178,9 +178,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useDataTranslation } from '@/composables/useDataTranslation'
 import { taskAPI } from '@/services/api'
 
 const { t, locale } = useI18n()
+const { translateTaskStatus, translatePriority } = useDataTranslation()
 const route = useRoute()
 const router = useRouter()
 

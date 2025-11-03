@@ -107,7 +107,24 @@ class WebSocketService {
     }
   }
 
-  /** Abonnement au chat d’un projet */
+  /**  Désabonnement d'un topic */
+  unsubscribe(destination) {
+    try {
+      const sub = this.subscriptions.get(destination)
+      if (sub) {
+        sub.unsubscribe()
+        this.subscriptions.delete(destination)
+        console.log(`[WS] Désabonné de : ${destination}`)
+        return { success: true }
+      }
+      return { success: false, error: 'Subscription not found' }
+    } catch (e) {
+      console.error('[WS] Erreur unsubscribe:', e)
+      return { success: false, error: e.message }
+    }
+  }
+
+  /** Abonnement au chat d'un projet */
   subscribeToProject(projectId, callback) {
     try {
       if (!this.connected)
@@ -138,7 +155,7 @@ class WebSocketService {
     }
   }
 
-  /** ✉ Envoi d’un message normal */
+  /** ✉ Envoi d'un message normal */
   sendMessage(projectId, content) {
     try {
       if (!this.connected)

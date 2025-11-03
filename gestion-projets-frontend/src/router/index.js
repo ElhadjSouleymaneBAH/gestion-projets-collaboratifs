@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // Import direct
 import AccueilView from '@/views/AccueilView.vue'
 
+
 // Lazy loading
 const ConnexionView = () => import('@/views/ConnexionView.vue')
 const InscriptionView = () => import('@/views/InscriptionView.vue')
@@ -18,6 +19,9 @@ const FacturesView = () => import('@/views/FacturesView.vue')
 const AbonnementView = () => import('@/views/AbonnementView.vue')
 const StripeSuccessView = () => import('@/views/StripeSuccessView.vue')
 const StripeCancelView = () => import('@/views/StripeCancelView.vue')
+const ProfilView = () => import('@/views/ProfilView.vue')
+const ContactView = () => import('@/views/ContactView.vue')
+const AProposView = () => import('@/views/AProposView.vue')  // ✅ AJOUTÉ  // ✅ AJOUTÉ
 
 // Tâches
 const TacheDetailsView = () => import('@/views/TacheDetailsView.vue')
@@ -40,6 +44,9 @@ const routes = [
   { path: '/connexion', name: 'connexion', component: ConnexionView },
   { path: '/inscription', name: 'inscription', component: InscriptionView },
   { path: '/mot-de-passe-oublie', name: 'mot-de-passe-oublie', component: MotDePasseOublieView },
+
+
+  { path: '/profil', name: 'profil', component: ProfilView, meta: { requiresAuth: true } },
 
   // Abonnements
   { path: '/abonnement-premium', name: 'abonnement-premium', component: AbonnementView, meta: { requiresAuth: true } },
@@ -75,6 +82,12 @@ const routes = [
   // Tâches
   { path: '/taches/:id', name: 'tache-details', component: TacheDetailsView, meta: { requiresAuth: true } },
   { path: '/projets/:idProjet/taches', name: 'projet-taches', component: TachesProjetView, meta: { requiresAuth: true } },
+
+  // Contact
+  { path: '/contact', name: 'contact', component: ContactView },
+
+  // À propos
+  { path: '/a-propos', name: 'a-propos', component: AProposView },
 
   // Légal
   { path: '/conditions', name: 'conditions', component: ConditionsView },
@@ -174,6 +187,7 @@ router.afterEach((to) => {
     'connexion': 'Connexion - CollabPro',
     'inscription': 'Inscription - CollabPro',
     'mot-de-passe-oublie': 'Mot de passe oublié - CollabPro',
+    'profil': 'Mon Profil - CollabPro',
     'abonnement-premium': 'Abonnement Premium - CollabPro',
     'abonnement-success': 'Paiement Réussi - CollabPro',
     'abonnement-cancel': 'Paiement Annulé - CollabPro',
@@ -185,7 +199,9 @@ router.afterEach((to) => {
     'projet-detail': 'Détail du Projet - CollabPro',
     'tache-details': 'Détail de la Tâche - CollabPro',
     'projet-taches': 'Tâches du Projet - CollabPro',
-    'conditions': 'Conditions Générales d’Utilisation - CollabPro',
+    'contact': 'Contact - CollabPro',
+    'a-propos': 'À propos - CollabPro',
+    'conditions': 'Conditions Générales d\'Utilisation - CollabPro',
     'politique-confidentialite': 'Politique de Confidentialité - CollabPro'
   }
   document.title = titles[to.name] || 'CollabPro - Gestion de Projets Collaboratifs'

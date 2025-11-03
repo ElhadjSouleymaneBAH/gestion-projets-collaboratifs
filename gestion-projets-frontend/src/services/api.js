@@ -15,6 +15,7 @@ export const endpoints = {
   notifications: '/api/notifications',
   commentaires: '/api/commentaires',
   transactions: '/api/transactions',
+  public: '/api/public' // pour multilingue & ressources publiques
 }
 
 /* ============================================
@@ -39,21 +40,67 @@ const cleanId = (id) => (id == null ? id : String(id).split(':')[0])
 /* --------- Auth: bearer auto + langue --------- */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  // ✅ Envoyer le token uniquement si la route n’est PAS publique
+  const isPublic =
+    config.url?.includes('/api/public/') ||
+    config.url?.includes('/api/projets/public') ||
+    config.url?.includes('/api/projets/publics')
+
+  if (token && !isPublic) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
   const storedLang = localStorage.getItem('lang') || navigator.language || 'fr'
   config.headers['Accept-Language'] = shortLang(storedLang)
+
+  console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`, {
+    params: config.params,
+    data: config.data
+  })
+
   return config
 })
 
-/* --------- 401 global --------- */
+/* --------- Response interceptor --------- */
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.log(`[API SUCCESS] ${res.config.method?.toUpperCase()} ${res.config.url}`, {
+      status: res.status,
+      data: res.data
+    })
+    return res
+  },
   (error) => {
+    console.error('[API ERROR]', {
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      requestHeaders: {
+        Authorization: error.config?.headers?.Authorization ? 'Bearer ***' : 'None',
+        'Accept-Language': error.config?.headers?.['Accept-Language']
+      }
+    })
+
     if (error.response?.status === 401) {
+      console.warn('[API] 401 Unauthorized - Redirection vers /connexion')
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/connexion'
+      if (!window.location.pathname.includes('/connexion')) {
+        window.location.href = '/connexion'
+      }
     }
+
+    if (error.response?.status === 403) {
+      console.warn('[API] 403 Forbidden - Accès refusé')
+    }
+
+    if (error.response?.status === 404) {
+      console.warn('[API] 404 Not Found - Ressource introuvable')
+    }
+
     return Promise.reject(error)
   }
 )
@@ -74,7 +121,6 @@ export const authAPI = {
 export const stripeAPI = {
   createPaymentIntent: () =>
     api.post(`${endpoints.stripe}/create-payment-intent`),
-  // le backend attend payment_intent_id (ou paymentIntentId)
   confirmPayment: (paymentIntentId) =>
     api.post(`${endpoints.stripe}/confirm-payment`, { payment_intent_id: paymentIntentId }),
   listMyTransactions: () => api.get(`${endpoints.stripe}/mes-transactions`),
@@ -108,16 +154,28 @@ export const factureAPI = {
 
 /* ===================== PROJETS ===================== */
 export const projectAPI = {
+  // Liste et consultation
   list: () => api.get(endpoints.projects),
   getAll: () => api.get(endpoints.projects),
   getPublics: () => api.get(`${endpoints.projects}/publics`),
-  create: (payload) => api.post(endpoints.projects, payload),
+
+  //  route publique sans token
+  getPublicProjectById: (id) =>
+    api.get(`${endpoints.projects}/public/${cleanId(id)}`, {
+      headers: { 'Accept-Language': shortLang(localStorage.getItem('lang') || 'fr') }
+    }),
+
   byId: (id) => api.get(`${endpoints.projects}/${cleanId(id)}`),
   byUser: (userId) =>
     api.get(`${endpoints.projects}/utilisateur/${cleanId(userId)}`),
+
+  // CRUD
+  create: (payload) => api.post(endpoints.projects, payload),
   update: (id, payload) =>
     api.put(`${endpoints.projects}/${cleanId(id)}`, payload),
   delete: (id) => api.delete(`${endpoints.projects}/${cleanId(id)}`),
+
+  // Membres
   addMember: (projectId, userId, role = 'MEMBRE') =>
     api.post(
       `${endpoints.projects}/${cleanId(projectId)}/membres/${cleanId(userId)}`,
@@ -127,9 +185,11 @@ export const projectAPI = {
     api.delete(
       `${endpoints.projects}/${cleanId(projectId)}/membres/${cleanId(userId)}`
     ),
-  getStatuses: () => api.get(`${endpoints.projects}/statuts`),
   getProjectMembers: (projectId) =>
     api.get(`${endpoints.projects}/${cleanId(projectId)}/membres`),
+
+  // Métadonnées
+  getStatuses: () => api.get(`${endpoints.projects}/statuts`),
 }
 
 /* ===================== TÂCHES ===================== */
@@ -139,22 +199,22 @@ export const taskAPI = {
   update: (id, payload) => api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
   updateStatus: (id, statut) =>
     api.patch(`${endpoints.tasks}/${cleanId(id)}/statut`, { statut }),
-
   delete: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
+
+  // Par utilisateur/projet
   byUser: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
   byChefProjet: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
   byProjet: (projetId) =>
     api.get(`${endpoints.tasks}/projet/${cleanId(projetId)}`),
+
+  // Métadonnées
   getStatuses: () => api.get(`${endpoints.tasks}/statuts`),
   getPriorities: () => api.get(`${endpoints.tasks}/priorites`),
-  deleteTask: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
 
-  // ADMIN F7 - Voir toutes les tâches (maintenance plateforme + annulation)
+  // Admin
   getAllAdmin: () => api.get(`${endpoints.tasks}/admin/all`),
-
-  // ADMIN F7 - Annuler une tâche à tout moment
   annulerParAdmin: (id) => api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
 }
 
@@ -162,16 +222,11 @@ export const taskAPI = {
 export const userAPI = {
   list: ({ q = '', role = '', statut = '', page = 0, size = 20 } = {}) =>
     api.get(endpoints.users, { params: { q, role, statut, page, size } }),
-
   create: (payload) => api.post(endpoints.users, payload),
   updateProfile: (id, payload) =>
     api.put(`${endpoints.users}/${cleanId(id)}`, payload),
-
   search: (q) =>
-    api.get(`${endpoints.users}/recherche`, {
-      params: { q: String(q || '').trim() },
-    }),
-
+    api.get(`${endpoints.users}/recherche`, { params: { q: String(q || '').trim() } }),
   updateRole: (id, role) =>
     api.put(`${endpoints.users}/${cleanId(id)}/role`, { role }),
   getById: (id) => api.get(`${endpoints.users}/${cleanId(id)}`),
@@ -180,13 +235,10 @@ export const userAPI = {
 /* ===================== MESSAGES ===================== */
 export const messagesAPI = {
   list: () => api.get(endpoints.messages),
-  byProjet: (projectId) =>
+  getByProjet: (projectId) =>
     api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
   send: (payload) => api.post(endpoints.messages, payload),
   markAsRead: (id) => api.put(`${endpoints.messages}/${cleanId(id)}/lu`),
-  getByProjet: (projectId) =>
-    api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
-  sendMessage: (payload) => api.post(endpoints.messages, payload),
 }
 
 /* ===================== NOTIFICATIONS ===================== */
@@ -204,12 +256,6 @@ export const notificationAPI = {
   delete: (id, userId) =>
     api.delete(`${endpoints.notifications}/${cleanId(id)}`, {
       params: { userId: cleanId(userId) },
-    }),
-  getNotifications: (userId) =>
-    api.get(`${endpoints.notifications}/user/${cleanId(userId)}`),
-  deleteNotification: (id, userId) =>
-    api.delete(`${endpoints.notifications}/${cleanId(id)}`, {
-      params: userId ? { userId: cleanId(userId) } : undefined,
     }),
 }
 

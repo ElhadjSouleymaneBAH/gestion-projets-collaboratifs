@@ -28,6 +28,7 @@ export default {
 
   // ==================== COMMUN ====================
   commun: {
+    tableauDeBord: 'Tableau de bord',
     nomApplication: 'CollabPro',
     droitsReserves: 'Tous droits réservés',
     copyright: '© 2025 Tous droits réservés',
@@ -283,6 +284,7 @@ export default {
     confirmerSuppression: 'Supprimer ce projet définitivement ?',
     supprime: 'Projet supprimé avec succès',
     modifie: 'Projet modifié avec succès',
+    voirDetails: 'Voir les détails',
     statuts: {
       actif: 'Actif',
       suspendu: 'Suspendu',
@@ -919,6 +921,7 @@ export default {
     sections: {
       projets: 'Mes projets',
       taches: 'Mes tâches assignées',
+      notifications: 'Notifications',
       collaboration: 'Collaboration',
     },
 
@@ -1238,8 +1241,8 @@ export default {
     juridictionDesc: 'En cas de litige, les tribunaux de Bruxelles sont exclusivement compétents.',
     contact: 'Contact',
     contactText: 'Pour toute question concernant ces conditions, contactez-nous à ',
-    supportEmail: "support{'@'}collabpro.com",
-    protectionEmail: "protection{'@'}collabpro.com",
+    supportEmail: 'support@collabpro.com',
+    protectionEmail: 'protection@collabpro.com',
     creerCompteBtn: 'Créer un compte',
     retourAccueilBtn: "Retour à l'accueil",
     adapteProjets: 'Adapté aux PME et freelances pour leurs projets collaboratifs',
@@ -1365,9 +1368,31 @@ export default {
     conformiteRGPDFooter:
       "CollabPro est conforme au RGPD et s'engage à protéger vos données personnelles.",
   },
+  // ==================== CONTACT ====================
+  contact: {
+    titre: 'Contactez-nous',
+    description: 'Besoin d’aide ou d’informations ? Nous sommes à votre écoute.',
+    informations: 'Informations de contact',
+    entreprise: 'CollabPro Solutions',
+    adresse: {
+      rue: '123 Rue de la Paix',
+      ville: '1000 Bruxelles, Belgique',
+    },
+    email: {
+      titre: 'Adresse e-mail',
+      adresse: 'contact@collabpro.be',
+    },
+    tva: {
+      titre: 'Numéro de TVA',
+      numero: 'BE0123.456.789',
+    },
+    retourAccueil: "Retour à l'accueil",
+  },
 
   // ==================== ERREURS GÉNÉRALES ====================
   erreurs: {
+    accesRestreint: "Accès restreint. Vous n'avez pas les autorisations nécessaires.",
+
     erreurServeur: 'Erreur interne du serveur',
     erreurReseau: 'Erreur réseau. Vérifiez votre connexion internet.',
     donneesInvalides: 'Les données fournies sont invalides',
@@ -1428,7 +1453,7 @@ export default {
       description:
         "Votre paiement n'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.",
       retour: 'Retour au tableau de bord',
-      supportEmail: "support{'@'}collabpro.com",
+      supportEmail: 'support@collabpro.com',
     },
     success: {
       titre: 'Paiement réussi',
@@ -1449,7 +1474,7 @@ export default {
       erreurConfirmation: 'Erreur de confirmation du paiement.',
     },
     retour: 'Aller à mon tableau de bord',
-    contactSupport: "support{'@'}collabpro.com",
+    contactSupport: 'support@collabpro.com',
   },
 };
 

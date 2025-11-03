@@ -28,6 +28,7 @@ export default {
 
   // ==================== COMMON ====================
   commun: {
+    dashboard: 'Dashboard',
     nomApplication: 'CollabPro',
     droitsReserves: 'All rights reserved',
     copyright: '© 2025 All rights reserved',
@@ -281,6 +282,7 @@ export default {
     confirmerSuppression: 'Delete this project permanently?',
     supprime: 'Project deleted successfully',
     modifie: 'Project updated successfully',
+    viewDetails: 'View details',
     statuts: {
       actif: 'Active',
       suspendu: 'Suspended',
@@ -913,6 +915,7 @@ export default {
     sections: {
       projets: 'My projects',
       taches: 'My assigned tasks',
+      notifications: 'Notifications',
       collaboration: 'Collaboration',
     },
     chat: {
@@ -1230,8 +1233,8 @@ export default {
     juridictionDesc: 'In case of dispute, the courts of Brussels have exclusive jurisdiction.',
     contact: 'Contact',
     contactText: 'For any questions concerning these terms, contact us at ',
-    supportEmail: "support{'@'}collabpro.com",
-    protectionEmail: "protection{'@'}collabpro.com",
+    supportEmail: 'support@collabpro.com',
+    protectionEmail: 'protection@collabpro.com',
     creerCompteBtn: 'Create an account',
     retourAccueilBtn: 'Back to home',
     adapteProjets: 'Adapted for SMEs and freelancers for their collaborative projects',
@@ -1356,9 +1359,30 @@ export default {
     conformiteRGPDFooter:
       'CollabPro is GDPR compliant and is committed to protecting your personal data.',
   },
+  // ==================== CONTACT ====================
+  contact: {
+    titre: 'Contact Us',
+    description: 'Need help or information? We are here to assist you.',
+    informations: 'Contact Information',
+    entreprise: 'CollabPro Solutions',
+    adresse: {
+      rue: '123 Peace Street',
+      ville: '1000 Brussels, Belgium',
+    },
+    email: {
+      titre: 'Email Address',
+      adresse: 'contact@collabpro.be',
+    },
+    tva: {
+      titre: 'VAT Number',
+      numero: 'BE0123.456.789',
+    },
+    retourAccueil: 'Back to Home',
+  },
 
   // ==================== GENERAL ERRORS ====================
   erreurs: {
+    accesRestreint: 'Access restricted. You do not have the necessary permissions.',
     erreurServeur: 'Internal server error',
     erreurReseau: 'Network error. Check your internet connection.',
     donneesInvalides: 'The provided data is invalid',
@@ -1439,6 +1463,6 @@ export default {
       erreurConfirmation: 'Payment confirmation error.',
     },
     retour: 'Go to my dashboard',
-    contactSupport: "support{'@'}collabpro.com",
+    contactSupport: 'support@collabpro.com',
   },
 };

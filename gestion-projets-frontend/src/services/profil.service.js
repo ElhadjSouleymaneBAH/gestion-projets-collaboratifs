@@ -25,6 +25,14 @@ class ProfilService {
   }
 
   /**
+   * Normaliser un ID (enlever les suffixes :xxx si présents)
+   */
+  normalizeId(id) {
+    if (id == null) return id
+    return String(id).split(':')[0]
+  }
+
+  /**
    * F4 : Consulter son profil
    * Délègue au service utilisateur principal pour cohérence
    *
@@ -37,7 +45,21 @@ class ProfilService {
 
       // Vérification sécurité : utilisateur connecté
       const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
-      if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
+
+      if (!utilisateurConnecte || !utilisateurConnecte.id) {
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Utilisateur non connecté'
+        }
+      }
+
+      // Comparaison souple des IDs (gère String/Number)
+      const idConnecte = this.normalizeId(utilisateurConnecte.id)
+      const idDemande = this.normalizeId(utilisateurId)
+
+      if (idConnecte != idDemande) {
+        console.warn(`[F4] ID mismatch: connected=${idConnecte}, requested=${idDemande}`)
         throw {
           success: false,
           errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
@@ -46,14 +68,14 @@ class ProfilService {
       }
 
       // Déléguer au service utilisateur principal
-      const result = await utilisateurService.obtenirProfil(utilisateurId)
+      const result = await utilisateurService.obtenirProfil(idDemande)
 
       console.log('[F4] Profile loaded successfully via profil service')
       return result
     } catch (error) {
       console.error('[F4] Profile loading error via profil service:', error)
 
-      // Si l'erreur vient du service utilisateur, la propager
+
       if (error.errorCode) {
         throw error
       }
@@ -61,7 +83,7 @@ class ProfilService {
       throw {
         success: false,
         errorCode: ProfilService.ERROR_CODES.PROFILE_LOAD_FAILED,
-        message: error.message
+        message: error.message || 'Erreur lors du chargement du profil'
       }
     }
   }
@@ -80,7 +102,20 @@ class ProfilService {
 
       // Vérification sécurité : utilisateur connecté
       const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
-      if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
+
+      if (!utilisateurConnecte || !utilisateurConnecte.id) {
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Utilisateur non connecté'
+        }
+      }
+
+      // Comparaison souple des IDs
+      const idConnecte = this.normalizeId(utilisateurConnecte.id)
+      const idDemande = this.normalizeId(utilisateurId)
+
+      if (idConnecte != idDemande) {
         throw {
           success: false,
           errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
@@ -92,7 +127,7 @@ class ProfilService {
       this.validerDonneesProfil(donneesModifiees)
 
       // Déléguer au service utilisateur principal
-      const result = await utilisateurService.mettreAJourProfil(utilisateurId, donneesModifiees)
+      const result = await utilisateurService.mettreAJourProfil(idDemande, donneesModifiees)
 
       // Mettre à jour le localStorage utilisateur
       if (result.success && result.data) {
@@ -117,7 +152,7 @@ class ProfilService {
       throw {
         success: false,
         errorCode: ProfilService.ERROR_CODES.PROFILE_UPDATE_FAILED,
-        message: error.message
+        message: error.message || 'Erreur lors de la mise à jour du profil'
       }
     }
   }
@@ -136,7 +171,20 @@ class ProfilService {
 
       // Vérification sécurité : utilisateur connecté
       const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || 'null')
-      if (!utilisateurConnecte || utilisateurConnecte.id !== utilisateurId) {
+
+      if (!utilisateurConnecte || !utilisateurConnecte.id) {
+        throw {
+          success: false,
+          errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
+          message: 'Utilisateur non connecté'
+        }
+      }
+
+      // Comparaison souple des IDs
+      const idConnecte = this.normalizeId(utilisateurConnecte.id)
+      const idDemande = this.normalizeId(utilisateurId)
+
+      if (idConnecte != idDemande) {
         throw {
           success: false,
           errorCode: ProfilService.ERROR_CODES.UNAUTHORIZED,
@@ -148,7 +196,7 @@ class ProfilService {
       this.validerChangementMotDePasse(donneesMotDePasse)
 
       // Déléguer au service utilisateur principal
-      const result = await utilisateurService.changerMotDePasse(utilisateurId, donneesMotDePasse)
+      const result = await utilisateurService.changerMotDePasse(idDemande, donneesMotDePasse)
 
       console.log('[F5+] Password changed successfully via profil service')
       return result
@@ -163,13 +211,13 @@ class ProfilService {
       throw {
         success: false,
         errorCode: ProfilService.ERROR_CODES.PASSWORD_CHANGE_FAILED,
-        message: error.message
+        message: error.message || 'Erreur lors du changement de mot de passe'
       }
     }
   }
 
   /**
-   * F4 : Obtenir statistiques du profil (projets actifs selon cahier des charges)
+   * F4 : Obtenir statistiques du profil
    * Délègue au service utilisateur principal
    *
    * @param {number} utilisateurId - ID de l'utilisateur
@@ -179,8 +227,10 @@ class ProfilService {
     try {
       console.log('[F4] Loading profile statistics via profil service for user:', utilisateurId)
 
+      const idNormalise = this.normalizeId(utilisateurId)
+
       // Déléguer au service utilisateur principal
-      const result = await utilisateurService.obtenirStatistiquesProfil(utilisateurId)
+      const result = await utilisateurService.obtenirStatistiquesProfil(idNormalise)
 
       console.log('[F4] Profile statistics loaded via profil service')
       return result
@@ -206,7 +256,7 @@ class ProfilService {
    */
 
   /**
-   * Validation des données profil selon le cahier des charges
+   * Validation des données profil
    * @param {Object} donnees - Données à valider
    * @throws {Object} Erreur avec code d'erreur si validation échoue
    */

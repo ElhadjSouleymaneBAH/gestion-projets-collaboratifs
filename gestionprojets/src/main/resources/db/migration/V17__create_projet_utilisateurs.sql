@@ -13,5 +13,6 @@ CREATE TABLE projet_utilisateurs (
 
                                      UNIQUE KEY unique_projet_utilisateur (projet_id, utilisateur_id),
                                      INDEX idx_pu_utilisateur (utilisateur_id),
-                                     INDEX idx_pu_projet_actif (projet_id, actif)
+                                     INDEX idx_pu_projet_actif (projet_id, actif),
+                                     INDEX idx_pu_utilisateur_actif (utilisateur_id, actif)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

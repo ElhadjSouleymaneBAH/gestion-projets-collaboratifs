@@ -60,7 +60,6 @@
           </div>
         </div>
 
-        <!-- ✅ Carte Tâches attribuées cliquable -->
         <div class="col-md-3">
           <div
             class="card kpi-card border-0 shadow-sm h-100"
@@ -308,8 +307,8 @@
                       style="max-width:80%"
                     >
                       <div class="small opacity-75 mb-1">
-                        {{ m.utilisateurNom || '—' }}
-                        · {{ formatTime(m.dateEnvoi) }}
+                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || '—' }}
+                        · {{ formatTime(m.dateEnvoi || m.date || m.createdAt) }}
                       </div>
                       <div>{{ m.contenu }}</div>
                     </div>
@@ -353,12 +352,24 @@ const { t } = useI18n()
 const router = useRouter()
 const store = useAuthStore()
 
-const utilisateur = ref(store.user)
+// Fonction helper pour récupérer l'utilisateur de manière sûre
+const getUserSafe = () => {
+  if (store.user) return store.user
+  try {
+    const userStr = localStorage.getItem('user')
+    return userStr ? JSON.parse(userStr) : null
+  } catch {
+    return null
+  }
+}
+
+// Utiliser la fonction helper au lieu de store.user directement
+const utilisateur = ref(getUserSafe())
 const mesProjets = ref([])
 const mesTaches = ref([])
 const notifications = ref([])
 const messagesChat = ref([])
-const messagesParProjet = ref({})  // ✅ AJOUTÉ
+const messagesParProjet = ref({})
 const nouveauMessage = ref('')
 const abonnementActif = ref(true)
 const erreurBackend = ref('')
@@ -373,53 +384,104 @@ const tauxReussite = computed(() => {
   return Math.round((terminees / mesTaches.value.length) * 100)
 })
 
-// ✅ AJOUTÉ : Normalisation des IDs
 const normalizeId = (v) => v == null ? v : String(v).split(':')[0]
 
+// Vérification robuste de l'utilisateur
 const chargerToutesDonnees = async () => {
   chargementGlobal.value = true
   erreurBackend.value = ''
 
   try {
+    // Vérifier que l'utilisateur existe
+    if (!utilisateur.value || !utilisateur.value.id) {
+      console.warn(' Utilisateur non défini, tentative de récupération...')
+      utilisateur.value = getUserSafe()
+
+      if (!utilisateur.value || !utilisateur.value.id) {
+        console.error('Impossible de récupérer l utilisateur')
+        erreurBackend.value = 'Session expiree, veuillez vous reconnecter'
+        chargementGlobal.value = false
+        setTimeout(() => router.push('/connexion'), 2000)
+        return
+      }
+    }
+
     const userId = normalizeId(utilisateur.value.id)
-    const [p, t, n] = await Promise.all([
+    console.log(' Chargement des données pour userId:', userId)
+
+    //  Promise.allSettled pour gérer les erreurs partielles
+    const [pRes, tRes, nRes] = await Promise.allSettled([
       projectAPI.byUser(userId),
       taskAPI.byUser(userId),
       notificationAPI.list(userId)
     ])
 
-    mesProjets.value = Array.isArray(p.data) ? p.data : []
-    mesTaches.value = Array.isArray(t.data) ? t.data : []
-    notifications.value = Array.isArray(n.data) ? n.data : []
+    //  Gérer les réponses même si certaines échouent
+    mesProjets.value = pRes.status === 'fulfilled' && Array.isArray(pRes.value?.data)
+      ? pRes.value.data
+      : []
+
+    mesTaches.value = tRes.status === 'fulfilled' && Array.isArray(tRes.value?.data)
+      ? tRes.value.data
+      : []
+
+    notifications.value = nRes.status === 'fulfilled' && Array.isArray(nRes.value?.data)
+      ? nRes.value.data
+      : []
+
+    console.log(' Données chargées:', {
+      projets: mesProjets.value.length,
+      taches: mesTaches.value.length,
+      notifications: notifications.value.length
+    })
+
+    const erreurs = [pRes, tRes, nRes].filter(r => r.status === 'rejected')
+    if (erreurs.length === 3) {
+      erreurBackend.value = t('erreurs.chargementDonnees')
+      console.error(' Toutes les API ont échoué')
+    } else if (erreurs.length > 0) {
+      console.warn(' Erreurs partielles:', erreurs.map(e => e.reason?.message))
+    }
+
   } catch (e) {
-    console.error(e)
+    console.error(' Erreur critique:', e)
     erreurBackend.value = t('erreurs.chargementDonnees')
   } finally {
     chargementGlobal.value = false
   }
 }
 
-// ✅ AJOUTÉ : Charger les messages d'un projet
 const chargerMessagesProjet = async (projetId) => {
   try {
     const r = await messagesAPI.byProjet(projetId)
     messagesChat.value = Array.isArray(r.data) ? r.data : []
-    messagesParProjet.value[projetId] = messagesChat.value  // ✅ Stocker pour comptage non-lus
+    messagesParProjet.value[projetId] = messagesChat.value
   } catch (e) {
     console.error(e)
     messagesChat.value = []
   }
 }
 
+// Vérification de l'utilisateur dans initWebsocket
 const initWebsocket = () => {
   const token = localStorage.getItem('token')
-  if (!token) return
+  if (!token) {
+    console.warn(' Pas de token, WebSocket non initialisé')
+    return
+  }
+
+  //  Vérifier que l'utilisateur existe
+  if (!utilisateur.value || !utilisateur.value.id) {
+    console.error(' Utilisateur non défini, WebSocket non initialisé')
+    return
+  }
 
   WebSocketService.connect(token)
 
-  // ✅ Topic unifié pour notifications
   const userId = normalizeId(utilisateur.value.id)
   const topicNotifications = `/user/${userId}/topic/notifications`
+
+  console.log(' Souscription WebSocket:', topicNotifications)
 
   WebSocketService.subscribe(topicNotifications, (msg) => {
     console.log('[WS] Notification reçue:', msg)
@@ -434,7 +496,6 @@ const initWebsocket = () => {
         type: msg.sousType || 'SYSTEME'
       })
 
-      // Notification browser
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(msg.titre || 'Notification', {
           body: msg.message || msg.contenu,
@@ -444,9 +505,10 @@ const initWebsocket = () => {
     }
   })
 
-  // ✅ Topic pour les messages de chat du projet actuel
   if (projetChatActuel.value) {
     const topicProjet = `/topic/projet/${projetChatActuel.value.id}`
+    console.log(' Souscription WebSocket projet:', topicProjet)
+
     WebSocketService.subscribe(topicProjet, (msg) => {
       console.log('[WS] Message chat reçu:', msg)
       messagesChat.value.push(msg)
@@ -496,7 +558,6 @@ const seDeconnecter = () => {
   router.replace({ path: '/connexion', query: { switch: '1' } })
 }
 
-// ✅ AJOUTÉ : Méthode pour compter les messages non lus par projet
 const getMessagesNonLusProjet = (projetId) => {
   const messages = messagesParProjet.value[projetId] || []
   return messages.filter(m => m.statut !== 'LU').length

@@ -5,7 +5,7 @@ export function useDataTranslation() {
   const { locale } = useI18n()
 
   /**
-   * Traduit une donnée dynamique (ex: status, role, mois, etc.)
+   * Traduit une donnée dynamique (ex : status, role, mois, etc.)
    * @param {string} type - Catégorie (status, roles, abonnement, etc.)
    * @param {string} value - Valeur à traduire
    * @returns {string} - Traduction correspondante ou valeur d'origine

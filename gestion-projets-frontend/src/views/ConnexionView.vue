@@ -178,12 +178,15 @@ const handleConnexion = async () => {
     setTimeout(() => {
       if (backTo) return router.push(backTo.toString())
 
-      switch (user.role) {
+      // 🔧 FIX: Vérification sécurisée du role
+      const userRole = user?.role || 'MEMBRE'
+
+      switch (userRole) {
         case 'ADMINISTRATEUR': return router.push('/admin/tableau-de-bord')
         case 'CHEF_PROJET':    return router.push('/tableau-bord-chef-projet')
         case 'MEMBRE':         return router.push('/tableau-bord-membre')
         case 'VISITEUR':       return router.push('/projets-publics')
-        default:               return router.push('/')
+        default:               return router.push('/tableau-bord-membre')
       }
     }, 600)
 
