@@ -24,11 +24,12 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 @CrossOrigin(
         origins = {
-                "http://localhost:5174"
-
+                "http://localhost:5174",
+                "https://gestion-projets-collaboratifs-9goo9m1nl.vercel.app"
         },
         allowCredentials = "true"
 )
+
 public class AuthController {
     private final UtilisateurService utilisateurService;
     private final AuthenticationManager authenticationManager;

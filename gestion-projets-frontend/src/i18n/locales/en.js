@@ -425,6 +425,7 @@ export default {
       moderateur: 'Moderator',
       admin: 'Administrator',
     },
+    noResult: 'No result found',
   },
 
   // ==================== REAL-TIME COLLABORATION ====================
@@ -770,7 +771,7 @@ export default {
     nom: 'Last Name',
     nomPlaceholder: 'Your last name',
     email: 'Email Address',
-    emailPlaceholder: 'your@email.com',
+    emailPlaceholder: 'your\\@email.com',
     sauvegarder: 'Save',
     motDePasse: 'Password',
     ancienMotDePassePlaceholder: 'Your current password',
@@ -958,6 +959,9 @@ export default {
       titre: 'Become a Project Manager',
       description: 'Create your projects and manage your teams',
       bouton: 'Upgrade to Premium',
+    },
+    notifications: {
+      vide: 'No notifications at the moment',
     },
   },
 
@@ -1465,4 +1469,4 @@ export default {
     retour: 'Go to my dashboard',
     contactSupport: 'support@collabpro.com',
   },
-};
+}

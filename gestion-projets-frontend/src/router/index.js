@@ -21,7 +21,7 @@ const StripeSuccessView = () => import('@/views/StripeSuccessView.vue')
 const StripeCancelView = () => import('@/views/StripeCancelView.vue')
 const ProfilView = () => import('@/views/ProfilView.vue')
 const ContactView = () => import('@/views/ContactView.vue')
-const AProposView = () => import('@/views/AProposView.vue')  // ✅ AJOUTÉ  // ✅ AJOUTÉ
+const AProposView = () => import('@/views/AProposView.vue')
 
 // Tâches
 const TacheDetailsView = () => import('@/views/TacheDetailsView.vue')

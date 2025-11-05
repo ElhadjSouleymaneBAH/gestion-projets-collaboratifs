@@ -427,6 +427,8 @@ export default {
       moderateur: 'Modérateur',
       admin: 'Administrateur',
     },
+
+    aucunResultat: 'Aucun résultat trouvé',
   },
 
   // ==================== COLLABORATION EN TEMPS RÉEL ====================
@@ -774,7 +776,7 @@ export default {
     nom: 'Nom',
     nomPlaceholder: 'Votre nom',
     email: 'Adresse e-mail',
-    emailPlaceholder: 'votre@email.com',
+    emailPlaceholder: 'votre\\@email.com',
     sauvegarder: 'Sauvegarder',
     motDePasse: 'Mot de passe',
     ancienMotDePassePlaceholder: 'Votre mot de passe actuel',
@@ -966,6 +968,10 @@ export default {
       description: 'Créez vos projets et gérez vos équipes',
       bouton: 'Passer à Premium',
     },
+    notifications: {
+      vide: 'Aucune notification pour le moment',
+    },
+
   },
 
   // ==================== CHEF DE PROJET SPÉCIFIQUE ====================

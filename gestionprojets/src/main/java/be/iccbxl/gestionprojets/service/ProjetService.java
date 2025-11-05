@@ -212,8 +212,11 @@ public class ProjetService {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
+        //  éviter le blocage inutile si le membre existe déjà dans un autre projet
+
         if (projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId)) {
-            throw new RuntimeException("L'utilisateur est déjà membre de ce projet");
+            System.out.println("Utilisateur déjà membre de ce projet — ajout ignoré.");
+            return;
         }
 
         ProjetUtilisateur pu = new ProjetUtilisateur();
@@ -223,6 +226,7 @@ public class ProjetService {
         pu.setActif(true);
         projetUtilisateurRepository.save(pu);
     }
+
 
     public void retirerMembreDuProjet(Long projetId, Long utilisateurId) {
         if (!projetRepository.existsById(projetId)) {

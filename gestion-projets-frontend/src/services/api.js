@@ -21,7 +21,7 @@ export const endpoints = {
 /* ============================================
    BASE URL via .env
 ============================================ */
-const RAW_BASE = import.meta.env?.VITE_API_URL ?? ''
+const RAW_BASE = import.meta.env?.VITE_API_BASE_URL ?? ''
 const API_BASE = (RAW_BASE === '/api' ? '' : RAW_BASE).replace(/\/$/, '')
 
 /* ============================================
@@ -40,7 +40,6 @@ const cleanId = (id) => (id == null ? id : String(id).split(':')[0])
 /* --------- Auth: bearer auto + langue --------- */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  // ✅ Envoyer le token uniquement si la route n’est PAS publique
   const isPublic =
     config.url?.includes('/api/public/') ||
     config.url?.includes('/api/projets/public') ||
@@ -154,12 +153,10 @@ export const factureAPI = {
 
 /* ===================== PROJETS ===================== */
 export const projectAPI = {
-  // Liste et consultation
   list: () => api.get(endpoints.projects),
   getAll: () => api.get(endpoints.projects),
   getPublics: () => api.get(`${endpoints.projects}/publics`),
 
-  //  route publique sans token
   getPublicProjectById: (id) =>
     api.get(`${endpoints.projects}/public/${cleanId(id)}`, {
       headers: { 'Accept-Language': shortLang(localStorage.getItem('lang') || 'fr') }
@@ -169,13 +166,11 @@ export const projectAPI = {
   byUser: (userId) =>
     api.get(`${endpoints.projects}/utilisateur/${cleanId(userId)}`),
 
-  // CRUD
   create: (payload) => api.post(endpoints.projects, payload),
   update: (id, payload) =>
     api.put(`${endpoints.projects}/${cleanId(id)}`, payload),
   delete: (id) => api.delete(`${endpoints.projects}/${cleanId(id)}`),
 
-  // Membres
   addMember: (projectId, userId, role = 'MEMBRE') =>
     api.post(
       `${endpoints.projects}/${cleanId(projectId)}/membres/${cleanId(userId)}`,
@@ -188,34 +183,42 @@ export const projectAPI = {
   getProjectMembers: (projectId) =>
     api.get(`${endpoints.projects}/${cleanId(projectId)}/membres`),
 
-  // Métadonnées
   getStatuses: () => api.get(`${endpoints.projects}/statuts`),
 }
 
 /* ===================== TÂCHES ===================== */
 export const taskAPI = {
   list: () => api.get(endpoints.tasks),
+
   create: (payload) => api.post(endpoints.tasks, payload),
-  update: (id, payload) => api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
+
+  update: (id, payload) =>
+    api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
+
   updateStatus: (id, statut) =>
-    api.patch(`${endpoints.tasks}/${cleanId(id)}/statut`, { statut }),
+    api.patch(
+      `${endpoints.tasks}/${cleanId(id)}/statut`,
+      { statut: String(statut) },
+      { headers: { 'Content-Type': 'application/json' } }
+    ),
+
   delete: (id) => api.delete(`${endpoints.tasks}/${cleanId(id)}`),
 
-  // Par utilisateur/projet
   byUser: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
+
   byChefProjet: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
+
   byProjet: (projetId) =>
     api.get(`${endpoints.tasks}/projet/${cleanId(projetId)}`),
 
-  // Métadonnées
   getStatuses: () => api.get(`${endpoints.tasks}/statuts`),
   getPriorities: () => api.get(`${endpoints.tasks}/priorites`),
 
-  // Admin
   getAllAdmin: () => api.get(`${endpoints.tasks}/admin/all`),
-  annulerParAdmin: (id) => api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
+  annulerParAdmin: (id) =>
+    api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
 }
 
 /* ===================== UTILISATEURS ===================== */
@@ -235,10 +238,29 @@ export const userAPI = {
 /* ===================== MESSAGES ===================== */
 export const messagesAPI = {
   list: () => api.get(endpoints.messages),
-  getByProjet: (projectId) =>
+
+  byProjet: (projectId) =>
     api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
-  send: (payload) => api.post(endpoints.messages, payload),
-  markAsRead: (id) => api.put(`${endpoints.messages}/${cleanId(id)}/lu`),
+
+  /**
+   * CORRECTION CRITIQUE:
+   * Le backend attend POST /api/messages/projet/{projetId}
+   * et non POST /api/messages
+   *
+   * Payload attendu: { contenu: string, projetId: number, type?: string }
+   */
+  send: (payload) => {
+    if (!payload.projetId) {
+      return Promise.reject(new Error('projetId est requis pour envoyer un message'))
+    }
+    // Appel corrigé: POST /api/messages/projet/{projetId}
+    return api.post(`${endpoints.messages}/projet/${cleanId(payload.projetId)}`, {
+      contenu: payload.contenu,
+      type: payload.type || 'TEXT'
+    })
+  },
+
+  markAsRead: (id) => api.put(`${endpoints.messages}/${cleanId(id)}/marquer-lu`),
 }
 
 /* ===================== NOTIFICATIONS ===================== */

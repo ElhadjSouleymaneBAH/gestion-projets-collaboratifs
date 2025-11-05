@@ -466,13 +466,13 @@ const chargerMessagesProjet = async (projetId) => {
 const initWebsocket = () => {
   const token = localStorage.getItem('token')
   if (!token) {
-    console.warn(' Pas de token, WebSocket non initialisé')
+    console.warn('[WS] Pas de token, WebSocket non initialisé')
     return
   }
 
-  //  Vérifier que l'utilisateur existe
+  // Vérifier que l'utilisateur existe
   if (!utilisateur.value || !utilisateur.value.id) {
-    console.error(' Utilisateur non défini, WebSocket non initialisé')
+    console.error('[WS] Utilisateur non défini, WebSocket non initialisé')
     return
   }
 
@@ -481,7 +481,7 @@ const initWebsocket = () => {
   const userId = normalizeId(utilisateur.value.id)
   const topicNotifications = `/user/${userId}/topic/notifications`
 
-  console.log(' Souscription WebSocket:', topicNotifications)
+  console.log('[WS] Souscription WebSocket:', topicNotifications)
 
   WebSocketService.subscribe(topicNotifications, (msg) => {
     console.log('[WS] Notification reçue:', msg)
@@ -541,6 +541,13 @@ const envoyerMessage = async () => {
 }
 
 const ouvrirChatProjet = async (projet) => {
+  //  Vérification d'accès avant ouverture du chat
+  if (projet.prive && !projet.estMembre) {
+    console.warn(`[WS] Accès refusé au projet privé : ${projet.titre}`)
+    alert('Accès refusé à ce projet privé.')
+    return
+  }
+
   projetChatActuel.value = projet
   onglet.value = 'collaboration'
   await chargerMessagesProjet(projet.id)

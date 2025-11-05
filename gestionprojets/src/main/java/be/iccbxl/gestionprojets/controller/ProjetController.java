@@ -66,7 +66,7 @@ public class ProjetController {
     }
 
     /**
-     * ✅ Nouvelle méthode ajoutée (lecture publique d’un projet)
+     *  Nouvelle méthode ajoutée (lecture publique d’un projet)
      * Accessible sans authentification (conformément au cahier des charges - F3)
      */
     @GetMapping("/public/{id}")
@@ -116,7 +116,7 @@ public class ProjetController {
         }
     }
 
-    // 🔧 CORRIGÉ : Vérifier que l'utilisateur a accès au projet
+    //  Vérifier que l'utilisateur a accès au projet
     @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<ProjetDTO> obtenirProjetParId(@PathVariable Long id, Authentication authentication) {

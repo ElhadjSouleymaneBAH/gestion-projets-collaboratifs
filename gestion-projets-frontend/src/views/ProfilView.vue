@@ -1,37 +1,70 @@
 <template>
   <div class="profil-container">
-    <!-- En-tête profil -->
     <div class="profil-header">
       <h1>{{ $t('profil.titre') }}</h1>
       <p class="profil-subtitle">{{ $t('profil.gererInformations') }}</p>
     </div>
 
-    <!-- Messages -->
     <div v-if="message.texte" :class="['alert', messageCss]">
       {{ message.texte }}
     </div>
 
-    <!-- Loading -->
     <div v-if="chargement" class="loading">
       <div class="spinner"></div>
       <p>{{ $t('commun.chargement') }}</p>
     </div>
 
-    <!-- Contenu principal -->
     <div v-else class="profil-content">
-      <!-- Statistiques -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-number">{{ statistiques.projets }}</div>
-          <div class="stat-label">{{ $t('profil.projets') }}</div>
+      <div class="projets-actifs-section">
+        <h2>{{ $t('profil.mesProjetsActifs') }}</h2>
+
+        <div v-if="chargementProjets" class="loading-projets">
+          <div class="spinner-small"></div>
+          <span>{{ $t('profil.chargementProjets') }}</span>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistiques.taches }}</div>
-          <div class="stat-label">{{ $t('profil.taches') }}</div>
+
+        <div v-else-if="projetsActifs.length === 0" class="aucun-projet">
+          <p>{{ $t('profil.aucunProjetActif') }}</p>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ statistiques.notificationsNonLues }}</div>
-          <div class="stat-label">{{ $t('profil.notifications') }}</div>
+
+        <div v-else class="projets-grid">
+          <div
+              v-for="projet in projetsActifs"
+              :key="projet.id"
+              class="projet-card"
+              @click="naviguerVersProjet(projet.id)"
+          >
+            <div class="projet-header">
+              <h3 class="projet-nom">{{ projet.nom }}</h3>
+              <span :class="['projet-statut', `statut-${projet.statut.toLowerCase()}`]">
+                {{ $t(`statuts.${projet.statut.toLowerCase()}`) }}
+              </span>
+            </div>
+
+            <p v-if="projet.description" class="projet-description">
+              {{ projet.description }}
+            </p>
+
+            <div class="projet-info">
+              <div class="info-item">
+                <span class="info-label">{{ $t('profil.role') }}:</span>
+                <span class="info-value">{{ getRoleLabel(projet.roleUtilisateur) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ $t('profil.tachesEnCours') }}:</span>
+                <span class="info-value">{{ projet.nombreTaches || 0 }}</span>
+              </div>
+              <div class="info-item" v-if="projet.dateDebut">
+                <span class="info-label">{{ $t('profil.dateDebut') }}:</span>
+                <span class="info-value">{{ formaterDate(projet.dateDebut) }}</span>
+              </div>
+            </div>
+
+            <div v-if="projet.membresCount" class="projet-membres">
+              <span class="membres-icon">👥</span>
+              <span>{{ projet.membresCount }} {{ $t('profil.membres') }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -43,61 +76,66 @@
           <div class="form-group">
             <label for="prenom">{{ $t('profil.prenom') }} *</label>
             <input
-              id="prenom"
-              v-model="formulaire.prenom"
-              type="text"
-              :placeholder="$t('profil.prenomPlaceholder')"
-              required
-              :disabled="sauvegardeEnCours"
+                id="prenom"
+                v-model="formulaire.prenom"
+                type="text"
+                :placeholder="$t('profil.prenomPlaceholder')"
+                required
+                :disabled="sauvegardeEnCours"
+                autocomplete="given-name"
             />
           </div>
 
           <div class="form-group">
             <label for="nom">{{ $t('profil.nom') }} *</label>
             <input
-              id="nom"
-              v-model="formulaire.nom"
-              type="text"
-              :placeholder="$t('profil.nomPlaceholder')"
-              required
-              :disabled="sauvegardeEnCours"
+                id="nom"
+                v-model="formulaire.nom"
+                type="text"
+                :placeholder="$t('profil.nomPlaceholder')"
+                required
+                :disabled="sauvegardeEnCours"
+                autocomplete="family-name"
             />
           </div>
 
           <div class="form-group">
             <label for="email">{{ $t('profil.email') }} *</label>
             <input
-              id="email"
-              v-model="formulaire.email"
-              type="email"
-              :placeholder="$t('profil.emailPlaceholder')"
-              required
-              :disabled="true"
+                id="email"
+                v-model="formulaire.email"
+                type="email"
+                :placeholder="$t('profil.emailPlaceholder')"
+                required
+                :disabled="true"
+                autocomplete="email"
             />
+            <small class="form-help">{{ $t('profil.emailNonModifiable') }}</small>
           </div>
 
           <div class="form-group">
             <label for="adresse">{{ $t('profil.adresse') }}</label>
             <textarea
-              id="adresse"
-              v-model="formulaire.adresse"
-              :placeholder="$t('profil.adressePlaceholder')"
-              :disabled="sauvegardeEnCours"
-              rows="3"
+                id="adresse"
+                v-model="formulaire.adresse"
+                :placeholder="$t('profil.adressePlaceholder')"
+                :disabled="sauvegardeEnCours"
+                rows="3"
+                autocomplete="street-address"
             ></textarea>
           </div>
 
           <div class="form-group">
             <label for="langue">{{ $t('profil.langue') }}</label>
             <select
-              id="langue"
-              v-model="formulaire.langue"
-              :disabled="sauvegardeEnCours"
+                id="langue"
+                v-model="formulaire.langue"
+                :disabled="sauvegardeEnCours"
             >
               <option
-                v-for="langue in languesDisponibles"
-                :key="langue.code"
-                :value="langue.code"
+                  v-for="langue in languesDisponibles"
+                  :key="langue.code"
+                  :value="langue.code"
               >
                 {{ $t(langue.label) }}
               </option>
@@ -107,39 +145,39 @@
           <div class="form-group">
             <label for="role">{{ $t('profil.role') }}</label>
             <input
-              id="role"
-              :value="getRoleLabel(utilisateur.role)"
-              type="text"
-              readonly
-              class="readonly"
+                id="role"
+                :value="getRoleLabel(utilisateur.role)"
+                type="text"
+                readonly
+                class="readonly"
             />
           </div>
 
           <div class="form-group">
             <label for="dateInscription">{{ $t('profil.dateInscription') }}</label>
             <input
-              id="dateInscription"
-              :value="formaterDate(utilisateur.dateInscription)"
-              type="text"
-              readonly
-              class="readonly"
+                id="dateInscription"
+                :value="formaterDate(utilisateur.dateInscription)"
+                type="text"
+                readonly
+                class="readonly"
             />
           </div>
 
           <div class="form-actions">
             <button
-              type="button"
-              @click="annulerModifications"
-              class="btn-secondary"
-              :disabled="sauvegardeEnCours"
+                type="button"
+                @click="annulerModifications"
+                class="btn-secondary"
+                :disabled="sauvegardeEnCours"
             >
               {{ $t('commun.annuler') }}
             </button>
 
             <button
-              type="submit"
-              class="btn-primary"
-              :disabled="sauvegardeEnCours || !formulaireModifie"
+                type="submit"
+                class="btn-primary"
+                :disabled="sauvegardeEnCours || !formulaireModifie"
             >
               <span v-if="sauvegardeEnCours" class="btn-spinner"></span>
               {{ $t('profil.sauvegarder') }}
@@ -156,46 +194,56 @@
           <div class="form-group">
             <label for="ancienMotDePasse">{{ $t('profil.ancienMotDePasse') }} *</label>
             <input
-              id="ancienMotDePasse"
-              v-model="motDePasseForm.ancienMotDePasse"
-              type="password"
-              :placeholder="$t('profil.ancienMotDePassePlaceholder')"
-              required
-              :disabled="changementMotDePasseEnCours"
+                id="ancienMotDePasse"
+                v-model="motDePasseForm.ancienMotDePasse"
+                type="password"
+                :placeholder="$t('profil.ancienMotDePassePlaceholder')"
+                required
+                :disabled="changementMotDePasseEnCours"
+                autocomplete="current-password"
             />
           </div>
 
           <div class="form-group">
             <label for="nouveauMotDePasse">{{ $t('profil.nouveauMotDePasse') }} *</label>
             <input
-              id="nouveauMotDePasse"
-              v-model="motDePasseForm.nouveauMotDePasse"
-              type="password"
-              :placeholder="$t('profil.nouveauMotDePassePlaceholder')"
-              required
-              :minlength="motDePasseMinLength"
-              :disabled="changementMotDePasseEnCours"
+                id="nouveauMotDePasse"
+                v-model="motDePasseForm.nouveauMotDePasse"
+                type="password"
+                :placeholder="$t('profil.nouveauMotDePassePlaceholder')"
+                required
+                :minlength="motDePasseMinLength"
+                :disabled="changementMotDePasseEnCours"
+                autocomplete="new-password"
             />
+            <small class="form-help">
+              {{ $t('profil.motDePasseMinLength', { length: motDePasseMinLength }) }}
+            </small>
           </div>
 
           <div class="form-group">
             <label for="confirmationMotDePasse">{{ $t('profil.confirmationMotDePasse') }} *</label>
             <input
-              id="confirmationMotDePasse"
-              v-model="motDePasseForm.confirmationMotDePasse"
-              type="password"
-              :placeholder="$t('profil.confirmationMotDePassePlaceholder')"
-              required
-              :minlength="motDePasseMinLength"
-              :disabled="changementMotDePasseEnCours"
+                id="confirmationMotDePasse"
+                v-model="motDePasseForm.confirmationMotDePasse"
+                type="password"
+                :placeholder="$t('profil.confirmationMotDePassePlaceholder')"
+                required
+                :minlength="motDePasseMinLength"
+                :disabled="changementMotDePasseEnCours"
+                autocomplete="new-password"
             />
+          </div>
+
+          <div v-if="motDePasseForm.nouveauMotDePasse && motDePasseForm.confirmationMotDePasse && motDePasseForm.nouveauMotDePasse !== motDePasseForm.confirmationMotDePasse" class="error-message">
+            {{ $t('profil.motDePasseNonIdentique') }}
           </div>
 
           <div class="form-actions">
             <button
-              type="submit"
-              class="btn-primary"
-              :disabled="changementMotDePasseEnCours || !motDePasseFormValide"
+                type="submit"
+                class="btn-primary"
+                :disabled="changementMotDePasseEnCours || !motDePasseFormValide"
             >
               <span v-if="changementMotDePasseEnCours" class="btn-spinner"></span>
               {{ $t('profil.changerMotDePasse') }}
@@ -210,12 +258,15 @@
 <script>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import profilService from '@/services/profil.service.js'
+import projetService from '@/services/projet.service.js'
 
 export default {
   name: 'ProfilView',
   setup() {
     const { t, locale } = useI18n()
+    const router = useRouter()
     const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE || 'fr'
     const motDePasseMinLength = parseInt(import.meta.env.VITE_PASSWORD_MIN_LENGTH || '8')
 
@@ -225,19 +276,20 @@ export default {
     ]
 
     const chargement = ref(true)
+    const chargementProjets = ref(true)
     const sauvegardeEnCours = ref(false)
     const changementMotDePasseEnCours = ref(false)
 
     const utilisateur = ref({})
-    const statistiques = ref({ projets: 0, taches: 0, notificationsNonLues: 0 })
+    const projetsActifs = ref([])
 
     const message = reactive({ texte: '', type: '' })
     const messageCss = computed(() =>
-      message.type === 'success'
-        ? 'alert-success'
-        : message.type === 'error'
-          ? 'alert-danger'
-          : 'alert-info'
+        message.type === 'success'
+            ? 'alert-success'
+            : message.type === 'error'
+                ? 'alert-danger'
+                : 'alert-info'
     )
 
     const formulaire = reactive({
@@ -256,15 +308,15 @@ export default {
     })
 
     const formulaireModifie = computed(() =>
-      Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
+        Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
     )
 
     const motDePasseFormValide = computed(() =>
-      motDePasseForm.ancienMotDePasse &&
-      motDePasseForm.nouveauMotDePasse &&
-      motDePasseForm.confirmationMotDePasse &&
-      motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
-      motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
+        motDePasseForm.ancienMotDePasse &&
+        motDePasseForm.nouveauMotDePasse &&
+        motDePasseForm.confirmationMotDePasse &&
+        motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
+        motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
     )
 
     const afficherMessage = (texte, type = 'success') => {
@@ -294,14 +346,33 @@ export default {
           adresse: utilisateur.value.adresse || ''
         })
         Object.assign(formulaireOriginal, { ...formulaire })
-
-        const statsReponse = await profilService.obtenirStatistiquesProfil(utilisateurConnecte.id)
-        if (statsReponse.success) statistiques.value = statsReponse.data
       } catch (e) {
         console.error('Erreur chargement profil:', e)
         afficherMessage(t('profil.erreurChargement'), 'error')
       } finally {
         chargement.value = false
+      }
+    }
+
+    const chargerProjetsActifs = async () => {
+      chargementProjets.value = true
+      try {
+        const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+        if (!utilisateurConnecte?.id) {
+          chargementProjets.value = false
+          return
+        }
+
+        // Appel au service pour récupérer les projets de l'utilisateur
+        const reponse = await projetService.obtenirProjetsDeLUtilisateur(utilisateurConnecte.id)
+        if (reponse.success) {
+          projetsActifs.value = reponse.data || []
+        }
+      } catch (e) {
+        console.error('Erreur chargement projets:', e)
+        projetsActifs.value = []
+      } finally {
+        chargementProjets.value = false
       }
     }
 
@@ -353,6 +424,12 @@ export default {
 
     const annulerModifications = () => Object.assign(formulaire, { ...formulaireOriginal })
 
+    const naviguerVersProjet = (projetId) => {
+      if (projetId) {
+        router.push({ name: 'ProjetDetail', params: { id: projetId } })
+      }
+    }
+
     const formaterDate = (str) => {
       if (!str) return ''
       const langueActuelle = formulaire.langue || defaultLocale
@@ -373,7 +450,10 @@ export default {
       return labels[role] || role
     }
 
-    onMounted(chargerProfil)
+    onMounted(() => {
+      chargerProfil()
+      chargerProjetsActifs()
+    })
 
     watch(() => formulaire.langue, (lang) => {
       if (!lang) return
@@ -386,12 +466,25 @@ export default {
     })
 
     return {
-      chargement, sauvegardeEnCours, changementMotDePasseEnCours,
-      utilisateur, statistiques, message, messageCss,
-      formulaire, motDePasseForm,
-      languesDisponibles, motDePasseMinLength,
-      formulaireModifie, motDePasseFormValide,
-      mettreAJourProfil, changerMotDePasse, annulerModifications, formaterDate,
+      chargement,
+      chargementProjets,
+      sauvegardeEnCours,
+      changementMotDePasseEnCours,
+      utilisateur,
+      projetsActifs,
+      message,
+      messageCss,
+      formulaire,
+      motDePasseForm,
+      languesDisponibles,
+      motDePasseMinLength,
+      formulaireModifie,
+      motDePasseFormValide,
+      mettreAJourProfil,
+      changerMotDePasse,
+      annulerModifications,
+      naviguerVersProjet,
+      formaterDate,
       getRoleLabel,
       t
     }
@@ -400,7 +493,7 @@ export default {
 </script>
 
 <style scoped>
-.profil-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.profil-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 .profil-header { text-align: center; margin-bottom: 30px; }
 .profil-header h1 { font-size: 2.5rem; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
 .profil-subtitle { color: #718096; font-size: 1.1rem; }
@@ -414,35 +507,212 @@ export default {
 .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
 
+.loading-projets { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 24px; color: #718096; }
+.spinner-small { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top: 2px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-.stat-card { background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); text-align: center; border: 1px solid #e2e8f0; }
-.stat-number { font-size: 2.5rem; font-weight: 700; color: #4299e1; margin-bottom: 8px; }
-.stat-label { color: #718096; font-weight: 500; text-transform: uppercase; font-size: .875rem; letter-spacing: .05em; }
+/* Section Projets Actifs */
+.projets-actifs-section {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 30px;
+}
+.projets-actifs-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
 
-.profil-form-container, .mot-de-passe-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); border: 1px solid #e2e8f0; margin-bottom: 30px; }
-.profil-form-container h2, .mot-de-passe-section h2 { font-size: 1.5rem; font-weight: 600; color: #2d3748; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+.aucun-projet {
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+  font-size: 1.05rem;
+}
+
+.projets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.projet-card {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.projet-card:hover {
+  border-color: #4299e1;
+  box-shadow: 0 4px 12px rgba(66,153,225,.15);
+  transform: translateY(-2px);
+}
+
+.projet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.projet-nom {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  flex: 1;
+}
+
+.projet-statut {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.statut-en_cours { background: #c6f6d5; color: #22543d; }
+.statut-termine { background: #bee3f8; color: #2c5282; }
+.statut-en_attente { background: #feebc8; color: #7c2d12; }
+.statut-annule { background: #fed7d7; color: #742a2a; }
+
+.projet-description {
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.projet-info {
+  margin-bottom: 12px;
+}
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.info-item:last-child { border-bottom: none; }
+.info-label { color: #718096; font-weight: 500; }
+.info-value { color: #2d3748; font-weight: 600; }
+
+.projet-membres {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+.membres-icon { font-size: 1.1rem; }
+
+.profil-form-container, .mot-de-passe-section {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 30px;
+}
+.profil-form-container h2, .mot-de-passe-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 6px; font-size: .95rem; }
-.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: all .2s; background: #fff; font-family: inherit; }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,.1); }
-.form-group input:disabled, .form-group select:disabled, .form-group textarea:disabled { background: #f7fafc; cursor: not-allowed; opacity: .6; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all .2s;
+  background: #fff;
+  font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66,153,225,.1);
+}
+.form-group input:disabled, .form-group select:disabled, .form-group textarea:disabled {
+  background: #f7fafc;
+  cursor: not-allowed;
+  opacity: .6;
+}
 .form-group input.readonly { background: #f7fafc; color: #718096; cursor: default; }
 .form-group textarea { resize: vertical; min-height: 80px; }
+.form-help { display: block; margin-top: 6px; font-size: 0.85rem; color: #718096; }
 
-.form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-.btn-primary, .btn-secondary { padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: .95rem; cursor: pointer; transition: all .2s; border: 2px solid transparent; display: flex; align-items: center; gap: 8px; }
+.error-message {
+  background: #fed7d7;
+  color: #e53e3e;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-top: 12px;
+  border: 1px solid #feb2b2;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+.btn-primary, .btn-secondary {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: all .2s;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .btn-primary { background: #4299e1; color: #fff; border-color: #4299e1; }
 .btn-primary:hover:not(:disabled) { background: #3182ce; border-color: #3182ce; transform: translateY(-1px); }
 .btn-secondary { background: #fff; color: #4a5568; border-color: #e2e8f0; }
 .btn-secondary:hover:not(:disabled) { background: #f7fafc; border-color: #cbd5e0; }
 .btn-primary:disabled, .btn-secondary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-.btn-spinner { width: 16px; height: 16px; border: 2px solid transparent; border-top: 2px solid currentColor; border-radius: 50%; animation: spin 1s linear infinite; }
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
 @media (max-width: 768px) {
   .profil-container { padding: 16px; }
-  .profil-form-container, .mot-de-passe-section { padding: 20px; }
-  .stats-grid { grid-template-columns: 1fr; }
+  .profil-form-container, .mot-de-passe-section, .projets-actifs-section { padding: 20px; }
+  .projets-grid { grid-template-columns: 1fr; }
   .form-actions { flex-direction: column; }
   .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
 }

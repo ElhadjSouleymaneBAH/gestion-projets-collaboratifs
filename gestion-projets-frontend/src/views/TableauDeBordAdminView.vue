@@ -340,9 +340,23 @@
                   <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ p.statut }}</span></td>
                   <td><small class="text-muted">{{ formatDate(getDateCreation(p)) }}</small></td>
                   <td>
-                    <button class="btn btn-sm btn-outline-info" @click="navigateToProject(p.id)" :title="$t('commun.consulter')">
-                      <i class="fas fa-eye"></i>
-                    </button>
+                    <td>
+                      <button
+                          v-if="p.visibilite === 'PUBLIC'"
+                          class="btn btn-sm btn-outline-info"
+                          @click="navigateToProject(p.id)"
+                          :title="$t('commun.consulter')"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <span
+                          v-else
+                          class="text-muted small"
+                          :title="$t('admin.projetPrive')"
+                      >
+    <i class="fas fa-lock"></i> Privé
+  </span>
+                    </td>
                   </td>
                 </tr>
                 </tbody>

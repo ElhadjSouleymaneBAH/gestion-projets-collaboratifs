@@ -83,7 +83,7 @@
                   </div>
 
                   <div class="d-flex align-items-center gap-2">
-                    <span :class="['badge', getRoleBadge(m.role)]">
+                    <span :class="['badge', getRoleBadge(translateRole(m.role) || 'MEMBRE')]">
                       {{ translateRole(m.role || 'MEMBRE') }}
                     </span>
                     <button
@@ -294,6 +294,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { useDataTranslation } from '@/composables/useDataTranslation'
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
@@ -405,20 +406,39 @@ const fetchAll = async () => {
     console.log(' Chargement du projet:', projetId.value)
 
     // Étape 1: Charger les informations du projet
+
     try {
-      const projetRes = await projectAPI.getPublicProjectById(projetId.value)
+      let projetRes
+      if (utilisateurActuel.value?.id) {
+        try {
+          // Essayer la route protégée (authentifiée)
+          projetRes = await projectAPI.byId(projetId.value)
+        } catch (err) {
+          // Si erreur 403 → tenter la version publique
+          if (err.response?.status === 403) {
+            console.warn('Accès restreint - tentative route publique')
+            projetRes = await projectAPI.getPublicProjectById(projetId.value)
+          } else {
+            throw err
+          }
+        }
+      } else {
+        // Si pas connecté → route publique directe
+        projetRes = await projectAPI.getPublicProjectById(projetId.value)
+      }
 
       projet.value = projetRes.data
-      console.log(' Projet chargé:', projet.value?.titre)
+      console.log('Projet chargé:', projet.value?.titre)
     } catch (error) {
       if (error.response?.status === 403) {
-        console.error(' 403 sur projet - Accès refusé')
+        console.error('403 sur projet - Accès refusé')
         accesDenie.value = true
-        messageErreur.value = 'Vous n\'avez pas les permissions pour accéder à ce projet.'
+        messageErreur.value = "Vous n'avez pas les permissions pour accéder à ce projet."
         return
       }
       throw error
     }
+
 
     // Étape 2: Charger les membres du projet
     try {
@@ -462,7 +482,9 @@ const fetchAll = async () => {
 
     // Étape 3: Charger les messages (seulement si membre)
     try {
-      const messagesRes = await messagesAPI.getByProjet(projetId.value)
+
+      const messagesRes = await messagesAPI.byProjet(projetId.value)
+
       messages.value = (Array.isArray(messagesRes.data) ? messagesRes.data : [])
         .sort((a, b) => new Date(a.dateEnvoi) - new Date(b.dateEnvoi))
 

@@ -38,7 +38,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Routes publiques - pas de vérification JWT
         String path = request.getServletPath();
-        if (path.startsWith("/api/auth/") || path.startsWith("/api/public/")) {
+        if (path.startsWith("/api/auth/")
+                || path.startsWith("/api/public/")
+                || path.startsWith("/api/projets/public/")
+                || path.startsWith("/api/projets/publics")) {
             filterChain.doFilter(request, response);
             return;
         }

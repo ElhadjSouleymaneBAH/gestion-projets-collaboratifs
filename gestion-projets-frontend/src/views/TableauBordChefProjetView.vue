@@ -36,7 +36,7 @@
     <div v-if="!chargementGlobal && abonnement && !abonnementActif" class="subscription-status">
 
 
-    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
           <h6 class="mb-1">
             <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('abonnement.abonnementExpire') }}
@@ -385,7 +385,7 @@
       </div>
 
       <!-- =========================== -->
-      <!-- 2) F6: ÉQUIPE (NOUVEAU)     -->
+      <!-- 2) F6: ÉQUIPE      -->
       <!-- =========================== -->
       <div v-if="onglet==='equipe'">
         <div class="card border-0 shadow-sm">
@@ -394,7 +394,8 @@
               <h5 class="mb-0">{{ $t('equipe.collaborateurs') }} ({{ totalMembres }})</h5>
               <small class="text-muted">{{ $t('equipe.tousLesprojets') }}</small>
             </div>
-            <button class="btn btn-success" @click="ouvrirModalAjouterMembre" :disabled="mesProjets.length===0 || !abonnementActif">
+            <!-- CORRECTION 1: Fonction unifiée avec sélection de projet obligatoire -->
+            <button class="btn btn-success" @click="ouvrirModalAjoutMembreGlobal" :disabled="mesProjets.length===0 || !abonnementActif">
               <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
             </button>
           </div>
@@ -425,13 +426,16 @@
                   </td>
                   <td class="text-end">
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-success" @click="ajouterMembreAuProjet(p)">
+                      <!-- CORRECTION 2: Bouton avec projet pré-sélectionné -->
+                      <button class="btn btn-sm btn-outline-success" @click="ouvrirModalAjoutMembre(p)" :title="$t('equipe.ajouterMembre')">
                         <i class="fas fa-user-plus"></i>
                       </button>
+
                       <button
                         v-if="getMembresProjet(p.id).length"
                         class="btn btn-sm btn-outline-danger"
                         @click="retirerMembreProjet(p.id, getMembresProjet(p.id)[0].id)"
+                        :title="$t('equipe.retirerMembre')"
                       >
                         <i class="fas fa-user-minus"></i>
                       </button>
@@ -613,7 +617,7 @@
       </div>
     </div>
 
-    <!-- Modal ajout membre -->
+    <!-- CORRECTION 3: Modal ajout membre avec boutons de validation -->
     <div v-if="modalAjoutMembre" class="modal d-block" style="background:rgba(0,0,0,.5);z-index:1060">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -624,29 +628,57 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">{{ $t('projets.selectionnerProjet') }}</label>
-              <select class="form-select" v-model="projetSelectionne">
-                <option value="">-- {{ $t('projets.choisirProjet') }} --</option>
+              <select class="form-select" v-model="projetSelectionne" :disabled="projetPreSelectionne !== null">
+                <option :value="null">-- {{ $t('projets.choisirProjet') }} --</option>
                 <option v-for="p in mesProjets" :key="p.id" :value="p">{{ p.titre }}</option>
               </select>
             </div>
             <div class="mb-3">
               <label class="form-label">{{ $t('equipe.rechercherUtilisateur') }}</label>
-              <input class="form-control" v-model="rechercheUtilisateur" @input="rechercherUtilisateurs" :placeholder="$t('equipe.tapezEmail')">
-            </div>
-            <div v-if="utilisateursRecherche.length > 0" class="list-group">
-              <button
-                v-for="u in utilisateursRecherche"
-                :key="u.id"
-                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                @click="ajouterUtilisateurAuProjet(u)"
+              <input
+                class="form-control"
+                v-model="rechercheUtilisateur"
+                @input="rechercherUtilisateurs"
+                :placeholder="$t('equipe.tapezEmail')"
               >
-                <div>
-                  <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
-                  <small class="text-muted">{{ u.email }}</small>
-                </div>
-                <i class="fas fa-plus text-success"></i>
-              </button>
             </div>
+
+            <!-- Liste des résultats de recherche -->
+            <div v-if="rechercheUtilisateur.length >= 2" class="mb-3">
+              <div v-if="utilisateursRecherche.length > 0" class="list-group">
+                <button
+                  v-for="u in utilisateursRecherche"
+                  :key="u.id"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  :class="{ 'active': membreSelectionne && membreSelectionne.id === u.id }"
+                  @click="selectionnerUtilisateur(u)"
+                  type="button"
+                >
+                  <div>
+                    <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
+                    <small class="text-muted">{{ u.email }}</small>
+                  </div>
+                  <i class="fas" :class="membreSelectionne && membreSelectionne.id === u.id ? 'fa-check-circle text-success' : 'fa-circle text-muted'"></i>
+                </button>
+              </div>
+              <div v-else class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>{{ $t('equipe.aucunResultat') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- CORRECTION: Ajout du pied de modal avec boutons -->
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="fermerModalAjoutMembre">
+              {{ $t('commun.annuler') }}
+            </button>
+            <button
+              class="btn btn-success"
+              @click="ajouterMembreConfirme"
+              :disabled="!projetSelectionne || !membreSelectionne"
+            >
+              <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouter') }}
+            </button>
           </div>
         </div>
       </div>
@@ -690,14 +722,14 @@ export default {
       nouveauMessage: '',
       modalAjoutMembre: false,
       projetSelectionne: null,
+      projetPreSelectionne: null, // NOUVEAU: pour savoir si le projet a été pré-sélectionné
+      membreSelectionne: null, // NOUVEAU: pour stocker l'utilisateur sélectionné
       rechercheUtilisateur: '',
       erreurBackend: null,
 
       showCreateProject: false,
       projetForm: { titre: '', description: '' },
       subscribedTopics: new Set(),
-      //translateStatus: null,
-      //translateTaskStatus: null,
     }
   },
   computed: {
@@ -746,13 +778,18 @@ export default {
     this.translateData = translateData
 
     await this.chargerToutesDonnees()
-    this.initWebsocket()
 
-    // (C) Ouvrir le modal si ?newProject=1
+    const token = localStorage.getItem('token')
+    if (token && Array.isArray(this.mesProjets) && this.mesProjets.length > 0) {
+      console.log('[WS] Initialisation WebSocket...')
+      this.initWebsocket()
+    } else {
+      console.warn('[WS] WebSocket non initialisé (token manquant ou aucun projet accessible).')
+    }
+
     if (this.$route.query.newProject === '1') this.ouvrirModalProjet()
   },
   watch: {
-    // Lazy-load doux des listes
     onglet(nv) {
       if (nv === 'notifications' && this.notifications.length === 0) this.chargerNotifications()
       if (nv === 'taches' && this.totalTaches.length === 0) this.chargerTaches()
@@ -763,7 +800,6 @@ export default {
     // ---- Helpers ----
     normalizeId(v) { return v == null ? v : String(v).split(':')[0] },
 
-    /* ===== AJOUT : Déconnexion ===== */
     seDeconnecter() {
       try { useAuthStore().logout?.() } catch {}
       localStorage.removeItem('token')
@@ -805,9 +841,7 @@ export default {
       } finally {
         this.chargementGlobal = false
       }
-
-
-  },
+    },
 
     async chargerProjets() {
       this.chargementProjets = true
@@ -816,7 +850,6 @@ export default {
         const r = await projectAPI.byUser(userId)
         let projets = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
         this.mesProjets = projets.map(p => ({ ...p, id: this.normalizeId(p.id) }))
-        // Charger les membres en parallèle
         await Promise.all(this.mesProjets.map(projet => this.chargerMembresProjet(projet.id)))
       } catch (e) {
         console.error(e)
@@ -828,13 +861,16 @@ export default {
 
     async chargerMembresProjet(projetId) {
       try {
-        const r = await projectAPI.byId(projetId)
-        const membres = r?.data?.membres || r?.data?.members || []
-        this.membresParProjet = { ...this.membresParProjet, [projetId]: Array.isArray(membres) ? membres : [] }
+
+        const r = await projectAPI.getProjectMembers(projetId)
+        const membres = Array.isArray(r.data) ? r.data : []
+
+        this.membresParProjet = { ...this.membresParProjet, [projetId]: membres }
       } catch (e) {
-        console.error('Erreur chargement membres projet:', e)
+        console.error('Erreur chargement membres:', e)
         this.membresParProjet[projetId] = []
       }
+
     },
 
     async chargerTaches() {
@@ -880,7 +916,7 @@ export default {
           console.error('[F10] Non autorisé - token manquant ou invalide.')
           this.abonnement = null
         } else {
-          console.error('Erreur lors du chargement de l’abonnement :', e)
+          console.error('Erreur lors du chargement de l\'abonnement :', e)
           this.abonnement = null
         }
       }
@@ -888,10 +924,8 @@ export default {
       if (!this.abonnement) {
         this.abonnement = { statut: 'INACTIF', date_fin: null }
       }
-
     },
 
-    // === F11: FACTURES ===
     async chargerFactures() {
       this.chargementFactures = true
       try {
@@ -899,16 +933,14 @@ export default {
         const arr = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
         this.factures = arr.map(f => {
           const id = this.normalizeId(f.id ?? f.id)
-          //   lire la clé backend `montantHT` (camel-case), avec fallback
           const montantHT = Number(f.montantHT ?? f.montantHt ?? f.montant_ht ?? 0)
-          // Utiliser la TVA fournie par le backend si présente, sinon calcul (21 % du HT)
           const tva = Number(f.tva ?? (montantHT * 0.21))
           return {
             id,
             numeroFacture: f.numeroFacture ?? f.numero_facture ?? `FAC-${id}`,
             dateEmission: f.dateEmission ?? f.date_emission ?? null,
-            montantHT,            // garde la clé conforme backend
-            montantHt: montantHT, // compat descendante avec la vue
+            montantHT,
+            montantHt: montantHT,
             tva,
             montantTtc: montantHT + tva,
             statut: f.statut ?? 'GENEREE'
@@ -935,14 +967,27 @@ export default {
         this.chargementNotifications = false
       }
     },
+
     initWebsocket() {
       try {
         const token = localStorage.getItem('token')
-        if (!token) return
+        if (!token) {
+          console.warn('[WS] Aucun token JWT — connexion WebSocket annulée.')
+          return
+        }
+
+        if (!this.utilisateur || !this.utilisateur.id) {
+          console.warn('[WS] Utilisateur absent — connexion WebSocket annulée.')
+          return
+        }
+
+        if (!Array.isArray(this.mesProjets) || this.mesProjets.length === 0) {
+          console.warn('[WS] Aucun projet accessible — WebSocket non lancé.')
+          return
+        }
 
         WebSocketService.connect(token)
 
-        //  F13: Topic personnalisé pour notifications
         const userId = this.normalizeId(this.utilisateur.id)
         const topicUser = `/user/${userId}/topic/notifications`
 
@@ -960,7 +1005,6 @@ export default {
                 type: msg.sousType || msg.type || 'SYSTEME'
               })
 
-              // Notification visuelle browser
               if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification(msg.titre || 'Notification', {
                   body: msg.message || msg.contenu,
@@ -976,7 +1020,6 @@ export default {
         console.error('[F13] Erreur WebSocket:', error)
       }
     },
-
 
     peutModifierProjet(projet) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
@@ -1004,7 +1047,6 @@ export default {
       this.ouvrirModalProjet()
     },
 
-    /* ===== AJOUT ===== */
     ouvrirModalProjet() { this.showCreateProject = true },
 
     async sauvegarderNouveauProjet() {
@@ -1119,17 +1161,39 @@ export default {
       }
     },
 
-    ouvrirModalAjouterMembre() {
+    // CORRECTION 4: Fonction pour le bouton vert (sans projet pré-sélectionné)
+    ouvrirModalAjoutMembreGlobal() {
       if (!this.abonnementActif) {
         alert(this.$t('abonnement.requis'))
         return
       }
+      this.projetPreSelectionne = null
+      this.projetSelectionne = null
+      this.membreSelectionne = null
+      this.rechercheUtilisateur = ''
+      this.utilisateursRecherche = []
+      this.modalAjoutMembre = true
+    },
+
+    // CORRECTION 5: Fonction pour le bouton dans Actions (projet pré-sélectionné)
+    ouvrirModalAjoutMembre(projet) {
+      if (!this.abonnementActif) {
+        alert(this.$t('abonnement.requis'))
+        return
+      }
+      this.projetPreSelectionne = projet
+      this.projetSelectionne = projet
+      this.membreSelectionne = null
+      this.rechercheUtilisateur = ''
+      this.utilisateursRecherche = []
       this.modalAjoutMembre = true
     },
 
     fermerModalAjoutMembre() {
       this.modalAjoutMembre = false
       this.projetSelectionne = null
+      this.projetPreSelectionne = null
+      this.membreSelectionne = null
       this.rechercheUtilisateur = ''
       this.utilisateursRecherche = []
     },
@@ -1148,6 +1212,34 @@ export default {
       }
     },
 
+    // CORRECTION 6: Nouvelle fonction pour sélectionner un utilisateur
+    selectionnerUtilisateur(utilisateur) {
+      this.membreSelectionne = utilisateur
+    },
+
+    // CORRECTION 7: Nouvelle fonction pour confirmer l'ajout
+    async ajouterMembreConfirme() {
+      if (!this.projetSelectionne || !this.membreSelectionne) {
+        alert(this.$t('equipe.selectionnerProjetEtMembre'))
+        return
+      }
+
+      try {
+        await projectAPI.addMember(this.projetSelectionne.id, this.membreSelectionne.id)
+        await this.chargerMembresProjet(this.projetSelectionne.id)
+        alert(this.$t('equipe.membreAjoute'))
+        this.fermerModalAjoutMembre()
+      } catch (e) {
+        console.error(e)
+        if (e.response?.data?.message) {
+          alert(e.response.data.message)
+        } else {
+          alert(this.$t('erreurs.ajoutMembre'))
+        }
+      }
+    },
+
+    // Fonction obsolète - conservée pour compatibilité mais non utilisée
     async ajouterUtilisateurAuProjet(utilisateur) {
       if (!this.projetSelectionne) {
         alert(this.$t('projets.selectionnerProjetAvant'))
@@ -1164,11 +1256,6 @@ export default {
       }
     },
 
-    ajouterMembreAuProjet(projet) {
-      this.projetSelectionne = projet
-      this.ouvrirModalAjouterMembre()
-    },
-
     async retirerMembreProjet(projetId, membreId) {
       if (!confirm(this.$t('equipe.confirmerRetrait'))) return
       try {
@@ -1182,7 +1269,12 @@ export default {
     },
 
     async ouvrirChatProjet(projet) {
-      // Désabonner ancien projet
+      if (projet.prive && !projet.estMembre) {
+        console.warn(`[WS] Accès refusé au projet privé : ${projet.titre}`)
+        this.$router.push('/tableau-bord-chef-projet')
+        return
+      }
+
       if (this.projetChatActuel) {
         const oldTopic = `/topic/projet/${this.projetChatActuel.id}`
         WebSocketService.unsubscribe(oldTopic)
@@ -1192,7 +1284,6 @@ export default {
       this.projetChatActuel = projet
       await this.chargerMessagesProjet(projet.id)
 
-      // Souscrire nouveau projet
       const topicProjet = `/topic/projet/${projet.id}`
       if (!this.subscribedTopics.has(topicProjet)) {
         WebSocketService.subscribe(topicProjet, (msg) => {
@@ -1211,7 +1302,6 @@ export default {
       try {
         const r = await messagesAPI.byProjet(projetId)
         this.messagesChat = Array.isArray(r.data) ? r.data : []
-
         this.messagesParProjet[projetId] = this.messagesChat
       } catch (e) {
         console.error(e)
@@ -1248,12 +1338,9 @@ export default {
 
     async telechargerFacture(facture) {
       try {
-        // 1) Déterminer la langue courante (FR/EN)
         const raw = (this.$i18n && this.$i18n.locale) || localStorage.getItem('lang') || navigator.language || 'fr'
         const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
-        // 2) Appeler l’API (assure responseType: 'blob' côté service)
         const response = await factureAPI.telechargerPDF(facture.id, langue)
-        // 3) Déclencher le téléchargement
         const blob = new Blob([response.data], { type: 'application/pdf' })
         const url = window.URL.createObjectURL(blob)
         const link = document.createElement('a')
@@ -1430,21 +1517,20 @@ export default {
 
 <style scoped>
 .chef-header {
-  background: linear-gradient(135deg, #b88a00, #403707); /* Dégradé doré premium */
+  background: linear-gradient(135deg, #b88a00, #403707);
   border-radius: 12px;
   padding: 20px;
-  color: #000; /* Texte noir pour contraste sur fond doré */
+  color: #000;
 }
 
 .text-white-75 {
-  color: rgba(0, 0, 0, 0.75); /* Texte secondaire assombri */
+  color: rgba(0, 0, 0, 0.75);
 }
 
 .bg-gradient-warning {
-  background: linear-gradient(135deg, #ffd700, #554208); /* Dégradé doré pour les badges et boutons */
+  background: linear-gradient(135deg, #ffd700, #554208);
 }
 
-/* Cartes et effets */
 .metric-card {
   transition: all 0.3s ease;
   cursor: pointer;
@@ -1459,7 +1545,6 @@ export default {
   overflow: hidden;
 }
 
-/* Navigation (onglets) */
 .nav-pills .nav-link {
   border-radius: 8px;
   margin: 0 2px;
@@ -1472,7 +1557,6 @@ export default {
   transform: translateY(-1px);
 }
 
-/* Notifications */
 .notification-item {
   transition: all 0.2s ease;
 }
@@ -1488,7 +1572,6 @@ export default {
   color: white;
 }
 
-/* Chat */
 .chat-bubble {
   animation: slideIn 0.3s ease;
 }
@@ -1506,7 +1589,6 @@ export default {
   border-radius: 3px;
 }
 
-/* Animation */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -1518,7 +1600,6 @@ export default {
   }
 }
 
-/* Table et badges */
 .table th {
   border-top: none;
   font-weight: 600;
@@ -1526,7 +1607,7 @@ export default {
   color: #495057;
 }
 .table-hover tbody tr:hover {
-  background-color: rgba(255, 215, 0, 0.08); /* léger reflet doré au survol */
+  background-color: rgba(255, 215, 0, 0.08);
 }
 .badge {
   font-size: 0.75rem;
@@ -1537,7 +1618,6 @@ export default {
   margin: 0 1px;
 }
 
-/* Autres */
 .modal {
   backdrop-filter: blur(5px);
 }
@@ -1547,5 +1627,11 @@ export default {
 }
 .subscription-status {
   text-align: center;
+}
+
+/* Amélioration visuelle de la sélection d'utilisateur */
+.list-group-item.active {
+  background-color: #198754;
+  border-color: #198754;
 }
 </style>
