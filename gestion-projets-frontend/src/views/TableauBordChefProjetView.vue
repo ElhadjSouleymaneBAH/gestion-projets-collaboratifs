@@ -849,6 +849,7 @@ export default {
         const userId = this.normalizeId(this.utilisateur.id)
         const r = await projectAPI.byUser(userId)
         let projets = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.content) ? r.data.content : [])
+        projets = projets.filter(p => this.normalizeId(p.idCreateur) === userId)
         this.mesProjets = projets.map(p => ({ ...p, id: this.normalizeId(p.id) }))
         await Promise.all(this.mesProjets.map(projet => this.chargerMembresProjet(projet.id)))
       } catch (e) {
@@ -1050,19 +1051,23 @@ export default {
     ouvrirModalProjet() { this.showCreateProject = true },
 
     async sauvegarderNouveauProjet() {
-      if (!this.projetForm.titre.trim()) return
+      if (!this.projetForm.titre.trim()) return;
       try {
-        const r = await projectAPI.create({ titre: this.projetForm.titre, description: this.projetForm.description })
-        await this.chargerProjets()
-        this.showCreateProject = false
-        this.projetForm = { titre: '', description: '' }
-        const id = this.normalizeId(r.data?.id)
-        if (id) this.$router.push(`/projet/${id}`)
+        await projectAPI.create({
+          titre: this.projetForm.titre,
+          description: this.projetForm.description
+        });
+        await this.chargerProjets();
+        this.showCreateProject = false;
+        this.projetForm = { titre: '', description: '' };
+        this.$toast?.success("Projet créé avec succès");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (e) {
-        console.error(e)
-        alert(this.$t('erreurs.creationProjet'))
+        console.error(e);
+        alert(this.$t('erreurs.creationProjet'));
       }
     },
+
 
     consulterProjet(p) {
       const id = this.normalizeId(p.id)

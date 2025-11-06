@@ -13,19 +13,19 @@
           <!-- Navigation Desktop -->
           <nav class="d-none d-lg-flex align-items-center gap-4">
             <router-link to="/projets-publics" class="nav-link-custom text-decoration-none">
-              Projets publics
+              {{ $t('nav.projetsPublics') }}
             </router-link>
             <router-link to="/a-propos" class="nav-link-custom text-decoration-none">
-              À propos
+              {{ $t('nav.apropos') }}
             </router-link>
             <router-link to="/contact" class="nav-link-custom text-decoration-none">
-              Contact
+              {{ $t('nav.contact') }}
             </router-link>
             <router-link to="/connexion" class="btn btn-link text-collabpro text-decoration-none fw-semibold">
-              Connexion
+              {{ $t('nav.connexion') }}
             </router-link>
             <router-link to="/inscription" class="btn btn-collabpro px-4">
-              Inscription
+              {{ $t('nav.inscription') }}
             </router-link>
           </nav>
 

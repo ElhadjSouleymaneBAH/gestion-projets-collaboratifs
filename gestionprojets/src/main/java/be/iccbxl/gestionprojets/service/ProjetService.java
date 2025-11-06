@@ -179,7 +179,17 @@ public class ProjetService {
             p.setDateCreation(LocalDateTime.now());
         }
 
-        return convertirEnDTO(projetRepository.save(p));
+        Projet saved = projetRepository.save(p);
+
+        // ✅ Ajout automatique du créateur comme membre du projet
+        ProjetUtilisateur lien = new ProjetUtilisateur();
+        lien.setProjetId(saved.getId());
+        lien.setUtilisateurId(createur.getId());
+        lien.setRole("CHEF_PROJET");
+        lien.setActif(true);
+        projetUtilisateurRepository.save(lien);
+
+        return convertirEnDTO(saved);
     }
 
     @Transactional(readOnly = true)
@@ -213,7 +223,6 @@ public class ProjetService {
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         //  éviter le blocage inutile si le membre existe déjà dans un autre projet
-
         if (projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId)) {
             System.out.println("Utilisateur déjà membre de ce projet — ajout ignoré.");
             return;
@@ -227,7 +236,6 @@ public class ProjetService {
         projetUtilisateurRepository.save(pu);
     }
 
-
     public void retirerMembreDuProjet(Long projetId, Long utilisateurId) {
         if (!projetRepository.existsById(projetId)) {
             throw new RuntimeException("Projet non trouvé");
@@ -240,10 +248,16 @@ public class ProjetService {
 
     @Transactional(readOnly = true)
     public List<UtilisateurDTO> obtenirMembresProjet(Long projetId) {
-        if (!projetRepository.existsById(projetId)) {
-            throw new RuntimeException("Projet non trouvé");
-        }
+        Projet projet = projetRepository.findById(projetId)
+                .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
+
         List<Long> utilisateurIds = projetUtilisateurRepository.findUtilisateurIdsByProjetId(projetId);
+
+        // ✅ Exclure le créateur du projet de la liste des membres
+        if (projet.getCreateur() != null) {
+            utilisateurIds.remove(projet.getCreateur().getId());
+        }
+
         return utilisateurRepository.findAllById(utilisateurIds)
                 .stream()
                 .map(this::convertirUtilisateurEnDTO)

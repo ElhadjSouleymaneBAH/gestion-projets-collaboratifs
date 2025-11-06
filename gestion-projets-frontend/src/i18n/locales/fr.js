@@ -7,6 +7,8 @@ export default {
     deconnexion: 'Déconnexion',
     tableauBord: 'Tableau de bord',
     projetsPublics: 'Projets publics',
+    apropos: 'À propos',
+    contact: 'Contact',
     monProfil: 'Mon profil',
     administration: 'Administration',
     abonnement: 'Abonnement',
@@ -427,6 +429,8 @@ export default {
       moderateur: 'Modérateur',
       admin: 'Administrateur',
     },
+    retirerMembre: 'Retirer un membre',
+    selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
 
     aucunResultat: 'Aucun résultat trouvé',
   },
@@ -450,12 +454,17 @@ export default {
     selectionnerProjet: 'Sélectionnez un projet pour commencer',
   },
 
-  // ==================== CHAT (pour vue ProjetPublic) ====================
+  // ==================== CHAT  ====================
   chat: {
     titre: 'Chat du projet',
     placeholder: 'Écrire un message...',
     aucunMessage: 'Aucun message pour le moment',
     commencerConversation: 'Commencez la conversation',
+    erreurChargement: 'Erreur lors du chargement du chat',
+    erreurEnvoi: "Erreur lors de l'envoi du message",
+    envoi: 'Envoi...',
+
+
   },
 
   // ==================== COMMENTAIRES ====================
@@ -815,6 +824,14 @@ export default {
     enCours: 'En cours',
     reussite: 'Réussite',
     maintenant: 'Maintenant',
+    mesProjetsActifs: 'Mes projets actifs',
+    chargementProjets: 'Chargement de vos projets...',
+    aucunProjetActif: "Vous n'avez actuellement aucun projet actif.",
+    tachesEnCours: 'Tâches en cours',
+    dateDebut: 'Date de début',
+    membres: 'membres',
+    motDePasseMinLength: 'Le mot de passe doit contenir au moins {length} caractères.',
+    motDePasseNonIdentique: 'Les mots de passe ne correspondent pas.',
   },
 
   // ==================== RÔLES UTILISATEURS ====================
@@ -872,36 +889,117 @@ export default {
   // ==================== TABLEAUX DE BORD ====================
   tableauBord: {
     chefProjet: {
-      titre: 'Tableau de bord Chef de projet',
-      mesProjets: 'Mes projets',
-      mesEquipes: 'Mes équipes',
-      tachesEnCours: 'Tâches en cours',
-      notifications: 'Notifications récentes',
-    },
+      titre: 'Tableau de bord Chef de Projet',
+      messageBienvenue: 'Bienvenue sur votre tableau de bord Chef de Projet',
+      statsGlobales: 'Statistiques globales',
+      projetsEnCours: 'Projets en cours',
+      tachesAValider: 'Tâches à valider',
+      notificationsRecentes: 'Notifications récentes',
+      accesRapide: 'Accès rapide',
+      voirTousProjets: 'Voir tous les projets',
+      voirToutesTaches: 'Voir toutes les tâches',
+      voirToutesNotifications: 'Voir toutes les notifications',
+      aucunProjetActif: 'Aucun projet actif pour le moment',
+      aucuneTacheValidation: 'Aucune tâche en attente de validation',
+      aucuneNotificationRecente: 'Aucune notification récente',
+
+  },
     membre: {
       titre: 'Tableau de bord Membre',
-      mesTaches: 'Mes tâches',
       projetsParticipes: 'Projets auxquels je participe',
       activiteRecente: 'Activité récente',
-    },
+
+      promoPremium: {
+        titre: 'Passez à la version Premium !',
+        description: 'Profitez de fonctionnalités avancées et d’une meilleure expérience collaborative.',
+        bouton: 'Découvrir l’offre'
+      },
+
+      projets: {
+        description: 'Collaboration et suivi de la progression',
+        aucunProjet: 'Aucun projet pour le moment'
+      },
+
+      kpi: {
+        projetsRejoints: 'Projets rejoints',
+        tachesAttribuees: 'Tâches attribuées',
+        tachesTerminees: 'Tâches terminées',
+        reussite: 'de réussite',
+        notifications: 'Notifications'
+      },
+
+      sections: {
+        projets: 'Mes projets',
+        taches: 'Mes tâches',
+        notifications: 'Mes notifications'
+      },
+
+      taches: {
+        aucuneTache: 'Aucune tâche pour le moment'
+      },
+
+      notifications: {
+        vide: 'Aucune notification pour le moment'
+      },
+
+      profil: 'Mon profil'
+
+
+  },
     admin: {
-      titre: 'Tableau de bord Administrateur',
-      utilisateurs: 'Gestion des utilisateurs',
-      abonnements: 'Supervision des abonnements',
-      statistiques: 'Statistiques de la plateforme',
-      maintenance: 'Maintenance',
-      gestionUtilisateurs: 'Gérer tous les utilisateurs de la plateforme',
+      tableauDeBord: 'Tableau de bord Administrateur',
+      utilisateurs: 'Utilisateurs',
+      abonnements: 'Abonnements',
+      factures: 'Factures',
+      transactions: 'Transactions',
+      taches: 'Tâches',
+      finance: 'Finance',
+      projetPrive: 'Projet privé',
+
+      alertes: 'Alertes',
+      aucuneAlerte: 'Aucune alerte',
+      abonnementsExpirant7j: 'Abonnements expirant dans les 7 prochains jours',
+      paiementsEchecs: 'Paiements échoués',
+      dernieres24h: 'Dernières 24h',
+      nouveauxUtilisateurs: 'Nouveaux utilisateurs',
+      nouveauxAbonnements: 'Nouveaux abonnements',
+
+      gestionUtilisateurs: 'Gestion des utilisateurs',
+      gererTousUtilisateurs: 'Gérer tous les utilisateurs de la plateforme',
+      tousLesRoles: 'Tous les rôles',
+
       supervisionProjets: 'Supervision des projets',
-      supervisionFactures: 'Supervision des factures',
-      surveillanceGlobale: 'Surveillance globale de tous les projets',
-      etatSysteme: 'État du système',
-      baseDonnees: 'Base de données',
-      operationnel: 'Opérationnel',
-      informationsSysteme: 'Informations système',
-      version: 'Version',
-      environnement: 'Environnement',
-      derniereMaj: 'Dernière mise à jour',
+      surveillanceGlobale: 'Surveillance globale des projets',
+      tousLesStatuts: 'Tous les statuts',
+
+      supervisionAbonnements: 'Supervision des abonnements',
+      supervisionRevenus: 'Supervision des revenus',
+      aucunAbonnement: 'Aucun abonnement trouvé',
+      voirFactures: 'Voir les factures',
+      confirmerAnnulation: 'Êtes-vous sûr de vouloir annuler cet abonnement ?',
+      abonnementAnnule: 'Abonnement annulé avec succès',
+      erreurAnnulation: 'Erreur lors de l’annulation de l’abonnement',
+
+      gestionFactures: 'Gestion des factures',
+      toutesLesFactures: 'Toutes les factures',
+      exporterFactures: 'Exporter les factures',
+      aucuneFacture: 'Aucune facture disponible',
+
+      gestionTransactions: 'Gestion des transactions',
+      historiquePaiements: 'Historique des paiements',
+      aucuneTransaction: 'Aucune transaction disponible',
+
+      gestionTaches: 'Gestion des tâches',
+      toutesLesTaches: 'Toutes les tâches de la plateforme',
+      aucuneTache: 'Aucune tâche disponible',
+      annulerTache: 'Annuler cette tâche',
+      confirmerAnnulationTache: 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
+      tacheAnnulee: 'Tâche annulée avec succès',
+      erreurAnnulationTache: 'Erreur lors de l’annulation de la tâche',
+
+      suspendu: 'Suspendu'
     },
+
   },
 
   // ==================== MEMBRE SPÉCIFIQUE ====================
@@ -1412,6 +1510,9 @@ export default {
     accesReserveChefsProjets: 'Accès réservé aux chefs de projets',
     chargementDonnees: 'Erreur lors du chargement des données',
     projetIntrouvable: 'Projet introuvable',
+    erreurChargementProjet: "Erreur lors du chargement du projet",
+    projetNonAccessible: "Ce projet n'est pas accessible.",
+
     navigationProjet: 'Erreur lors de la navigation vers le projet',
     creationProjet: 'Erreur lors de la création du projet',
     modificationProjet: 'Erreur lors de la modification du projet',

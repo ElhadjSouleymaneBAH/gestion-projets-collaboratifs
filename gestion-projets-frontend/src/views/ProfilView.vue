@@ -1,8 +1,8 @@
 <template>
   <div class="profil-container">
     <div class="profil-header">
-      <h1>{{ $t('profil.titre') }}</h1>
-      <p class="profil-subtitle">{{ $t('profil.gererInformations') }}</p>
+      <h1>{{ t('profil.titre') }}</h1>
+      <p class="profil-subtitle">{{ t('profil.gererInformations') }}</p>
     </div>
 
     <div v-if="message.texte" :class="['alert', messageCss]">
@@ -11,20 +11,20 @@
 
     <div v-if="chargement" class="loading">
       <div class="spinner"></div>
-      <p>{{ $t('commun.chargement') }}</p>
+      <p>{{ t('commun.chargement') }}</p>
     </div>
 
     <div v-else class="profil-content">
       <div class="projets-actifs-section">
-        <h2>{{ $t('profil.mesProjetsActifs') }}</h2>
+        <h2>{{ t('profil.mesProjetsActifs') }}</h2>
 
         <div v-if="chargementProjets" class="loading-projets">
           <div class="spinner-small"></div>
-          <span>{{ $t('profil.chargementProjets') }}</span>
+          <span>{{ t('profil.chargementProjets') }}</span>
         </div>
 
         <div v-else-if="projetsActifs.length === 0" class="aucun-projet">
-          <p>{{ $t('profil.aucunProjetActif') }}</p>
+          <p>{{ t('profil.aucunProjetActif') }}</p>
         </div>
 
         <div v-else class="projets-grid">
@@ -37,7 +37,7 @@
             <div class="projet-header">
               <h3 class="projet-nom">{{ projet.nom }}</h3>
               <span :class="['projet-statut', `statut-${projet.statut.toLowerCase()}`]">
-                {{ $t(`statuts.${projet.statut.toLowerCase()}`) }}
+                {{ t(`statuts.${projet.statut.toLowerCase()}`) }}
               </span>
             </div>
 
@@ -47,22 +47,22 @@
 
             <div class="projet-info">
               <div class="info-item">
-                <span class="info-label">{{ $t('profil.role') }}:</span>
+                <span class="info-label">{{ t('profil.role') }}:</span>
                 <span class="info-value">{{ getRoleLabel(projet.roleUtilisateur) }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">{{ $t('profil.tachesEnCours') }}:</span>
+                <span class="info-label">{{ t('profil.tachesEnCours') }}:</span>
                 <span class="info-value">{{ projet.nombreTaches || 0 }}</span>
               </div>
               <div class="info-item" v-if="projet.dateDebut">
-                <span class="info-label">{{ $t('profil.dateDebut') }}:</span>
+                <span class="info-label">{{ t('profil.dateDebut') }}:</span>
                 <span class="info-value">{{ formaterDate(projet.dateDebut) }}</span>
               </div>
             </div>
 
             <div v-if="projet.membresCount" class="projet-membres">
               <span class="membres-icon">👥</span>
-              <span>{{ projet.membresCount }} {{ $t('profil.membres') }}</span>
+              <span>{{ projet.membresCount }} {{ t('profil.membres') }}</span>
             </div>
           </div>
         </div>
@@ -70,16 +70,16 @@
 
       <!-- Formulaire profil -->
       <div class="profil-form-container">
-        <h2>{{ $t('profil.informationsPersonnelles') }}</h2>
+        <h2>{{ t('profil.informationsPersonnelles') }}</h2>
 
         <form @submit.prevent="mettreAJourProfil" class="profil-form">
           <div class="form-group">
-            <label for="prenom">{{ $t('profil.prenom') }} *</label>
+            <label for="prenom">{{ t('profil.prenom') }} *</label>
             <input
                 id="prenom"
                 v-model="formulaire.prenom"
                 type="text"
-                :placeholder="$t('profil.prenomPlaceholder')"
+                :placeholder="t('profil.prenomPlaceholder')"
                 required
                 :disabled="sauvegardeEnCours"
                 autocomplete="given-name"
@@ -87,12 +87,12 @@
           </div>
 
           <div class="form-group">
-            <label for="nom">{{ $t('profil.nom') }} *</label>
+            <label for="nom">{{ t('profil.nom') }} *</label>
             <input
                 id="nom"
                 v-model="formulaire.nom"
                 type="text"
-                :placeholder="$t('profil.nomPlaceholder')"
+                :placeholder="t('profil.nomPlaceholder')"
                 required
                 :disabled="sauvegardeEnCours"
                 autocomplete="family-name"
@@ -100,25 +100,25 @@
           </div>
 
           <div class="form-group">
-            <label for="email">{{ $t('profil.email') }} *</label>
+            <label for="email">{{ t('profil.email') }} *</label>
             <input
                 id="email"
                 v-model="formulaire.email"
                 type="email"
-                :placeholder="$t('profil.emailPlaceholder')"
+                :placeholder="t('profil.emailPlaceholder')"
                 required
                 :disabled="true"
                 autocomplete="email"
             />
-            <small class="form-help">{{ $t('profil.emailNonModifiable') }}</small>
+            <small class="form-help">{{ t('profil.emailNonModifiable') }}</small>
           </div>
 
           <div class="form-group">
-            <label for="adresse">{{ $t('profil.adresse') }}</label>
+            <label for="adresse">{{ t('profil.adresse') }}</label>
             <textarea
                 id="adresse"
                 v-model="formulaire.adresse"
-                :placeholder="$t('profil.adressePlaceholder')"
+                :placeholder="t('profil.adressePlaceholder')"
                 :disabled="sauvegardeEnCours"
                 rows="3"
                 autocomplete="street-address"
@@ -126,7 +126,7 @@
           </div>
 
           <div class="form-group">
-            <label for="langue">{{ $t('profil.langue') }}</label>
+            <label for="langue">{{ t('profil.langue') }}</label>
             <select
                 id="langue"
                 v-model="formulaire.langue"
@@ -137,13 +137,13 @@
                   :key="langue.code"
                   :value="langue.code"
               >
-                {{ $t(langue.label) }}
+                {{ t(langue.label) }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="role">{{ $t('profil.role') }}</label>
+            <label for="role">{{ t('profil.role') }}</label>
             <input
                 id="role"
                 :value="getRoleLabel(utilisateur.role)"
@@ -154,7 +154,7 @@
           </div>
 
           <div class="form-group">
-            <label for="dateInscription">{{ $t('profil.dateInscription') }}</label>
+            <label for="dateInscription">{{ t('profil.dateInscription') }}</label>
             <input
                 id="dateInscription"
                 :value="formaterDate(utilisateur.dateInscription)"
@@ -171,7 +171,7 @@
                 class="btn-secondary"
                 :disabled="sauvegardeEnCours"
             >
-              {{ $t('commun.annuler') }}
+              {{ t('commun.annuler') }}
             </button>
 
             <button
@@ -180,7 +180,7 @@
                 :disabled="sauvegardeEnCours || !formulaireModifie"
             >
               <span v-if="sauvegardeEnCours" class="btn-spinner"></span>
-              {{ $t('profil.sauvegarder') }}
+              {{ t('profil.sauvegarder') }}
             </button>
           </div>
         </form>
@@ -188,16 +188,25 @@
 
       <!-- Mot de passe -->
       <div class="mot-de-passe-section">
-        <h2>{{ $t('profil.motDePasse') }}</h2>
+        <h2>{{ t('profil.motDePasse') }}</h2>
 
         <form @submit.prevent="changerMotDePasse" class="mot-de-passe-form">
+          <!-- Champ username caché pour l'accessibilité -->
+          <input
+              type="text"
+              :value="formulaire.email"
+              autocomplete="username"
+              style="display: none;"
+              aria-hidden="true"
+          />
+
           <div class="form-group">
-            <label for="ancienMotDePasse">{{ $t('profil.ancienMotDePasse') }} *</label>
+            <label for="ancienMotDePasse">{{ t('profil.ancienMotDePasse') }} *</label>
             <input
                 id="ancienMotDePasse"
                 v-model="motDePasseForm.ancienMotDePasse"
                 type="password"
-                :placeholder="$t('profil.ancienMotDePassePlaceholder')"
+                :placeholder="t('profil.ancienMotDePassePlaceholder')"
                 required
                 :disabled="changementMotDePasseEnCours"
                 autocomplete="current-password"
@@ -205,29 +214,29 @@
           </div>
 
           <div class="form-group">
-            <label for="nouveauMotDePasse">{{ $t('profil.nouveauMotDePasse') }} *</label>
+            <label for="nouveauMotDePasse">{{ t('profil.nouveauMotDePasse') }} *</label>
             <input
                 id="nouveauMotDePasse"
                 v-model="motDePasseForm.nouveauMotDePasse"
                 type="password"
-                :placeholder="$t('profil.nouveauMotDePassePlaceholder')"
+                :placeholder="t('profil.nouveauMotDePassePlaceholder')"
                 required
                 :minlength="motDePasseMinLength"
                 :disabled="changementMotDePasseEnCours"
                 autocomplete="new-password"
             />
             <small class="form-help">
-              {{ $t('profil.motDePasseMinLength', { length: motDePasseMinLength }) }}
+              {{ t('profil.motDePasseMinLength', { length: motDePasseMinLength }) }}
             </small>
           </div>
 
           <div class="form-group">
-            <label for="confirmationMotDePasse">{{ $t('profil.confirmationMotDePasse') }} *</label>
+            <label for="confirmationMotDePasse">{{ t('profil.confirmationMotDePasse') }} *</label>
             <input
                 id="confirmationMotDePasse"
                 v-model="motDePasseForm.confirmationMotDePasse"
                 type="password"
-                :placeholder="$t('profil.confirmationMotDePassePlaceholder')"
+                :placeholder="t('profil.confirmationMotDePassePlaceholder')"
                 required
                 :minlength="motDePasseMinLength"
                 :disabled="changementMotDePasseEnCours"
@@ -236,7 +245,7 @@
           </div>
 
           <div v-if="motDePasseForm.nouveauMotDePasse && motDePasseForm.confirmationMotDePasse && motDePasseForm.nouveauMotDePasse !== motDePasseForm.confirmationMotDePasse" class="error-message">
-            {{ $t('profil.motDePasseNonIdentique') }}
+            {{ t('profil.motDePasseNonIdentique') }}
           </div>
 
           <div class="form-actions">
@@ -246,7 +255,7 @@
                 :disabled="changementMotDePasseEnCours || !motDePasseFormValide"
             >
               <span v-if="changementMotDePasseEnCours" class="btn-spinner"></span>
-              {{ $t('profil.changerMotDePasse') }}
+              {{ t('profil.changerMotDePasse') }}
             </button>
           </div>
         </form>
@@ -336,7 +345,15 @@ export default {
         }
 
         const reponse = await profilService.obtenirProfil(utilisateurConnecte.id)
-        utilisateur.value = reponse.data || {}
+
+        // Gestion améliorée de la réponse
+        if (reponse && reponse.success && reponse.data) {
+          utilisateur.value = reponse.data
+        } else if (reponse && reponse.data) {
+          utilisateur.value = reponse.data
+        } else {
+          throw new Error('Format de réponse invalide')
+        }
 
         Object.assign(formulaire, {
           nom: utilisateur.value.nom || '',
@@ -363,10 +380,13 @@ export default {
           return
         }
 
-        // Appel au service pour récupérer les projets de l'utilisateur
         const reponse = await projetService.obtenirProjetsDeLUtilisateur(utilisateurConnecte.id)
-        if (reponse.success) {
-          projetsActifs.value = reponse.data || []
+        if (reponse && reponse.success && Array.isArray(reponse.data)) {
+          projetsActifs.value = reponse.data
+        } else if (Array.isArray(reponse)) {
+          projetsActifs.value = reponse
+        } else {
+          projetsActifs.value = []
         }
       } catch (e) {
         console.error('Erreur chargement projets:', e)
@@ -387,12 +407,13 @@ export default {
         })
 
         const reponse = await profilService.mettreAJourProfil(utilisateurConnecte.id, payload)
-        if (reponse.success) {
-          Object.assign(utilisateur.value, reponse.data)
+        if (reponse && (reponse.success || reponse.data)) {
+          const donnees = reponse.data || reponse
+          Object.assign(utilisateur.value, donnees)
           Object.assign(formulaireOriginal, { ...formulaire })
 
           const stored = JSON.parse(localStorage.getItem('user') || '{}')
-          localStorage.setItem('user', JSON.stringify({ ...stored, ...reponse.data }))
+          localStorage.setItem('user', JSON.stringify({ ...stored, ...donnees }))
 
           afficherMessage(t('profil.profilMisAJour'), 'success')
         }
@@ -410,7 +431,7 @@ export default {
         const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
 
         const reponse = await profilService.changerMotDePasse(utilisateurConnecte.id, { ...motDePasseForm })
-        if (reponse.success) {
+        if (reponse && (reponse.success || reponse.data)) {
           Object.assign(motDePasseForm, { ancienMotDePasse: '', nouveauMotDePasse: '', confirmationMotDePasse: '' })
           afficherMessage(t('profil.motDePasseChange'), 'success')
         }

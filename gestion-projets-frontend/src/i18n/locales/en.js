@@ -7,6 +7,8 @@ export default {
     deconnexion: 'Logout',
     tableauBord: 'Dashboard',
     projetsPublics: 'Public Projects',
+    apropos: 'About',
+    contact: 'Contact',
     monProfil: 'My Profile',
     administration: 'Administration',
     abonnement: 'Subscription',
@@ -425,6 +427,9 @@ export default {
       moderateur: 'Moderator',
       admin: 'Administrator',
     },
+    removeMember: 'Remove a member',
+    selectProjectAndMember: 'Please select a project and a member',
+
     noResult: 'No result found',
   },
 
@@ -448,11 +453,15 @@ export default {
   },
 
   // ==================== CHAT (for ProjetPublic view) ====================
-  chat: {
-    titre: 'Project Chat',
-    placeholder: 'Write a message...',
-    aucunMessage: 'No messages yet',
-    commencerConversation: 'Start the conversation',
+    chat: {
+      titre: 'Project Chat',
+      placeholder: 'Write a message...',
+      aucunMessage: 'No messages yet',
+      commencerConversation: 'Start the conversation',
+      erreurChargement: 'Error loading chat',
+      erreurEnvoi: 'Error sending message',
+      envoi: 'Sending...',
+
   },
 
   // ==================== COMMENTS ====================
@@ -810,6 +819,14 @@ export default {
     enCours: 'In Progress',
     reussite: 'Success',
     maintenant: 'Now',
+    mesProjetsActifs: 'My active projects',
+    chargementProjets: 'Loading your projects...',
+    aucunProjetActif: 'You currently have no active projects.',
+    tachesEnCours: 'Ongoing tasks',
+    dateDebut: 'Start date',
+    membres: 'members',
+    motDePasseMinLength: 'The password must contain at least {length} characters.',
+    motDePasseNonIdentique: 'Passwords do not match.'
   },
 
   // ==================== USER ROLES ====================
@@ -867,36 +884,117 @@ export default {
   // ==================== DASHBOARDS ====================
   tableauBord: {
     chefProjet: {
-      titre: 'Project Manager Dashboard',
-      mesProjets: 'My Projects',
-      mesEquipes: 'My Teams',
-      tachesEnCours: 'Tasks in Progress',
-      notifications: 'Recent Notifications',
+      title: 'Project Manager Dashboard',
+      messageBienvenue: 'Welcome to your Project Manager Dashboard',
+      statsGlobales: 'Global statistics',
+      projetsEnCours: 'Ongoing projects',
+      tachesAValider: 'Tasks to validate',
+      notificationsRecentes: 'Recent notifications',
+      accesRapide: 'Quick access',
+      voirTousProjets: 'View all projects',
+      voirToutesTaches: 'View all tasks',
+      voirToutesNotifications: 'View all notifications',
+      aucunProjetActif: 'No active project at the moment',
+      aucuneTacheValidation: 'No task pending validation',
+      aucuneNotificationRecente: 'No recent notifications',
     },
     membre: {
       titre: 'Member Dashboard',
-      mesTaches: 'My Tasks',
       projetsParticipes: 'Projects I participate in',
-      activiteRecente: 'Recent Activity',
-    },
+      activiteRecente: 'Recent activity',
+
+      promoPremium: {
+        titre: 'Upgrade to Premium!',
+        description: 'Enjoy advanced features and an enhanced collaborative experience.',
+        bouton: 'Discover the offer'
+      },
+
+      projets: {
+        description: 'Collaboration and progress tracking',
+        aucunProjet: 'No project at the moment'
+      },
+
+      kpi: {
+        projetsRejoints: 'Joined projects',
+        tachesAttribuees: 'Assigned tasks',
+        tachesTerminees: 'Completed tasks',
+        reussite: 'success rate',
+        notifications: 'Notifications'
+      },
+
+      sections: {
+        projets: 'My projects',
+        taches: 'My tasks',
+        notifications: 'My notifications'
+      },
+
+      taches: {
+        aucuneTache: 'No task at the moment'
+      },
+
+      notifications: {
+        vide: 'No notification at the moment'
+      },
+
+      profil: 'My profile'
+
+
+  },
     admin: {
-      titre: 'Administrator Dashboard',
-      utilisateurs: 'User Management',
-      abonnements: 'Subscription Oversight',
-      statistiques: 'Platform Statistics',
-      maintenance: 'Maintenance',
-      gestionUtilisateurs: 'Manage all platform users',
-      supervisionProjets: 'Project Oversight',
-      supervisionFactures: 'Invoice Oversight',
-      surveillanceGlobale: 'Global monitoring of all projects',
-      etatSysteme: 'System Status',
-      baseDonnees: 'Database',
-      operationnel: 'Operational',
-      informationsSysteme: 'System Information',
-      version: 'Version',
-      environnement: 'Environment',
-      derniereMaj: 'Last update',
+      tableauDeBord: 'Administrator Dashboard',
+      utilisateurs: 'Users',
+      abonnements: 'Subscriptions',
+      factures: 'Invoices',
+      transactions: 'Transactions',
+      taches: 'Tasks',
+      finance: 'Finance',
+      privateProject: 'Private project',
+
+      alertes: 'Alerts',
+      aucuneAlerte: 'No alert',
+      abonnementsExpirant7j: 'Subscriptions expiring within 7 days',
+      paiementsEchecs: 'Failed payments',
+      dernieres24h: 'Last 24h',
+      nouveauxUtilisateurs: 'New users',
+      nouveauxAbonnements: 'New subscriptions',
+
+      gestionUtilisateurs: 'User management',
+      gererTousUtilisateurs: 'Manage all platform users',
+      tousLesRoles: 'All roles',
+
+      supervisionProjets: 'Project supervision',
+      surveillanceGlobale: 'Global project monitoring',
+      tousLesStatuts: 'All statuses',
+      projetPrive: 'Private project',
+
+      supervisionAbonnements: 'Subscription supervision',
+      supervisionRevenus: 'Revenue supervision',
+      aucunAbonnement: 'No subscription found',
+      voirFactures: 'View invoices',
+      confirmerAnnulation: 'Are you sure you want to cancel this subscription?',
+      abonnementAnnule: 'Subscription successfully canceled',
+      erreurAnnulation: 'Error while canceling the subscription',
+
+      gestionFactures: 'Invoice management',
+      toutesLesFactures: 'All invoices',
+      exporterFactures: 'Export invoices',
+      aucuneFacture: 'No invoice available',
+
+      gestionTransactions: 'Transaction management',
+      historiquePaiements: 'Payment history',
+      aucuneTransaction: 'No transaction available',
+
+      gestionTaches: 'Task management',
+      toutesLesTaches: 'All platform tasks',
+      aucuneTache: 'No task available',
+      annulerTache: 'Cancel this task',
+      confirmerAnnulationTache: 'Are you sure you want to cancel this task? This action is irreversible.',
+      tacheAnnulee: 'Task successfully canceled',
+      erreurAnnulationTache: 'Error while canceling the task',
+
+      suspendu: 'Suspended'
     },
+
   },
 
   // ==================== SPECIFIC MEMBER ====================
@@ -1387,6 +1485,8 @@ export default {
   // ==================== GENERAL ERRORS ====================
   erreurs: {
     accesRestreint: 'Access restricted. You do not have the necessary permissions.',
+    erreurChargementProjet: 'Error while loading the project',
+    projetNonAccessible: 'This project is not accessible.',
     erreurServeur: 'Internal server error',
     erreurReseau: 'Network error. Check your internet connection.',
     donneesInvalides: 'The provided data is invalid',

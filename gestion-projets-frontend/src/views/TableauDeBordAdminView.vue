@@ -340,7 +340,6 @@
                   <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ p.statut }}</span></td>
                   <td><small class="text-muted">{{ formatDate(getDateCreation(p)) }}</small></td>
                   <td>
-                    <td>
                       <button
                           v-if="p.visibilite === 'PUBLIC'"
                           class="btn btn-sm btn-outline-info"
@@ -354,9 +353,9 @@
                           class="text-muted small"
                           :title="$t('admin.projetPrive')"
                       >
-    <i class="fas fa-lock"></i> Privé
-  </span>
-                    </td>
+                        <i class="fas fa-lock"></i> Privé
+                      </span>
+
                   </td>
                 </tr>
                 </tbody>
