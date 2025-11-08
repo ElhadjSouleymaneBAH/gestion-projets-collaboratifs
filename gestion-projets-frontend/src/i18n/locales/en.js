@@ -30,7 +30,7 @@ export default {
 
   // ==================== COMMON ====================
   commun: {
-    dashboard: 'Dashboard',
+    tableauDeBord: 'Dashboard',
     nomApplication: 'CollabPro',
     droitsReserves: 'All rights reserved',
     copyright: '© 2025 All rights reserved',
@@ -780,7 +780,7 @@ export default {
     nom: 'Last Name',
     nomPlaceholder: 'Your last name',
     email: 'Email Address',
-    emailPlaceholder: 'your\\@email.com',
+    emailPlaceholder: 'example@domain.com',
     sauvegarder: 'Save',
     motDePasse: 'Password',
     ancienMotDePassePlaceholder: 'Your current password',
@@ -884,6 +884,7 @@ export default {
   // ==================== DASHBOARDS ====================
   tableauBord: {
     chefProjet: {
+      titre: 'Project Manager Dashboard',
       title: 'Project Manager Dashboard',
       messageBienvenue: 'Welcome to your Project Manager Dashboard',
       statsGlobales: 'Global statistics',
@@ -1538,6 +1539,7 @@ export default {
     erreurCreationCompte: 'Error creating account. Please try again.',
     connexionReussie: 'Login successful',
     erreurConnexion: 'Incorrect email or password',
+    emailMotDePasseIncorrect: 'Incorrect email or password',
   },
 
   // ==================== STRIPE ====================
@@ -1569,4 +1571,17 @@ export default {
     retour: 'Go to my dashboard',
     contactSupport: 'support@collabpro.com',
   },
-}
+  tooltips: {
+    kpiProjets: 'View all my projects',
+    kpiMembres: 'View team members',
+    kpiTaches: 'View all tasks',
+    kpiFactures: 'View invoices',
+    kpiNotifications: 'View notifications',
+    premium: 'Premium active – access all features',
+    assignerTache: 'Assign task to a member',
+    validerTache: 'Validate task',
+    supprimerTache: 'Delete task',
+    voirDetails: 'View details',
+  },
+
+};

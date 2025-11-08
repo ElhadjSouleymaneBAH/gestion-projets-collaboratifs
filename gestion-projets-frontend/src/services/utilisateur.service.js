@@ -1,5 +1,5 @@
 // src/services/utilisateur.service.js
-import api from './api.js'
+import api, { endpoints } from './api.js'
 
 /**
  * Service pour la gestion des utilisateurs - Frontend Vue.js
@@ -11,9 +11,6 @@ import api from './api.js'
  */
 class UtilisateurService {
 
-  /**
-   * Codes d'erreur standardisés pour l'internationalisation
-   */
   static ERROR_CODES = {
     INSCRIPTION_FAILED: 'erreurs.inscription',
     PROFILE_LOAD_FAILED: 'erreurs.chargementProfil',
@@ -54,7 +51,7 @@ class UtilisateurService {
 
       console.log('[F1] User registration for email:', payloadBackend.email)
 
-      const response = await api.post('/utilisateurs/inscription', payloadBackend)
+      const response = await api.post(`${endpoints.users}/inscription`, payloadBackend)
 
       console.log('[F1] Registration successful')
       return {
@@ -76,7 +73,7 @@ class UtilisateurService {
 
   /**
    * F4 : Consulter son profil - Obtenir les informations utilisateur
-   * Affiche informations personnelles et projets actifs selon cahier des charges
+   * Affiche informations personnelles et projets actifs
    *
    * @param {number} utilisateurId - ID de l'utilisateur
    * @returns {Promise<Object>} Données du profil utilisateur
@@ -85,7 +82,7 @@ class UtilisateurService {
     try {
       console.log('[F4] Loading user profile ID:', utilisateurId)
 
-      const response = await api.get(`/utilisateurs/${utilisateurId}`)
+      const response = await api.get(`${endpoints.users}/${utilisateurId}`)
 
       console.log('[F4] Profile loaded successfully')
       return {
@@ -104,7 +101,7 @@ class UtilisateurService {
 
   /**
    * F5 : Mettre à jour son profil - Modification des informations
-   * Permet modification informations et préférences selon cahier des charges
+   * Permet modification informations et préférences
    *
    * @param {number} utilisateurId - ID de l'utilisateur
    * @param {Object} payload - Nouvelles données du profil
@@ -114,7 +111,7 @@ class UtilisateurService {
     try {
       console.log('[F5] Updating profile for user ID:', utilisateurId)
 
-      const response = await api.put(`/utilisateurs/${utilisateurId}`, payload)
+      const response = await api.put(`${endpoints.users}/${utilisateurId}`, payload)
 
       console.log('[F5] Profile updated successfully')
       return {
@@ -142,7 +139,7 @@ class UtilisateurService {
     try {
       console.log('[F8] Searching user by email:', email)
 
-      const response = await api.get('/utilisateurs/recherche/email', {
+      const response = await api.get(`${endpoints.users}/recherche/email`, {
         params: { email }
       })
 
@@ -162,7 +159,7 @@ class UtilisateurService {
   }
 
   /**
-   * Recherche générale d'utilisateurs (avec terme de recherche)
+   * Recherche générale d'utilisateurs
    * Support pour F8 - recherche élargie
    *
    * @param {string} terme - Terme de recherche
@@ -172,7 +169,7 @@ class UtilisateurService {
     try {
       console.log('Searching users with term:', terme)
 
-      const response = await api.get('/utilisateurs/recherche', {
+      const response = await api.get(`${endpoints.users}/recherche`, {
         params: { q: terme }
       })
 
@@ -199,7 +196,7 @@ class UtilisateurService {
    */
   async verifierEmailDisponible(email) {
     try {
-      const response = await api.get('/utilisateurs/email-disponible', {
+      const response = await api.get(`${endpoints.users}/email-disponible`, {
         params: { email }
       })
 
@@ -227,7 +224,7 @@ class UtilisateurService {
     try {
       console.log('Loading my profile')
 
-      const response = await api.get('/utilisateurs/me')
+      const response = await api.get(`${endpoints.users}/me`)
 
       console.log('My profile loaded')
       return {
@@ -245,7 +242,7 @@ class UtilisateurService {
   }
 
   /**
-   * F4 : Statistiques du profil utilisateur (projets actifs selon cahier des charges)
+   * F4 : Statistiques du profil utilisateur
    * Complément de "Consulter son profil" avec affichage des projets actifs
    *
    * @param {number} utilisateurId - ID de l'utilisateur
@@ -256,7 +253,7 @@ class UtilisateurService {
       console.log('Loading profile statistics ID:', utilisateurId)
 
       // Appel vers l'endpoint backend pour les vraies statistiques
-      const response = await api.get(`/utilisateurs/${utilisateurId}/statistiques`)
+      const response = await api.get(`${endpoints.users}/${utilisateurId}/statistiques`)
 
       console.log('Profile statistics loaded successfully')
       return {
@@ -294,7 +291,7 @@ class UtilisateurService {
     try {
       console.log('Changing password for user ID:', utilisateurId)
 
-      const response = await api.put(`/utilisateurs/${utilisateurId}/mot-de-passe`, {
+      const response = await api.put(`${endpoints.users}/${utilisateurId}/mot-de-passe`, {
         ancienMotDePasse: payload.ancienMotDePasse,
         nouveauMotDePasse: payload.nouveauMotDePasse
       })

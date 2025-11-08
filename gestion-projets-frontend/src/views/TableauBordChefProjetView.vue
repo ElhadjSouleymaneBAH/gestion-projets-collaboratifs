@@ -34,8 +34,6 @@
 
     <!-- Alerte abonnement expiré -->
     <div v-if="!chargementGlobal && abonnement && !abonnementActif" class="subscription-status">
-
-
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <h6 class="mb-1">
@@ -158,7 +156,6 @@
             <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">{{ notificationsNonLues.length }}</span>
           </a>
         </li>
-
       </ul>
 
       <!-- F6: GESTION PROJETS -->
@@ -203,23 +200,22 @@
                 <tbody>
                 <tr v-for="p in mesProjets" :key="p.id">
                   <td>
-                    <div class="fw-semibold">{{ p.titre }}</div>
+                    <div class="fw-semibold">{{ translateProjectTitle(p.titre) }}</div>
                     <small class="text-muted">{{ formatDate(p.date_creation || p.dateCreation) }}</small>
                   </td>
-                  <td><small class="text-muted">{{ (p.description || '').substring(0, 60) }}...</small></td>
+                  <td><small class="text-muted">{{ translateProjectDescription(p.description).substring(0, 60) }}...</small></td>
                   <td><span class="badge bg-primary">{{ getMembresProjet(p.id).length }}</span></td>
                   <td><span class="badge bg-warning">{{ getTachesProjet(p.id).length }}</span></td>
-                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ translateData('status', p.statut) }}
-</span></td>
+                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ translateData('status', p.statut) }}</span></td>
                   <td>
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" :title="$t('commun.consulter')" aria-label="Consulter">
+                      <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" title="Consulter le projet">
                         <i class="fas fa-eye"></i>
                       </button>
-                      <button v-if="peutModifierProjet(p)" class="btn btn-sm btn-outline-success" @click="modifierProjet(p)" :title="$t('commun.modifier')" aria-label="Modifier">
+                      <button v-if="peutModifierProjet(p)" class="btn btn-sm btn-outline-success" @click="modifierProjet(p)" title="Modifier le projet">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button v-if="peutSupprimerProjet(p)" class="btn btn-sm btn-outline-danger" @click="supprimerProjet(p.id)" :title="$t('commun.supprimer')" aria-label="Supprimer">
+                      <button v-if="peutSupprimerProjet(p)" class="btn btn-sm btn-outline-danger" @click="supprimerProjet(p.id)" title="Supprimer le projet">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -228,7 +224,6 @@
                 </tbody>
               </table>
             </div>
-
           </div>
         </div>
       </div>
@@ -264,47 +259,24 @@
                   <th>{{ $t('commun.actions') }}</th>
                 </tr>
                 </thead>
-
                 <tbody>
                 <tr v-for="f in factures" :key="f.id">
                   <td class="fw-semibold">{{ f.numeroFacture }}</td>
                   <td>{{ formatDate(f.dateEmission) }}</td>
-
-                  <!--  Montant HT -->
                   <td>{{ formatPrix(f.montantHT ?? f.montantHt ?? 0) }}</td>
-
-                  <!-- TVA : affiche celle du backend, sinon calcule 21 % du HT -->
-                  <td>
-                    21 % ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})
-                  </td>
-
-                  <!--  Total TTC -->
+                  <td>21 % ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})</td>
                   <td class="fw-bold">
                     {{ formatPrix(f.montantTtc ?? ((f.montantHT ?? f.montantHt ?? 0) + (f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)))) }}
                   </td>
+                  <td>{{ translateData('invoiceStatus', f.statut) }}</td>
                   <td>
-                    {{ translateData('invoiceStatus', f.statut) }}
+                    <span class="badge rounded-pill" :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-secondary'">
+                      {{ f.statut }}
+                    </span>
                   </td>
-
-                  <!--  Statut -->
                   <td>
-                <span
-                  class="badge rounded-pill"
-                  :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-secondary'"
-                >
-                  {{ f.statut }}
-                </span>
-                  </td>
-
-                  <!--  Téléchargement -->
-                  <td>
-                    <button
-                      class="btn btn-sm btn-outline-primary"
-                      @click="telechargerFacture(f)"
-                      :title="$t('factures.telechargerPDF')"
-                    >
-                      <i class="fas fa-download me-1"></i>
-                      {{ $t('factures.telecharger') }}
+                    <button class="btn btn-sm btn-outline-primary" @click="telechargerFacture(f)" title="Télécharger la facture PDF">
+                      <i class="fas fa-download me-1"></i>{{ $t('factures.telecharger') }}
                     </button>
                   </td>
                 </tr>
@@ -315,9 +287,7 @@
         </div>
       </div>
 
-      <!-- =========================== -->
-      <!-- 1) F7: TÂCHES (NOUVEAU)     -->
-      <!-- =========================== -->
+      <!-- F7: TÂCHES (CORRIGÉ) -->
       <div v-if="onglet==='taches'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex align-items-center gap-2">
@@ -356,21 +326,24 @@
                   <td class="fw-semibold">{{ t.titre }}</td>
                   <td>{{ t.nomProjet || getProjetNom(t.id_projet || t.projetId) }}</td>
                   <td>{{ t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId) }}</td>
-
-                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ translateData('taskStatus', t.statut) }}
-</span></td>
+                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ translateData('taskStatus', t.statut) }}</span></td>
                   <td class="text-end">
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-success" @click="validerTache(t)">
+                      <!-- ✅ NOUVEAU : Bouton Assigner -->
+                      <button class="btn btn-sm btn-outline-info" @click="ouvrirModalAssignation(t)" title="Assigner la tâche à un membre">
+                        <i class="fas fa-user-tag"></i>
+                      </button>
+                      <!-- Boutons existants avec tooltips ajoutés -->
+                      <button class="btn btn-sm btn-outline-success" @click="validerTache(t)" title="Valider la tâche">
                         <i class="fas fa-check"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary" @click="renvoyerEnBrouillon(t)">
+                      <button class="btn btn-sm btn-outline-secondary" @click="renvoyerEnBrouillon(t)" title="Renvoyer en brouillon">
                         <i class="fas fa-undo"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-warning" @click="annulerTache(t)">
+                      <button class="btn btn-sm btn-outline-warning" @click="annulerTache(t)" title="Annuler la tâche">
                         <i class="fas fa-ban"></i>
                       </button>
-                      <button v-if="peutSupprimerTache(t)" class="btn btn-sm btn-outline-danger" @click="supprimerTache(t.id)">
+                      <button v-if="peutSupprimerTache(t)" class="btn btn-sm btn-outline-danger" @click="supprimerTache(t.id)" title="Supprimer la tâche">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -379,14 +352,11 @@
                 </tbody>
               </table>
             </div>
-
           </div>
         </div>
       </div>
 
-      <!-- =========================== -->
-      <!-- 2) F6: ÉQUIPE      -->
-      <!-- =========================== -->
+      <!-- F6: ÉQUIPE -->
       <div v-if="onglet==='equipe'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -394,8 +364,7 @@
               <h5 class="mb-0">{{ $t('equipe.collaborateurs') }} ({{ totalMembres }})</h5>
               <small class="text-muted">{{ $t('equipe.tousLesprojets') }}</small>
             </div>
-            <!-- CORRECTION 1: Fonction unifiée avec sélection de projet obligatoire -->
-            <button class="btn btn-success" @click="ouvrirModalAjoutMembreGlobal" :disabled="mesProjets.length===0 || !abonnementActif">
+            <button class="btn btn-success" @click="ouvrirModalAjoutMembreGlobal" :disabled="mesProjets.length===0 || !abonnementActif" title="Ajouter un membre à un projet">
               <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
             </button>
           </div>
@@ -419,24 +388,17 @@
                 <tr v-for="p in mesProjets" :key="p.id">
                   <td class="fw-semibold">{{ p.titre }}</td>
                   <td>
-                      <span v-for="m in getMembresProjet(p.id)" :key="m.id" class="badge bg-light text-dark me-1">
-                        {{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}
-                      </span>
+                    <span v-for="m in getMembresProjet(p.id)" :key="m.id" class="badge bg-light text-dark me-1">
+                      {{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}
+                    </span>
                     <span v-if="getMembresProjet(p.id).length===0" class="text-muted">—</span>
                   </td>
                   <td class="text-end">
                     <div class="btn-group">
-                      <!-- CORRECTION 2: Bouton avec projet pré-sélectionné -->
-                      <button class="btn btn-sm btn-outline-success" @click="ouvrirModalAjoutMembre(p)" :title="$t('equipe.ajouterMembre')">
+                      <button class="btn btn-sm btn-outline-success" @click="ouvrirModalAjoutMembre(p)" title="Ajouter un membre à ce projet">
                         <i class="fas fa-user-plus"></i>
                       </button>
-
-                      <button
-                        v-if="getMembresProjet(p.id).length"
-                        class="btn btn-sm btn-outline-danger"
-                        @click="retirerMembreProjet(p.id, getMembresProjet(p.id)[0].id)"
-                        :title="$t('equipe.retirerMembre')"
-                      >
+                      <button v-if="getMembresProjet(p.id).length" class="btn btn-sm btn-outline-danger" @click="retirerMembreProjet(p.id, getMembresProjet(p.id)[0].id)" title="Retirer un membre du projet">
                         <i class="fas fa-user-minus"></i>
                       </button>
                     </div>
@@ -445,14 +407,10 @@
                 </tbody>
               </table>
             </div>
-
           </div>
         </div>
       </div>
-
-      <!-- ===================================== -->
-      <!-- 3) F8: COLLABORATION / CHAT  -->
-      <!-- ===================================== -->
+      <!-- F8: COLLABORATION / CHAT -->
       <div v-if="onglet==='chat'">
         <div class="row g-3">
           <div class="col-md-4">
@@ -525,16 +483,12 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
 
-      <!-- =============================== -->
-      <!-- 4) F9: NOTIFICATIONS (NOUVEAU)  -->
-      <!-- =============================== -->
+      <!-- F9: NOTIFICATIONS -->
       <div v-if="onglet==='notifications'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -573,16 +527,15 @@
                   <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
                 </div>
                 <div class="btn-group">
-                  <button class="btn btn-sm btn-outline-success" v-if="!n.lu" @click="marquerNotificationLue(n)">
+                  <button class="btn btn-sm btn-outline-success" v-if="!n.lu" @click="marquerNotificationLue(n)" title="Marquer comme lue">
                     <i class="fas fa-check"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="supprimerNotification(n)">
+                  <button class="btn btn-sm btn-outline-danger" @click="supprimerNotification(n)" title="Supprimer la notification">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -617,7 +570,7 @@
       </div>
     </div>
 
-    <!-- CORRECTION 3: Modal ajout membre avec boutons de validation -->
+    <!-- Modal ajout membre -->
     <div v-if="modalAjoutMembre" class="modal d-block" style="background:rgba(0,0,0,.5);z-index:1060">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -643,7 +596,6 @@
               >
             </div>
 
-            <!-- Liste des résultats de recherche -->
             <div v-if="rechercheUtilisateur.length >= 2" class="mb-3">
               <div v-if="utilisateursRecherche.length > 0" class="list-group">
                 <button
@@ -667,7 +619,6 @@
             </div>
           </div>
 
-          <!-- CORRECTION: Ajout du pied de modal avec boutons -->
           <div class="modal-footer">
             <button class="btn btn-outline-secondary" @click="fermerModalAjoutMembre">
               {{ $t('commun.annuler') }}
@@ -678,6 +629,62 @@
               :disabled="!projetSelectionne || !membreSelectionne"
             >
               <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouter') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Assignation de Tâche -->
+    <div v-if="modalAssignationTache" class="modal d-block" style="background:rgba(0,0,0,.5);z-index:1060">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-user-tag me-2"></i>{{ $t('taches.assignerTache') }}
+            </h5>
+            <button class="btn-close" @click="fermerModalAssignation"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+              <strong>Tâche :</strong> <span class="text-primary">{{ tacheAAssigner?.titre }}</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ $t('taches.selectionnerMembre') }}</label>
+              <div v-if="getMembresProjet(tacheAAssigner?.id_projet || tacheAAssigner?.projetId).length > 0" class="list-group">
+                <button
+                  v-for="m in getMembresProjet(tacheAAssigner?.id_projet || tacheAAssigner?.projetId)"
+                  :key="m.id"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  :class="{ 'active': membreAssigneSelectionne && membreAssigneSelectionne.id === m.id }"
+                  @click="selectionnerMembreAssignation(m)"
+                  type="button"
+                >
+                  <div>
+                    <div class="fw-semibold">{{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}</div>
+                    <small class="text-muted">{{ m.email }}</small>
+                  </div>
+                  <i class="fas" :class="membreAssigneSelectionne && membreAssigneSelectionne.id === m.id ? 'fa-check-circle text-success' : 'fa-circle text-muted'"></i>
+                </button>
+              </div>
+              <div v-else class="alert alert-warning mb-0">
+                <i class="fas fa-exclamation-triangle me-2"></i>Aucun membre dans ce projet. Ajoutez des membres d'abord.
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="fermerModalAssignation">
+              {{ $t('commun.annuler') }}
+            </button>
+            <button
+              class="btn btn-success"
+              @click="confirmerAssignation"
+              :disabled="!membreAssigneSelectionne"
+            >
+              <i class="fas fa-check me-1"></i>{{ $t('taches.assigner') }}
             </button>
           </div>
         </div>
@@ -722,14 +729,19 @@ export default {
       nouveauMessage: '',
       modalAjoutMembre: false,
       projetSelectionne: null,
-      projetPreSelectionne: null, // NOUVEAU: pour savoir si le projet a été pré-sélectionné
-      membreSelectionne: null, // NOUVEAU: pour stocker l'utilisateur sélectionné
+      projetPreSelectionne: null,
+      membreSelectionne: null,
       rechercheUtilisateur: '',
       erreurBackend: null,
 
       showCreateProject: false,
       projetForm: { titre: '', description: '' },
       subscribedTopics: new Set(),
+
+      // ✅ NOUVEAU : Variables pour assignation
+      modalAssignationTache: false,
+      tacheAAssigner: null,
+      membreAssigneSelectionne: null,
     }
   },
   computed: {
@@ -768,14 +780,15 @@ export default {
         console.error('Erreur parsing user:', e)
       }
     }
-    // Autoriser MEMBRE et CHEF_PROJET
     if (!store.user || (store.user.role !== 'CHEF_PROJET' && store.user.role !== 'MEMBRE')) {
       this.erreurBackend = this.$t('erreurs.accesReserveChefsProjets')
       this.chargementGlobal = false
       return
     }
-    const { translateData } = useDataTranslation()
+    const { translateData, translateProjectTitle, translateProjectDescription } = useDataTranslation()
     this.translateData = translateData
+    this.translateProjectTitle = translateProjectTitle
+    this.translateProjectDescription = translateProjectDescription
 
     await this.chargerToutesDonnees()
 
@@ -797,7 +810,6 @@ export default {
     }
   },
   methods: {
-    // ---- Helpers ----
     normalizeId(v) { return v == null ? v : String(v).split(':')[0] },
 
     seDeconnecter() {
@@ -862,16 +874,13 @@ export default {
 
     async chargerMembresProjet(projetId) {
       try {
-
         const r = await projectAPI.getProjectMembers(projetId)
         const membres = Array.isArray(r.data) ? r.data : []
-
         this.membresParProjet = { ...this.membresParProjet, [projetId]: membres }
       } catch (e) {
         console.error('Erreur chargement membres:', e)
         this.membresParProjet[projetId] = []
       }
-
     },
 
     async chargerTaches() {
@@ -898,14 +907,12 @@ export default {
       try {
         const u = this.utilisateur
         if (!u || !u.id) return
-
         const userId = this.normalizeId(u.id)
         const token = localStorage.getItem('token')
         if (!token) {
           console.warn('[F10] Aucun token JWT trouvé pour la requête abonnement.')
           return
         }
-
         const r = await abonnementAPI.getByUserId(userId, token)
         this.abonnement = r.data
         console.log('[F10] Abonnement chargé avec succès :', this.abonnement)
@@ -921,7 +928,6 @@ export default {
           this.abonnement = null
         }
       }
-
       if (!this.abonnement) {
         this.abonnement = { statut: 'INACTIF', date_fin: null }
       }
@@ -976,26 +982,20 @@ export default {
           console.warn('[WS] Aucun token JWT — connexion WebSocket annulée.')
           return
         }
-
         if (!this.utilisateur || !this.utilisateur.id) {
           console.warn('[WS] Utilisateur absent — connexion WebSocket annulée.')
           return
         }
-
         if (!Array.isArray(this.mesProjets) || this.mesProjets.length === 0) {
           console.warn('[WS] Aucun projet accessible — WebSocket non lancé.')
           return
         }
-
         WebSocketService.connect(token)
-
         const userId = this.normalizeId(this.utilisateur.id)
         const topicUser = `/user/${userId}/topic/notifications`
-
         if (!this.subscribedTopics.has(topicUser)) {
           WebSocketService.subscribe(topicUser, (msg) => {
             console.log('[F13] Notification WebSocket reçue:', msg)
-
             if (msg?.type === 'NOTIFICATION') {
               this.notifications.unshift({
                 id: msg.id || Date.now(),
@@ -1005,7 +1005,6 @@ export default {
                 lu: false,
                 type: msg.sousType || msg.type || 'SYSTEME'
               })
-
               if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification(msg.titre || 'Notification', {
                   body: msg.message || msg.contenu,
@@ -1015,7 +1014,7 @@ export default {
             }
           })
           this.subscribedTopics.add(topicUser)
-          console.log(`[F13]  Chef abonné au topic: ${topicUser}`)
+          console.log(`[F13] Chef abonné au topic: ${topicUser}`)
         }
       } catch (error) {
         console.error('[F13] Erreur WebSocket:', error)
@@ -1068,49 +1067,48 @@ export default {
       }
     },
 
-
     consulterProjet(p) {
       const id = this.normalizeId(p.id)
       this.$router.push(`/projet/${id}`)
     },
 
     async modifierProjet(p) {
-      const nouveauTitre = prompt(' Nouveau titre du projet:', p.titre)
+      const nouveauTitre = prompt('Nouveau titre du projet:', p.titre)
       if (!nouveauTitre || nouveauTitre === p.titre) return
-      const nouvelleDesc = prompt(' Nouvelle description:', p.description)
+      const nouvelleDesc = prompt('Nouvelle description:', p.description)
       if (nouvelleDesc === null) return
       try {
         await projectAPI.update(p.id, { ...p, titre: nouveauTitre, description: nouvelleDesc })
         p.titre = nouveauTitre
         p.description = nouvelleDesc
-        alert(' Projet modifié avec succès !')
+        alert('Projet modifié avec succès !')
       } catch (e) {
         console.error('Erreur modification projet:', e.response?.data || e)
         if (e.response?.status === 403) {
-          alert(' Vous n\'avez pas l\'autorisation de modifier ce projet')
+          alert('Vous n\'avez pas l\'autorisation de modifier ce projet')
         } else {
-          alert(' Erreur lors de la modification du projet')
+          alert('Erreur lors de la modification du projet')
         }
       }
     },
 
     async supprimerProjet(id) {
-      if (!confirm(' Êtes-vous sûr de vouloir supprimer ce projet ?\n\nCette action est irréversible.')) {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?\n\nCette action est irréversible.')) {
         return
       }
       try {
         await projectAPI.delete(id)
         this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
-        alert(' Projet supprimé avec succès !')
+        alert('Projet supprimé avec succès !')
       } catch (e) {
-        console.error(' Erreur suppression projet:', e.response?.data || e)
+        console.error('Erreur suppression projet:', e.response?.data || e)
         if (e.response?.status === 403) {
-          alert(' Vous n\'avez pas l\'autorisation de supprimer ce projet')
+          alert('Vous n\'avez pas l\'autorisation de supprimer ce projet')
         } else if (e.response?.status === 404) {
-          alert(' Projet introuvable')
+          alert('Projet introuvable')
           this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
         } else {
-          alert(' Erreur lors de la suppression du projet')
+          alert('Erreur lors de la suppression du projet')
         }
       }
     },
@@ -1166,7 +1164,40 @@ export default {
       }
     },
 
-    // CORRECTION 4: Fonction pour le bouton vert (sans projet pré-sélectionné)
+    // ✅ NOUVEAU : Méthodes d'assignation
+    ouvrirModalAssignation(tache) {
+      this.tacheAAssigner = tache
+      this.membreAssigneSelectionne = null
+      this.modalAssignationTache = true
+    },
+
+    fermerModalAssignation() {
+      this.modalAssignationTache = false
+      this.tacheAAssigner = null
+      this.membreAssigneSelectionne = null
+    },
+
+    selectionnerMembreAssignation(membre) {
+      this.membreAssigneSelectionne = membre
+    },
+
+    async confirmerAssignation() {
+      if (!this.tacheAAssigner || !this.membreAssigneSelectionne) {
+        alert('Veuillez sélectionner un membre')
+        return
+      }
+
+      try {
+        await taskAPI.assignTask(this.tacheAAssigner.id, this.membreAssigneSelectionne.id)
+        await this.chargerTaches()
+        alert('Tâche assignée avec succès !')
+        this.fermerModalAssignation()
+      } catch (e) {
+        console.error('Erreur assignation tâche:', e)
+        alert('Erreur lors de l\'assignation de la tâche')
+      }
+    },
+
     ouvrirModalAjoutMembreGlobal() {
       if (!this.abonnementActif) {
         alert(this.$t('abonnement.requis'))
@@ -1180,7 +1211,6 @@ export default {
       this.modalAjoutMembre = true
     },
 
-    // CORRECTION 5: Fonction pour le bouton dans Actions (projet pré-sélectionné)
     ouvrirModalAjoutMembre(projet) {
       if (!this.abonnementActif) {
         alert(this.$t('abonnement.requis'))
@@ -1217,18 +1247,15 @@ export default {
       }
     },
 
-    // CORRECTION 6: Nouvelle fonction pour sélectionner un utilisateur
     selectionnerUtilisateur(utilisateur) {
       this.membreSelectionne = utilisateur
     },
 
-    // CORRECTION 7: Nouvelle fonction pour confirmer l'ajout
     async ajouterMembreConfirme() {
       if (!this.projetSelectionne || !this.membreSelectionne) {
         alert(this.$t('equipe.selectionnerProjetEtMembre'))
         return
       }
-
       try {
         await projectAPI.addMember(this.projetSelectionne.id, this.membreSelectionne.id)
         await this.chargerMembresProjet(this.projetSelectionne.id)
@@ -1241,23 +1268,6 @@ export default {
         } else {
           alert(this.$t('erreurs.ajoutMembre'))
         }
-      }
-    },
-
-    // Fonction obsolète - conservée pour compatibilité mais non utilisée
-    async ajouterUtilisateurAuProjet(utilisateur) {
-      if (!this.projetSelectionne) {
-        alert(this.$t('projets.selectionnerProjetAvant'))
-        return
-      }
-      try {
-        await projectAPI.addMember(this.projetSelectionne.id, utilisateur.id)
-        await this.chargerMembresProjet(this.projetSelectionne.id)
-        alert(this.$t('equipe.membreAjoute'))
-        this.fermerModalAjoutMembre()
-      } catch (e) {
-        console.error(e)
-        alert(this.$t('erreurs.ajoutMembre'))
       }
     },
 
@@ -1279,16 +1289,13 @@ export default {
         this.$router.push('/tableau-bord-chef-projet')
         return
       }
-
       if (this.projetChatActuel) {
         const oldTopic = `/topic/projet/${this.projetChatActuel.id}`
         WebSocketService.unsubscribe(oldTopic)
         this.subscribedTopics.delete(oldTopic)
       }
-
       this.projetChatActuel = projet
       await this.chargerMessagesProjet(projet.id)
-
       const topicProjet = `/topic/projet/${projet.id}`
       if (!this.subscribedTopics.has(topicProjet)) {
         WebSocketService.subscribe(topicProjet, (msg) => {
@@ -1394,29 +1401,6 @@ export default {
       }
     },
 
-    async actualiserNotifications() { await this.chargerNotifications() },
-
-    async sauvegarderProfil() {
-      this.sauvegardeProfil = true
-      try {
-        const userId = this.normalizeId(this.utilisateur.id)
-        await userAPI.updateProfile(userId, {
-          nom: this.utilisateur.nom,
-          prenom: this.utilisateur.prenom,
-          langue: this.utilisateur.langue
-        })
-        const store = useAuthStore()
-        store.setUser({ ...store.user, ...this.utilisateur })
-        localStorage.setItem('user', JSON.stringify(store.user))
-        alert(this.$t('profil.misAJour'))
-      } catch (e) {
-        console.error(e)
-        alert(this.$t('erreurs.sauvegardeProfile'))
-      } finally {
-        this.sauvegardeProfil = false
-      }
-    },
-
     getMembresProjet(projetId) { return this.membresParProjet[projetId] || [] },
     getTachesProjet(projetId) { return this.totalTaches.filter(t => (t.id_projet || t.projetId) == projetId) },
     getProjetNom(projetId) {
@@ -1432,11 +1416,6 @@ export default {
         }
       }
       return this.$t('commun.inconnu')
-    },
-    getInitiales(utilisateur) {
-      const prenom = utilisateur.prenom || utilisateur.firstName || ''
-      const nom = utilisateur.nom || utilisateur.lastName || ''
-      return (prenom.charAt(0) || '') + (nom.charAt(0) || '')
     },
     getMessagesNonLusProjet(projetId) {
       const messages = this.messagesParProjet[projetId] || []
@@ -1634,7 +1613,6 @@ export default {
   text-align: center;
 }
 
-/* Amélioration visuelle de la sélection d'utilisateur */
 .list-group-item.active {
   background-color: #198754;
   border-color: #198754;

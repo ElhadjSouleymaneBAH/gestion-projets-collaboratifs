@@ -3,6 +3,7 @@ package be.iccbxl.gestionprojets.controller;
 import be.iccbxl.gestionprojets.dto.ProjetDTO;
 import be.iccbxl.gestionprojets.dto.UtilisateurDTO;
 import be.iccbxl.gestionprojets.service.ProjetService;
+import be.iccbxl.gestionprojets.service.TranslationService;
 import be.iccbxl.gestionprojets.service.UtilisateurService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,10 +30,12 @@ public class ProjetController {
 
     private final ProjetService projetService;
     private final UtilisateurService utilisateurService;
+    private final TranslationService translationService;
 
-    public ProjetController(ProjetService projetService, UtilisateurService utilisateurService) {
+    public ProjetController(ProjetService projetService, UtilisateurService utilisateurService, TranslationService translationService) {
         this.projetService = projetService;
         this.utilisateurService = utilisateurService;
+        this.translationService = translationService;
     }
 
     // ---------- MÉTADONNÉES PROJETS ----------
@@ -108,9 +112,22 @@ public class ProjetController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('VISITEUR') or hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<ProjetDTO>> obtenirTousProjets() {
+    public ResponseEntity<List<ProjetDTO>> obtenirTousProjets(
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
-            return ResponseEntity.ok(projetService.obtenirTousProjets());
+            List<ProjetDTO> projets = projetService.obtenirTousProjets();
+
+            //  TRADUCTION AUTOMATIQUE
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projets.forEach(projet -> {
+                    projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
+                    projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
+                });
+            }
+
+            return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

@@ -113,6 +113,15 @@ export default {
     )
   },
 
+  /**
+   * ✅ MÉTHODE AJOUTÉE : Alias pour compatibilité avec ProfilView.vue
+   * Cette méthode est requise par ProfilView pour charger les projets actifs
+   */
+  async obtenirProjetsDeLUtilisateur(utilisateurId) {
+    const token = localStorage.getItem('token')
+    return this.getMesProjets(utilisateurId, token)
+  },
+
   //  Récupérer un projet spécifique par ID
   async getProjetById(id, token) {
     const axiosPromise = axios.get(`/api/projets/${Number(id)}`, {

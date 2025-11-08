@@ -2,11 +2,8 @@ import utilisateurService from './utilisateur.service.js'
 
 /**
  * Service pour la gestion des profils utilisateur - Frontend Vue.js
- * Implémente les fonctionnalités F4 et F5 du cahier des charges
  * Délègue les appels API au service utilisateur principal
- * Complètement internationalisé et sans erreur ESLint
- *
- * @author Équipe Développement
+ * @author Elhadj Souleymane BAH
  * @version 1.0
  */
 class ProfilService {

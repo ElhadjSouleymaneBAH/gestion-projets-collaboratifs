@@ -1,4 +1,3 @@
-
 <template>
   <div class="min-vh-100 bg-light">
     <!-- Header -->
@@ -149,75 +148,75 @@
               {{ $t('politique.finalitesTraitementDesc') }}
             </p>
 
-            <div class="accordion" id="finalitesAccordion">
-              <div class="accordion-item border-0 mb-2">
-                <h3 class="accordion-header">
-                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#finalite1">
-                    <i class="fas fa-cog me-2"></i>
-                    {{ $t('politique.fournitureServices') }}
-                  </button>
-                </h3>
-                <div id="finalite1" class="accordion-collapse collapse show" data-bs-parent="#finalitesAccordion">
-                  <div class="accordion-body">
-                    <p class="text-muted">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-primary mb-2">
+                      <i class="fas fa-cog me-2"></i>
+                      {{ $t('politique.fournitureServices') }}
+                    </h5>
+                    <p class="text-muted mb-2">
                       {{ $t('politique.fournitureServicesDesc') }}
                     </p>
-                    <strong>{{ $t('politique.baseLegale') }} :</strong>
-                    <span class="text-muted">{{ $t('politique.executionContrat') }}</span>
+                    <p class="mb-0">
+                      <strong>{{ $t('politique.baseLegale') }} :</strong>
+                      <span class="text-muted">{{ $t('politique.executionContrat') }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div class="accordion-item border-0 mb-2">
-                <h3 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite2">
-                    <i class="fas fa-credit-card me-2"></i>
-                    {{ $t('politique.gestionPaiements') }}
-                  </button>
-                </h3>
-                <div id="finalite2" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
-                  <div class="accordion-body">
-                    <p class="text-muted">
+              <div class="col-12">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-success mb-2">
+                      <i class="fas fa-credit-card me-2"></i>
+                      {{ $t('politique.gestionPaiements') }}
+                    </h5>
+                    <p class="text-muted mb-2">
                       {{ $t('politique.gestionPaiementsDesc') }}
                     </p>
-                    <strong>{{ $t('politique.baseLegale') }} :</strong>
-                    <span class="text-muted">{{ $t('politique.executionContratObligations') }}</span>
+                    <p class="mb-0">
+                      <strong>{{ $t('politique.baseLegale') }} :</strong>
+                      <span class="text-muted">{{ $t('politique.executionContratObligations') }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div class="accordion-item border-0 mb-2">
-                <h3 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite3">
-                    <i class="fas fa-bell me-2"></i>
-                    {{ $t('politique.communicationNotifications') }}
-                  </button>
-                </h3>
-                <div id="finalite3" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
-                  <div class="accordion-body">
-                    <p class="text-muted">
+              <div class="col-12">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-info mb-2">
+                      <i class="fas fa-bell me-2"></i>
+                      {{ $t('politique.communicationNotifications') }}
+                    </h5>
+                    <p class="text-muted mb-2">
                       {{ $t('politique.communicationNotificationsDesc') }}
                     </p>
-                    <strong>{{ $t('politique.baseLegale') }} :</strong>
-                    <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
+                    <p class="mb-0">
+                      <strong>{{ $t('politique.baseLegale') }} :</strong>
+                      <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div class="accordion-item border-0 mb-2">
-                <h3 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#finalite4">
-                    <i class="fas fa-chart-line me-2"></i>
-                    {{ $t('politique.ameliorationService') }}
-                  </button>
-                </h3>
-                <div id="finalite4" class="accordion-collapse collapse" data-bs-parent="#finalitesAccordion">
-                  <div class="accordion-body">
-                    <p class="text-muted">
+              <div class="col-12">
+                <div class="card border-0 bg-light">
+                  <div class="card-body">
+                    <h5 class="h6 fw-bold text-warning mb-2">
+                      <i class="fas fa-chart-line me-2"></i>
+                      {{ $t('politique.ameliorationService') }}
+                    </h5>
+                    <p class="text-muted mb-2">
                       {{ $t('politique.ameliorationServiceDesc') }}
                     </p>
-                    <strong>{{ $t('politique.baseLegale') }} :</strong>
-                    <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
+                    <p class="mb-0">
+                      <strong>{{ $t('politique.baseLegale') }} :</strong>
+                      <span class="text-muted">{{ $t('politique.interetLegitime') }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -565,14 +564,6 @@ export default {
 
 .card { transition: all .3s ease; border-radius: 8px; }
 .card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1) !important; }
-
-.accordion-button {
-  border-radius: 8px !important;
-  font-weight: 600;
-}
-.accordion-button:not(.collapsed) {
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-}
 
 /* Styles pour le titre amélioré */
 .title-hero {

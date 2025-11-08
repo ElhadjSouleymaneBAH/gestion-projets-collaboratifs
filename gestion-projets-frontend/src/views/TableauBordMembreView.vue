@@ -162,8 +162,8 @@
               <tbody>
               <tr v-for="p in mesProjets" :key="p.id">
                 <td>
-                  <strong>{{ p.titre }}</strong><br>
-                  <small class="text-muted">{{ (p.description || '').substring(0, 50) }}...</small>
+                  <strong>{{ translateProjectTitle(p.titre) }}</strong><br>
+                  <small class="text-muted">{{ translateProjectDescription(p.description).substring(0, 50) }}...</small>
                 </td>
                 <td>{{ p.createur?.prenom }} {{ p.createur?.nom }}</td>
                 <td><span class="badge bg-success">{{ p.statut || 'ACTIF' }}</span></td>
@@ -347,8 +347,10 @@ import { useAuthStore } from '@/stores/auth'
 import { projectAPI, taskAPI, notificationAPI, messagesAPI } from '@/services/api'
 import WebSocketService from '@/services/websocket.service.js'
 import { useI18n } from 'vue-i18n'
+import { useDataTranslation } from '@/composables/useDataTranslation'
 
 const { t } = useI18n()
+const { translateProjectTitle, translateProjectDescription } = useDataTranslation()
 const router = useRouter()
 const store = useAuthStore()
 

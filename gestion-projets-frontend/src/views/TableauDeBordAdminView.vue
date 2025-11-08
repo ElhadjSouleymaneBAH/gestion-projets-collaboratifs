@@ -332,8 +332,8 @@
                 <tr v-for="p in projetsPagine" :key="p.id">
                   <td>
                     <div>
-                      <div class="fw-semibold">{{ p.titre }}</div>
-                      <small class="text-muted">{{ getDescription(p) }}</small>
+                      <div class="fw-semibold">{{ translateProjectTitle(p.titre) }}</div>
+                      <small class="text-muted">{{ translateProjectDescription(getDescription(p)) }}</small>
                     </div>
                   </td>
                   <td>{{ getProprietaireName(p) }}</td>
@@ -655,6 +655,7 @@
 <script>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useDataTranslation } from '@/composables/useDataTranslation'
 import {
   userAPI,
   projectAPI,
@@ -671,7 +672,8 @@ export default {
 
   setup() {
     const router = useRouter()
-    return { router }
+    const { translateProjectTitle, translateProjectDescription } = useDataTranslation()
+    return { router, translateProjectTitle, translateProjectDescription }
   },
 
   data() {

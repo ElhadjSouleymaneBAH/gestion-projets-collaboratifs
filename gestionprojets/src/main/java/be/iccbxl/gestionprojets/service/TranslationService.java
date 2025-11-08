@@ -3,25 +3,78 @@ package be.iccbxl.gestionprojets.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Service de traduction centralisé pour toutes les données de l'application.
  * Traduit les statuts, rôles, types, et autres données selon la langue demandée.
+ * Inclut la traduction automatique pour les contenus dynamiques (titres, descriptions).
  */
 @Service
 public class TranslationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TranslationService.class);
+
     @Autowired
     private MessageSource messageSource;
 
+    // Cache pour traductions automatiques
+    private final Map<String, String> cacheTraduction = new HashMap<>();
+
+    // ==================== TRADUCTION AUTOMATIQUE (MODE FALLBACK) ====================
+
     /**
-     * Traduit un statut de projet
-     * @param statut Le statut à traduire (ex: "ACTIF", "TERMINE")
-     * @param locale La langue cible (fr, en)
-     * @return Le statut traduit
+     * Traduit automatiquement un texte libre (titres, descriptions)
+     * VERSION FALLBACK : Ajoute [EN] devant le texte pour indiquer qu'il devrait être traduit
+     * @param texte Texte à traduire
+     * @param locale Langue cible
+     * @return Texte avec marqueur de langue ou original si français
      */
+    public String traduireTexteAutomatique(String texte, Locale locale) {
+        if (texte == null || texte.trim().isEmpty()) {
+            return texte;
+        }
+
+        String langueCible = locale.getLanguage();
+
+        // Si français, pas de traduction
+        if ("fr".equalsIgnoreCase(langueCible)) {
+            return texte;
+        }
+
+        // Clé de cache
+        String cacheKey = langueCible + ":" + texte;
+
+        // Vérifier le cache
+        if (cacheTraduction.containsKey(cacheKey)) {
+            return cacheTraduction.get(cacheKey);
+        }
+
+        // Mode fallback : retourner le texte avec marqueur [EN]
+        logger.debug("🔄 Traduction fallback (mode test) FR → {} : {}",
+                langueCible.toUpperCase(),
+                texte.substring(0, Math.min(50, texte.length())));
+
+        String fallback = "[" + langueCible.toUpperCase() + "] " + texte;
+        cacheTraduction.put(cacheKey, fallback);
+        return fallback;
+    }
+
+    /**
+     * Vide le cache de traduction
+     */
+    public void viderCache() {
+        cacheTraduction.clear();
+        logger.info("🗑️ Cache de traduction vidé");
+    }
+
+    // ==================== TRADUCTIONS STATIQUES (EXISTANT) ====================
+
     public String translateProjetStatut(String statut, Locale locale) {
         if (statut == null || statut.isEmpty()) {
             return statut;
@@ -29,16 +82,10 @@ public class TranslationService {
         try {
             return messageSource.getMessage("statut.projet." + statut, null, statut, locale);
         } catch (Exception e) {
-            return statut; // Retourne la valeur originale si pas de traduction
+            return statut;
         }
     }
 
-    /**
-     * Traduit un statut de tâche
-     * @param statut Le statut à traduire (ex: "BROUILLON", "EN_ATTENTE_VALIDATION")
-     * @param locale La langue cible (fr, en)
-     * @return Le statut traduit
-     */
     public String translateTacheStatut(String statut, Locale locale) {
         if (statut == null || statut.isEmpty()) {
             return statut;
@@ -50,12 +97,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit une priorité de tâche
-     * @param priorite La priorité à traduire (ex: "BASSE", "HAUTE")
-     * @param locale La langue cible (fr, en)
-     * @return La priorité traduite
-     */
     public String translatePriorite(String priorite, Locale locale) {
         if (priorite == null || priorite.isEmpty()) {
             return priorite;
@@ -67,12 +108,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un rôle utilisateur
-     * @param role Le rôle à traduire (ex: "ADMIN", "CHEF_PROJET")
-     * @param locale La langue cible (fr, en)
-     * @return Le rôle traduit
-     */
     public String translateRole(String role, Locale locale) {
         if (role == null || role.isEmpty()) {
             return role;
@@ -84,12 +119,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un statut de facture
-     * @param statut Le statut à traduire (ex: "GENEREE", "PAYEE")
-     * @param locale La langue cible (fr, en)
-     * @return Le statut traduit
-     */
     public String translateFactureStatut(String statut, Locale locale) {
         if (statut == null || statut.isEmpty()) {
             return statut;
@@ -101,12 +130,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un type d'abonnement
-     * @param type Le type à traduire (ex: "PREMIUM", "GRATUIT")
-     * @param locale La langue cible (fr, en)
-     * @return Le type traduit
-     */
     public String translateAbonnementType(String type, Locale locale) {
         if (type == null || type.isEmpty()) {
             return type;
@@ -118,12 +141,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un statut d'abonnement
-     * @param statut Le statut à traduire (ex : "ACTIF", "EXPIRE")
-     * @param locale La langue cible (fr, en)
-     * @return Le statut traduit
-     */
     public String translateAbonnementStatut(String statut, Locale locale) {
         if (statut == null || statut.isEmpty()) {
             return statut;
@@ -135,12 +152,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un type de notification
-     * @param type Le type à traduire (ex : "TACHE", "PROJET")
-     * @param locale La langue cible (fr, en)
-     * @return Le type traduit
-     */
     public String translateNotificationType(String type, Locale locale) {
         if (type == null || type.isEmpty()) {
             return type;
@@ -152,12 +163,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit une visibilité de projet
-     * @param visibilite La visibilité à traduire (ex: "PRIVE", "PUBLIC")
-     * @param locale La langue cible (fr, en)
-     * @return La visibilité traduite
-     */
     public String translateVisibilite(String visibilite, Locale locale) {
         if (visibilite == null || visibilite.isEmpty()) {
             return visibilite;
@@ -169,18 +174,11 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit un mois
-     * @param mois Le mois à traduire (ex: "JANVIER", "DECEMBRE")
-     * @param locale La langue cible (fr, en)
-     * @return Le mois traduit
-     */
     public String translateMois(String mois, Locale locale) {
         if (mois == null || mois.isEmpty()) {
             return mois;
         }
         try {
-            // Normaliser le mois en majuscules sans accents
             String moisNormalise = mois.toUpperCase()
                     .replace("É", "E")
                     .replace("Û", "U");
@@ -190,11 +188,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit la description d'un abonnement Premium
-     * @param locale La langue cible (fr, en)
-     * @return La description traduite
-     */
     public String translateAbonnementDescription(Locale locale) {
         try {
             return messageSource.getMessage("abonnement.description.premium", null, locale);
@@ -203,24 +196,11 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Traduit une période complète (ex: "Période : Décembre 2025")
-     * @param mois Le mois
-     * @param annee L'année
-     * @param locale La langue cible
-     * @return La période traduite
-     */
     public String translatePeriode(String mois, String annee, Locale locale) {
         String moisTraduit = translateMois(mois, locale);
         return moisTraduit + " " + annee;
     }
 
-    /**
-     * Méthode générique pour traduire n'importe quelle clé
-     * @param key La clé de traduction (ex: "label.description")
-     * @param locale La langue cible
-     * @return La traduction
-     */
     public String translate(String key, Locale locale) {
         try {
             return messageSource.getMessage(key, null, locale);
@@ -229,13 +209,6 @@ public class TranslationService {
         }
     }
 
-    /**
-     * Méthode générique avec paramètres
-     * @param key La clé de traduction
-     * @param args Les arguments à insérer dans la traduction
-     * @param locale La langue cible
-     * @return La traduction avec paramètres
-     */
     public String translate(String key, Object[] args, Locale locale) {
         try {
             return messageSource.getMessage(key, args, locale);

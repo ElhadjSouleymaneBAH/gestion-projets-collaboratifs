@@ -785,7 +785,7 @@ export default {
     nom: 'Nom',
     nomPlaceholder: 'Votre nom',
     email: 'Adresse e-mail',
-    emailPlaceholder: 'votre\\@email.com',
+    emailPlaceholder: 'exemple@domaine.com',
     sauvegarder: 'Sauvegarder',
     motDePasse: 'Mot de passe',
     ancienMotDePassePlaceholder: 'Votre mot de passe actuel',
@@ -1551,6 +1551,7 @@ export default {
     erreurCreationCompte: 'Erreur lors de la création du compte. Veuillez réessayer.',
     connexionReussie: 'Connexion réussie',
     erreurConnexion: 'Email ou mot de passe incorrect',
+    emailMotDePasseIncorrect: 'Email ou mot de passe incorrect',
   },
 
   // ==================== STRIPE ====================
@@ -1583,5 +1584,19 @@ export default {
     retour: 'Aller à mon tableau de bord',
     contactSupport: 'support@collabpro.com',
   },
+
+  tooltips: {
+    kpiProjets: 'Voir tous mes projets',
+    kpiMembres: 'Voir les membres de l’équipe',
+    kpiTaches: 'Voir toutes les tâches',
+    kpiFactures: 'Voir les factures',
+    kpiNotifications: 'Voir les notifications',
+    premium: 'Premium actif – accès à toutes les fonctionnalités',
+    assignerTache: 'Assigner une tâche à un membre',
+    validerTache: 'Valider la tâche',
+    supprimerTache: 'Supprimer la tâche',
+    voirDetails: 'Voir les détails',
+  },
+
 };
 
