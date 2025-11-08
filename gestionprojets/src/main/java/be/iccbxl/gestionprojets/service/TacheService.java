@@ -9,6 +9,7 @@ import be.iccbxl.gestionprojets.enums.PrioriteTache;
 import be.iccbxl.gestionprojets.repository.TacheRepository;
 import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
+import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +24,73 @@ public class TacheService {
     private final TacheRepository tacheRepository;
     private final ProjetRepository projetRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final ProjetUtilisateurRepository projetUtilisateurRepository;
 
-    public TacheService(TacheRepository tacheRepository, ProjetRepository projetRepository, UtilisateurRepository utilisateurRepository) {
+    public TacheService(
+            TacheRepository tacheRepository,
+            ProjetRepository projetRepository,
+            UtilisateurRepository utilisateurRepository,
+            ProjetUtilisateurRepository projetUtilisateurRepository) {
         this.tacheRepository = tacheRepository;
         this.projetRepository = projetRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.projetUtilisateurRepository = projetUtilisateurRepository;
     }
+
+    // ========== ✅ NOUVEAU : ASSIGNER UNE TÂCHE ==========
+    /**
+     * Assigner une tâche à un membre du projet
+     *
+     * @param tacheId ID de la tâche
+     * @param membreId ID du membre à assigner
+     * @return TacheDTO enrichi avec les infos de l'assigné
+     * @throws RuntimeException si la tâche n'existe pas, le membre n'existe pas,
+     *                          ou le membre n'appartient pas au projet
+     */
+    public TacheDTO assignerTache(Long tacheId, Long membreId) {
+        System.out.println("DEBUG: [F7] Assignation tâche " + tacheId + " à membre " + membreId);
+
+        // 1. Vérifier que la tâche existe
+        Tache tache = tacheRepository.findByIdWithRelations(tacheId)
+                .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
+
+        // 2. Vérifier que le membre existe
+        Utilisateur membre = utilisateurRepository.findById(membreId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + membreId));
+
+        // 3. SÉCURITÉ : Vérifier que le membre appartient au projet
+        Long projetId = tache.getProjet().getId();
+        boolean appartientAuProjet = projetUtilisateurRepository
+                .existsByProjetIdAndUtilisateurId(projetId, membreId);
+
+        if (!appartientAuProjet) {
+            System.err.println("ERROR: [F7] Utilisateur " + membreId + " n'appartient pas au projet " + projetId);
+            throw new RuntimeException(
+                    "L'utilisateur " + membre.getPrenom() + " " + membre.getNom() +
+                            " n'appartient pas au projet. Veuillez d'abord l'ajouter comme membre."
+            );
+        }
+
+        // 4. Vérifier que la tâche n'est pas terminée ou annulée
+        if (tache.getStatut() == StatutTache.TERMINE || tache.getStatut() == StatutTache.ANNULE) {
+            System.err.println("ERROR: [F7] Impossible d'assigner tâche avec statut: " + tache.getStatut());
+            throw new RuntimeException(
+                    "Impossible d'assigner une tâche avec le statut : " + tache.getStatut()
+            );
+        }
+
+        // 5. Assigner la tâche
+        tache.assignerA(membre);
+        Tache tacheUpdated = tacheRepository.save(tache);
+
+        System.out.println("SUCCESS: [F7] Tâche " + tacheId + " assignée à " +
+                membre.getPrenom() + " " + membre.getNom() + " (" + membre.getEmail() + ")");
+
+        // 6. Retourner le DTO enrichi
+        return convertirEnDTO(tacheUpdated);
+    }
+
+    // ========== MÉTHODES EXISTANTES ==========
 
     public TacheDTO creerTache(TacheDTO tacheDTO) {
         System.out.println("DEBUG: [F7] Début création tâche - Titre: " + tacheDTO.getTitre() +
@@ -69,15 +131,8 @@ public class TacheService {
             tache.setDateEcheance(tacheDTO.getDateEcheance());
         }
 
-        if (tacheDTO.getIdAssigne() != null) {
-            System.out.println("DEBUG: [F7] Assignation lors de la création à l'utilisateur: " + tacheDTO.getIdAssigne());
 
-            Utilisateur utilisateur = utilisateurRepository.findById(tacheDTO.getIdAssigne())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + tacheDTO.getIdAssigne()));
-
-            tache.assignerA(utilisateur);
-            System.out.println("DEBUG: [F7] Tâche assignée à: " + utilisateur.getEmail());
-        }
+        tache.assignerA(null);
 
         Tache tacheSauvee = tacheRepository.save(tache);
         System.out.println("SUCCESS: [F7] Tâche créée avec ID: " + tacheSauvee.getId() +
@@ -269,6 +324,10 @@ public class TacheService {
         System.out.println("SUCCESS: [F7] Tâche " + id + " supprimée avec succès");
     }
 
+    /**
+     * ✅ Convertir une entité Tache en TacheDTO
+     * ENRICHI : Inclut prénom et email de l'assigné
+     */
     private TacheDTO convertirEnDTO(Tache tache) {
         TacheDTO dto = new TacheDTO();
         dto.setId(tache.getId());
@@ -281,8 +340,11 @@ public class TacheService {
         }
 
         if (tache.getAssigneA() != null) {
-            dto.setIdAssigne(tache.getAssigneA().getId());
-            dto.setNomAssigne(tache.getAssigneA().getPrenom() + " " + tache.getAssigneA().getNom());
+            Utilisateur assigne = tache.getAssigneA();
+            dto.setIdAssigne(assigne.getId());
+            dto.setNomAssigne(assigne.getPrenom() + " " + assigne.getNom());
+            dto.setPrenomAssigne(assigne.getPrenom());
+            dto.setEmailAssigne(assigne.getEmail());
         }
 
         dto.setStatut(tache.getStatut());

@@ -1484,7 +1484,7 @@ export default {
     },
     email: {
       titre: 'Adresse e-mail',
-      adresse: 'contact@collabpro.be',
+      adresse: 'contact@@collabpro.be',
     },
     tva: {
       titre: 'Numéro de TVA',

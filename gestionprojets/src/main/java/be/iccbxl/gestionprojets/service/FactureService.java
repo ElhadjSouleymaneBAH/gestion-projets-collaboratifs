@@ -4,16 +4,14 @@ import be.iccbxl.gestionprojets.model.Facture;
 import be.iccbxl.gestionprojets.model.Transaction;
 import be.iccbxl.gestionprojets.repository.FactureRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Service pour la gestion des factures
@@ -27,6 +25,9 @@ import java.util.Optional;
 public class FactureService {
 
     private final FactureRepository factureRepository;
+
+    @Autowired
+    private TranslationService translationService;
 
     @Value("${app.entreprise.nom:CollabPro Solutions}")
     private String entrepriseNom;
@@ -68,8 +69,10 @@ public class FactureService {
 
     /**
      * Récupérer les données complètes pour affichage PDF
+     * @param factureId ID de la facture
+     * @param langue Langue pour la traduction (fr/en)
      */
-    public Map<String, Object> getDonneesFacturePDF(Long factureId) {
+    public Map<String, Object> getDonneesFacturePDF(Long factureId, String langue) {
         Optional<Facture> factureOpt = findByIdWithJoins(factureId);
         if (factureOpt.isEmpty()) {
             throw new IllegalArgumentException("Facture non trouvée : " + factureId);
@@ -78,13 +81,20 @@ public class FactureService {
         Facture facture = factureOpt.get();
         Map<String, Object> donnees = new HashMap<>();
 
+        // Locale pour traduction
+        Locale locale = "en".equalsIgnoreCase(langue) ? Locale.ENGLISH : Locale.FRENCH;
+
         // En-tête facture
         donnees.put("factureId", facture.getId());
         donnees.put("numeroFacture", facture.getNumeroFacture());
         donnees.put("dateEmission", formatDate(facture.getDateEmission()));
         donnees.put("dateEcheance", formatDate(facture.getDateEcheance()));
         donnees.put("statut", facture.getStatut());
-        donnees.put("periode", facture.getPeriode());
+
+        //  TRADUCTION DE LA PÉRIODE
+        String periodeOriginale = facture.getPeriode(); // Ex: "décembre 2025"
+        String periodeTradu = traduirePeriode(periodeOriginale, locale);
+        donnees.put("periode", periodeTradu);
 
         // Montants
         Double montantHT = facture.getMontantHT() != null ? facture.getMontantHT() : 0.0;
@@ -94,7 +104,13 @@ public class FactureService {
         donnees.put("tva", tva);
         donnees.put("montantTTC", montantTTC);
         donnees.put("tauxTva", 21.0);
-        donnees.put("description", "Abonnement Premium CollabPro - Mensuel");
+
+        //  TRADUCTION DE LA DESCRIPTION
+        String descriptionFr = "Abonnement Premium CollabPro - Mensuel";
+        String description = locale.getLanguage().equals("en")
+                ? "CollabPro Premium Subscription - Monthly"
+                : descriptionFr;
+        donnees.put("description", description);
 
         // Entreprise
         donnees.put("entrepriseNom", entrepriseNom);
@@ -124,7 +140,7 @@ public class FactureService {
             // Adresse du client
             donnees.put("clientAdresse", utilisateur.getAdresse() != null ? utilisateur.getAdresse().trim() : "");
 
-            // Ville non disponible dans la classe Utilisateur (valeur vide pour cohérence frontend)
+            // Ville non disponible dans la classe Utilisateur
             donnees.put("clientVille", "");
 
             donnees.put("transactionId", facture.getTransaction().getId());
@@ -139,11 +155,41 @@ public class FactureService {
     }
 
     /**
+     * Version sans langue (fallback français)
+     */
+    public Map<String, Object> getDonneesFacturePDF(Long factureId) {
+        return getDonneesFacturePDF(factureId, "fr");
+    }
+
+    /**
+     * Traduire la période (ex: "décembre 2025" → "December 2025")
+     */
+    private String traduirePeriode(String periode, Locale locale) {
+        if (periode == null || periode.trim().isEmpty()) {
+            return periode;
+        }
+
+        // Format attendu : "mois année" (ex: "décembre 2025")
+        String[] parts = periode.trim().split("\\s+");
+        if (parts.length != 2) {
+            return periode; // Format inattendu, retourne tel quel
+        }
+
+        String mois = parts[0];
+        String annee = parts[1];
+
+        // Traduire le mois
+        String moisTraduit = translationService.translateMois(mois.toUpperCase(), locale);
+
+        return moisTraduit + " " + annee;
+    }
+
+    /**
      * Générer la période de facturation
      */
     private String genererPeriodeFacturation() {
         LocalDate maintenant = LocalDate.now();
-        return maintenant.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+        return maintenant.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH));
     }
 
     /**

@@ -104,11 +104,11 @@
                 <div class="facture-info">
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.periode') }}:</span>
-                    <span class="info-value">{{ translatePeriod(facture.periode) || '—' }}</span>
+                    <span class="info-value">{{ traduirePeriodeFallback(facture.periode) || '—' }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.description') }}:</span>
-                    <span class="info-value">{{ translateSubscriptionDescription(facture.description) || '—' }}</span>
+                    <span class="info-value">{{ traduireDescription(facture.description) || '—' }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">{{ $t('factures.echeance') }}:</span>
@@ -235,13 +235,43 @@ export default {
   components: { Facture },
   setup() {
     const { t, locale } = useI18n()
-    const { translateInvoiceStatus, translatePeriod, translateSubscriptionDescription } = useDataTranslation()
+    const { translateInvoiceStatus } = useDataTranslation()
     const route = useRoute()
 
     // 🇫🇷/🇬🇧 : plus robuste (gère fr, fr-BE, vide, null)
     const shortLang = (val) => {
       const v = String(val || '').toLowerCase()
       return v.startsWith('fr') ? 'fr' : 'en'
+    }
+
+    // 🔥 TRADUCTION PÉRIODE (ex: "Décembre 2025" → "December 2025")
+    const traduirePeriodeFallback = (periode) => {
+      if (!periode || shortLang(locale.value) === 'fr') return periode
+
+      const mois = {
+        'janvier': 'January', 'février': 'February', 'mars': 'March',
+        'avril': 'April', 'mai': 'May', 'juin': 'June',
+        'juillet': 'July', 'août': 'August', 'septembre': 'September',
+        'octobre': 'October', 'novembre': 'November', 'décembre': 'December'
+      }
+
+      let result = periode
+      for (const [fr, en] of Object.entries(mois)) {
+        const regex = new RegExp(fr, 'gi')
+        result = result.replace(regex, en)
+      }
+      return result
+    }
+
+    // 🔥 TRADUCTION DESCRIPTION
+    const traduireDescription = (description) => {
+      if (!description || shortLang(locale.value) === 'fr') return description
+
+      if (description.includes('Premium') || description.includes('Abonnement')) {
+        return 'CollabPro Premium Subscription - Monthly (excl. VAT)'
+      }
+
+      return description
     }
 
     const factures = ref([])
@@ -407,7 +437,7 @@ export default {
         const res = await factureAPI.getById(facture.id)
         factureSelectionnee.value = res?.data || facture
       } catch (e) {
-        console.warn(' Impossible de charger le détail complet de la facture :', e)
+        console.warn('⚠ Impossible de charger le détail complet de la facture :', e)
         factureSelectionnee.value = facture
       }
     }
@@ -484,14 +514,12 @@ export default {
       voirFacture, fermerModalFacture, telechargerPDF,
       reinitialiserFiltres, onActionTerminee,
       translateInvoiceStatus,
-      translatePeriod,
-      translateSubscriptionDescription
+      traduirePeriodeFallback,
+      traduireDescription
     }
   }
 }
 </script>
-
-
 
 <style scoped>
 .factures-view{min-height:100vh;background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);padding:20px 0}

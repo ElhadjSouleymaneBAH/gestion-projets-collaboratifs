@@ -49,9 +49,22 @@ public class ProjetController {
     // ---------- ADMIN ----------
     @GetMapping("/admin/tous")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<ProjetDTO>> obtenirTousProjetsAdmin(Authentication authentication) {
+    public ResponseEntity<List<ProjetDTO>> obtenirTousProjetsAdmin(
+            Authentication authentication,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
             List<ProjetDTO> projets = projetService.obtenirTousProjets();
+
+            //  TRADUCTION
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projets.forEach(p -> {
+                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
+                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
+                });
+            }
+
             return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -60,21 +73,32 @@ public class ProjetController {
 
     // ---------- PUBLIC ----------
     @GetMapping("/publics")
-    public ResponseEntity<List<ProjetDTO>> obtenirProjetsPublics() {
+    public ResponseEntity<List<ProjetDTO>> obtenirProjetsPublics(
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
             List<ProjetDTO> projetsPublics = projetService.obtenirProjetsPublics();
+
+            // TRADUCTION
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projetsPublics.forEach(p -> {
+                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
+                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
+                });
+            }
+
             return ResponseEntity.ok(projetsPublics);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /**
-     *  Nouvelle méthode ajoutée (lecture publique d’un projet)
-     * Accessible sans authentification (conformément au cahier des charges - F3)
-     */
     @GetMapping("/public/{id}")
-    public ResponseEntity<ProjetDTO> obtenirProjetPublicParId(@PathVariable Long id) {
+    public ResponseEntity<ProjetDTO> obtenirProjetPublicParId(
+            @PathVariable Long id,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
             Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
 
@@ -88,6 +112,12 @@ public class ProjetController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
+            //  TRADUCTION
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
+                projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
+            }
 
             return ResponseEntity.ok(projet);
         } catch (Exception e) {
@@ -118,7 +148,7 @@ public class ProjetController {
         try {
             List<ProjetDTO> projets = projetService.obtenirTousProjets();
 
-            //  TRADUCTION AUTOMATIQUE
+            // TRADUCTION AUTOMATIQUE
             Locale locale = Locale.forLanguageTag(acceptLanguage);
             if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
                 projets.forEach(projet -> {
@@ -133,10 +163,13 @@ public class ProjetController {
         }
     }
 
-    //  Vérifier que l'utilisateur a accès au projet
     @GetMapping("/{id:\\d+}")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<ProjetDTO> obtenirProjetParId(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<ProjetDTO> obtenirProjetParId(
+            @PathVariable Long id,
+            Authentication authentication,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
             String emailConnecte = authentication.getName();
             Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
@@ -152,11 +185,17 @@ public class ProjetController {
 
             ProjetDTO projet = projetOpt.get();
 
-            // Vérification : ADMIN OU créateur OU membre du projet
             if (!estAdmin
                     && !projet.getIdCreateur().equals(idUtilisateurConnecte)
                     && !projetService.estMembreDuProjet(idUtilisateurConnecte, id)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            //  TRADUCTION
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
+                projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
             }
 
             return ResponseEntity.ok(projet);
@@ -167,8 +206,11 @@ public class ProjetController {
 
     @GetMapping("/utilisateur/{utilisateurId:\\d+}")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<ProjetDTO>> obtenirProjetsParUtilisateur(@PathVariable Long utilisateurId,
-                                                                        Authentication authentication) {
+    public ResponseEntity<List<ProjetDTO>> obtenirProjetsParUtilisateur(
+            @PathVariable Long utilisateurId,
+            Authentication authentication,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
         try {
             boolean estAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
@@ -181,7 +223,18 @@ public class ProjetController {
                 }
             }
 
-            return ResponseEntity.ok(projetService.obtenirProjetsParUtilisateur(utilisateurId));
+            List<ProjetDTO> projets = projetService.obtenirProjetsParUtilisateur(utilisateurId);
+
+            //  TRADUCTION
+            Locale locale = Locale.forLanguageTag(acceptLanguage);
+            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+                projets.forEach(p -> {
+                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
+                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
+                });
+            }
+
+            return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

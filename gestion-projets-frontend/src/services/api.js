@@ -49,8 +49,9 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
 
-  const storedLang = localStorage.getItem('lang') || navigator.language || 'fr'
+  const storedLang = localStorage.getItem('langue') || localStorage.getItem('lang') || 'fr'
   config.headers['Accept-Language'] = shortLang(storedLang)
+  console.log(' Accept-Language envoyé:', shortLang(storedLang))
 
   console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`, {
     params: config.params,
@@ -199,6 +200,14 @@ export const taskAPI = {
     api.patch(
       `${endpoints.tasks}/${cleanId(id)}/statut`,
       { statut: String(statut) },
+      { headers: { 'Content-Type': 'application/json' } }
+    ),
+
+
+  assignTask: (taskId, userId) =>
+    api.put(
+      `${endpoints.tasks}/${cleanId(taskId)}/assigner`,
+      { idAssigne: cleanId(userId) },
       { headers: { 'Content-Type': 'application/json' } }
     ),
 

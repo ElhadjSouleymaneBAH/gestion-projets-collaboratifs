@@ -215,7 +215,7 @@ public class FactureController {
             effectiveLang = effectiveLang.toLowerCase(Locale.ROOT).startsWith("en") ? "en" : "fr";
 
             // Génération du PDF
-            Map<String, Object> data = factureService.getDonneesFacturePDF(id);
+            Map<String, Object> data = factureService.getDonneesFacturePDF(id, effectiveLang);
             byte[] pdfBytes = pdfGenerator.generate(data, effectiveLang);
 
             String fileName = (facture.getNumeroFacture() != null

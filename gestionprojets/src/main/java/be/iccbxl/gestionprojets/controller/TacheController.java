@@ -17,14 +17,10 @@ import java.util.Optional;
 
 /**
  * Controller REST pour la gestion des tâches (F7).
- * - Corrigé: hasAuthority()
- * - Compat PATCH JSON {statut} + PUT ?nouveauStatut=
- * - Endpoints meta /statuts et /priorites pour l'UI
- * - Endpoint admin pour annulation de tâches
+ * Version 2.0 - Ajout endpoint assignation avec body JSON
  */
 @RestController
 @RequestMapping("/api/taches")
-//@CrossOrigin(origins = "*")
 public class TacheController {
 
     private final TacheService tacheService;
@@ -83,12 +79,6 @@ public class TacheController {
         }
     }
 
-    // ========== F7-ADMIN : ENDPOINT ADMIN ALL (NOUVEAU) ==========
-    /**
-     * Liste toutes les tâches (Admin uniquement).
-     * Endpoint spécifique pour le dashboard admin.
-     * Conforme à F7.
-     */
     @GetMapping("/admin/all")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<TacheDTO>> getAllTachesAdmin() {
@@ -208,7 +198,45 @@ public class TacheController {
         }
     }
 
-    // ========== F7 : ASSIGNATION ==========
+    // ========== ASSIGNATION AVEC BODY JSON ==========
+    /**
+     * Assigner une tâche à un membre via body JSON
+     * PUT /api/taches/{id}/assigner
+     *
+     * @param id ID de la tâche
+     * @param body Payload JSON contenant idAssigne
+     * @return TacheDTO enrichi avec les infos de l'assigné
+     */
+    @PutMapping("/{id}/assigner")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<TacheDTO> assignerTacheJSON(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            System.out.println("DEBUG: [F7] Requête assignation tâche " + id + " avec body: " + body);
+
+            if (!body.containsKey("idAssigne")) {
+                System.err.println("ERROR: [F7] Clé 'idAssigne' manquante dans le body");
+                return ResponseEntity.badRequest().build();
+            }
+
+            Long idAssigne = Long.valueOf(body.get("idAssigne").toString());
+            System.out.println("DEBUG: [F7] Assignation tâche " + id + " à utilisateur " + idAssigne);
+
+            TacheDTO tacheAssignee = tacheService.assignerTache(id, idAssigne);
+            System.out.println("SUCCESS: [F7] Tâche " + id + " assignée à " + tacheAssignee.getNomAssigne());
+
+            return ResponseEntity.ok(tacheAssignee);
+        } catch (RuntimeException e) {
+            System.err.println("ERROR: [F7] Erreur assignation: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            System.err.println("ERROR: [F7] Erreur serveur: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ========== F7 : ASSIGNATION (PATH PARAM - LEGACY) ==========
     @PutMapping("/{id}/assigner/{utilisateurId}")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> assignerTache(@PathVariable Long id,
@@ -246,14 +274,7 @@ public class TacheController {
         }
     }
 
-    // ========== F7-ADMIN : ANNULER TÂCHE (NOUVEAU) ==========
-    /**
-     * Annule une tâche (Admin uniquement).
-     * Conforme à F7 : "ANNULÉ : Administrateur (à tout moment)"
-     *
-     * L'administrateur peut annuler n'importe quelle tâche indépendamment
-     * de son statut actuel, comme défini dans le workflow du cahier des charges.
-     */
+    // ========== F7-ADMIN : ANNULER TÂCHE ==========
     @PutMapping("/{id}/annuler")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> annulerTache(@PathVariable Long id) {
@@ -271,7 +292,6 @@ public class TacheController {
     }
 
     // ========== F7 : GESTION DES STATUTS ==========
-    // A) Compat PUT avec ?nouveauStatut=
     @PutMapping("/{id}/statut")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> changerStatutPUT(@PathVariable Long id,
@@ -280,7 +300,6 @@ public class TacheController {
         return changerStatutCommun(id, nouveauStatut, authentication);
     }
 
-    // B) Compat PATCH JSON { "statut": "EN_ATTENTE_VALIDATION" }
     public static class StatutPayload {
         public String statut;
         public String getStatut() { return statut; }

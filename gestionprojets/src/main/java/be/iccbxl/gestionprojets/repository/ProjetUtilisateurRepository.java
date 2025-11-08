@@ -11,8 +11,8 @@ import java.util.List;
 /**
  * Repository pour la gestion des associations Projet-Utilisateur.
  * Fonctionnalités cahier des charges :
- * - F8 : Ajouter des membres à un projet (Chef de Projet, Importance 4/5)
- * - F9 : Collaboration temps réel (vérifications accès)
+ * F8 : Ajouter des membres à un projet (Chef de Projet, Importance 4/5)
+ * F9 : Collaboration temps réel (vérifications accès)
 
  * Contraintes F8 : Membres existants (éviter doublons)
  *
@@ -46,7 +46,7 @@ public interface ProjetUtilisateurRepository extends JpaRepository<ProjetUtilisa
     List<Long> findUtilisateurIdsByProjetId(@Param("projetId") Long projetId);
 
     /**
-     * Trouve tous les projets où un utilisateur est membre.
+     * Trouve tous les projets o ù un utilisateur est membre.
      * Utilisé pour F6/F8 : projets de l'utilisateur
      */
     @Query("SELECT pu.projetId FROM ProjetUtilisateur pu WHERE pu.utilisateurId = :utilisateurId AND pu.actif = true")
