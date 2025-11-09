@@ -27,7 +27,7 @@ export default {
 
   // ==================== APPLICATION ====================
   app: {
-    nom: 'CollabPro'
+    nom: 'CollabPro',
   },
 
   // ==================== COMMUN ====================
@@ -66,7 +66,8 @@ export default {
     langue: 'Langue',
     fonctionnalites: 'Fonctionnalités',
     pretCommencer: 'Prêt à commencer ?',
-    rejoindreCollabPro: 'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
+    rejoindreCollabPro:
+      'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
     invitationUnique: 'Rejoignez notre communauté et transformez votre façon de collaborer',
     gratuit: 'Gratuit',
     inconnu: 'Inconnu',
@@ -124,7 +125,8 @@ export default {
   home: {
     hero: {
       tagline: 'Application Web de Gestion de Projets Collaboratifs',
-      description: "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel.",
+      description:
+        "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel.",
     },
     cta: {
       titre: 'Prêt à démarrer ?',
@@ -477,7 +479,6 @@ export default {
     selectionnerProjet: 'Sélectionnez un projet pour commencer',
   },
 
-
   // ==================== CHAT ====================
   chat: {
     titre: 'Chat du projet',
@@ -575,7 +576,6 @@ export default {
       semaine: 'Cette semaine',
       mois: 'Ce mois',
     },
-
   },
 
   // ==================== ABONNEMENTS ====================
@@ -640,10 +640,8 @@ export default {
       support: 'Support prioritaire',
       chat: 'Chat temps réel',
       statistiques: 'Statistiques avancées',
-
+    },
   },
-
-},
 
   // ==================== PAIEMENTS ====================
   paiement: {
@@ -760,7 +758,6 @@ export default {
     },
   },
 
-
   // ==================== FACTURE (Détail) ====================
   facture: {
     numero: 'Numéro',
@@ -797,7 +794,6 @@ export default {
     total: 'TOTAL TTC :',
   },
 
-
   // ==================== PROFIL ====================
   profil: {
     titre: 'Mon profil',
@@ -813,7 +809,7 @@ export default {
     nom: 'Nom',
     nomPlaceholder: 'Votre nom',
     email: 'Adresse e-mail',
-    emailPlaceholder: 'exemple@domaine.com',
+    emailPlaceholder: 'exemple@@domaine.com',
     sauvegarder: 'Sauvegarder',
     motDePasse: 'Mot de passe',
     ancienMotDePassePlaceholder: 'Votre mot de passe actuel',
@@ -914,7 +910,6 @@ export default {
     membreAjouteAvecNotification: 'Membre {nom} ajouté et notifié',
   },
 
-
   // ==================== TABLEAUX DE BORD ====================
   tableauBord: {
     chefProjet: {
@@ -931,40 +926,41 @@ export default {
       aucunProjetActif: 'Aucun projet actif pour le moment',
       aucuneTacheValidation: 'Aucune tâche en attente de validation',
       aucuneNotificationRecente: 'Aucune notification récente',
-      },
+    },
 
-      membre: {
+    membre: {
       titre: 'Tableau de bord Membre',
-      projetsParticipes: '\'Projets auxquels je participe\',',
+      projetsParticipes: "'Projets auxquels je participe',",
       activiteRecente: 'Activité récente',
 
-        promoPremium: {
+      promoPremium: {
         titre: 'Passez à la version Premium !',
-        description: 'Profitez de fonctionnalités avancées et d\'une meilleure expérience collaborative.',
-        bouton: 'Découvrir l\'offre'
+        description:
+          "Profitez de fonctionnalités avancées et d'une meilleure expérience collaborative.",
+        bouton: "Découvrir l'offre",
       },
       kpi: {
         projetsRejoints: 'Projets rejoints',
         tachesAttribuees: 'Tâches attribuées',
         tachesTerminees: 'Tâches terminées',
         reussite: 'de réussite',
-        notifications: 'Notifications'
+        notifications: 'Notifications',
       },
-        sections: {
-          projets: 'Mes projets',
-          taches: 'Mes tâches',
-          notifications: 'Mes notifications'
-        },
+      sections: {
+        projets: 'Mes projets',
+        taches: 'Mes tâches',
+        notifications: 'Mes notifications',
+      },
 
-        taches: {
-          aucuneTache: 'Aucune tâche pour le moment'
-        },
+      taches: {
+        aucuneTache: 'Aucune tâche pour le moment',
+      },
 
-        notifications: {
-          vide: 'Aucune notification pour le moment'
-        },
+      notifications: {
+        vide: 'Aucune notification pour le moment',
+      },
 
-        profil: 'Mon profil'
+      profil: 'Mon profil',
     },
     admin: {
       tableauDeBord: 'Tableau de bord Administrateur',
@@ -1013,13 +1009,13 @@ export default {
       toutesLesTaches: 'Toutes les tâches de la plateforme',
       aucuneTache: 'Aucune tâche disponible',
       annulerTache: 'Annuler cette tâche',
-      confirmerAnnulationTache: 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
+      confirmerAnnulationTache:
+        'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
       tacheAnnulee: 'Tâche annulée avec succès',
       erreurAnnulationTache: 'Erreur lors de l’annulation de la tâche',
 
-      suspendu: 'Suspendu'
+      suspendu: 'Suspendu',
     },
-
   },
 
   // ==================== MEMBRE SPÉCIFIQUE ====================
@@ -1060,7 +1056,6 @@ export default {
       tachesAttribuees: 'Tâches attribuées',
       messages: 'Messages',
       notifications: 'Notifications',
-
     },
     projets: {
       titre: 'Mes projets',
@@ -1086,7 +1081,6 @@ export default {
       pasActionPossible: 'Aucune action disponible',
       enCours: 'En cours',
       dateCreation: 'Date de création',
-
     },
     premium: {
       titre: 'Devenez Chef de Projet',
@@ -1096,10 +1090,7 @@ export default {
     notifications: {
       vide: 'Aucune notification pour le moment',
     },
-
   },
-
-
 
   // ==================== CHEF DE PROJET SPÉCIFIQUE ====================
   chefProjet: {
@@ -1162,7 +1153,6 @@ export default {
     membres: 'membres',
   },
 
-
   // ==================== ADMINISTRATION ====================
   admin: {
     tableauDeBord: 'Tableau de bord Administrateur',
@@ -1223,7 +1213,6 @@ export default {
     notifications: 'Notifications',
     prix: 'Prix',
   },
-
 
   // ==================== ERREURS GÉNÉRALES ====================
   erreurs: {
@@ -1310,12 +1299,11 @@ export default {
     contactSupport: 'support@collabpro.com',
   },
 
-
   // ==================== TOOLTIPS (SECTION COMPLÈTE) ====================
   tooltips: {
     // KPIs
     kpiProjets: 'Voir tous mes projets',
-    kpiMembres: 'Voir les membres de l\'équipe',
+    kpiMembres: "Voir les membres de l'équipe",
     kpiTaches: 'Voir toutes les tâches',
     kpiFactures: 'Voir les factures',
     kpiNotifications: 'Voir les notifications',
@@ -1324,7 +1312,7 @@ export default {
     // Navigation onglets
     voirProjets: 'Voir tous les projets',
     voirTaches: 'Voir toutes les tâches',
-    voirEquipe: 'Voir l\'équipe complète',
+    voirEquipe: "Voir l'équipe complète",
     voirChat: 'Ouvrir le chat',
     voirFactures: 'Voir toutes les factures',
     voirNotifications: 'Voir toutes les notifications',
@@ -1446,7 +1434,6 @@ export default {
     },
   },
 
-
   // ==================== CONDITIONS GÉNÉRALES ====================
   conditions: {
     titre: 'Conditions générales',
@@ -1527,7 +1514,6 @@ export default {
     retourAccueilBtn: "Retour à l'accueil",
     adapteProjets: 'Adapté aux PME et freelances pour leurs projets collaboratifs',
   },
-
 
   // ==================== POLITIQUE DE CONFIDENTIALITÉ ====================
   politique: {
@@ -1650,11 +1636,10 @@ export default {
       "CollabPro est conforme au RGPD et s'engage à protéger vos données personnelles.",
   },
 
-
   // ==================== CONTACT ====================
   contact: {
     titre: 'Contactez-nous',
-    description: 'Besoin d\'aide ou d\'informations ? Nous sommes à votre écoute.',
+    description: "Besoin d'aide ou d'informations ? Nous sommes à votre écoute.",
     informations: 'Informations de contact',
     entreprise: 'CollabPro Solutions',
     adresse: {
@@ -1672,5 +1657,4 @@ export default {
 
     retourAccueil: "Retour à l'accueil",
   },
-
-};
+}

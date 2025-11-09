@@ -25,6 +25,7 @@ export default {
     connecter: 'Log In',
   },
 
+
   // ==================== APPLICATION ====================
   app: { nom: 'CollabPro' },
 
@@ -780,7 +781,7 @@ export default {
     nom: 'Last Name',
     nomPlaceholder: 'Your last name',
     email: 'Email Address',
-    emailPlaceholder: 'example@domain.com',
+    emailPlaceholder: 'example@@domain.com',
     sauvegarder: 'Save',
     motDePasse: 'Password',
     ancienMotDePassePlaceholder: 'Your current password',
