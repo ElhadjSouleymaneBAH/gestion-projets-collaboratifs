@@ -26,7 +26,9 @@ export default {
   },
 
   // ==================== APPLICATION ====================
-  app: { nom: 'CollabPro' },
+  app: {
+    nom: 'CollabPro'
+  },
 
   // ==================== COMMUN ====================
   commun: {
@@ -64,9 +66,7 @@ export default {
     langue: 'Langue',
     fonctionnalites: 'Fonctionnalités',
     pretCommencer: 'Prêt à commencer ?',
-    rejoindreCollabPro:
-      'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
-
+    rejoindreCollabPro: 'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
     invitationUnique: 'Rejoignez notre communauté et transformez votre façon de collaborer',
     gratuit: 'Gratuit',
     inconnu: 'Inconnu',
@@ -102,6 +102,7 @@ export default {
     membre: 'Membre',
     reinitialiser: 'Réinitialiser',
     affichageResultats: 'Affichage {debut}–{fin} sur {total}',
+    nonDefini: 'Non défini',
   },
 
   // ==================== LANGUES ====================
@@ -123,8 +124,7 @@ export default {
   home: {
     hero: {
       tagline: 'Application Web de Gestion de Projets Collaboratifs',
-      description:
-        "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel.",
+      description: "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel.",
     },
     cta: {
       titre: 'Prêt à démarrer ?',
@@ -234,7 +234,9 @@ export default {
     projets: 'Projets',
     nouveau: 'Nouveau projet',
     nom: 'Nom du projet',
+    nomProjet: 'Nom du projet',
     description: 'Description',
+    descriptionProjet: 'Description du projet',
     statut: 'Statut',
     dateCreation: 'Date de création',
     membres: 'Membres',
@@ -249,6 +251,8 @@ export default {
     gestionProjets: 'Gestion des projets',
     creerGererProjets: 'Créez et gérez vos projets',
     nouveauProjet: 'Nouveau projet',
+    nouveauTitre: 'Nouveau titre',
+    nouvelleDescription: 'Nouvelle description',
     creerProjet: 'Créer un projet',
     tousLesProjets: 'Tous les projets',
     projetsActifs: 'Projets actifs',
@@ -271,6 +275,10 @@ export default {
     collaborationSuivi: 'Collaboration et suivi',
     creerPremierProjet: 'Créez votre premier projet pour commencer',
     creeAvecSucces: 'Projet créé avec succès',
+    projetCree: 'Projet créé avec succès',
+    projetModifie: 'Projet modifié avec succès',
+    projetSupprime: 'Projet supprimé avec succès',
+    confirmerSuppression: 'Supprimer ce projet définitivement ?',
     creationEnCours: 'Création en cours...',
     statutMisAJour: 'Statut mis à jour',
     nouveauStatut: 'Nouveau statut (ACTIF/SUSPENDU/TERMINE/ANNULE):',
@@ -283,7 +291,6 @@ export default {
     essayerAutreRecherche: 'Essayez une autre recherche',
     saisieTitre: 'Saisissez le titre du projet',
     saisieDescription: 'Décrivez votre projet en quelques mots',
-    confirmerSuppression: 'Supprimer ce projet définitivement ?',
     supprime: 'Projet supprimé avec succès',
     modifie: 'Projet modifié avec succès',
     voirDetails: 'Voir les détails',
@@ -303,9 +310,12 @@ export default {
     creerValiderTaches: 'Créez et validez vos tâches',
     mesTachesAssignees: 'Mes tâches assignées',
     aucuneTache: 'Aucune tâche',
+    aucuneTacheNonAssignee: 'Aucune tâche non assignée',
+    aucuneTacheDisponible: 'Aucune tâche disponible',
     nouvelle: 'Nouvelle tâche',
     nouvelleTache: 'Nouvelle tâche',
     taches: 'Tâches',
+    tache: 'Tâche',
     enAttenteValidation: 'En attente de validation',
     enAttente: 'En attente',
     toutesLesTaches: 'Toutes les tâches',
@@ -337,6 +347,7 @@ export default {
     enValidation: 'En validation',
     terminees: 'Terminées',
     validee: 'Validée',
+    tachesTerminees: 'Tâches terminées',
     urgentes: 'urgentes',
     enCours: 'en cours',
     tachesOK: 'tâches OK',
@@ -355,11 +366,21 @@ export default {
     confirmerAnnulation: 'Annuler cette tâche ?',
     annulee: 'Tâche annulée',
     creee: 'Tâche créée avec succès',
+    tacheAssignee: 'Tâche assignée avec succès',
     creationEnCours: 'Création en cours...',
     modifiee: 'Tâche modifiée avec succès',
     saisieTitre: 'Saisissez le titre de la tâche',
     saisieDescription: 'Décrivez la tâche à réaliser',
     choisirProjet: 'Choisir un projet',
+    choisirTache: 'Choisir une tâche',
+    choisirTacheAvant: "Veuillez d'abord sélectionner une tâche",
+    selectionnerTache: 'Sélectionner une tâche',
+    selectionnerMembre: 'Sélectionner un membre',
+    assignerTache: 'Assigner une tâche',
+    assigner: 'Assigner',
+    nonAssignee: 'Non assignée',
+    tachesNonAssignees: 'Tâches non assignées',
+    aucunMembreProjet: 'Aucun membre dans ce projet',
     voirDetails: 'Voir les détails',
     liste: {
       titre: 'Liste des tâches',
@@ -406,12 +427,15 @@ export default {
   equipe: {
     titre: 'Équipe',
     gestionEquipe: "Gestion de l'équipe",
+    gestionMembresEtTaches: 'Gestion des membres et assignation des tâches',
     ajouterMembresAuxProjets: 'Ajoutez des membres à vos projets',
     ajouterMembre: 'Ajouter un membre',
+    ajouterMembreProjet: 'Ajouter un membre au projet',
     ajouter: 'Ajouter',
     membres: 'Membres',
     collaborateurs: 'Collaborateurs',
     tousLesprojets: 'Sur tous les projets',
+    aucunMembre: 'Aucun membre',
     aucunMembreProjet: 'Aucun membre dans ce projet',
     participants: 'Participants',
     rechercherUtilisateur: 'Rechercher un utilisateur',
@@ -420,19 +444,18 @@ export default {
     membreRetire: 'Membre retiré avec succès',
     inviter: 'Inviter',
     retirer: 'Retirer',
-    changerRole: 'Changer le rôle',
+    retirerMembre: 'Retirer un membre',
     confirmerRetrait: 'Confirmer le retrait de ce membre ?',
+    changerRole: 'Changer le rôle',
     erreurRetrait: 'Erreur lors du retrait du membre',
     erreurAjout: "Erreur lors de l'ajout du membre",
+    selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
+    aucunResultat: 'Aucun résultat trouvé',
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
       admin: 'Administrateur',
     },
-    retirerMembre: 'Retirer un membre',
-    selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
-
-    aucunResultat: 'Aucun résultat trouvé',
   },
 
   // ==================== COLLABORATION EN TEMPS RÉEL ====================
@@ -454,7 +477,8 @@ export default {
     selectionnerProjet: 'Sélectionnez un projet pour commencer',
   },
 
-  // ==================== CHAT  ====================
+
+  // ==================== CHAT ====================
   chat: {
     titre: 'Chat du projet',
     placeholder: 'Écrire un message...',
@@ -463,8 +487,6 @@ export default {
     erreurChargement: 'Erreur lors du chargement du chat',
     erreurEnvoi: "Erreur lors de l'envoi du message",
     envoi: 'Envoi...',
-
-
   },
 
   // ==================== COMMENTAIRES ====================
@@ -553,6 +575,7 @@ export default {
       semaine: 'Cette semaine',
       mois: 'Ce mois',
     },
+
   },
 
   // ==================== ABONNEMENTS ====================
@@ -617,8 +640,10 @@ export default {
       support: 'Support prioritaire',
       chat: 'Chat temps réel',
       statistiques: 'Statistiques avancées',
-    },
+
   },
+
+},
 
   // ==================== PAIEMENTS ====================
   paiement: {
@@ -648,6 +673,7 @@ export default {
   },
 
   // ==================== FACTURES ====================
+
   factures: {
     titre: 'Facturation',
     mesFactures: 'Mes factures',
@@ -734,6 +760,7 @@ export default {
     },
   },
 
+
   // ==================== FACTURE (Détail) ====================
   facture: {
     numero: 'Numéro',
@@ -769,6 +796,7 @@ export default {
     chargementDetails: 'Chargement des détails de la facture…',
     total: 'TOTAL TTC :',
   },
+
 
   // ==================== PROFIL ====================
   profil: {
@@ -886,6 +914,7 @@ export default {
     membreAjouteAvecNotification: 'Membre {nom} ajouté et notifié',
   },
 
+
   // ==================== TABLEAUX DE BORD ====================
   tableauBord: {
     chefProjet: {
@@ -902,24 +931,18 @@ export default {
       aucunProjetActif: 'Aucun projet actif pour le moment',
       aucuneTacheValidation: 'Aucune tâche en attente de validation',
       aucuneNotificationRecente: 'Aucune notification récente',
+      },
 
-  },
-    membre: {
+      membre: {
       titre: 'Tableau de bord Membre',
-      projetsParticipes: 'Projets auxquels je participe',
+      projetsParticipes: '\'Projets auxquels je participe\',',
       activiteRecente: 'Activité récente',
 
-      promoPremium: {
+        promoPremium: {
         titre: 'Passez à la version Premium !',
-        description: 'Profitez de fonctionnalités avancées et d’une meilleure expérience collaborative.',
-        bouton: 'Découvrir l’offre'
+        description: 'Profitez de fonctionnalités avancées et d\'une meilleure expérience collaborative.',
+        bouton: 'Découvrir l\'offre'
       },
-
-      projets: {
-        description: 'Collaboration et suivi de la progression',
-        aucunProjet: 'Aucun projet pour le moment'
-      },
-
       kpi: {
         projetsRejoints: 'Projets rejoints',
         tachesAttribuees: 'Tâches attribuées',
@@ -927,25 +950,22 @@ export default {
         reussite: 'de réussite',
         notifications: 'Notifications'
       },
+        sections: {
+          projets: 'Mes projets',
+          taches: 'Mes tâches',
+          notifications: 'Mes notifications'
+        },
 
-      sections: {
-        projets: 'Mes projets',
-        taches: 'Mes tâches',
-        notifications: 'Mes notifications'
-      },
+        taches: {
+          aucuneTache: 'Aucune tâche pour le moment'
+        },
 
-      taches: {
-        aucuneTache: 'Aucune tâche pour le moment'
-      },
+        notifications: {
+          vide: 'Aucune notification pour le moment'
+        },
 
-      notifications: {
-        vide: 'Aucune notification pour le moment'
-      },
-
-      profil: 'Mon profil'
-
-
-  },
+        profil: 'Mon profil'
+    },
     admin: {
       tableauDeBord: 'Tableau de bord Administrateur',
       utilisateurs: 'Utilisateurs',
@@ -1006,11 +1026,8 @@ export default {
   membre: {
     confirmerSoumission: 'Soumettre cette tâche pour validation ?',
     soumiseValidation: 'Tâche soumise pour validation',
-    chatEquipe: "Chat d'équipe",
-
     mesTaches: 'Mes tâches',
     profil: 'Mon profil',
-
     profilSelection: {
       titre: 'Mon profil',
       informations: 'Informations personnelles',
@@ -1043,6 +1060,7 @@ export default {
       tachesAttribuees: 'Tâches attribuées',
       messages: 'Messages',
       notifications: 'Notifications',
+
     },
     projets: {
       titre: 'Mes projets',
@@ -1051,6 +1069,7 @@ export default {
       messageVide: 'Vous serez invité par un chef de projet',
       mesTaches: 'Mes tâches',
     },
+
     taches: {
       titre: 'Mes tâches assignées',
       description: 'Gérez vos tâches',
@@ -1060,6 +1079,14 @@ export default {
       enValidation: 'En validation',
       terminees: 'Terminées',
       erreurAucunProjet: "Vous devez être membre d'un projet pour créer une tâche",
+
+      soumettre: 'Soumettre pour validation',
+      confirmerSoumission: 'Voulez-vous soumettre cette tâche pour validation ?',
+      soumissionReussie: 'Tâche soumise avec succès !',
+      pasActionPossible: 'Aucune action disponible',
+      enCours: 'En cours',
+      dateCreation: 'Date de création',
+
     },
     premium: {
       titre: 'Devenez Chef de Projet',
@@ -1071,6 +1098,8 @@ export default {
     },
 
   },
+
+
 
   // ==================== CHEF DE PROJET SPÉCIFIQUE ====================
   chefProjet: {
@@ -1133,6 +1162,7 @@ export default {
     membres: 'membres',
   },
 
+
   // ==================== ADMINISTRATION ====================
   admin: {
     tableauDeBord: 'Tableau de bord Administrateur',
@@ -1192,6 +1222,151 @@ export default {
     commentaires: 'Commentaires',
     notifications: 'Notifications',
     prix: 'Prix',
+  },
+
+
+  // ==================== ERREURS GÉNÉRALES ====================
+  erreurs: {
+    accesRestreint: "Accès restreint. Vous n'avez pas les autorisations nécessaires.",
+    erreurServeur: 'Erreur interne du serveur',
+    erreurReseau: 'Erreur réseau. Vérifiez votre connexion internet.',
+    donneesInvalides: 'Les données fournies sont invalides',
+    accesRefuse: 'Accès refusé',
+    pageIntrouvable: 'Page introuvable',
+    erreurInconnue: 'Erreur inconnue',
+    sessionExpiree: 'Votre session a expiré. Veuillez vous reconnecter.',
+    emailDejaUtiliseErr: 'Cette adresse e-mail est déjà utilisée',
+    accesReserveAdmins: 'Accès réservé aux administrateurs',
+    accesReserveChefsProjets: 'Accès réservé aux chefs de projets',
+    chargementDonnees: 'Erreur lors du chargement des données',
+    projetIntrouvable: 'Projet introuvable',
+    creationProjet: 'Erreur lors de la création du projet',
+    modificationProjet: 'Erreur lors de la modification du projet',
+    suppressionProjet: 'Erreur lors de la suppression du projet',
+    pasAutoriseModifier: "Vous n'êtes pas autorisé à modifier ce projet",
+    pasAutoriseSupprimer: "Vous n'êtes pas autorisé à supprimer ce projet",
+    pasAutoriseSupprimerTache: "Vous n'êtes pas autorisé à supprimer cette tâche",
+    suppressionTache: 'Erreur lors de la suppression de la tâche',
+    validationTache: 'Erreur lors de la validation de la tâche',
+    modificationTache: 'Erreur lors de la modification de la tâche',
+    annulationTache: "Erreur lors de l'annulation de la tâche",
+    creationTache: 'Erreur lors de la création de la tâche',
+    assignationTache: "Erreur lors de l'assignation de la tâche",
+    ajoutMembre: "Erreur lors de l'ajout du membre",
+    retraitMembre: 'Erreur lors du retrait du membre',
+    telechargementFacture: 'Erreur lors du téléchargement de la facture',
+  },
+
+  // ==================== VALIDATION ====================
+  validation: {
+    prenomRequis: 'Le prénom est requis',
+    nomRequis: 'Le nom est requis',
+    emailRequis: "L'adresse e-mail est requise",
+    emailInvalide: 'Adresse e-mail invalide',
+    motDePasseRequis: 'Le mot de passe est requis',
+    motDePasseTropCourt: 'Le mot de passe doit contenir au moins {min} caractères',
+    confirmerMotDePasse: 'Veuillez confirmer votre mot de passe',
+    motDePassesDifferents: 'Les mots de passe ne correspondent pas',
+    choisirTypeCompte: 'Veuillez choisir un type de compte',
+    accepterCGU: "Veuillez accepter les Conditions Générales d'Utilisation",
+    accepterPolitique: 'Veuillez accepter la Politique de Confidentialité',
+    donneesInvalides: 'Les données saisies sont invalides',
+    emailDejaUtiliseErr: 'Cette adresse e-mail est déjà utilisée',
+    compteCreeeSucces: 'Compte créé avec succès !',
+    erreurCreationCompte: 'Erreur lors de la création du compte. Veuillez réessayer.',
+    connexionReussie: 'Connexion réussie',
+    erreurConnexion: 'Email ou mot de passe incorrect',
+    emailMotDePasseIncorrect: 'Email ou mot de passe incorrect',
+  },
+
+  // ==================== STRIPE ====================
+  stripe: {
+    cancel: {
+      titre: 'Paiement annulé',
+      description:
+        "Votre paiement n'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.",
+      retour: 'Retour au tableau de bord',
+      supportEmail: 'support@collabpro.com',
+    },
+    success: {
+      titre: 'Paiement réussi',
+      description: 'Votre abonnement Premium est maintenant actif ! Merci pour votre confiance.',
+      felicitations: 'Félicitations{prenom, select, undefined{} other{, {prenom}}} !',
+      abonnementActif: 'Votre abonnement Premium est actif.',
+      detailsAbonnement: "Détails de l'abonnement",
+      plan: 'Plan',
+      planPremiumMensuel: 'Plan Premium Mensuel',
+      statut: 'Statut',
+      actif: 'Actif',
+      prochainPaiement: 'Prochain paiement',
+      montant: 'Montant',
+      montantTotal: 'Montant total',
+      factureGeneree: 'Votre facture a été générée et est disponible dans la section Factures.',
+      accederTableauBord: 'Aller au tableau de bord',
+      voirFactures: 'Voir mes factures',
+      erreurConfirmation: 'Erreur de confirmation du paiement.',
+    },
+    retour: 'Aller à mon tableau de bord',
+    contactSupport: 'support@collabpro.com',
+  },
+
+
+  // ==================== TOOLTIPS (SECTION COMPLÈTE) ====================
+  tooltips: {
+    // KPIs
+    kpiProjets: 'Voir tous mes projets',
+    kpiMembres: 'Voir les membres de l\'équipe',
+    kpiTaches: 'Voir toutes les tâches',
+    kpiFactures: 'Voir les factures',
+    kpiNotifications: 'Voir les notifications',
+    kpiEquipe: 'Voir tous les collaborateurs',
+
+    // Navigation onglets
+    voirProjets: 'Voir tous les projets',
+    voirTaches: 'Voir toutes les tâches',
+    voirEquipe: 'Voir l\'équipe complète',
+    voirChat: 'Ouvrir le chat',
+    voirFactures: 'Voir toutes les factures',
+    voirNotifications: 'Voir toutes les notifications',
+
+    // Actions projets
+    consulterProjet: 'Consulter les détails du projet',
+    modifierProjet: 'Modifier le projet',
+    supprimerProjet: 'Supprimer le projet',
+
+    // Actions tâches
+    assignerTache: 'Assigner une tâche à un membre',
+    assignerTaches: 'Assigner des tâches aux membres',
+    validerTache: 'Valider la tâche',
+    supprimerTache: 'Supprimer la tâche',
+    annulerTache: 'Annuler la tâche',
+    renvoyerBrouillon: 'Renvoyer la tâche en brouillon',
+    soumettreValidation: 'Soumettre cette tâche pour validation par le chef de projet',
+
+    // Actions équipe
+    ajouterMembre: 'Ajouter un membre au projet',
+    ajouterMembreProjet: 'Ajouter un membre à ce projet',
+    retirerMembre: 'Retirer un membre du projet',
+
+    // Actions notifications
+    marquerLue: 'Marquer comme lue',
+    marquerToutesLues: 'Marquer toutes les notifications comme lues',
+    supprimerNotification: 'Supprimer cette notification',
+
+    // Actions factures
+    telechargerFacture: 'Télécharger la facture en PDF',
+
+    // Actions filtres
+    filtrerParProjet: 'Filtrer les tâches par projet',
+
+    // Actions chat
+    ouvrirChat: 'Ouvrir le chat du projet',
+    ecrireMessage: 'Écrire un message',
+    envoyerMessage: 'Envoyer le message',
+
+    // Autres
+    premium: 'Premium actif – accès à toutes les fonctionnalités',
+    voirDetails: 'Voir les détails',
   },
 
   // ==================== À PROPOS ====================
@@ -1270,6 +1445,7 @@ export default {
       contacter: 'Nous contacter',
     },
   },
+
 
   // ==================== CONDITIONS GÉNÉRALES ====================
   conditions: {
@@ -1351,6 +1527,7 @@ export default {
     retourAccueilBtn: "Retour à l'accueil",
     adapteProjets: 'Adapté aux PME et freelances pour leurs projets collaboratifs',
   },
+
 
   // ==================== POLITIQUE DE CONFIDENTIALITÉ ====================
   politique: {
@@ -1472,10 +1649,12 @@ export default {
     conformiteRGPDFooter:
       "CollabPro est conforme au RGPD et s'engage à protéger vos données personnelles.",
   },
+
+
   // ==================== CONTACT ====================
   contact: {
     titre: 'Contactez-nous',
-    description: 'Besoin d’aide ou d’informations ? Nous sommes à votre écoute.',
+    description: 'Besoin d\'aide ou d\'informations ? Nous sommes à votre écoute.',
     informations: 'Informations de contact',
     entreprise: 'CollabPro Solutions',
     adresse: {
@@ -1490,113 +1669,8 @@ export default {
       titre: 'Numéro de TVA',
       numero: 'BE0123.456.789',
     },
+
     retourAccueil: "Retour à l'accueil",
   },
 
-  // ==================== ERREURS GÉNÉRALES ====================
-  erreurs: {
-    accesRestreint: "Accès restreint. Vous n'avez pas les autorisations nécessaires.",
-
-    erreurServeur: 'Erreur interne du serveur',
-    erreurReseau: 'Erreur réseau. Vérifiez votre connexion internet.',
-    donneesInvalides: 'Les données fournies sont invalides',
-    accesRefuse: 'Accès refusé',
-    pageIntrouvable: 'Page introuvable',
-    actionNonAutorisee: 'Action non autorisée',
-    erreurInconnue: 'Erreur inconnue',
-    sessionExpiree: 'Votre session a expiré. Veuillez vous reconnecter.',
-    emailDejaUtiliseErr: 'Cette adresse e-mail est déjà utilisée',
-    accesReserveAdmins: 'Accès réservé aux administrateurs',
-    accesReserveChefsProjets: 'Accès réservé aux chefs de projets',
-    chargementDonnees: 'Erreur lors du chargement des données',
-    projetIntrouvable: 'Projet introuvable',
-    erreurChargementProjet: "Erreur lors du chargement du projet",
-    projetNonAccessible: "Ce projet n'est pas accessible.",
-
-    navigationProjet: 'Erreur lors de la navigation vers le projet',
-    creationProjet: 'Erreur lors de la création du projet',
-    modificationProjet: 'Erreur lors de la modification du projet',
-    suppressionProjet: 'Erreur lors de la suppression du projet',
-    pasAutoriseSupprimerTache: "Vous n'êtes pas autorisé à supprimer cette tâche",
-    suppressionTache: 'Erreur lors de la suppression de la tâche',
-    validationTache: 'Erreur lors de la validation de la tâche',
-    modificationTache: 'Erreur lors de la modification de la tâche',
-    annulationTache: "Erreur lors de l'annulation de la tâche",
-    creationTache: 'Erreur lors de la création de la tâche',
-    soumissionTache: 'Erreur lors de la soumission de la tâche',
-    ajoutMembre: "Erreur lors de l'ajout du membre",
-    retraitMembre: 'Erreur lors du retrait du membre',
-    ajoutCommentaire: "Erreur lors de l'ajout du commentaire",
-    envoyerMessage: "Erreur lors de l'envoi du message",
-    sauvegardeProfile: 'Erreur lors de la sauvegarde du profil',
-    telechargementFacture: 'Erreur lors du téléchargement de la facture',
-  },
-
-  // ==================== VALIDATION ====================
-  validation: {
-    prenomRequis: 'Le prénom est requis',
-    nomRequis: 'Le nom est requis',
-    emailRequis: "L'adresse e-mail est requise",
-    emailInvalide: 'Adresse e-mail invalide',
-    motDePasseRequis: 'Le mot de passe est requis',
-    motDePasseTropCourt: 'Le mot de passe doit contenir au moins {min} caractères',
-    confirmerMotDePasse: 'Veuillez confirmer votre mot de passe',
-    motDePassesDifferents: 'Les mots de passe ne correspondent pas',
-    choisirTypeCompte: 'Veuillez choisir un type de compte',
-    accepterCGU: "Veuillez accepter les Conditions Générales d'Utilisation",
-    accepterPolitique: 'Veuillez accepter la Politique de Confidentialité',
-    donneesInvalides: 'Les données saisies sont invalides',
-    emailDejaUtiliseErr: 'Cette adresse e-mail est déjà utilisée',
-    compteCreeeSucces: 'Compte créé avec succès !',
-    erreurCreationCompte: 'Erreur lors de la création du compte. Veuillez réessayer.',
-    connexionReussie: 'Connexion réussie',
-    erreurConnexion: 'Email ou mot de passe incorrect',
-    emailMotDePasseIncorrect: 'Email ou mot de passe incorrect',
-  },
-
-  // ==================== STRIPE ====================
-  stripe: {
-    cancel: {
-      titre: 'Paiement annulé',
-      description:
-        "Votre paiement n'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.",
-      retour: 'Retour au tableau de bord',
-      supportEmail: 'support@collabpro.com',
-    },
-    success: {
-      titre: 'Paiement réussi',
-      description: 'Votre abonnement Premium est maintenant actif ! Merci pour votre confiance.',
-      felicitations: 'Félicitations{prenom, select, undefined{} other{, {prenom}}} !',
-      abonnementActif: 'Votre abonnement Premium est actif.',
-      detailsAbonnement: "Détails de l'abonnement",
-      plan: 'Plan',
-      planPremiumMensuel: 'Plan Premium Mensuel',
-      statut: 'Statut',
-      actif: 'Actif',
-      prochainPaiement: 'Prochain paiement',
-      montant: 'Montant',
-      montantTotal: 'Montant total',
-      factureGeneree: 'Votre facture a été générée et est disponible dans la section Factures.',
-      accederTableauBord: 'Aller au tableau de bord',
-      voirFactures: 'Voir mes factures',
-      erreurConfirmation: 'Erreur de confirmation du paiement.',
-    },
-    retour: 'Aller à mon tableau de bord',
-    contactSupport: 'support@collabpro.com',
-  },
-
-  tooltips: {
-    kpiProjets: 'Voir tous mes projets',
-    kpiMembres: 'Voir les membres de l’équipe',
-    kpiTaches: 'Voir toutes les tâches',
-    kpiFactures: 'Voir les factures',
-    kpiNotifications: 'Voir les notifications',
-    premium: 'Premium actif – accès à toutes les fonctionnalités',
-    assignerTache: 'Assigner une tâche à un membre',
-    validerTache: 'Valider la tâche',
-    supprimerTache: 'Supprimer la tâche',
-    voirDetails: 'Voir les détails',
-  },
-
 };
-

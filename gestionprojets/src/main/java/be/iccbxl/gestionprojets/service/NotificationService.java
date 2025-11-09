@@ -1,25 +1,31 @@
 package be.iccbxl.gestionprojets.service;
 
+import be.iccbxl.gestionprojets.dto.TacheDTO;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import be.iccbxl.gestionprojets.model.Notification;
+import be.iccbxl.gestionprojets.model.Projet;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.repository.NotificationRepository;
+import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Service simple pour la gestion des notifications
- * Architecture cohérente avec UtilisateurService
- * Conforme au cahier des charges
+ * Service de gestion des notifications avec WebSocket
+ * Version 2.0 - Notifications automatiques changement statut tâches
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 2.0
  */
 @Service
 @RequiredArgsConstructor
@@ -29,35 +35,178 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final ProjetRepository projetRepository;
+    private final SimpMessagingTemplate messagingTemplate; // ✅ WebSocket
 
     // ============================================================================
-    // MÉTHODES DE BASE (pattern UtilisateurService)
+    // ✅ NOUVELLE MÉTHODE : NOTIFICATION AUTOMATIQUE CHANGEMENT STATUT TÂCHE
     // ============================================================================
 
     /**
-     * Créer une notification (F13) - Version simplifiée pour F12
+     * Envoie automatiquement des notifications lors des changements de statut de tâche
      *
-     * Conforme au cahier des charges :
-     * "Permet d'envoyer et de recevoir des notifications automatiques
-     *  lors des actions dans les projets (création de tâches, commentaires, modifications)"
-     *
-     * @param utilisateurId ID du destinataire
-     * @param message Contenu de la notification
-     * @return Notification créée
+     * SCÉNARIOS :
+     * 1. MEMBRE soumet tâche (EN_COURS → EN_ATTENTE_VALIDATION) → Notifie CHEF
+     * 2. CHEF valide tâche (EN_ATTENTE_VALIDATION → TERMINE) → Notifie MEMBRE
+     * 3. CHEF annule tâche (n'importe quel statut → ANNULE) → Notifie MEMBRE
+     * 4. CHEF renvoie en brouillon (EN_ATTENTE_VALIDATION → BROUILLON) → Notifie MEMBRE
      */
+    public void notifierChangementStatutTache(TacheDTO tache, StatutTache nouveauStatut) {
+        try {
+            log.debug("[F13] Notification changement statut tâche {} vers {}", tache.getId(), nouveauStatut);
+
+            // Récupérer le projet pour obtenir le chef de projet
+            Projet projet = projetRepository.findById(tache.getIdProjet())
+                    .orElseThrow(() -> new RuntimeException("Projet non trouvé ID: " + tache.getIdProjet()));
+
+            // SCÉNARIO 1️⃣ : MEMBRE SOUMET TÂCHE → Notifier CHEF
+            if (nouveauStatut == StatutTache.EN_ATTENTE_VALIDATION) {
+                if (tache.getIdAssigne() != null) {
+                    Utilisateur membre = utilisateurRepository.findById(tache.getIdAssigne())
+                            .orElse(null);
+
+                    if (membre != null && projet.getCreateur() != null) {
+                        String message = String.format(
+                                "%s %s a soumis la tâche \"%s\" pour validation dans le projet \"%s\"",
+                                membre.getPrenom(),
+                                membre.getNom(),
+                                tache.getTitre(),
+                                projet.getTitre()
+                        );
+
+                        envoyerNotification(
+                                projet.getCreateur().getId(),
+                                "Tâche soumise pour validation",
+                                message,
+                                "TACHE"
+                        );
+
+                        log.info("[F13] ✅ Notification envoyée au chef {} : Tâche {} soumise",
+                                projet.getCreateur().getId(), tache.getId());
+                    }
+                }
+            }
+
+            // SCÉNARIO 2️⃣ : CHEF VALIDE TÂCHE → Notifier MEMBRE
+            if (nouveauStatut == StatutTache.TERMINE && tache.getIdAssigne() != null) {
+                String message = String.format(
+                        "Votre tâche \"%s\" a été validée par le chef de projet dans \"%s\"",
+                        tache.getTitre(),
+                        projet.getTitre()
+                );
+
+                envoyerNotification(
+                        tache.getIdAssigne(),
+                        "Tâche validée ✓",
+                        message,
+                        "TACHE"
+                );
+
+                log.info("[F13] ✅ Notification envoyée au membre {} : Tâche {} validée",
+                        tache.getIdAssigne(), tache.getId());
+            }
+
+            // SCÉNARIO 3️⃣ : CHEF ANNULE TÂCHE → Notifier MEMBRE
+            if (nouveauStatut == StatutTache.ANNULE && tache.getIdAssigne() != null) {
+                String message = String.format(
+                        "Votre tâche \"%s\" a été annulée dans le projet \"%s\"",
+                        tache.getTitre(),
+                        projet.getTitre()
+                );
+
+                envoyerNotification(
+                        tache.getIdAssigne(),
+                        "Tâche annulée",
+                        message,
+                        "TACHE"
+                );
+
+                log.info("[F13] ✅ Notification envoyée au membre {} : Tâche {} annulée",
+                        tache.getIdAssigne(), tache.getId());
+            }
+
+            // SCÉNARIO 4️⃣ : CHEF RENVOIE EN BROUILLON → Notifier MEMBRE
+            if (nouveauStatut == StatutTache.BROUILLON && tache.getIdAssigne() != null) {
+                String message = String.format(
+                        "La tâche \"%s\" a été renvoyée en brouillon dans le projet \"%s\"",
+                        tache.getTitre(),
+                        projet.getTitre()
+                );
+
+                envoyerNotification(
+                        tache.getIdAssigne(),
+                        "Tâche renvoyée en brouillon",
+                        message,
+                        "TACHE"
+                );
+
+                log.info("[F13] ✅ Notification envoyée au membre {} : Tâche {} en brouillon",
+                        tache.getIdAssigne(), tache.getId());
+            }
+
+        } catch (Exception e) {
+            log.error("[F13] ❌ Erreur notification changement statut tâche {}: {}",
+                    tache.getId(), e.getMessage());
+            // Ne pas bloquer l'opération si notification échoue
+        }
+    }
+
+    // ============================================================================
+    // MÉTHODE GÉNÉRIQUE D'ENVOI NOTIFICATION (DB + WebSocket)
+    // ============================================================================
+
+    /**
+     * Envoie une notification (sauvegarde DB + envoi WebSocket temps réel)
+     */
+    private void envoyerNotification(Long utilisateurId, String titre, String message, String type) {
+        try {
+            // 1️⃣ Sauvegarder en base de données
+            Utilisateur destinataire = utilisateurRepository.findById(utilisateurId)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé ID: " + utilisateurId));
+
+            Notification notification = new Notification();
+            notification.setUtilisateur(destinataire);
+            notification.setMessage(message);
+            notification.setDate(LocalDateTime.now());
+            notification.setLu(false);
+
+            notification = notificationRepository.save(notification);
+
+            // 2️⃣ Envoyer via WebSocket (temps réel)
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", notification.getId());
+            payload.put("titre", titre);
+            payload.put("message", message);
+            payload.put("type", type);
+            payload.put("createdAt", notification.getDate().toString());
+            payload.put("lu", false);
+
+            String destination = "/user/" + utilisateurId + "/topic/notifications";
+            messagingTemplate.convertAndSend(destination, payload);
+
+            log.info("[F13] ✅ Notification {} envoyée à utilisateur {} via WebSocket",
+                    notification.getId(), utilisateurId);
+
+        } catch (Exception e) {
+            log.error("[F13] ❌ Erreur envoi notification à utilisateur {}: {}",
+                    utilisateurId, e.getMessage());
+        }
+    }
+
+    // ============================================================================
+    // MÉTHODES DE BASE (EXISTANTES - CONSERVÉES)
+    // ============================================================================
+
     public Notification creerNotification(Long utilisateurId, String message) {
         log.debug("[F13] Création notification pour utilisateur {} : {}", utilisateurId, message);
 
-        // Validation du message
         if (message == null || message.trim().isEmpty()) {
             throw new RuntimeException("Le message de notification est obligatoire");
         }
 
-        // Vérification de l'existence de l'utilisateur
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + utilisateurId));
 
-        // Création de la notification
         Notification notification = new Notification();
         notification.setMessage(message);
         notification.setUtilisateur(utilisateur);
@@ -69,20 +218,12 @@ public class NotificationService {
         return saved;
     }
 
-    /**
-     * Récupérer toutes les notifications d'un utilisateur
-     * Pattern identique à UtilisateurService.obtenirParId()
-     */
     @Transactional(readOnly = true)
     public List<Notification> getNotificationsByUtilisateur(Long utilisateurId) {
         log.debug("Récupération notifications pour utilisateur {}", utilisateurId);
         return notificationRepository.findByUtilisateurIdOrderByDateDesc(utilisateurId);
     }
 
-    /**
-     * Compter les notifications non lues
-     * Pattern similaire à UtilisateurService.existeParEmail()
-     */
     @Transactional(readOnly = true)
     public long compterNotificationsNonLues(Long utilisateurId) {
         Optional<Utilisateur> utilisateur = utilisateurRepository.findById(utilisateurId);
@@ -92,10 +233,6 @@ public class NotificationService {
         return notificationRepository.countByUtilisateurAndLuFalse(utilisateur.get());
     }
 
-    /**
-     * Marquer une notification comme lue
-     * Pattern similaire à UtilisateurService.enregistrer()
-     */
     public void marquerCommeLue(Long notificationId, Long utilisateurId) {
         log.debug("Marquage notification {} comme lue pour utilisateur {}", notificationId, utilisateurId);
 
@@ -106,7 +243,6 @@ public class NotificationService {
 
         Notification notification = notificationOpt.get();
 
-        // Vérification sécurité (comme dans UtilisateurController)
         if (!notification.getUtilisateur().getId().equals(utilisateurId)) {
             throw new RuntimeException("Accès non autorisé à cette notification");
         }
@@ -115,10 +251,6 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    /**
-     * Supprimer une notification
-     * Pattern identique à UtilisateurService.supprimer()
-     */
     public void supprimerNotification(Long notificationId, Long utilisateurId) {
         log.debug("Suppression notification {} pour utilisateur {}", notificationId, utilisateurId);
 
@@ -129,7 +261,6 @@ public class NotificationService {
 
         Notification notification = notificationOpt.get();
 
-        // Vérification sécurité
         if (!notification.getUtilisateur().getId().equals(utilisateurId)) {
             throw new RuntimeException("Accès non autorisé à cette notification");
         }
@@ -137,18 +268,11 @@ public class NotificationService {
         notificationRepository.delete(notification);
     }
 
-    /**
-     * Obtenir une notification par ID
-     * Pattern similaire à UtilisateurService.obtenirParId()
-     */
     @Transactional(readOnly = true)
     public Optional<Notification> obtenirParId(Long notificationId) {
         return notificationRepository.findById(notificationId);
     }
 
-    /**
-     * Récupérer les notifications non lues (utilisée dans Controller)
-     */
     @Transactional(readOnly = true)
     public List<Notification> getNotificationsNonLues(Long utilisateurId) {
         log.debug("Récupération notifications non lues pour utilisateur {}", utilisateurId);
@@ -159,9 +283,6 @@ public class NotificationService {
         return notificationRepository.findByUtilisateurAndLuFalseOrderByDateDesc(utilisateur.get());
     }
 
-    /**
-     * Marquer toutes les notifications comme lues (utilisée dans Controller)
-     */
     public int marquerToutesCommeLues(Long utilisateurId) {
         log.debug("Marquage toutes notifications comme lues pour utilisateur {}", utilisateurId);
 
@@ -181,9 +302,10 @@ public class NotificationService {
         return count;
     }
 
-    /**
-     * Notification de bienvenue (F1 - S'inscrire)
-     */
+    // ============================================================================
+    // NOTIFICATIONS MÉTIER (EXISTANTES - CONSERVÉES)
+    // ============================================================================
+
     public Notification creerNotificationBienvenue(Long utilisateurId) {
         log.debug("Création notification bienvenue pour utilisateur {}", utilisateurId);
 
@@ -193,9 +315,6 @@ public class NotificationService {
         return creerNotification(utilisateurId, message);
     }
 
-    /**
-     * Notifications pour les projets (F6, F7, F8)
-     */
     public void notifierNouveauProjet(Long chefProjetId, String nomProjet) {
         String message = String.format("Votre projet '%s' a été créé avec succès !", nomProjet);
         creerNotification(chefProjetId, message);
@@ -203,17 +322,50 @@ public class NotificationService {
 
     public void notifierTacheAssignee(Long membreId, String nomTache, String nomProjet) {
         String message = String.format("Nouvelle tâche assignée dans '%s' : %s", nomProjet, nomTache);
-        creerNotification(membreId, message);
+        Notification notif = creerNotification(membreId, message);
+
+        // Envoi WebSocket
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", notif.getId());
+            payload.put("titre", "Nouvelle tâche assignée");
+            payload.put("message", message);
+            payload.put("type", "TACHE");
+            payload.put("createdAt", notif.getDate().toString());
+            payload.put("lu", false);
+
+            messagingTemplate.convertAndSend(
+                    "/user/" + membreId + "/topic/notifications",
+                    payload
+            );
+        } catch (Exception e) {
+            log.error("Erreur envoi WebSocket notification tâche assignée: {}", e.getMessage());
+        }
     }
 
     public void notifierAjoutProjet(Long membreId, String nomProjet) {
         String message = String.format("Vous avez été ajouté au projet '%s'", nomProjet);
-        creerNotification(membreId, message);
+        Notification notif = creerNotification(membreId, message);
+
+        // Envoi WebSocket
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", notif.getId());
+            payload.put("titre", "Ajout à un projet");
+            payload.put("message", message);
+            payload.put("type", "PROJET");
+            payload.put("createdAt", notif.getDate().toString());
+            payload.put("lu", false);
+
+            messagingTemplate.convertAndSend(
+                    "/user/" + membreId + "/topic/notifications",
+                    payload
+            );
+        } catch (Exception e) {
+            log.error("Erreur envoi WebSocket notification ajout projet: {}", e.getMessage());
+        }
     }
 
-    /**
-     * Notifications de paiement (F10, F11)
-     */
     public void notifierPaiementAbonnement(Long chefProjetId, String statut, Double montant) {
         String message;
         if ("COMPLETE".equals(statut)) {
@@ -236,9 +388,6 @@ public class NotificationService {
     // MÉTHODES DE VÉRIFICATION
     // ============================================================================
 
-    /**
-     * Vérifier si une notification appartient à un utilisateur
-     */
     @Transactional(readOnly = true)
     public boolean appartientAUtilisateur(Long notificationId, Long utilisateurId) {
         Optional<Notification> notification = notificationRepository.findById(notificationId);
@@ -248,9 +397,6 @@ public class NotificationService {
         return notification.get().getUtilisateur().getId().equals(utilisateurId);
     }
 
-    /**
-     * Vérifier si l'utilisateur a des notifications non lues
-     */
     @Transactional(readOnly = true)
     public boolean hasNotificationsNonLues(Long utilisateurId) {
         Optional<Utilisateur> utilisateur = utilisateurRepository.findById(utilisateurId);
@@ -264,17 +410,11 @@ public class NotificationService {
     // MÉTHODES ADMINISTRATEUR
     // ============================================================================
 
-    /**
-     * Obtenir toutes les notifications (Admin)
-     */
     @Transactional(readOnly = true)
     public List<Notification> obtenirToutes() {
         return notificationRepository.findAll();
     }
 
-    /**
-     * Nettoyer les anciennes notifications (maintenance)
-     */
     @Transactional
     public int nettoyerAnciennesNotifications(int jours) {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(jours);

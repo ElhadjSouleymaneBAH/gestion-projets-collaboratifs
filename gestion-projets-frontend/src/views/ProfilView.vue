@@ -37,7 +37,8 @@
             <div class="projet-header">
               <h3 class="projet-nom">{{ projet.nom }}</h3>
               <span :class="['projet-statut', `statut-${projet.statut.toLowerCase()}`]">
-                {{ t(`statuts.${projet.statut.toLowerCase()}`) }}
+                {{ t(`projets.statuts.${projet.statut.toLowerCase()}`) }}
+
               </span>
             </div>
 

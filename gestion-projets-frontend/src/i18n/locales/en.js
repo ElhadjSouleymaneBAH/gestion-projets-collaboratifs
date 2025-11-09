@@ -166,7 +166,7 @@ export default {
     nom: 'Last Name',
     nomPlaceholder: 'Enter your last name',
     email: 'Email Address',
-    emailPlaceholder: 'example@domain.com',
+    emailPlaceholder: 'example@@domain.com',
     motDePasse: 'Password',
     motDePassePlaceholder: '••••••••',
     confirmerMotDePasse: 'Confirm Password',
@@ -453,14 +453,14 @@ export default {
   },
 
   // ==================== CHAT (for ProjetPublic view) ====================
-    chat: {
-      titre: 'Project Chat',
-      placeholder: 'Write a message...',
-      aucunMessage: 'No messages yet',
-      commencerConversation: 'Start the conversation',
-      erreurChargement: 'Error loading chat',
-      erreurEnvoi: 'Error sending message',
-      envoi: 'Sending...',
+  chat: {
+    titre: 'Project Chat',
+    placeholder: 'Write a message...',
+    aucunMessage: 'No messages yet',
+    commencerConversation: 'Start the conversation',
+    erreurChargement: 'Error loading chat',
+    erreurEnvoi: 'Error sending message',
+    envoi: 'Sending...',
 
   },
 
@@ -940,7 +940,7 @@ export default {
       profil: 'My profile'
 
 
-  },
+    },
     admin: {
       tableauDeBord: 'Administrator Dashboard',
       utilisateurs: 'Users',
@@ -1585,3 +1585,4 @@ export default {
   },
 
 };
+

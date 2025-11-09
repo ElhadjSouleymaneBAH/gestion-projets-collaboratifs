@@ -25,7 +25,7 @@
               {{ $t('abonnement.expire') }} {{ formatDate(abonnement.date_fin || abonnement.dateFin) }}
             </small>
           </div>
-          <button class="btn btn-outline-light" @click="seDeconnecter">
+          <button class="btn btn-outline-light" @click="seDeconnecter" :title="$t('nav.deconnexion')">
             <i class="fas fa-sign-out-alt me-2"></i>{{ $t('nav.deconnexion') }}
           </button>
         </div>
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Alerte abonnement expiré -->
-    <div v-if="!chargementGlobal && abonnement && !abonnementActif" class="subscription-status">
+    <div v-if="!chargementGlobal && abonnement && !abonnementActif" class="alert alert-warning">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <h6 class="mb-1">
@@ -41,7 +41,7 @@
           </h6>
           <small>{{ $t('abonnement.renouvelerPourContinuer') }}</small>
         </div>
-        <router-link to="/abonnement-premium" class="btn btn-warning">
+        <router-link to="/abonnement-premium" class="btn btn-warning" :title="$t('abonnement.renouveler')">
           <i class="fas fa-credit-card me-1"></i>{{ $t('abonnement.renouveler') }}
         </router-link>
       </div>
@@ -50,19 +50,24 @@
     <!-- Loading / Error -->
     <div v-if="erreurBackend" class="alert alert-danger d-flex justify-content-between align-items-center">
       <div><i class="fas fa-exclamation-triangle me-2"></i>{{ erreurBackend }}</div>
-      <button class="btn btn-sm btn-outline-danger" @click="chargerToutesDonnees">{{ $t('commun.actualiser') }}</button>
+      <button class="btn btn-sm btn-outline-danger" @click="chargerToutesDonnees" :title="$t('commun.actualiser')">
+        <i class="fas fa-sync-alt me-1"></i>{{ $t('commun.actualiser') }}
+      </button>
     </div>
+
     <div v-else-if="chargementGlobal" class="text-center py-5">
       <div class="spinner-border text-success"></div>
       <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
     </div>
 
-    <!-- Content -->
+    <!-- Contenu principal -->
     <div v-else>
       <!-- KPIs Chef de Projet -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
-          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='projets'">
+          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer"
+               @click="onglet='projets'"
+               :title="$t('tooltips.kpiProjets')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="metric-icon bg-primary bg-opacity-10 rounded-circle p-3">
                 <i class="fas fa-project-diagram fa-2x text-primary"></i>
@@ -77,7 +82,9 @@
         </div>
 
         <div class="col-md-3">
-          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='taches'">
+          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer"
+               @click="onglet='taches'"
+               :title="$t('tooltips.kpiTaches')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="metric-icon bg-warning bg-opacity-10 rounded-circle p-3">
                 <i class="fas fa-tasks fa-2x text-warning"></i>
@@ -92,7 +99,9 @@
         </div>
 
         <div class="col-md-3">
-          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='equipe'">
+          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer"
+               @click="onglet='equipe'"
+               :title="$t('tooltips.kpiEquipe')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="metric-icon bg-success bg-opacity-10 rounded-circle p-3">
                 <i class="fas fa-users fa-2x text-success"></i>
@@ -107,7 +116,9 @@
         </div>
 
         <div class="col-md-3">
-          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer" @click="onglet='notifications'">
+          <div class="metric-card card h-100 border-0 shadow-sm cursor-pointer"
+               @click="onglet='notifications'"
+               :title="$t('tooltips.kpiNotifications')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="metric-icon bg-info bg-opacity-10 rounded-circle p-3">
                 <i class="fas fa-bell fa-2x text-info"></i>
@@ -125,35 +136,57 @@
       <!-- Navigation -->
       <ul class="nav nav-pills bg-light rounded p-2 mb-4">
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='projets'}" @click="onglet='projets'">
+          <a class="nav-link"
+             :class="{active:onglet==='projets'}"
+             @click="onglet='projets'"
+             :title="$t('tooltips.voirProjets')">
             <i class="fas fa-project-diagram me-2"></i>{{ $t('nav.mesProjets') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='taches'}" @click="onglet='taches'">
+          <a class="nav-link"
+             :class="{active:onglet==='taches'}"
+             @click="onglet='taches'"
+             :title="$t('tooltips.voirTaches')">
             <i class="fas fa-tasks me-2"></i>{{ $t('nav.taches') }}
-            <span v-if="tachesEnAttente.length > 0" class="badge bg-warning ms-1">{{ tachesEnAttente.length }}</span>
+            <span v-if="tachesEnAttente.length > 0" class="badge bg-warning ms-1">
+              {{ tachesEnAttente.length }}
+            </span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='equipe'}" @click="onglet='equipe'">
+          <a class="nav-link"
+             :class="{active:onglet==='equipe'}"
+             @click="onglet='equipe'"
+             :title="$t('tooltips.voirEquipe')">
             <i class="fas fa-users me-2"></i>{{ $t('nav.equipe') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='chat'}" @click="onglet='chat'">
+          <a class="nav-link"
+             :class="{active:onglet==='chat'}"
+             @click="onglet='chat'"
+             :title="$t('tooltips.voirChat')">
             <i class="fas fa-comments me-2"></i>{{ $t('nav.collaboration') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='factures'}" @click="onglet='factures'">
+          <a class="nav-link"
+             :class="{active:onglet==='factures'}"
+             @click="onglet='factures'"
+             :title="$t('tooltips.voirFactures')">
             <i class="fas fa-file-invoice me-2"></i>{{ $t('nav.factures') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:onglet==='notifications'}" @click="onglet='notifications'">
+          <a class="nav-link"
+             :class="{active:onglet==='notifications'}"
+             @click="onglet='notifications'"
+             :title="$t('tooltips.voirNotifications')">
             <i class="fas fa-bell me-2"></i>{{ $t('nav.notifications') }}
-            <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">{{ notificationsNonLues.length }}</span>
+            <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">
+              {{ notificationsNonLues.length }}
+            </span>
           </a>
         </li>
       </ul>
@@ -166,7 +199,10 @@
               <h5 class="mb-0">{{ $t('projets.gestionProjets') }} ({{ mesProjets.length }})</h5>
               <small class="text-muted">{{ $t('projets.creerGererProjets') }}</small>
             </div>
-            <button class="btn btn-success" @click="creerProjet" :disabled="!abonnementActif">
+            <button class="btn btn-success"
+                    @click="creerProjet"
+                    :disabled="!abonnementActif"
+                    :title="$t('projets.nouveauProjet')">
               <i class="fas fa-plus me-2"></i>{{ $t('projets.nouveauProjet') }}
             </button>
           </div>
@@ -180,7 +216,10 @@
               <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
               <h5 class="text-muted">{{ $t('projets.aucunProjet') }}</h5>
               <p class="text-muted">{{ $t('projets.creerPremierProjet') }}</p>
-              <button class="btn btn-success" @click="creerProjet" :disabled="!abonnementActif">
+              <button class="btn btn-success"
+                      @click="creerProjet"
+                      :disabled="!abonnementActif"
+                      :title="$t('projets.creerProjet')">
                 <i class="fas fa-plus me-2"></i>{{ $t('projets.creerProjet') }}
               </button>
             </div>
@@ -203,20 +242,202 @@
                     <div class="fw-semibold">{{ translateProjectTitle(p.titre) }}</div>
                     <small class="text-muted">{{ formatDate(p.date_creation || p.dateCreation) }}</small>
                   </td>
-                  <td><small class="text-muted">{{ translateProjectDescription(p.description).substring(0, 60) }}...</small></td>
+                  <td>
+                    <small class="text-muted">
+                      {{ translateProjectDescription(p.description).substring(0, 60) }}...
+                    </small>
+                  </td>
                   <td><span class="badge bg-primary">{{ getMembresProjet(p.id).length }}</span></td>
                   <td><span class="badge bg-warning">{{ getTachesProjet(p.id).length }}</span></td>
-                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ translateData('status', p.statut) }}</span></td>
+                  <td>
+                    <span class="badge" :class="getStatutProjetClass(p.statut)">
+                      {{ translateData('status', p.statut) }}
+                    </span>
+                  </td>
                   <td>
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-primary" @click="consulterProjet(p)" title="Consulter le projet">
+                      <button class="btn btn-sm btn-outline-primary"
+                              @click="consulterProjet(p)"
+                              :title="$t('tooltips.consulterProjet')">
                         <i class="fas fa-eye"></i>
                       </button>
-                      <button v-if="peutModifierProjet(p)" class="btn btn-sm btn-outline-success" @click="modifierProjet(p)" title="Modifier le projet">
+                      <button v-if="peutModifierProjet(p)"
+                              class="btn btn-sm btn-outline-success"
+                              @click="modifierProjet(p)"
+                              :title="$t('tooltips.modifierProjet')">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button v-if="peutSupprimerProjet(p)" class="btn btn-sm btn-outline-danger" @click="supprimerProjet(p.id)" title="Supprimer le projet">
+                      <button v-if="peutSupprimerProjet(p)"
+                              class="btn btn-sm btn-outline-danger"
+                              @click="supprimerProjet(p.id)"
+                              :title="$t('tooltips.supprimerProjet')">
                         <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F7: TÂCHES (Consultation/Validation) -->
+      <div v-if="onglet==='taches'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex align-items-center gap-2">
+            <h5 class="mb-0">{{ $t('nav.taches') }} ({{ tachesFiltrees.length }})</h5>
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <select class="form-select form-select-sm"
+                      v-model="filtreProjetTache"
+                      style="width:280px"
+                      :title="$t('tooltips.filtrerParProjet')">
+                <option value="">{{ $t('projets.tousLesProjets') }}</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p.id">
+                  {{ translateProjectTitle(p.titre) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div v-if="chargementTaches" class="text-center py-4">
+              <div class="spinner-border text-warning"></div>
+            </div>
+
+            <div v-else-if="tachesFiltrees.length===0" class="text-center py-5 text-muted">
+              <i class="fas fa-tasks fa-3x mb-3"></i>
+              <div>{{ $t('taches.aucuneTache') }}</div>
+            </div>
+
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>{{ $t('taches.titre') }}</th>
+                  <th>{{ $t('projets.projet') }}</th>
+                  <th>{{ $t('taches.assigneA') }}</th>
+                  <th>{{ $t('taches.statut') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="t in tachesFiltrees" :key="t.id">
+                  <td class="fw-semibold">{{ t.titre }}</td>
+                  <td>{{ t.nomProjet || getProjetNom(t.id_projet || t.projetId) }}</td>
+                  <td>
+                    <span v-if="t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId)">
+                      {{ t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId) }}
+                    </span>
+                    <span v-else class="text-muted">{{ $t('taches.nonAssignee') }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" :class="getStatutTacheClass(t.statut)">
+                      {{ translateData('taskStatus', t.statut) }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-success"
+                              @click="validerTache(t)"
+                              :title="$t('tooltips.validerTache')">
+                        <i class="fas fa-check"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary"
+                              @click="renvoyerEnBrouillon(t)"
+                              :title="$t('tooltips.renvoyerBrouillon')">
+                        <i class="fas fa-undo"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-warning"
+                              @click="annulerTache(t)"
+                              :title="$t('tooltips.annulerTache')">
+                        <i class="fas fa-ban"></i>
+                      </button>
+                      <button v-if="peutSupprimerTache(t)"
+                              class="btn btn-sm btn-outline-danger"
+                              @click="supprimerTache(t.id)"
+                              :title="$t('tooltips.supprimerTache')">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F8: ÉQUIPE (Gestion membres + Assignation tâches) -->
+      <div v-if="onglet==='equipe'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">{{ $t('equipe.collaborateurs') }} ({{ totalMembres }})</h5>
+              <small class="text-muted">{{ $t('equipe.gestionMembresEtTaches') }}</small>
+            </div>
+            <button class="btn btn-success"
+                    @click="ouvrirModalAjoutMembreGlobal"
+                    :disabled="mesProjets.length===0 || !abonnementActif"
+                    :title="$t('tooltips.ajouterMembre')">
+              <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div v-if="mesProjets.length===0" class="text-center py-5 text-muted">
+              <i class="fas fa-users fa-3x mb-3"></i>
+              <div>{{ $t('projets.aucunProjet') }}</div>
+            </div>
+
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>{{ $t('projets.projet') }}</th>
+                  <th>{{ $t('equipe.membres') }}</th>
+                  <th>{{ $t('taches.tachesNonAssignees') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="p in mesProjets" :key="p.id">
+                  <td class="fw-semibold">{{ translateProjectTitle(p.titre) }}</td>
+                  <td>
+                    <span v-for="m in getMembresProjet(p.id)"
+                          :key="m.id"
+                          class="badge bg-light text-dark me-1">
+                      {{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}
+                    </span>
+                    <span v-if="getMembresProjet(p.id).length===0" class="text-muted">
+                      {{ $t('equipe.aucunMembre') }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-warning">
+                      {{ getTachesNonAssigneesProjet(p.id).length }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-outline-success"
+                              @click="ouvrirModalAjoutMembre(p)"
+                              :title="$t('tooltips.ajouterMembreProjet')">
+                        <i class="fas fa-user-plus"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info"
+                              @click="ouvrirModalAssignationProjet(p)"
+                              :disabled="getMembresProjet(p.id).length === 0 || getTachesNonAssigneesProjet(p.id).length === 0"
+                              :title="$t('tooltips.assignerTaches')">
+                        <i class="fas fa-user-tag"></i>
+                      </button>
+                      <button v-if="getMembresProjet(p.id).length > 0"
+                              class="btn btn-sm btn-outline-danger"
+                              @click="ouvrirModalRetraitMembre(p)"
+                              :title="$t('tooltips.retirerMembre')">
+                        <i class="fas fa-user-minus"></i>
                       </button>
                     </div>
                   </td>
@@ -264,18 +485,20 @@
                   <td class="fw-semibold">{{ f.numeroFacture }}</td>
                   <td>{{ formatDate(f.dateEmission) }}</td>
                   <td>{{ formatPrix(f.montantHT ?? f.montantHt ?? 0) }}</td>
-                  <td>21 % ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})</td>
+                  <td>21% ({{ formatPrix(f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)) }})</td>
                   <td class="fw-bold">
                     {{ formatPrix(f.montantTtc ?? ((f.montantHT ?? f.montantHt ?? 0) + (f.tva ?? ((f.montantHT ?? f.montantHt ?? 0) * 0.21)))) }}
                   </td>
-                  <td>{{ translateData('invoiceStatus', f.statut) }}</td>
                   <td>
-                    <span class="badge rounded-pill" :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-secondary'">
-                      {{ f.statut }}
+                    <span class="badge rounded-pill"
+                          :class="f.statut === 'GENEREE' ? 'bg-success' : 'bg-secondary'">
+                      {{ translateData('invoiceStatus', f.statut) }}
                     </span>
                   </td>
                   <td>
-                    <button class="btn btn-sm btn-outline-primary" @click="telechargerFacture(f)" title="Télécharger la facture PDF">
+                    <button class="btn btn-sm btn-outline-primary"
+                            @click="telechargerFacture(f)"
+                            :title="$t('tooltips.telechargerFacture')">
                       <i class="fas fa-download me-1"></i>{{ $t('factures.telecharger') }}
                     </button>
                   </td>
@@ -286,131 +509,7 @@
           </div>
         </div>
       </div>
-
-      <!-- F7: TÂCHES (CORRIGÉ) -->
-      <div v-if="onglet==='taches'">
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white d-flex align-items-center gap-2">
-            <h5 class="mb-0">{{ $t('nav.taches') }} ({{ tachesFiltrees.length }})</h5>
-            <div class="ms-auto d-flex align-items-center gap-2">
-              <select class="form-select form-select-sm" v-model="filtreProjetTache" style="width:280px">
-                <option value="">{{ $t('projets.tousLesProjets') }}</option>
-                <option v-for="p in mesProjets" :key="p.id" :value="p.id">{{ p.titre }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div v-if="chargementTaches" class="text-center py-4">
-              <div class="spinner-border text-warning"></div>
-            </div>
-
-            <div v-else-if="tachesFiltrees.length===0" class="text-center py-5 text-muted">
-              <i class="fas fa-tasks fa-3x mb-3"></i>
-              <div>{{ $t('taches.aucuneTache') }}</div>
-            </div>
-
-            <div v-else class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>{{ $t('taches.titre') }}</th>
-                  <th>{{ $t('projets.projet') }}</th>
-                  <th>{{ $t('taches.assigneA') }}</th>
-                  <th>{{ $t('taches.statut') }}</th>
-                  <th class="text-end">{{ $t('commun.actions') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="t in tachesFiltrees" :key="t.id">
-                  <td class="fw-semibold">{{ t.titre }}</td>
-                  <td>{{ t.nomProjet || getProjetNom(t.id_projet || t.projetId) }}</td>
-                  <td>{{ t.nomAssigne || getAssigneNom(t.id_assigne || t.assigneId) }}</td>
-                  <td><span class="badge" :class="getStatutTacheClass(t.statut)">{{ translateData('taskStatus', t.statut) }}</span></td>
-                  <td class="text-end">
-                    <div class="btn-group">
-                      <!-- ✅ NOUVEAU : Bouton Assigner -->
-                      <button class="btn btn-sm btn-outline-info" @click="ouvrirModalAssignation(t)" title="Assigner la tâche à un membre">
-                        <i class="fas fa-user-tag"></i>
-                      </button>
-                      <!-- Boutons existants avec tooltips ajoutés -->
-                      <button class="btn btn-sm btn-outline-success" @click="validerTache(t)" title="Valider la tâche">
-                        <i class="fas fa-check"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-secondary" @click="renvoyerEnBrouillon(t)" title="Renvoyer en brouillon">
-                        <i class="fas fa-undo"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-warning" @click="annulerTache(t)" title="Annuler la tâche">
-                        <i class="fas fa-ban"></i>
-                      </button>
-                      <button v-if="peutSupprimerTache(t)" class="btn btn-sm btn-outline-danger" @click="supprimerTache(t.id)" title="Supprimer la tâche">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- F6: ÉQUIPE -->
-      <div v-if="onglet==='equipe'">
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <div>
-              <h5 class="mb-0">{{ $t('equipe.collaborateurs') }} ({{ totalMembres }})</h5>
-              <small class="text-muted">{{ $t('equipe.tousLesprojets') }}</small>
-            </div>
-            <button class="btn btn-success" @click="ouvrirModalAjoutMembreGlobal" :disabled="mesProjets.length===0 || !abonnementActif" title="Ajouter un membre à un projet">
-              <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
-            </button>
-          </div>
-
-          <div class="card-body">
-            <div v-if="mesProjets.length===0" class="text-center py-5 text-muted">
-              <i class="fas fa-users fa-3x mb-3"></i>
-              <div>{{ $t('projets.aucunProjet') }}</div>
-            </div>
-
-            <div v-else class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>{{ $t('projets.projet') }}</th>
-                  <th>{{ $t('equipe.membres') }}</th>
-                  <th class="text-end">{{ $t('commun.actions') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="p in mesProjets" :key="p.id">
-                  <td class="fw-semibold">{{ p.titre }}</td>
-                  <td>
-                    <span v-for="m in getMembresProjet(p.id)" :key="m.id" class="badge bg-light text-dark me-1">
-                      {{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}
-                    </span>
-                    <span v-if="getMembresProjet(p.id).length===0" class="text-muted">—</span>
-                  </td>
-                  <td class="text-end">
-                    <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-success" @click="ouvrirModalAjoutMembre(p)" title="Ajouter un membre à ce projet">
-                        <i class="fas fa-user-plus"></i>
-                      </button>
-                      <button v-if="getMembresProjet(p.id).length" class="btn btn-sm btn-outline-danger" @click="retirerMembreProjet(p.id, getMembresProjet(p.id)[0].id)" title="Retirer un membre du projet">
-                        <i class="fas fa-user-minus"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- F8: COLLABORATION / CHAT -->
+      <!-- F9: COLLABORATION / CHAT -->
       <div v-if="onglet==='chat'">
         <div class="row g-3">
           <div class="col-md-4">
@@ -425,11 +524,13 @@
                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                   :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
                   @click="ouvrirChatProjet(p)"
-                >
-                  <span class="text-truncate">{{ p.titre }}</span>
+                  :title="$t('tooltips.ouvrirChat')">
+                  <span class="text-truncate">{{ translateProjectTitle(p.titre) }}</span>
                   <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
                 </button>
-                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">—</div>
+                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">
+                  {{ $t('projets.aucunProjet') }}
+                </div>
               </div>
             </div>
           </div>
@@ -439,7 +540,7 @@
               <div class="card-header bg-white d-flex align-items-center gap-2">
                 <h6 class="mb-0">
                   <i class="fas fa-comments me-2"></i>
-                  {{ projetChatActuel ? projetChatActuel.titre : $t('nav.collaboration') }}
+                  {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('nav.collaboration') }}
                 </h6>
               </div>
 
@@ -450,17 +551,18 @@
                   </div>
 
                   <div v-else>
-                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">—</div>
+                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">
+                      {{ $t('chat.aucunMessage') }}
+                    </div>
 
                     <div
                       v-for="m in messagesChat"
                       :key="m.id"
                       class="p-2 rounded mb-2 chat-bubble"
                       :class="getMessageClass(m)"
-                      style="max-width:80%"
-                    >
+                      style="max-width:80%">
                       <div class="small opacity-75 mb-1">
-                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || '—' }}
+                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || $t('commun.inconnu') }}
                         · {{ formatTime(m.date || m.createdAt) }}
                       </div>
                       <div>{{ m.contenu }}</div>
@@ -475,8 +577,11 @@
                       v-model.trim="nouveauMessage"
                       :placeholder="$t('collaboration.ecrireMessage')"
                       @keyup.enter="envoyerMessage"
-                    >
-                    <button class="btn btn-success" :disabled="envoyantMessage || !nouveauMessage" @click="envoyerMessage">
+                      :title="$t('tooltips.ecrireMessage')">
+                    <button class="btn btn-success"
+                            :disabled="envoyantMessage || !nouveauMessage"
+                            @click="envoyerMessage"
+                            :title="$t('tooltips.envoyerMessage')">
                       <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
                       <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
                     </button>
@@ -488,7 +593,7 @@
         </div>
       </div>
 
-      <!-- F9: NOTIFICATIONS -->
+      <!-- NOTIFICATIONS -->
       <div v-if="onglet==='notifications'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -497,7 +602,7 @@
               class="btn btn-outline-secondary btn-sm"
               @click="marquerToutesLues"
               :disabled="notificationsNonLues.length===0"
-            >
+              :title="$t('tooltips.marquerToutesLues')">
               <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
             </button>
           </div>
@@ -516,21 +621,25 @@
               <div
                 v-for="n in notifications"
                 :key="n.id"
-                class="list-group-item d-flex align-items-start gap-3 notification-item"
-              >
+                class="list-group-item d-flex align-items-start gap-3 notification-item">
                 <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
                   <i :class="getNotificationIcon(n.type)"></i>
                 </div>
                 <div class="flex-grow-1">
-                  <div class="fw-semibold">{{ n.titre || n.title || '—' }}</div>
+                  <div class="fw-semibold">{{ n.titre || n.title || $t('notifications.notification') }}</div>
                   <div class="small text-muted">{{ n.message || n.contenu }}</div>
                   <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
                 </div>
                 <div class="btn-group">
-                  <button class="btn btn-sm btn-outline-success" v-if="!n.lu" @click="marquerNotificationLue(n)" title="Marquer comme lue">
+                  <button class="btn btn-sm btn-outline-success"
+                          v-if="!n.lu"
+                          @click="marquerNotificationLue(n)"
+                          :title="$t('tooltips.marquerLue')">
                     <i class="fas fa-check"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="supprimerNotification(n)" title="Supprimer la notification">
+                  <button class="btn btn-sm btn-outline-danger"
+                          @click="supprimerNotification(n)"
+                          :title="$t('tooltips.supprimerNotification')">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -548,21 +657,33 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ $t('projets.nouveauProjet') }}</h5>
-            <button class="btn-close" @click="showCreateProject=false"></button>
+            <button class="btn-close" @click="showCreateProject=false" :aria-label="$t('commun.fermer')"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">{{ $t('projets.nom') }}</label>
-              <input class="form-control" v-model.trim="projetForm.titre" maxlength="120" required>
+              <input class="form-control"
+                     v-model.trim="projetForm.titre"
+                     maxlength="120"
+                     :placeholder="$t('projets.nomProjet')"
+                     required>
             </div>
             <div class="mb-3">
               <label class="form-label">{{ $t('projets.description') }}</label>
-              <textarea class="form-control" v-model.trim="projetForm.description" rows="3" maxlength="500"></textarea>
+              <textarea class="form-control"
+                        v-model.trim="projetForm.description"
+                        rows="3"
+                        maxlength="500"
+                        :placeholder="$t('projets.descriptionProjet')"></textarea>
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-outline-secondary" @click="showCreateProject=false">{{ $t('commun.annuler') }}</button>
-            <button class="btn btn-success" @click="sauvegarderNouveauProjet" :disabled="!projetForm.titre.trim()">
+            <button class="btn btn-outline-secondary" @click="showCreateProject=false">
+              {{ $t('commun.annuler') }}
+            </button>
+            <button class="btn btn-success"
+                    @click="sauvegarderNouveauProjet"
+                    :disabled="!projetForm.titre.trim()">
               <i class="fas fa-check me-1"></i>{{ $t('commun.creer') }}
             </button>
           </div>
@@ -576,14 +697,16 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ $t('equipe.ajouterMembre') }}</h5>
-            <button class="btn-close" @click="fermerModalAjoutMembre"></button>
+            <button class="btn-close" @click="fermerModalAjoutMembre" :aria-label="$t('commun.fermer')"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">{{ $t('projets.selectionnerProjet') }}</label>
               <select class="form-select" v-model="projetSelectionne" :disabled="projetPreSelectionne !== null">
-                <option :value="null">-- {{ $t('projets.choisirProjet') }} --</option>
-                <option v-for="p in mesProjets" :key="p.id" :value="p">{{ p.titre }}</option>
+                <option :value="null">{{ $t('projets.choisirProjet') }}</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p">
+                  {{ translateProjectTitle(p.titre) }}
+                </option>
               </select>
             </div>
             <div class="mb-3">
@@ -592,8 +715,7 @@
                 class="form-control"
                 v-model="rechercheUtilisateur"
                 @input="rechercherUtilisateurs"
-                :placeholder="$t('equipe.tapezEmail')"
-              >
+                :placeholder="$t('equipe.tapezEmail')">
             </div>
 
             <div v-if="rechercheUtilisateur.length >= 2" class="mb-3">
@@ -604,8 +726,7 @@
                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                   :class="{ 'active': membreSelectionne && membreSelectionne.id === u.id }"
                   @click="selectionnerUtilisateur(u)"
-                  type="button"
-                >
+                  type="button">
                   <div>
                     <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
                     <small class="text-muted">{{ u.email }}</small>
@@ -626,8 +747,7 @@
             <button
               class="btn btn-success"
               @click="ajouterMembreConfirme"
-              :disabled="!projetSelectionne || !membreSelectionne"
-            >
+              :disabled="!projetSelectionne || !membreSelectionne">
               <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouter') }}
             </button>
           </div>
@@ -643,25 +763,39 @@
             <h5 class="modal-title">
               <i class="fas fa-user-tag me-2"></i>{{ $t('taches.assignerTache') }}
             </h5>
-            <button class="btn-close" @click="fermerModalAssignation"></button>
+            <button class="btn-close" @click="fermerModalAssignation" :aria-label="$t('commun.fermer')"></button>
           </div>
 
           <div class="modal-body">
-            <div class="mb-3">
-              <strong>Tâche :</strong> <span class="text-primary">{{ tacheAAssigner?.titre }}</span>
-            </div>
 
             <div class="mb-3">
-              <label class="form-label">{{ $t('taches.selectionnerMembre') }}</label>
-              <div v-if="getMembresProjet(tacheAAssigner?.id_projet || tacheAAssigner?.projetId).length > 0" class="list-group">
+              <label class="form-label fw-semibold">
+                <i class="fas fa-tasks me-2"></i>1. {{ $t('taches.selectionnerTache') }}
+              </label>
+              <select class="form-select" v-model="tacheAAssigner">
+                <option :value="null">-- {{ $t('taches.choisirTache') }} --</option>
+                <option v-for="t in tachesDisponibles" :key="t.id" :value="t">
+                  {{ t.titre }}
+                </option>
+              </select>
+              <small v-if="tachesDisponibles.length === 0" class="text-muted">
+                {{ $t('taches.aucuneTacheDisponible') }}
+              </small>
+            </div>
+
+
+            <div v-if="tacheAAssigner" class="mb-3">
+              <label class="form-label fw-semibold">
+                <i class="fas fa-user me-2"></i>2. {{ $t('taches.selectionnerMembre') }}
+              </label>
+              <div v-if="getMembresProjet(projetPourAssignation?.id).length > 0" class="list-group">
                 <button
-                  v-for="m in getMembresProjet(tacheAAssigner?.id_projet || tacheAAssigner?.projetId)"
+                  v-for="m in getMembresProjet(projetPourAssignation?.id)"
                   :key="m.id"
                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                   :class="{ 'active': membreAssigneSelectionne && membreAssigneSelectionne.id === m.id }"
                   @click="selectionnerMembreAssignation(m)"
-                  type="button"
-                >
+                  type="button">
                   <div>
                     <div class="fw-semibold">{{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}</div>
                     <small class="text-muted">{{ m.email }}</small>
@@ -670,8 +804,13 @@
                 </button>
               </div>
               <div v-else class="alert alert-warning mb-0">
-                <i class="fas fa-exclamation-triangle me-2"></i>Aucun membre dans ce projet. Ajoutez des membres d'abord.
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('taches.aucunMembreProjet') }}
               </div>
+            </div>
+
+            <!--  Message si aucune tâche sélectionnée -->
+            <div v-else class="alert alert-info mb-0">
+              <i class="fas fa-info-circle me-2"></i>{{ $t('taches.choisirTacheAvant') }}
             </div>
           </div>
 
@@ -682,9 +821,59 @@
             <button
               class="btn btn-success"
               @click="confirmerAssignation"
-              :disabled="!membreAssigneSelectionne"
-            >
+              :disabled="!tacheAAssigner || !membreAssigneSelectionne">
               <i class="fas fa-check me-1"></i>{{ $t('taches.assigner') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal Retrait Membre -->
+    <div v-if="modalRetraitMembre" class="modal d-block" style="background:rgba(0,0,0,.5);z-index:1060">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-user-minus me-2"></i>{{ $t('equipe.retirerMembre') }}
+            </h5>
+            <button class="btn-close" @click="fermerModalRetraitMembre" :aria-label="$t('commun.fermer')"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+              <strong>{{ $t('projets.projet') }} :</strong>
+              <span class="text-primary">{{ projetPourRetrait?.titre }}</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ $t('equipe.selectionnerMembre') }}</label>
+              <div v-if="getMembresProjet(projetPourRetrait?.id).length > 0" class="list-group">
+                <button
+                  v-for="m in getMembresProjet(projetPourRetrait?.id)"
+                  :key="m.id"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  :class="{ 'active': membreARetirer && membreARetirer.id === m.id }"
+                  @click="membreARetirer = m"
+                  type="button">
+                  <div>
+                    <div class="fw-semibold">{{ (m.prenom||m.firstName) }} {{ (m.nom||m.lastName) }}</div>
+                    <small class="text-muted">{{ m.email }}</small>
+                  </div>
+                  <i class="fas" :class="membreARetirer && membreARetirer.id === m.id ? 'fa-check-circle text-danger' : 'fa-circle text-muted'"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="fermerModalRetraitMembre">
+              {{ $t('commun.annuler') }}
+            </button>
+            <button
+              class="btn btn-danger"
+              @click="confirmerRetraitMembre"
+              :disabled="!membreARetirer">
+              <i class="fas fa-user-minus me-1"></i>{{ $t('equipe.retirer') }}
             </button>
           </div>
         </div>
@@ -708,10 +897,8 @@ export default {
       chargementGlobal: true,
       chargementProjets: false,
       chargementTaches: false,
-      chargementMembres: false,
       chargementFactures: false,
       chargementNotifications: false,
-      sauvegardeProfil: false,
       envoyantMessage: false,
 
       mesProjets: [],
@@ -727,39 +914,54 @@ export default {
       filtreProjetTache: '',
       projetChatActuel: null,
       nouveauMessage: '',
+
       modalAjoutMembre: false,
       projetSelectionne: null,
       projetPreSelectionne: null,
       membreSelectionne: null,
       rechercheUtilisateur: '',
-      erreurBackend: null,
 
-      showCreateProject: false,
-      projetForm: { titre: '', description: '' },
-      subscribedTopics: new Set(),
-
-      // ✅ NOUVEAU : Variables pour assignation
       modalAssignationTache: false,
       tacheAAssigner: null,
       membreAssigneSelectionne: null,
+      projetPourAssignation: null,
+      tachesDisponibles: [],
+
+      modalRetraitMembre: false,
+      projetPourRetrait: null,
+      membreARetirer: null,
+
+      erreurBackend: null,
+      showCreateProject: false,
+      projetForm: { titre: '', description: '' },
+      subscribedTopics: new Set(),
     }
   },
   computed: {
     utilisateur() { return useAuthStore().user },
+
     abonnementActif() {
       if (!this.abonnement) return false
       const maintenant = new Date()
       const dateFin = new Date(this.abonnement.date_fin || this.abonnement.dateFin)
       return (this.abonnement.statut || 'ACTIF') === 'ACTIF' && dateFin > maintenant
     },
-    projetsActifs() { return this.mesProjets.filter(p => p.statut !== 'TERMINE' && p.statut !== 'ANNULE') },
-    tachesEnAttente() { return this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION') },
+
+    projetsActifs() {
+      return this.mesProjets.filter(p => p.statut !== 'TERMINE' && p.statut !== 'ANNULE')
+    },
+
+    tachesEnAttente() {
+      return this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION')
+    },
+
     tachesFiltrees() {
       if (this.filtreProjetTache) {
         return this.totalTaches.filter(t => (t.id_projet || t.projetId) == this.filtreProjetTache)
       }
       return this.totalTaches
     },
+
     totalMembres() {
       const membresUniques = new Set()
       Object.values(this.membresParProjet).forEach(membres => {
@@ -767,24 +969,31 @@ export default {
       })
       return membresUniques.size
     },
-    notificationsNonLues() { return this.notifications.filter(n => !n.lu) }
+
+    notificationsNonLues() {
+      return this.notifications.filter(n => !n.lu)
+    }
   },
+
   async mounted() {
     this.verifierEtNettoyerUtilisateur()
     const store = useAuthStore()
+
     if (!store.user && localStorage.getItem('user')) {
       try {
         const userData = JSON.parse(localStorage.getItem('user'))
         store.setUser(userData)
       } catch (e) {
-        console.error('Erreur parsing user:', e)
+        console.error('[Mount] Erreur parsing user:', e)
       }
     }
+
     if (!store.user || (store.user.role !== 'CHEF_PROJET' && store.user.role !== 'MEMBRE')) {
       this.erreurBackend = this.$t('erreurs.accesReserveChefsProjets')
       this.chargementGlobal = false
       return
     }
+
     const { translateData, translateProjectTitle, translateProjectDescription } = useDataTranslation()
     this.translateData = translateData
     this.translateProjectTitle = translateProjectTitle
@@ -794,14 +1003,12 @@ export default {
 
     const token = localStorage.getItem('token')
     if (token && Array.isArray(this.mesProjets) && this.mesProjets.length > 0) {
-      console.log('[WS] Initialisation WebSocket...')
       this.initWebsocket()
-    } else {
-      console.warn('[WS] WebSocket non initialisé (token manquant ou aucun projet accessible).')
     }
 
     if (this.$route.query.newProject === '1') this.ouvrirModalProjet()
   },
+
   watch: {
     onglet(nv) {
       if (nv === 'notifications' && this.notifications.length === 0) this.chargerNotifications()
@@ -809,6 +1016,7 @@ export default {
       if (nv === 'chat' && !this.projetChatActuel && this.mesProjets[0]) this.ouvrirChatProjet(this.mesProjets[0])
     }
   },
+
   methods: {
     normalizeId(v) { return v == null ? v : String(v).split(':')[0] },
 
@@ -827,11 +1035,11 @@ export default {
         if (user.id && String(user.id).includes(':')) {
           localStorage.removeItem('user')
           localStorage.removeItem('token')
-          alert('Session expirée. Veuillez vous reconnecter.')
+          alert(this.$t('erreurs.sessionExpiree'))
           this.$router.push('/connexion')
         }
       } catch (e) {
-        console.error('Erreur vérification utilisateur:', e)
+        console.error('[Verify] Erreur vérification utilisateur:', e)
       }
     },
 
@@ -848,7 +1056,7 @@ export default {
           this.chargerAbonnement(),
         ])
       } catch (e) {
-        console.error(e)
+        console.error('[Load] Erreur chargement:', e)
         this.erreurBackend = this.$t('erreurs.chargementDonnees')
       } finally {
         this.chargementGlobal = false
@@ -865,7 +1073,7 @@ export default {
         this.mesProjets = projets.map(p => ({ ...p, id: this.normalizeId(p.id) }))
         await Promise.all(this.mesProjets.map(projet => this.chargerMembresProjet(projet.id)))
       } catch (e) {
-        console.error(e)
+        console.error('[Projets] Erreur chargement:', e)
         this.mesProjets = []
       } finally {
         this.chargementProjets = false
@@ -878,7 +1086,7 @@ export default {
         const membres = Array.isArray(r.data) ? r.data : []
         this.membresParProjet = { ...this.membresParProjet, [projetId]: membres }
       } catch (e) {
-        console.error('Erreur chargement membres:', e)
+        console.error('[Membres] Erreur chargement:', e)
         this.membresParProjet[projetId] = []
       }
     },
@@ -896,7 +1104,7 @@ export default {
           projetId: t.projetId ? this.normalizeId(t.projetId) : t.projetId
         }))
       } catch (e) {
-        console.error(e)
+        console.error('[Taches] Erreur chargement:', e)
         this.totalTaches = []
       } finally {
         this.chargementTaches = false
@@ -909,22 +1117,14 @@ export default {
         if (!u || !u.id) return
         const userId = this.normalizeId(u.id)
         const token = localStorage.getItem('token')
-        if (!token) {
-          console.warn('[F10] Aucun token JWT trouvé pour la requête abonnement.')
-          return
-        }
+        if (!token) return
         const r = await abonnementAPI.getByUserId(userId, token)
         this.abonnement = r.data
-        console.log('[F10] Abonnement chargé avec succès :', this.abonnement)
       } catch (e) {
-        if (e?.response?.status === 404) {
-          console.warn('[F10] Aucun abonnement trouvé pour cet utilisateur.')
-          this.abonnement = null
-        } else if (e?.response?.status === 401) {
-          console.error('[F10] Non autorisé - token manquant ou invalide.')
+        if (e?.response?.status === 404 || e?.response?.status === 401) {
           this.abonnement = null
         } else {
-          console.error('Erreur lors du chargement de l\'abonnement :', e)
+          console.error('[Abonnement] Erreur chargement:', e)
           this.abonnement = null
         }
       }
@@ -954,7 +1154,7 @@ export default {
           }
         })
       } catch (e) {
-        console.error(e)
+        console.error('[Factures] Erreur chargement:', e)
         this.factures = []
       } finally {
         this.chargementFactures = false
@@ -968,7 +1168,7 @@ export default {
         const r = await notificationAPI.list(userId)
         this.notifications = Array.isArray(r.data) ? r.data : []
       } catch (e) {
-        console.error(e)
+        console.error('[Notifications] Erreur chargement:', e)
         this.notifications = []
       } finally {
         this.chargementNotifications = false
@@ -978,35 +1178,25 @@ export default {
     initWebsocket() {
       try {
         const token = localStorage.getItem('token')
-        if (!token) {
-          console.warn('[WS] Aucun token JWT — connexion WebSocket annulée.')
-          return
-        }
-        if (!this.utilisateur || !this.utilisateur.id) {
-          console.warn('[WS] Utilisateur absent — connexion WebSocket annulée.')
-          return
-        }
-        if (!Array.isArray(this.mesProjets) || this.mesProjets.length === 0) {
-          console.warn('[WS] Aucun projet accessible — WebSocket non lancé.')
-          return
-        }
+        if (!token || !this.utilisateur?.id) return
+
         WebSocketService.connect(token)
         const userId = this.normalizeId(this.utilisateur.id)
         const topicUser = `/user/${userId}/topic/notifications`
+
         if (!this.subscribedTopics.has(topicUser)) {
           WebSocketService.subscribe(topicUser, (msg) => {
-            console.log('[F13] Notification WebSocket reçue:', msg)
             if (msg?.type === 'NOTIFICATION') {
               this.notifications.unshift({
                 id: msg.id || Date.now(),
                 message: msg.message || msg.contenu,
-                titre: msg.titre || 'Notification',
+                titre: msg.titre || this.$t('notifications.notification'),
                 date: msg.createdAt || new Date().toISOString(),
                 lu: false,
                 type: msg.sousType || msg.type || 'SYSTEME'
               })
               if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(msg.titre || 'Notification', {
+                new Notification(msg.titre || this.$t('notifications.notification'), {
                   body: msg.message || msg.contenu,
                   icon: '/favicon.ico'
                 })
@@ -1014,10 +1204,9 @@ export default {
             }
           })
           this.subscribedTopics.add(topicUser)
-          console.log(`[F13] Chef abonné au topic: ${topicUser}`)
         }
       } catch (error) {
-        console.error('[F13] Erreur WebSocket:', error)
+        console.error('[WS] Erreur WebSocket:', error)
       }
     },
 
@@ -1026,11 +1215,13 @@ export default {
       const estCreateur = this.normalizeId(projet.idCreateur) == this.normalizeId(this.utilisateur?.id)
       return estAdmin || estCreateur
     },
+
     peutSupprimerProjet(projet) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
       const estCreateur = this.normalizeId(projet.idCreateur) == this.normalizeId(this.utilisateur?.id)
       return estAdmin || estCreateur
     },
+
     peutSupprimerTache(tache) {
       const estAdmin = this.utilisateur?.role === 'ADMINISTRATEUR'
       const projetId = this.normalizeId(tache.id_projet || tache.projetId)
@@ -1050,20 +1241,19 @@ export default {
     ouvrirModalProjet() { this.showCreateProject = true },
 
     async sauvegarderNouveauProjet() {
-      if (!this.projetForm.titre.trim()) return;
+      if (!this.projetForm.titre.trim()) return
       try {
         await projectAPI.create({
           titre: this.projetForm.titre,
           description: this.projetForm.description
-        });
-        await this.chargerProjets();
-        this.showCreateProject = false;
-        this.projetForm = { titre: '', description: '' };
-        this.$toast?.success("Projet créé avec succès");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        await this.chargerProjets()
+        this.showCreateProject = false
+        this.projetForm = { titre: '', description: '' }
+        alert(this.$t('projets.projetCree'))
       } catch (e) {
-        console.error(e);
-        alert(this.$t('erreurs.creationProjet'));
+        console.error('[Projet] Erreur création:', e)
+        alert(this.$t('erreurs.creationProjet'))
       }
     },
 
@@ -1073,42 +1263,40 @@ export default {
     },
 
     async modifierProjet(p) {
-      const nouveauTitre = prompt('Nouveau titre du projet:', p.titre)
+      const nouveauTitre = prompt(this.$t('projets.nouveauTitre'), p.titre)
       if (!nouveauTitre || nouveauTitre === p.titre) return
-      const nouvelleDesc = prompt('Nouvelle description:', p.description)
+      const nouvelleDesc = prompt(this.$t('projets.nouvelleDescription'), p.description)
       if (nouvelleDesc === null) return
       try {
         await projectAPI.update(p.id, { ...p, titre: nouveauTitre, description: nouvelleDesc })
         p.titre = nouveauTitre
         p.description = nouvelleDesc
-        alert('Projet modifié avec succès !')
+        alert(this.$t('projets.projetModifie'))
       } catch (e) {
-        console.error('Erreur modification projet:', e.response?.data || e)
+        console.error('[Projet] Erreur modification:', e)
         if (e.response?.status === 403) {
-          alert('Vous n\'avez pas l\'autorisation de modifier ce projet')
+          alert(this.$t('erreurs.pasAutoriseModifier'))
         } else {
-          alert('Erreur lors de la modification du projet')
+          alert(this.$t('erreurs.modificationProjet'))
         }
       }
     },
 
     async supprimerProjet(id) {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?\n\nCette action est irréversible.')) {
-        return
-      }
+      if (!confirm(this.$t('projets.confirmerSuppression'))) return
       try {
         await projectAPI.delete(id)
         this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
-        alert('Projet supprimé avec succès !')
+        alert(this.$t('projets.projetSupprime'))
       } catch (e) {
-        console.error('Erreur suppression projet:', e.response?.data || e)
+        console.error('[Projet] Erreur suppression:', e)
         if (e.response?.status === 403) {
-          alert('Vous n\'avez pas l\'autorisation de supprimer ce projet')
+          alert(this.$t('erreurs.pasAutoriseSupprimer'))
         } else if (e.response?.status === 404) {
-          alert('Projet introuvable')
+          alert(this.$t('erreurs.projetIntrouvable'))
           this.mesProjets = this.mesProjets.filter(p => this.normalizeId(p.id) != this.normalizeId(id))
         } else {
-          alert('Erreur lors de la suppression du projet')
+          alert(this.$t('erreurs.suppressionProjet'))
         }
       }
     },
@@ -1120,7 +1308,7 @@ export default {
         tache.statut = 'TERMINE'
         alert(this.$t('taches.validee'))
       } catch (e) {
-        console.error(e)
+        console.error('[Tache] Erreur validation:', e)
         alert(this.$t('erreurs.validationTache'))
       }
     },
@@ -1131,7 +1319,7 @@ export default {
         tache.statut = 'BROUILLON'
         alert(this.$t('taches.renvoyeeBrouillon'))
       } catch (e) {
-        console.error(e)
+        console.error('[Tache] Erreur renvoi:', e)
         alert(this.$t('erreurs.modificationTache'))
       }
     },
@@ -1143,7 +1331,7 @@ export default {
         tache.statut = 'ANNULE'
         alert(this.$t('taches.annulee'))
       } catch (e) {
-        console.error(e)
+        console.error('[Tache] Erreur annulation:', e)
         alert(this.$t('erreurs.annulationTache'))
       }
     },
@@ -1155,46 +1343,12 @@ export default {
         this.totalTaches = this.totalTaches.filter(t => this.normalizeId(t.id) != this.normalizeId(id))
         alert(this.$t('taches.supprimee'))
       } catch (e) {
-        console.error('Erreur suppression tâche:', e.response?.data || e)
+        console.error('[Tache] Erreur suppression:', e)
         if (e.response?.status === 403) {
           alert(this.$t('erreurs.pasAutoriseSupprimerTache'))
         } else {
           alert(this.$t('erreurs.suppressionTache'))
         }
-      }
-    },
-
-    // ✅ NOUVEAU : Méthodes d'assignation
-    ouvrirModalAssignation(tache) {
-      this.tacheAAssigner = tache
-      this.membreAssigneSelectionne = null
-      this.modalAssignationTache = true
-    },
-
-    fermerModalAssignation() {
-      this.modalAssignationTache = false
-      this.tacheAAssigner = null
-      this.membreAssigneSelectionne = null
-    },
-
-    selectionnerMembreAssignation(membre) {
-      this.membreAssigneSelectionne = membre
-    },
-
-    async confirmerAssignation() {
-      if (!this.tacheAAssigner || !this.membreAssigneSelectionne) {
-        alert('Veuillez sélectionner un membre')
-        return
-      }
-
-      try {
-        await taskAPI.assignTask(this.tacheAAssigner.id, this.membreAssigneSelectionne.id)
-        await this.chargerTaches()
-        alert('Tâche assignée avec succès !')
-        this.fermerModalAssignation()
-      } catch (e) {
-        console.error('Erreur assignation tâche:', e)
-        alert('Erreur lors de l\'assignation de la tâche')
       }
     },
 
@@ -1242,7 +1396,7 @@ export default {
         const r = await userAPI.search(this.rechercheUtilisateur)
         this.utilisateursRecherche = Array.isArray(r.data) ? r.data : []
       } catch (e) {
-        console.error(e)
+        console.error('[Search] Erreur recherche:', e)
         this.utilisateursRecherche = []
       }
     },
@@ -1262,30 +1416,81 @@ export default {
         alert(this.$t('equipe.membreAjoute'))
         this.fermerModalAjoutMembre()
       } catch (e) {
-        console.error(e)
-        if (e.response?.data?.message) {
-          alert(e.response.data.message)
-        } else {
-          alert(this.$t('erreurs.ajoutMembre'))
-        }
+        console.error('[Membre] Erreur ajout:', e)
+        alert(e.response?.data?.message || this.$t('erreurs.ajoutMembre'))
       }
     },
 
-    async retirerMembreProjet(projetId, membreId) {
+    ouvrirModalRetraitMembre(projet) {
+      this.projetPourRetrait = projet
+      this.membreARetirer = null
+      this.modalRetraitMembre = true
+    },
+
+    fermerModalRetraitMembre() {
+      this.modalRetraitMembre = false
+      this.projetPourRetrait = null
+      this.membreARetirer = null
+    },
+
+    async confirmerRetraitMembre() {
+      if (!this.projetPourRetrait || !this.membreARetirer) return
       if (!confirm(this.$t('equipe.confirmerRetrait'))) return
       try {
-        await projectAPI.removeMember(projetId, membreId)
-        await this.chargerMembresProjet(projetId)
+        await projectAPI.removeMember(this.projetPourRetrait.id, this.membreARetirer.id)
+        await this.chargerMembresProjet(this.projetPourRetrait.id)
         alert(this.$t('equipe.membreRetire'))
+        this.fermerModalRetraitMembre()
       } catch (e) {
-        console.error(e)
+        console.error('[Membre] Erreur retrait:', e)
         alert(this.$t('erreurs.retraitMembre'))
+      }
+    },
+
+    ouvrirModalAssignationProjet(projet) {
+      const taches = this.getTachesNonAssigneesProjet(projet.id)
+      if (taches.length === 0) {
+        alert(this.$t('taches.aucuneTacheNonAssignee'))
+        return
+      }
+      this.projetPourAssignation = projet
+      this.tachesDisponibles = taches
+      this.tacheAAssigner = null
+      this.membreAssigneSelectionne = null
+      this.modalAssignationTache = true
+    },
+
+    fermerModalAssignation() {
+      this.modalAssignationTache = false
+      this.tacheAAssigner = null
+      this.membreAssigneSelectionne = null
+      this.projetPourAssignation = null
+      this.tachesDisponibles = []
+    },
+
+    selectionnerMembreAssignation(membre) {
+      this.membreAssigneSelectionne = membre
+    },
+
+    async confirmerAssignation() {
+      if (!this.tacheAAssigner || !this.membreAssigneSelectionne) {
+        alert(this.$t('taches.selectionnerMembre'))
+        return
+      }
+
+      try {
+        await taskAPI.assignTask(this.tacheAAssigner.id, this.membreAssigneSelectionne.id)
+        await this.chargerTaches()
+        alert(this.$t('taches.tacheAssignee'))
+        this.fermerModalAssignation()
+      } catch (e) {
+        console.error('[Assignation] Erreur:', e)
+        alert(this.$t('erreurs.assignationTache'))
       }
     },
 
     async ouvrirChatProjet(projet) {
       if (projet.prive && !projet.estMembre) {
-        console.warn(`[WS] Accès refusé au projet privé : ${projet.titre}`)
         this.$router.push('/tableau-bord-chef-projet')
         return
       }
@@ -1299,14 +1504,12 @@ export default {
       const topicProjet = `/topic/projet/${projet.id}`
       if (!this.subscribedTopics.has(topicProjet)) {
         WebSocketService.subscribe(topicProjet, (msg) => {
-          console.log('[WS] Message chat reçu:', msg)
           this.messagesChat.push(msg)
           if (this.messagesParProjet[projet.id]) {
             this.messagesParProjet[projet.id].push(msg)
           }
         })
         this.subscribedTopics.add(topicProjet)
-        console.log(`[WS] Chef abonné au topic: ${topicProjet}`)
       }
     },
 
@@ -1316,7 +1519,7 @@ export default {
         this.messagesChat = Array.isArray(r.data) ? r.data : []
         this.messagesParProjet[projetId] = this.messagesChat
       } catch (e) {
-        console.error(e)
+        console.error('[Chat] Erreur chargement:', e)
         this.messagesChat = []
       }
     },
@@ -1333,7 +1536,7 @@ export default {
         this.messagesChat.push(r.data)
         this.nouveauMessage = ''
       } catch (e) {
-        console.error(e)
+        console.error('[Chat] Erreur envoi:', e)
         alert(this.$t('erreurs.envoyerMessage'))
       } finally {
         this.envoyantMessage = false
@@ -1364,7 +1567,7 @@ export default {
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
       } catch (e) {
-        console.error('Erreur téléchargement facture:', e)
+        console.error('[Facture] Erreur téléchargement:', e)
         alert(this.$t('erreurs.telechargementFacture'))
       }
     },
@@ -1375,7 +1578,7 @@ export default {
         await notificationAPI.markAsRead(n.id, userId)
         n.lu = true
       } catch (e) {
-        console.error(e)
+        console.error('[Notif] Erreur marque lue:', e)
       }
     },
 
@@ -1386,7 +1589,7 @@ export default {
         this.notifications.forEach(n => n.lu = true)
         alert(this.$t('notifications.toutesMarquees'))
       } catch (e) {
-        console.error(e)
+        console.error('[Notif] Erreur marque toutes:', e)
       }
     },
 
@@ -1397,17 +1600,29 @@ export default {
         await notificationAPI.delete(n.id, userId)
         this.notifications = this.notifications.filter(x => x.id !== n.id)
       } catch (e) {
-        console.error(e)
+        console.error('[Notif] Erreur suppression:', e)
       }
     },
 
-    getMembresProjet(projetId) { return this.membresParProjet[projetId] || [] },
-    getTachesProjet(projetId) { return this.totalTaches.filter(t => (t.id_projet || t.projetId) == projetId) },
+    getMembresProjet(projetId) {
+      return this.membresParProjet[projetId] || []
+    },
+
+    getTachesProjet(projetId) {
+      return this.totalTaches.filter(t => (t.id_projet || t.projetId) == projetId)
+    },
+
+    getTachesNonAssigneesProjet(projetId) {
+      return this.getTachesProjet(projetId).filter(t => !t.id_assigne && !t.assigneId)
+    },
+
     getProjetNom(projetId) {
       const p = this.mesProjets.find(x => this.normalizeId(x.id) == this.normalizeId(projetId))
-      return p ? p.titre : this.$t('projets.projetInconnu')
+      return p ? this.translateProjectTitle(p.titre) : this.$t('projets.projetInconnu')
     },
+
     getAssigneNom(userId) {
+      if (!userId) return this.$t('commun.inconnu')
       const targetId = this.normalizeId(userId)
       for (const membres of Object.values(this.membresParProjet)) {
         const utilisateur = membres.find(m => this.normalizeId(m.id) == targetId)
@@ -1417,6 +1632,7 @@ export default {
       }
       return this.$t('commun.inconnu')
     },
+
     getMessagesNonLusProjet(projetId) {
       const messages = this.messagesParProjet[projetId] || []
       return messages.filter(m => m.statut !== 'LU').length
@@ -1431,6 +1647,7 @@ export default {
       }
       return classes[statut] || 'bg-info'
     },
+
     getStatutTacheClass(statut) {
       const classes = {
         'BROUILLON': 'bg-secondary',
@@ -1440,6 +1657,7 @@ export default {
       }
       return classes[statut] || 'bg-info'
     },
+
     getNotificationIconClass(type) {
       const classes = {
         'TACHE': 'bg-warning',
@@ -1449,6 +1667,7 @@ export default {
       }
       return classes[type] || 'bg-secondary'
     },
+
     getNotificationIcon(type) {
       const icons = {
         'TACHE': 'fas fa-tasks',
@@ -1467,6 +1686,7 @@ export default {
       const annee = d.getFullYear()
       return `${jour}/${mois}/${annee}`
     },
+
     formatDateRelative(date) {
       if (!date) return '—'
       const now = new Date()
@@ -1480,12 +1700,14 @@ export default {
       if (days < 7) return `${this.$t('temps.ilYa')} ${days}${this.$t('temps.j')}`
       return this.formatDate(date)
     },
+
     formatTime(timestamp) {
       if (!timestamp) return ''
       return new Date(timestamp).toLocaleTimeString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', {
         hour: '2-digit', minute: '2-digit'
       })
     },
+
     formatPrix(prix) {
       if (!prix && prix !== 0) return '—'
       return new Intl.NumberFormat(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', {
@@ -1493,6 +1715,7 @@ export default {
       }).format(prix)
     }
   },
+
   beforeUnmount() {
     WebSocketService.disconnect()
   }
@@ -1500,6 +1723,7 @@ export default {
 </script>
 
 <style scoped>
+/* ===== STYLE ORIGINAL CONSERVÉ ===== */
 .chef-header {
   background: linear-gradient(135deg, #b88a00, #403707);
   border-radius: 12px;
@@ -1605,10 +1829,6 @@ export default {
 .modal {
   backdrop-filter: blur(5px);
 }
-.avatar-large {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
 .subscription-status {
   text-align: center;
 }
@@ -1616,5 +1836,9 @@ export default {
 .list-group-item.active {
   background-color: #198754;
   border-color: #198754;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

@@ -2,6 +2,7 @@ package be.iccbxl.gestionprojets.controller;
 
 import be.iccbxl.gestionprojets.dto.TacheDTO;
 import be.iccbxl.gestionprojets.enums.StatutTache;
+import be.iccbxl.gestionprojets.service.NotificationService;
 import be.iccbxl.gestionprojets.service.TacheService;
 import be.iccbxl.gestionprojets.service.UtilisateurService;
 import jakarta.validation.Valid;
@@ -16,8 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Controller REST pour la gestion des tâches (F7).
- * Version 2.0 - Ajout endpoint assignation avec body JSON
+ * Controller REST pour la gestion des tâches (F7)
+ * Version 3.0 - Notifications automatiques via WebSocket
  */
 @RestController
 @RequestMapping("/api/taches")
@@ -25,10 +26,16 @@ public class TacheController {
 
     private final TacheService tacheService;
     private final UtilisateurService utilisateurService;
+    private final NotificationService notificationService;
 
-    public TacheController(TacheService tacheService, UtilisateurService utilisateurService) {
+    public TacheController(
+            TacheService tacheService,
+            UtilisateurService utilisateurService,
+            NotificationService notificationService
+    ) {
         this.tacheService = tacheService;
         this.utilisateurService = utilisateurService;
+        this.notificationService = notificationService;
     }
 
     // ---------- META POUR L'UI ----------
@@ -199,14 +206,6 @@ public class TacheController {
     }
 
     // ========== ASSIGNATION AVEC BODY JSON ==========
-    /**
-     * Assigner une tâche à un membre via body JSON
-     * PUT /api/taches/{id}/assigner
-     *
-     * @param id ID de la tâche
-     * @param body Payload JSON contenant idAssigne
-     * @return TacheDTO enrichi avec les infos de l'assigné
-     */
     @PutMapping("/{id}/assigner")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> assignerTacheJSON(
@@ -224,6 +223,14 @@ public class TacheController {
             System.out.println("DEBUG: [F7] Assignation tâche " + id + " à utilisateur " + idAssigne);
 
             TacheDTO tacheAssignee = tacheService.assignerTache(id, idAssigne);
+
+            // Tâche assignée
+            notificationService.notifierTacheAssignee(
+                    idAssigne,
+                    tacheAssignee.getTitre(),
+                    tacheAssignee.getNomProjet()
+            );
+
             System.out.println("SUCCESS: [F7] Tâche " + id + " assignée à " + tacheAssignee.getNomAssigne());
 
             return ResponseEntity.ok(tacheAssignee);
@@ -251,7 +258,16 @@ public class TacheController {
 
             TacheDTO tacheDTO = tacheExistante.get();
             tacheDTO.setIdAssigne(utilisateurId);
-            return ResponseEntity.ok(tacheService.modifierTache(id, tacheDTO));
+            TacheDTO result = tacheService.modifierTache(id, tacheDTO);
+
+            // NOTIFICATION AUTOMATIQUE
+            notificationService.notifierTacheAssignee(
+                    utilisateurId,
+                    result.getTitre(),
+                    result.getNomProjet()
+            );
+
+            return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
@@ -346,6 +362,10 @@ public class TacheController {
             }
 
             TacheDTO tacheModifiee = tacheService.changerStatutTache(id, nouveauStatut);
+
+            // Changement de statut
+            notificationService.notifierChangementStatutTache(tacheModifiee, nouveauStatut);
+
             return ResponseEntity.ok(tacheModifiee);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

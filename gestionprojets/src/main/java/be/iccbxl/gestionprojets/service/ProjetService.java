@@ -73,6 +73,15 @@ public class ProjetService {
         }
 
         Projet saved = projetRepository.save(projet);
+
+
+        ProjetUtilisateur lien = new ProjetUtilisateur();
+        lien.setProjetId(saved.getId());
+        lien.setUtilisateurId(createur.getId());
+        lien.setRole("CHEF_PROJET");
+        lien.setActif(true);
+        projetUtilisateurRepository.save(lien);
+
         return convertirEnDTO(saved);
     }
 
@@ -181,7 +190,7 @@ public class ProjetService {
 
         Projet saved = projetRepository.save(p);
 
-        // ✅ Ajout automatique du créateur comme membre du projet
+
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
         lien.setUtilisateurId(createur.getId());
@@ -253,10 +262,7 @@ public class ProjetService {
 
         List<Long> utilisateurIds = projetUtilisateurRepository.findUtilisateurIdsByProjetId(projetId);
 
-        // ✅ Exclure le créateur du projet de la liste des membres
-        if (projet.getCreateur() != null) {
-            utilisateurIds.remove(projet.getCreateur().getId());
-        }
+
 
         return utilisateurRepository.findAllById(utilisateurIds)
                 .stream()
