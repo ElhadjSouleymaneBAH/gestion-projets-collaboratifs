@@ -36,15 +36,15 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final ProjetRepository projetRepository;
-    private final SimpMessagingTemplate messagingTemplate; // ✅ WebSocket
+    private final SimpMessagingTemplate messagingTemplate;
 
     // ============================================================================
-    // ✅ NOUVELLE MÉTHODE : NOTIFICATION AUTOMATIQUE CHANGEMENT STATUT TÂCHE
+    //  NOTIFICATION AUTOMATIQUE CHANGEMENT STATUT TÂCHE
     // ============================================================================
 
     /**
      * Envoie automatiquement des notifications lors des changements de statut de tâche
-     *
+
      * SCÉNARIOS :
      * 1. MEMBRE soumet tâche (EN_COURS → EN_ATTENTE_VALIDATION) → Notifie CHEF
      * 2. CHEF valide tâche (EN_ATTENTE_VALIDATION → TERMINE) → Notifie MEMBRE

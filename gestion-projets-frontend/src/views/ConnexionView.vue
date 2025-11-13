@@ -160,41 +160,87 @@ const handleConnexion = async () => {
   success.value = null
 
   try {
-    // Backend attend { email, motDePasse }
+    console.log('[CONNEXION] Tentative de connexion pour:', form.email)
+
+    // Appel API vers /api/auth/connexion
     const { data } = await authAPI.login({
       email: form.email,
       motDePasse: form.motDePasse
     })
 
+    console.log('[CONNEXION] Réponse reçue:', {
+      hasToken: !!data.token,
+      hasUser: !!data.user,
+      userRole: data.user?.role
+    })
+
+    // ✅ VÉRIFICATION: S'assurer que le backend a bien retourné token + user
+    if (!data || !data.token || !data.user) {
+      throw new Error('Réponse serveur invalide - token ou user manquant')
+    }
+
     const { token, user } = data
+
+    // ✅ VÉRIFICATION: S'assurer que le user a bien un role
+    if (!user.role) {
+      console.error('[CONNEXION] ERREUR: User sans rôle!', user)
+      throw new Error('Le compte utilisateur n\'a pas de rôle assigné')
+    }
+
     success.value = t('validation.connexionReussie')
 
+    // ✅ STOCKAGE UNIFIÉ: Utiliser les mêmes clés partout
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(user))
+
+    console.log('[CONNEXION] Token et user stockés. Rôle:', user.role)
 
     // Redirection prioritaire vers la route demandée (query ?redirect=)
     const backTo = route.query.redirect
 
     setTimeout(() => {
-      if (backTo) return router.push(backTo.toString())
+      if (backTo) {
+        console.log('[CONNEXION] Redirection vers:', backTo)
+        return router.push(backTo.toString())
+      }
 
-      // 🔧 FIX: Vérification sécurisée du role
-      const userRole = user?.role || 'MEMBRE'
+      // REDIRECTION SELON LE RÔLE
+      const userRole = user.role
+
+      console.log('[CONNEXION] Redirection selon rôle:', userRole)
 
       switch (userRole) {
-        case 'ADMINISTRATEUR': return router.push('/admin/tableau-de-bord')
-        case 'CHEF_PROJET':    return router.push('/tableau-bord-chef-projet')
-        case 'MEMBRE':         return router.push('/tableau-bord-membre')
-        case 'VISITEUR':       return router.push('/projets-publics')
-        default:               return router.push('/tableau-bord-membre')
+        case 'ADMINISTRATEUR':
+          return router.push('/admin/tableau-de-bord')
+
+        case 'CHEF_PROJET':
+          return router.push('/tableau-bord-chef-projet')
+
+        case 'MEMBRE':
+          return router.push('/tableau-bord-membre')
+
+        case 'VISITEUR':
+          return router.push('/projets-publics')
+
+        default:
+          // Par défaut, rediriger vers tableau de bord membre
+          console.warn('[CONNEXION] Rôle inconnu:', userRole, '- Redirection vers tableau-bord-membre')
+          return router.push('/tableau-bord-membre')
       }
     }, 600)
 
   } catch (err) {
+    console.error('[CONNEXION] Erreur:', err)
+
+    // Gestion des erreurs
     if (err?.response?.status === 401) {
       error.value = t('validation.emailMotDePasseIncorrect')
+    } else if (err?.response?.status === 404) {
+      error.value = err.response?.data?.message || "Email non trouvé. Créez d'abord un compte via 'S'inscrire'."
     } else if (err?.response?.data?.message) {
       error.value = err.response.data.message
+    } else if (err?.message) {
+      error.value = err.message
     } else {
       error.value = t('validation.erreurConnexion')
     }

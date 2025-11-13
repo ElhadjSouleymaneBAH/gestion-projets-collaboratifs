@@ -118,7 +118,7 @@ public class Tache {
      * Une tâche appartient toujours à un projet spécifique.
      * Supporte la fonctionnalité F7 : Gérer les tâches dans le contexte d'un projet.
      *
-     * @see Projet#taches
+     * @see Projet/ taches
      * @see "Cahier des charges - F7: Gérer les tâches"
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -128,12 +128,11 @@ public class Tache {
     /**
      * Utilisateur à qui la tâche est assignée.
      * Relation Many-to-One optionnelle avec l'entité Utilisateur.
-     *
      * Une tâche peut être non assignée (null) ou assignée à un membre du projet.
      * L'assignation permet le suivi des responsabilités et la collaboration.
      *
-     * @see Utilisateur#tachesAssignees
-     * @see "Cahier des charges - F7: Gérer les tâches - Assignation"
+     * @see Utilisateur/ tachesAssignees
+     * @see "Cahier des charges - F7 : Gérer les tâches - Assignation"
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_assigne")
@@ -142,12 +141,12 @@ public class Tache {
     /**
      * Commentaires associés à cette tâche.
      * Relation One-to-Many avec l'entité Commentaire.
-     *
+
      * Supporte la fonctionnalité F9 : Collaborer en temps réel.
      * Les commentaires permettent la communication autour des tâches.
      *
-     * @see Commentaire#tache
-     * @see "Cahier des charges - F9: Collaborer en temps réel"
+     * @see Commentaire/ tache
+     * @see "Cahier des charges - F9 : Collaborer en temps réel"
      */
     @OneToMany(mappedBy = "tache", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Commentaire> commentaires = new HashSet<>();

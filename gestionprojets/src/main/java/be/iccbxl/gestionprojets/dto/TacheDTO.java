@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * DTO pour les tâches (F7)
  *
- * @author ElhadjSouleymanéBAH
+ * @author Elhadj Souleymane BAH
  * @version 2.0 - Ajout support assignation enrichie
  */
 @Data
@@ -23,15 +23,11 @@ public class TacheDTO {
     private PrioriteTache priorite;
     private LocalDate dateEcheance;
     private LocalDateTime dateCreation;
-
-    // Projet
     private Long idProjet;
     private String nomProjet;
-
     // Assignation
     private Long idAssigne;
     private String nomAssigne;
-
     // Détails enrichis de l'assigné
     private String prenomAssigne;
     private String emailAssigne;

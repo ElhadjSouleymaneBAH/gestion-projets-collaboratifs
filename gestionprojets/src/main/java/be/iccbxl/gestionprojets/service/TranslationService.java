@@ -6,14 +6,20 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * Service de traduction centralisé pour toutes les données de l'application.
- * Traduit les statuts, rôles, types, et autres données selon la langue demandée.
- * Inclut la traduction automatique pour les contenus dynamiques (titres, descriptions).
+ * Service centralisé de traduction pour toutes les données de l'application.
+ * Traduit les statuts, rôles, types, etc., ainsi que les contenus dynamiques (titres, descriptions)
+ * grâce à l’API Google Translate gratuite.
  */
 @Service
 public class TranslationService {
@@ -23,17 +29,17 @@ public class TranslationService {
     @Autowired
     private MessageSource messageSource;
 
-    // Cache pour traductions automatiques
+    // Cache local pour éviter des appels répétés à Google Translate
     private final Map<String, String> cacheTraduction = new HashMap<>();
 
-    // ==================== TRADUCTION AUTOMATIQUE (MODE FALLBACK) ====================
+    // ==================== TRADUCTION AUTOMATIQUE (API GOOGLE TRANSLATE) ====================
 
     /**
-     * Traduit automatiquement un texte libre (titres, descriptions)
-     * VERSION FALLBACK : Ajoute [EN] devant le texte pour indiquer qu'il devrait être traduit
-     * @param texte Texte à traduire
+     * Traduit automatiquement un texte libre (titre, description, etc.)
+     *
+     * @param texte  Texte source
      * @param locale Langue cible
-     * @return Texte avec marqueur de langue ou original si français
+     * @return Texte traduit ou original si erreur / français
      */
     public String traduireTexteAutomatique(String texte, Locale locale) {
         if (texte == null || texte.trim().isEmpty()) {
@@ -42,150 +48,103 @@ public class TranslationService {
 
         String langueCible = locale.getLanguage();
 
-        // Si français, pas de traduction
+        // Si la langue demandée est le français, inutile de traduire
         if ("fr".equalsIgnoreCase(langueCible)) {
             return texte;
         }
 
-        // Clé de cache
+        // Vérification du cache
         String cacheKey = langueCible + ":" + texte;
-
-        // Vérifier le cache
         if (cacheTraduction.containsKey(cacheKey)) {
             return cacheTraduction.get(cacheKey);
         }
 
-        // Mode fallback : retourner le texte avec marqueur [EN]
-        logger.debug("🔄 Traduction fallback (mode test) FR → {} : {}",
-                langueCible.toUpperCase(),
-                texte.substring(0, Math.min(50, texte.length())));
+        try {
+            // Construction de l’URL d’appel à l’API Google Translate
+            String apiUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl="
+                    + langueCible + "&dt=t&q=" + URLEncoder.encode(texte, StandardCharsets.UTF_8);
 
-        String fallback = "[" + langueCible.toUpperCase() + "] " + texte;
-        cacheTraduction.put(cacheKey, fallback);
-        return fallback;
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            String body = response.body();
+
+            // ✅ Extraction plus robuste du texte traduit
+            String traduit = body.split("\\[\\[\\[\"")[1].split("\",")[0]
+                    .replace("\\n", " ")
+                    .replace("\\\"", "\"");
+
+            // Mise en cache
+            cacheTraduction.put(cacheKey, traduit);
+
+            logger.debug("🌍 Traduction réussie FR → {} : {} → {}",
+                    langueCible.toUpperCase(), texte, traduit);
+
+            // Petite pause pour éviter un trop grand nombre de requêtes en rafale
+            Thread.sleep(150);
+
+            return traduit;
+        } catch (Exception e) {
+            logger.warn("⚠️ Échec de traduction automatique pour '{}': {}", texte, e.getMessage());
+            return texte;
+        }
     }
 
     /**
-     * Vide le cache de traduction
+     * Vide le cache des traductions (utile pour tester)
      */
     public void viderCache() {
         cacheTraduction.clear();
         logger.info("🗑️ Cache de traduction vidé");
     }
 
-    // ==================== TRADUCTIONS STATIQUES (EXISTANT) ====================
+    // ==================== TRADUCTIONS STATIQUES (MESSAGES.PROPERTIES) ====================
 
     public String translateProjetStatut(String statut, Locale locale) {
-        if (statut == null || statut.isEmpty()) {
-            return statut;
-        }
-        try {
-            return messageSource.getMessage("statut.projet." + statut, null, statut, locale);
-        } catch (Exception e) {
-            return statut;
-        }
+        return traduireDepuisMessages("statut.projet." + statut, statut, locale);
     }
 
     public String translateTacheStatut(String statut, Locale locale) {
-        if (statut == null || statut.isEmpty()) {
-            return statut;
-        }
-        try {
-            return messageSource.getMessage("statut.tache." + statut, null, statut, locale);
-        } catch (Exception e) {
-            return statut;
-        }
+        return traduireDepuisMessages("statut.tache." + statut, statut, locale);
     }
 
     public String translatePriorite(String priorite, Locale locale) {
-        if (priorite == null || priorite.isEmpty()) {
-            return priorite;
-        }
-        try {
-            return messageSource.getMessage("priorite." + priorite, null, priorite, locale);
-        } catch (Exception e) {
-            return priorite;
-        }
+        return traduireDepuisMessages("priorite." + priorite, priorite, locale);
     }
 
     public String translateRole(String role, Locale locale) {
-        if (role == null || role.isEmpty()) {
-            return role;
-        }
-        try {
-            return messageSource.getMessage("role." + role, null, role, locale);
-        } catch (Exception e) {
-            return role;
-        }
+        return traduireDepuisMessages("role." + role, role, locale);
     }
 
     public String translateFactureStatut(String statut, Locale locale) {
-        if (statut == null || statut.isEmpty()) {
-            return statut;
-        }
-        try {
-            return messageSource.getMessage("statut.facture." + statut, null, statut, locale);
-        } catch (Exception e) {
-            return statut;
-        }
+        return traduireDepuisMessages("statut.facture." + statut, statut, locale);
     }
 
     public String translateAbonnementType(String type, Locale locale) {
-        if (type == null || type.isEmpty()) {
-            return type;
-        }
-        try {
-            return messageSource.getMessage("abonnement.type." + type, null, type, locale);
-        } catch (Exception e) {
-            return type;
-        }
+        return traduireDepuisMessages("abonnement.type." + type, type, locale);
     }
 
     public String translateAbonnementStatut(String statut, Locale locale) {
-        if (statut == null || statut.isEmpty()) {
-            return statut;
-        }
-        try {
-            return messageSource.getMessage("abonnement.statut." + statut, null, statut, locale);
-        } catch (Exception e) {
-            return statut;
-        }
+        return traduireDepuisMessages("abonnement.statut." + statut, statut, locale);
     }
 
     public String translateNotificationType(String type, Locale locale) {
-        if (type == null || type.isEmpty()) {
-            return type;
-        }
-        try {
-            return messageSource.getMessage("notification.type." + type, null, type, locale);
-        } catch (Exception e) {
-            return type;
-        }
+        return traduireDepuisMessages("notification.type." + type, type, locale);
     }
 
     public String translateVisibilite(String visibilite, Locale locale) {
-        if (visibilite == null || visibilite.isEmpty()) {
-            return visibilite;
-        }
-        try {
-            return messageSource.getMessage("visibilite." + visibilite, null, visibilite, locale);
-        } catch (Exception e) {
-            return visibilite;
-        }
+        return traduireDepuisMessages("visibilite." + visibilite, visibilite, locale);
     }
 
     public String translateMois(String mois, Locale locale) {
-        if (mois == null || mois.isEmpty()) {
-            return mois;
-        }
-        try {
-            String moisNormalise = mois.toUpperCase()
-                    .replace("É", "E")
-                    .replace("Û", "U");
-            return messageSource.getMessage("mois." + moisNormalise, null, mois, locale);
-        } catch (Exception e) {
-            return mois;
-        }
+        if (mois == null || mois.isEmpty()) return mois;
+        String moisNormalise = mois.toUpperCase().replace("É", "E").replace("Û", "U");
+        return traduireDepuisMessages("mois." + moisNormalise, mois, locale);
     }
 
     public String translateAbonnementDescription(Locale locale) {
@@ -202,11 +161,7 @@ public class TranslationService {
     }
 
     public String translate(String key, Locale locale) {
-        try {
-            return messageSource.getMessage(key, null, locale);
-        } catch (Exception e) {
-            return key;
-        }
+        return traduireDepuisMessages(key, key, locale);
     }
 
     public String translate(String key, Object[] args, Locale locale) {
@@ -214,6 +169,19 @@ public class TranslationService {
             return messageSource.getMessage(key, args, locale);
         } catch (Exception e) {
             return key;
+        }
+    }
+
+    // ==================== MÉTHODE PRIVÉE COMMUNE ====================
+
+    private String traduireDepuisMessages(String key, String valeurParDefaut, Locale locale) {
+        if (key == null || key.isEmpty()) {
+            return valeurParDefaut;
+        }
+        try {
+            return messageSource.getMessage(key, null, valeurParDefaut, locale);
+        } catch (Exception e) {
+            return valeurParDefaut;
         }
     }
 }

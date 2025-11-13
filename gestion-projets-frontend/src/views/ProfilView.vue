@@ -29,16 +29,15 @@
 
         <div v-else class="projets-grid">
           <div
-              v-for="projet in projetsActifs"
-              :key="projet.id"
-              class="projet-card"
-              @click="naviguerVersProjet(projet.id)"
+            v-for="projet in projetsActifs"
+            :key="projet.id"
+            class="projet-card"
+            @click="naviguerVersProjet(projet.id)"
           >
             <div class="projet-header">
-              <h3 class="projet-nom">{{ projet.nom }}</h3>
-              <span :class="['projet-statut', `statut-${projet.statut.toLowerCase()}`]">
-                {{ t(`projets.statuts.${projet.statut.toLowerCase()}`) }}
-
+              <h3 class="projet-nom">{{ projet.nom || projet.titre || 'Projet' }}</h3>
+              <span :class="['projet-statut', `statut-${(projet.statut || 'actif').toLowerCase()}`]">
+                {{ t(`projets.statuts.${(projet.statut || 'actif').toLowerCase()}`) }}
               </span>
             </div>
 
@@ -49,11 +48,11 @@
             <div class="projet-info">
               <div class="info-item">
                 <span class="info-label">{{ t('profil.role') }}:</span>
-                <span class="info-value">{{ getRoleLabel(projet.roleUtilisateur) }}</span>
+                <span class="info-value">{{ getRoleLabel(projet.role || projet.roleUtilisateur) }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">{{ t('profil.tachesEnCours') }}:</span>
-                <span class="info-value">{{ projet.nombreTaches || 0 }}</span>
+                <span class="info-value">{{ projet.tachesCount || projet.nombreTaches || 0 }}</span>
               </div>
               <div class="info-item" v-if="projet.dateDebut">
                 <span class="info-label">{{ t('profil.dateDebut') }}:</span>
@@ -61,9 +60,9 @@
               </div>
             </div>
 
-            <div v-if="projet.membresCount" class="projet-membres">
+            <div v-if="projet.membres?.length || projet.membresCount" class="projet-membres">
               <span class="membres-icon">👥</span>
-              <span>{{ projet.membresCount }} {{ t('profil.membres') }}</span>
+              <span>{{ projet.membres?.length || projet.membresCount || 0 }} {{ t('profil.membres') }}</span>
             </div>
           </div>
         </div>
@@ -77,39 +76,39 @@
           <div class="form-group">
             <label for="prenom">{{ t('profil.prenom') }} *</label>
             <input
-                id="prenom"
-                v-model="formulaire.prenom"
-                type="text"
-                :placeholder="t('profil.prenomPlaceholder')"
-                required
-                :disabled="sauvegardeEnCours"
-                autocomplete="given-name"
+              id="prenom"
+              v-model="formulaire.prenom"
+              type="text"
+              :placeholder="t('profil.prenomPlaceholder')"
+              required
+              :disabled="sauvegardeEnCours"
+              autocomplete="given-name"
             />
           </div>
 
           <div class="form-group">
             <label for="nom">{{ t('profil.nom') }} *</label>
             <input
-                id="nom"
-                v-model="formulaire.nom"
-                type="text"
-                :placeholder="t('profil.nomPlaceholder')"
-                required
-                :disabled="sauvegardeEnCours"
-                autocomplete="family-name"
+              id="nom"
+              v-model="formulaire.nom"
+              type="text"
+              :placeholder="t('profil.nomPlaceholder')"
+              required
+              :disabled="sauvegardeEnCours"
+              autocomplete="family-name"
             />
           </div>
 
           <div class="form-group">
             <label for="email">{{ t('profil.email') }} *</label>
             <input
-                id="email"
-                v-model="formulaire.email"
-                type="email"
-                :placeholder="t('profil.emailPlaceholder')"
-                required
-                :disabled="true"
-                autocomplete="email"
+              id="email"
+              v-model="formulaire.email"
+              type="email"
+              placeholder="exemple@domaine.com"
+              required
+              :disabled="true"
+              autocomplete="email"
             />
             <small class="form-help">{{ t('profil.emailNonModifiable') }}</small>
           </div>
@@ -117,26 +116,26 @@
           <div class="form-group">
             <label for="adresse">{{ t('profil.adresse') }}</label>
             <textarea
-                id="adresse"
-                v-model="formulaire.adresse"
-                :placeholder="t('profil.adressePlaceholder')"
-                :disabled="sauvegardeEnCours"
-                rows="3"
-                autocomplete="street-address"
+              id="adresse"
+              v-model="formulaire.adresse"
+              :placeholder="t('profil.adressePlaceholder')"
+              :disabled="sauvegardeEnCours"
+              rows="3"
+              autocomplete="street-address"
             ></textarea>
           </div>
 
           <div class="form-group">
             <label for="langue">{{ t('profil.langue') }}</label>
             <select
-                id="langue"
-                v-model="formulaire.langue"
-                :disabled="sauvegardeEnCours"
+              id="langue"
+              v-model="formulaire.langue"
+              :disabled="sauvegardeEnCours"
             >
               <option
-                  v-for="langue in languesDisponibles"
-                  :key="langue.code"
-                  :value="langue.code"
+                v-for="langue in languesDisponibles"
+                :key="langue.code"
+                :value="langue.code"
               >
                 {{ t(langue.label) }}
               </option>
@@ -146,39 +145,39 @@
           <div class="form-group">
             <label for="role">{{ t('profil.role') }}</label>
             <input
-                id="role"
-                :value="getRoleLabel(utilisateur.role)"
-                type="text"
-                readonly
-                class="readonly"
+              id="role"
+              :value="getRoleLabel(utilisateur.role)"
+              type="text"
+              readonly
+              class="readonly"
             />
           </div>
 
           <div class="form-group">
             <label for="dateInscription">{{ t('profil.dateInscription') }}</label>
             <input
-                id="dateInscription"
-                :value="formaterDate(utilisateur.dateInscription)"
-                type="text"
-                readonly
-                class="readonly"
+              id="dateInscription"
+              :value="formaterDate(utilisateur.dateInscription)"
+              type="text"
+              readonly
+              class="readonly"
             />
           </div>
 
           <div class="form-actions">
             <button
-                type="button"
-                @click="annulerModifications"
-                class="btn-secondary"
-                :disabled="sauvegardeEnCours"
+              type="button"
+              @click="annulerModifications"
+              class="btn-secondary"
+              :disabled="sauvegardeEnCours"
             >
               {{ t('commun.annuler') }}
             </button>
 
             <button
-                type="submit"
-                class="btn-primary"
-                :disabled="sauvegardeEnCours || !formulaireModifie"
+              type="submit"
+              class="btn-primary"
+              :disabled="sauvegardeEnCours || !formulaireModifie"
             >
               <span v-if="sauvegardeEnCours" class="btn-spinner"></span>
               {{ t('profil.sauvegarder') }}
@@ -192,39 +191,38 @@
         <h2>{{ t('profil.motDePasse') }}</h2>
 
         <form @submit.prevent="changerMotDePasse" class="mot-de-passe-form">
-          <!-- Champ username caché pour l'accessibilité -->
           <input
-              type="text"
-              :value="formulaire.email"
-              autocomplete="username"
-              style="display: none;"
-              aria-hidden="true"
+            type="text"
+            :value="formulaire.email"
+            autocomplete="username"
+            style="display: none;"
+            aria-hidden="true"
           />
 
           <div class="form-group">
             <label for="ancienMotDePasse">{{ t('profil.ancienMotDePasse') }} *</label>
             <input
-                id="ancienMotDePasse"
-                v-model="motDePasseForm.ancienMotDePasse"
-                type="password"
-                :placeholder="t('profil.ancienMotDePassePlaceholder')"
-                required
-                :disabled="changementMotDePasseEnCours"
-                autocomplete="current-password"
+              id="ancienMotDePasse"
+              v-model="motDePasseForm.ancienMotDePasse"
+              type="password"
+              :placeholder="t('profil.ancienMotDePassePlaceholder')"
+              required
+              :disabled="changementMotDePasseEnCours"
+              autocomplete="current-password"
             />
           </div>
 
           <div class="form-group">
             <label for="nouveauMotDePasse">{{ t('profil.nouveauMotDePasse') }} *</label>
             <input
-                id="nouveauMotDePasse"
-                v-model="motDePasseForm.nouveauMotDePasse"
-                type="password"
-                :placeholder="t('profil.nouveauMotDePassePlaceholder')"
-                required
-                :minlength="motDePasseMinLength"
-                :disabled="changementMotDePasseEnCours"
-                autocomplete="new-password"
+              id="nouveauMotDePasse"
+              v-model="motDePasseForm.nouveauMotDePasse"
+              type="password"
+              :placeholder="t('profil.nouveauMotDePassePlaceholder')"
+              required
+              :minlength="motDePasseMinLength"
+              :disabled="changementMotDePasseEnCours"
+              autocomplete="new-password"
             />
             <small class="form-help">
               {{ t('profil.motDePasseMinLength', { length: motDePasseMinLength }) }}
@@ -234,14 +232,14 @@
           <div class="form-group">
             <label for="confirmationMotDePasse">{{ t('profil.confirmationMotDePasse') }} *</label>
             <input
-                id="confirmationMotDePasse"
-                v-model="motDePasseForm.confirmationMotDePasse"
-                type="password"
-                :placeholder="t('profil.confirmationMotDePassePlaceholder')"
-                required
-                :minlength="motDePasseMinLength"
-                :disabled="changementMotDePasseEnCours"
-                autocomplete="new-password"
+              id="confirmationMotDePasse"
+              v-model="motDePasseForm.confirmationMotDePasse"
+              type="password"
+              :placeholder="t('profil.confirmationMotDePassePlaceholder')"
+              required
+              :minlength="motDePasseMinLength"
+              :disabled="changementMotDePasseEnCours"
+              autocomplete="new-password"
             />
           </div>
 
@@ -251,9 +249,9 @@
 
           <div class="form-actions">
             <button
-                type="submit"
-                class="btn-primary"
-                :disabled="changementMotDePasseEnCours || !motDePasseFormValide"
+              type="submit"
+              class="btn-primary"
+              :disabled="changementMotDePasseEnCours || !motDePasseFormValide"
             >
               <span v-if="changementMotDePasseEnCours" class="btn-spinner"></span>
               {{ t('profil.changerMotDePasse') }}
@@ -269,8 +267,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import profilService from '@/services/profil.service.js'
-import projetService from '@/services/projet.service.js'
+import { userAPI, projectAPI } from '@/services/api'
 
 export default {
   name: 'ProfilView',
@@ -295,11 +292,11 @@ export default {
 
     const message = reactive({ texte: '', type: '' })
     const messageCss = computed(() =>
-        message.type === 'success'
-            ? 'alert-success'
-            : message.type === 'error'
-                ? 'alert-danger'
-                : 'alert-info'
+      message.type === 'success'
+        ? 'alert-success'
+        : message.type === 'error'
+          ? 'alert-danger'
+          : 'alert-info'
     )
 
     const formulaire = reactive({
@@ -318,15 +315,15 @@ export default {
     })
 
     const formulaireModifie = computed(() =>
-        Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
+      Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
     )
 
     const motDePasseFormValide = computed(() =>
-        motDePasseForm.ancienMotDePasse &&
-        motDePasseForm.nouveauMotDePasse &&
-        motDePasseForm.confirmationMotDePasse &&
-        motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
-        motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
+      motDePasseForm.ancienMotDePasse &&
+      motDePasseForm.nouveauMotDePasse &&
+      motDePasseForm.confirmationMotDePasse &&
+      motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
+      motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
     )
 
     const afficherMessage = (texte, type = 'success') => {
@@ -335,26 +332,23 @@ export default {
       setTimeout(() => { message.texte = ''; message.type = '' }, 5000)
     }
 
+    const normalizeId = (v) => v == null ? v : String(v).split(':')[0]
+
     const chargerProfil = async () => {
       chargement.value = true
-      try {
-        const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
-        if (!utilisateurConnecte?.id) {
-          afficherMessage(t('profil.erreurChargement'), 'error')
-          chargement.value = false
-          return
-        }
 
-        const reponse = await profilService.obtenirProfil(utilisateurConnecte.id)
+      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      if (!utilisateurConnecte?.id) {
+        afficherMessage(t('profil.erreurChargement'), 'error')
+        chargement.value = false
+        return
+      }
 
-        // Gestion améliorée de la réponse
-        if (reponse && reponse.success && reponse.data) {
-          utilisateur.value = reponse.data
-        } else if (reponse && reponse.data) {
-          utilisateur.value = reponse.data
-        } else {
-          throw new Error('Format de réponse invalide')
-        }
+      const userId = normalizeId(utilisateurConnecte.id)
+      const reponse = await userAPI.getById(userId)
+
+      if (reponse?.data) {
+        utilisateur.value = reponse.data
 
         Object.assign(formulaire, {
           nom: utilisateur.value.nom || '',
@@ -364,91 +358,90 @@ export default {
           adresse: utilisateur.value.adresse || ''
         })
         Object.assign(formulaireOriginal, { ...formulaire })
-      } catch (e) {
-        console.error('Erreur chargement profil:', e)
+      } else {
+        console.error('Erreur chargement profil')
         afficherMessage(t('profil.erreurChargement'), 'error')
-      } finally {
-        chargement.value = false
       }
+
+      chargement.value = false
     }
 
     const chargerProjetsActifs = async () => {
       chargementProjets.value = true
-      try {
-        const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
-        if (!utilisateurConnecte?.id) {
-          chargementProjets.value = false
-          return
-        }
 
-        const reponse = await projetService.obtenirProjetsDeLUtilisateur(utilisateurConnecte.id)
-        if (reponse && reponse.success && Array.isArray(reponse.data)) {
-          projetsActifs.value = reponse.data
-        } else if (Array.isArray(reponse)) {
-          projetsActifs.value = reponse
-        } else {
-          projetsActifs.value = []
-        }
-      } catch (e) {
-        console.error('Erreur chargement projets:', e)
-        projetsActifs.value = []
-      } finally {
+      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      if (!utilisateurConnecte?.id) {
         chargementProjets.value = false
+        return
       }
+
+      const userId = normalizeId(utilisateurConnecte.id)
+      const reponse = await projectAPI.byUser(userId)
+
+      if (reponse?.data && Array.isArray(reponse.data)) {
+        projetsActifs.value = reponse.data.map(p => ({
+          ...p,
+          id: normalizeId(p.id)
+        }))
+      } else {
+        projetsActifs.value = []
+      }
+
+      chargementProjets.value = false
     }
 
     const mettreAJourProfil = async () => {
-      try {
-        sauvegardeEnCours.value = true
-        const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      sauvegardeEnCours.value = true
 
-        const payload = {}
-        Object.keys(formulaire).forEach(k => {
-          if (formulaire[k] !== formulaireOriginal[k]) payload[k] = formulaire[k]
-        })
+      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      const userId = normalizeId(utilisateurConnecte.id)
 
-        const reponse = await profilService.mettreAJourProfil(utilisateurConnecte.id, payload)
-        if (reponse && (reponse.success || reponse.data)) {
-          const donnees = reponse.data || reponse
-          Object.assign(utilisateur.value, donnees)
-          Object.assign(formulaireOriginal, { ...formulaire })
+      const payload = {}
+      Object.keys(formulaire).forEach(k => {
+        if (formulaire[k] !== formulaireOriginal[k]) payload[k] = formulaire[k]
+      })
 
-          const stored = JSON.parse(localStorage.getItem('user') || '{}')
-          localStorage.setItem('user', JSON.stringify({ ...stored, ...donnees }))
+      const reponse = await userAPI.updateProfile(userId, payload)
 
-          afficherMessage(t('profil.profilMisAJour'), 'success')
-        }
-      } catch (e) {
-        console.error('Erreur mise à jour:', e)
-        afficherMessage(e.message || t('profil.erreurMiseAJour'), 'error')
-      } finally {
-        sauvegardeEnCours.value = false
+      if (reponse?.data) {
+        const donnees = reponse.data
+        Object.assign(utilisateur.value, donnees)
+        Object.assign(formulaireOriginal, { ...formulaire })
+
+        const stored = JSON.parse(localStorage.getItem('user') || '{}')
+        localStorage.setItem('user', JSON.stringify({ ...stored, ...donnees }))
+
+        afficherMessage(t('profil.profilMisAJour'), 'success')
+      } else {
+        afficherMessage(t('profil.erreurMiseAJour'), 'error')
       }
+
+      sauvegardeEnCours.value = false
     }
 
     const changerMotDePasse = async () => {
-      try {
-        changementMotDePasseEnCours.value = true
-        const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      changementMotDePasseEnCours.value = true
 
-        const reponse = await profilService.changerMotDePasse(utilisateurConnecte.id, { ...motDePasseForm })
-        if (reponse && (reponse.success || reponse.data)) {
-          Object.assign(motDePasseForm, { ancienMotDePasse: '', nouveauMotDePasse: '', confirmationMotDePasse: '' })
-          afficherMessage(t('profil.motDePasseChange'), 'success')
-        }
-      } catch (e) {
-        console.error('Erreur changement mot de passe:', e)
-        afficherMessage(e.message || t('profil.erreurMotDePasse'), 'error')
-      } finally {
-        changementMotDePasseEnCours.value = false
-      }
+      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
+      const userId = normalizeId(utilisateurConnecte.id)
+
+      await userAPI.updateProfile(userId, { ...motDePasseForm })
+
+      Object.assign(motDePasseForm, {
+        ancienMotDePasse: '',
+        nouveauMotDePasse: '',
+        confirmationMotDePasse: ''
+      })
+      afficherMessage(t('profil.motDePasseChange'), 'success')
+
+      changementMotDePasseEnCours.value = false
     }
 
     const annulerModifications = () => Object.assign(formulaire, { ...formulaireOriginal })
 
     const naviguerVersProjet = (projetId) => {
       if (projetId) {
-        router.push({ name: 'ProjetDetail', params: { id: projetId } })
+        router.push({ name: 'ProjetDetail', params: { id: normalizeId(projetId) } })
       }
     }
 
@@ -463,7 +456,6 @@ export default {
 
     const getRoleLabel = (role) => {
       if (!role) return '—'
-
       const labels = {
         'CHEF_PROJET': t('roles.chefProjet') || 'Chef de Projet',
         'MEMBRE': t('roles.membre') || 'Membre',
@@ -481,7 +473,7 @@ export default {
       if (!lang) return
       locale.value = lang
       const stored = JSON.parse(localStorage.getItem('user') || '{}')
-      if (stored && stored.id) {
+      if (stored?.id) {
         stored.langue = lang
         localStorage.setItem('user', JSON.stringify(stored))
       }
@@ -514,7 +506,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped>stion-projets-
 .profil-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 .profil-header { text-align: center; margin-bottom: 30px; }
 .profil-header h1 { font-size: 2.5rem; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
@@ -524,7 +516,6 @@ export default {
 .alert-success { background-color: #f0fff4; color: #38a169; border: 1px solid #9ae6b4; }
 .alert-danger { background-color: #fed7d7; color: #e53e3e; border: 1px solid #feb2b2; }
 
-/* Loading */
 .loading { text-align: center; padding: 40px; }
 .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
@@ -532,7 +523,6 @@ export default {
 .loading-projets { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 24px; color: #718096; }
 .spinner-small { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top: 2px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; }
 
-/* Section Projets Actifs */
 .projets-actifs-section {
   background: #fff;
   padding: 30px;
@@ -570,7 +560,6 @@ export default {
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
 }
 .projet-card:hover {
   border-color: #4299e1;
@@ -602,21 +591,14 @@ export default {
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
-.statut-en_cours { background: #c6f6d5; color: #22543d; }
+.statut-actif { background: #c6f6d5; color: #22543d; }
 .statut-termine { background: #bee3f8; color: #2c5282; }
-.statut-en_attente { background: #feebc8; color: #7c2d12; }
-.statut-annule { background: #fed7d7; color: #742a2a; }
 
 .projet-description {
   color: #4a5568;
   font-size: 0.95rem;
   margin-bottom: 16px;
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .projet-info {

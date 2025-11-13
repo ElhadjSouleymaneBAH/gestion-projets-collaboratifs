@@ -83,7 +83,7 @@ public class AuthController {
             System.out.println(" Hash en base: " + utilisateur.getMotDePasse().substring(0, 20) + "...");
 
             boolean motDePasseValide = passwordEncoder.matches(motDePasse, utilisateur.getMotDePasse());
-            System.out.println(" Vérification mot de passe: " + (motDePasseValide ? "✅ VALIDE" : "❌ INVALIDE"));
+            System.out.println(" Vérification mot de passe: " + (motDePasseValide ? " VALIDE" : " INVALIDE"));
 
             if (!motDePasseValide) {
                 System.out.println(" Mot de passe incorrect pour: " + email);
@@ -101,7 +101,7 @@ public class AuthController {
 
             String token = jwtService.generateToken(email, utilisateur.getRole().name());
 
-            System.out.println("🎉 Connexion réussie pour: " + email);
+            System.out.println(" Connexion réussie pour: " + email);
             return ResponseEntity.ok(new AuthResponse(token, utilisateur));
 
         } catch (AuthenticationException e) {

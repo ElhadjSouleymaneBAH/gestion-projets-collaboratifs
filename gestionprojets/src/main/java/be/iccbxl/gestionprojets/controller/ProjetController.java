@@ -50,21 +50,11 @@ public class ProjetController {
     @GetMapping("/admin/tous")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<ProjetDTO>> obtenirTousProjetsAdmin(
-            Authentication authentication,
             @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
     ) {
         try {
             List<ProjetDTO> projets = projetService.obtenirTousProjets();
-
-            //  TRADUCTION
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projets.forEach(p -> {
-                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
-                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
-                });
-            }
-
+            traduireListeProjets(projets, acceptLanguage);
             return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -78,16 +68,7 @@ public class ProjetController {
     ) {
         try {
             List<ProjetDTO> projetsPublics = projetService.obtenirProjetsPublics();
-
-            // TRADUCTION
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projetsPublics.forEach(p -> {
-                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
-                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
-                });
-            }
-
+            traduireListeProjets(projetsPublics, acceptLanguage);
             return ResponseEntity.ok(projetsPublics);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -101,24 +82,12 @@ public class ProjetController {
     ) {
         try {
             Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
-
-            if (projetOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+            if (projetOpt.isEmpty()) return ResponseEntity.notFound().build();
 
             ProjetDTO projet = projetOpt.get();
+            if (!Boolean.TRUE.equals(projet.getPublique())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-            if (!Boolean.TRUE.equals(projet.getPublique())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
-            //  TRADUCTION
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
-                projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
-            }
-
+            traduireProjet(projet, acceptLanguage);
             return ResponseEntity.ok(projet);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -130,8 +99,7 @@ public class ProjetController {
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<ProjetDTO> creerProjet(@Valid @RequestBody ProjetDTO projetDTO, Authentication authentication) {
         try {
-            String emailCreateur = authentication.getName();
-            ProjetDTO projetCree = projetService.creerProjet(projetDTO, emailCreateur);
+            ProjetDTO projetCree = projetService.creerProjet(projetDTO, authentication.getName());
             return ResponseEntity.status(HttpStatus.CREATED).body(projetCree);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -147,16 +115,7 @@ public class ProjetController {
     ) {
         try {
             List<ProjetDTO> projets = projetService.obtenirTousProjets();
-
-            // TRADUCTION AUTOMATIQUE
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projets.forEach(projet -> {
-                    projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
-                    projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
-                });
-            }
-
+            traduireListeProjets(projets, acceptLanguage);
             return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -171,33 +130,21 @@ public class ProjetController {
             @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
     ) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            Long userId = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
             Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
-
-            if (projetOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+            if (projetOpt.isEmpty()) return ResponseEntity.notFound().build();
 
             ProjetDTO projet = projetOpt.get();
 
-            if (!estAdmin
-                    && !projet.getIdCreateur().equals(idUtilisateurConnecte)
-                    && !projetService.estMembreDuProjet(idUtilisateurConnecte, id)) {
+            if (!isAdmin && !projet.getIdCreateur().equals(userId)
+                    && !projetService.estMembreDuProjet(userId, id))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
 
-            //  TRADUCTION
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
-                projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
-            }
-
+            traduireProjet(projet, acceptLanguage);
             return ResponseEntity.ok(projet);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -212,28 +159,17 @@ public class ProjetController {
             @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
     ) {
         try {
-            boolean estAdmin = authentication.getAuthorities().stream()
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin) {
-                String emailConnecte = authentication.getName();
-                Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-                if (!utilisateurId.equals(idUtilisateurConnecte)) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
+            if (!isAdmin) {
+                String email = authentication.getName();
+                Long userId = utilisateurService.obtenirIdParEmail(email);
+                if (!utilisateurId.equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             List<ProjetDTO> projets = projetService.obtenirProjetsParUtilisateur(utilisateurId);
-
-            //  TRADUCTION
-            Locale locale = Locale.forLanguageTag(acceptLanguage);
-            if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
-                projets.forEach(p -> {
-                    p.setTitre(translationService.traduireTexteAutomatique(p.getTitre(), locale));
-                    p.setDescription(translationService.traduireTexteAutomatique(p.getDescription(), locale));
-                });
-            }
-
+            traduireListeProjets(projets, acceptLanguage);
             return ResponseEntity.ok(projets);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -246,13 +182,12 @@ public class ProjetController {
                                                     @Valid @RequestBody ProjetDTO projetDTO,
                                                     Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(id, emailConnecte)) {
+            if (!isAdmin && !projetService.utilisateurPeutModifierProjet(id, email))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
 
             return ResponseEntity.ok(projetService.modifierProjet(id, projetDTO));
         } catch (RuntimeException e) {
@@ -266,13 +201,12 @@ public class ProjetController {
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimerProjet(@PathVariable Long id, Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(id, emailConnecte)) {
+            if (!isAdmin && !projetService.utilisateurPeutModifierProjet(id, email))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
 
             projetService.supprimerProjet(id);
             return ResponseEntity.ok().build();
@@ -282,129 +216,53 @@ public class ProjetController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    // ---------- MEMBRES ----------
-    @PostMapping("/{projetId:\\d+}/membres/{utilisateurId:\\d+}")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Object> ajouterMembreAuProjet(@PathVariable Long projetId,
-                                                        @PathVariable Long utilisateurId,
-                                                        Authentication authentication) {
-        try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-
-            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Seul le créateur du projet peut ajouter des membres"));
-            }
-
-            if (!utilisateurService.existeParId(utilisateurId)) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Utilisateur à ajouter non trouvé"));
-            }
-
-            projetService.ajouterMembreAuProjet(projetId, utilisateurId);
-            utilisateurService.promouvoirVersMembreParChefProjet(utilisateurId);
-            return ResponseEntity.ok(Map.of("message", "Membre ajouté avec succès au projet"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Erreur: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erreur interne du serveur"));
-        }
-    }
-
-    @GetMapping("/{projetId:\\d+}/membres")
+    // ---------- MEMBRES DU PROJET ----------
+    @GetMapping("/{id:\\d+}/membres")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Object> obtenirMembresProjet(@PathVariable Long projetId,
-                                                       Authentication authentication) {
+    public ResponseEntity<List<UtilisateurDTO>> obtenirMembresProjet(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-            boolean estAdmin = authentication.getAuthorities().stream()
+            // Vérification de l’accès
+            String email = authentication.getName();
+            Long userId = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin &&
-                    !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte) &&
-                    !projetService.estMembreDuProjet(idUtilisateurConnecte, projetId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Accès refusé à ce projet"));
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
+            if (projetOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+            ProjetDTO projet = projetOpt.get();
+
+            // Vérifie si l’utilisateur a le droit de consulter les membres
+            if (!isAdmin && !projet.getIdCreateur().equals(userId)
+                    && !projetService.estMembreDuProjet(userId, id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            List<UtilisateurDTO> membres = projetService.obtenirMembresProjet(projetId);
+            List<UtilisateurDTO> membres = projetService.obtenirMembresProjet(id);
+            if (membres == null || membres.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
             return ResponseEntity.ok(membres);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Erreur: " + e.getMessage()));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erreur interne du serveur"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/{projetId:\\d+}/utilisateurs-disponibles")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Object> obtenirUtilisateursDisponibles(@PathVariable Long projetId,
-                                                                 Authentication authentication) {
-        try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-
-            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Seul le créateur du projet peut voir les utilisateurs disponibles"));
-            }
-
-            List<UtilisateurDTO> utilisateursDisponibles = utilisateurService.obtenirUtilisateursDisponiblesPourProjet(projetId);
-            return ResponseEntity.ok(utilisateursDisponibles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erreur interne du serveur"));
+    // ---------- MÉTHODES PRIVÉES UTILITAIRES ----------
+    private void traduireProjet(ProjetDTO projet, String acceptLanguage) {
+        Locale locale = Locale.forLanguageTag(acceptLanguage);
+        if (!"fr".equalsIgnoreCase(locale.getLanguage())) {
+            projet.setTitre(translationService.traduireTexteAutomatique(projet.getTitre(), locale));
+            projet.setDescription(translationService.traduireTexteAutomatique(projet.getDescription(), locale));
         }
     }
 
-    @DeleteMapping("/{projetId:\\d+}/membres/{utilisateurId:\\d+}")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Object> retirerMembreDuProjet(@PathVariable Long projetId,
-                                                        @PathVariable Long utilisateurId,
-                                                        Authentication authentication) {
-        try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-
-            if (!estAdmin && !projetService.utilisateurPeutModifierProjet(projetId, emailConnecte)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("message", "Seul le créateur du projet peut retirer des membres"));
-            }
-
-            if (utilisateurService.utilisateurATachesEnCours(utilisateurId)) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Impossible de retirer: l'utilisateur a des tâches en cours"));
-            }
-
-            projetService.retirerMembreDuProjet(projetId, utilisateurId);
-            return ResponseEntity.ok(Map.of("message", "Membre retiré avec succès du projet"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Erreur: " + e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erreur interne du serveur"));
-        }
-    }
-
-    @GetMapping("/{projetId:\\d+}/membres/{utilisateurId:\\d+}/statut")
-    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Object> verifierStatutMembre(@PathVariable Long projetId,
-                                                       @PathVariable Long utilisateurId) {
-        try {
-            boolean estMembre = projetService.estMembreDuProjet(utilisateurId, projetId);
-            var statut = Map.of("estMembre", estMembre, "projetId", projetId, "utilisateurId", utilisateurId);
-            return ResponseEntity.ok(statut);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Erreur interne du serveur"));
-        }
+    private void traduireListeProjets(List<ProjetDTO> projets, String acceptLanguage) {
+        projets.forEach(p -> traduireProjet(p, acceptLanguage));
     }
 }

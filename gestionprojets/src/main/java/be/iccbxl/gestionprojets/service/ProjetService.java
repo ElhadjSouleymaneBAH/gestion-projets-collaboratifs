@@ -2,6 +2,7 @@ package be.iccbxl.gestionprojets.service;
 
 import be.iccbxl.gestionprojets.dto.ProjetDTO;
 import be.iccbxl.gestionprojets.dto.UtilisateurDTO;
+import be.iccbxl.gestionprojets.enums.StatutProjet;
 import be.iccbxl.gestionprojets.model.Projet;
 import be.iccbxl.gestionprojets.model.ProjetUtilisateur;
 import be.iccbxl.gestionprojets.model.Utilisateur;
@@ -64,7 +65,11 @@ public class ProjetService {
         Projet projet = new Projet();
         projet.setTitre(projetDTO.getTitre());
         projet.setDescription(projetDTO.getDescription());
-        projet.setStatut(projetDTO.getStatut() != null ? projetDTO.getStatut() : "ACTIF");
+        projet.setStatut(
+                projetDTO.getStatut() != null
+                        ? StatutProjet.valueOf(projetDTO.getStatut().toUpperCase())
+                        : StatutProjet.ACTIF
+        );
         projet.setCreateur(createur);
         projet.setPublique(projetDTO.getPublique() != null ? projetDTO.getPublique() : Boolean.FALSE);
 
@@ -73,7 +78,6 @@ public class ProjetService {
         }
 
         Projet saved = projetRepository.save(projet);
-
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
@@ -93,9 +97,6 @@ public class ProjetService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Utilise JOIN FETCH pour charger le créateur
-     */
     @Transactional(readOnly = true)
     public Optional<ProjetDTO> obtenirProjetParId(Long id) {
         return projetRepository.findByIdWithCreateur(id).map(this::convertirEnDTO);
@@ -106,9 +107,6 @@ public class ProjetService {
         return projetRepository.findById(id);
     }
 
-    /**
-     * Utilise JOIN FETCH pour charger le créateur
-     */
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsParCreateur(Long idCreateur) {
         return projetRepository.findByCreateurIdWithCreateur(idCreateur)
@@ -123,9 +121,7 @@ public class ProjetService {
             throw new RuntimeException("Utilisateur non trouvé avec ID: " + utilisateurId);
         }
 
-        // Utilise JOIN FETCH pour les projets créés
         List<Projet> projetsCrees = projetRepository.findByCreateurIdWithCreateur(utilisateurId);
-
         List<Long> idsCommeMembre = projetUtilisateurRepository.findProjetIdsByUtilisateurId(utilisateurId);
         List<Projet> projetsCommeMembre = idsCommeMembre.isEmpty()
                 ? List.of()
@@ -148,7 +144,7 @@ public class ProjetService {
         p.setTitre(dto.getTitre());
         p.setDescription(dto.getDescription());
         if (dto.getStatut() != null) {
-            p.setStatut(dto.getStatut());
+            p.setStatut(StatutProjet.valueOf(dto.getStatut().toUpperCase()));
         }
         if (dto.getPublique() != null) {
             p.setPublique(dto.getPublique());
@@ -180,7 +176,11 @@ public class ProjetService {
         Projet p = new Projet();
         p.setTitre(dto.getTitre());
         p.setDescription(dto.getDescription());
-        p.setStatut(dto.getStatut() != null ? dto.getStatut() : "ACTIF");
+        p.setStatut(
+                dto.getStatut() != null
+                        ? StatutProjet.valueOf(dto.getStatut().toUpperCase())
+                        : StatutProjet.ACTIF
+        );
         p.setCreateur(createur);
         p.setPublique(dto.getPublique() != null ? dto.getPublique() : Boolean.FALSE);
 
@@ -189,7 +189,6 @@ public class ProjetService {
         }
 
         Projet saved = projetRepository.save(p);
-
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
@@ -222,16 +221,12 @@ public class ProjetService {
         return projetUtilisateurRepository.existsByProjetIdAndUtilisateurIdAndActif(projetId, utilisateurId, true);
     }
 
-    // =====================================================================
-    // F8 : Gestion des membres
-    // =====================================================================
     public void ajouterMembreAuProjet(Long projetId, Long utilisateurId) {
         Projet projet = projetRepository.findById(projetId)
                 .orElseThrow(() -> new RuntimeException("Projet non trouvé"));
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        //  éviter le blocage inutile si le membre existe déjà dans un autre projet
         if (projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId)) {
             System.out.println("Utilisateur déjà membre de ce projet — ajout ignoré.");
             return;
@@ -262,8 +257,6 @@ public class ProjetService {
 
         List<Long> utilisateurIds = projetUtilisateurRepository.findUtilisateurIdsByProjetId(projetId);
 
-
-
         return utilisateurRepository.findAllById(utilisateurIds)
                 .stream()
                 .map(this::convertirUtilisateurEnDTO)
@@ -275,15 +268,12 @@ public class ProjetService {
         return projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId);
     }
 
-    // =====================================================================
-    // Conversions DTO
-    // =====================================================================
     private ProjetDTO convertirEnDTO(Projet p) {
         ProjetDTO dto = new ProjetDTO();
         dto.setId(p.getId());
         dto.setTitre(p.getTitre());
         dto.setDescription(p.getDescription());
-        dto.setStatut(p.getStatut());
+        dto.setStatut(p.getStatut().name());
         dto.setDateCreation(p.getDateCreation());
         dto.setPublique(p.getPublique());
 
@@ -309,9 +299,6 @@ public class ProjetService {
         return dto;
     }
 
-    // =====================================================================
-    // Utilisé par le WebSocket (envoi chef → membres)
-    // =====================================================================
     @Transactional(readOnly = true)
     public List<Utilisateur> listerMembres(Long projetId) {
         if (!projetRepository.existsById(projetId)) {

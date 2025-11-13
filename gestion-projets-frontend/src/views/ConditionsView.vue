@@ -6,7 +6,12 @@
       <div class="container">
         <div class="d-flex justify-content-between align-items-center">
           <router-link to="/" class="d-flex align-items-center text-decoration-none text-dark">
-            <img src="/logo-collabpro.png" alt="CollabPro" class="me-3" style="height: 48px; width: 48px;">
+            <img
+              src="/logo-collabpro.png"
+              alt="CollabPro"
+              class="me-3"
+              style="height: 48px; width: 48px"
+            />
             <h1 class="h4 fw-bold text-collabpro mb-0">CollabPro</h1>
           </router-link>
 
@@ -187,28 +192,34 @@
             <div class="table-responsive mt-3">
               <table class="table table-sm">
                 <thead class="table-light">
-                <tr>
-                  <th>{{ $t('conditions.typeAbonnement') }}</th>
-                  <th>{{ $t('admin.prix') }}</th>
-                  <th>{{ $t('abonnement.fonctionnalites') }}</th>
-                </tr>
+                  <tr>
+                    <th>{{ $t('conditions.typeAbonnement') }}</th>
+                    <th>{{ $t('admin.prix') }}</th>
+                    <th>{{ $t('abonnement.fonctionnalites') }}</th>
+                  </tr>
                 </thead>
                 <tbody>
-                <tr>
-                  <td><strong>{{ $t('roles.chefProjet') }}</strong></td>
-                  <td>{{ $t('abonnement.prix') }}</td>
-                  <td>{{ $t('conditions.creationGestion') }}</td>
-                </tr>
-                <tr>
-                  <td><strong>{{ $t('roles.membre') }}</strong></td>
-                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
-                  <td>{{ $t('conditions.participationProjets') }}</td>
-                </tr>
-                <tr>
-                  <td><strong>{{ $t('roles.visiteur') }}</strong></td>
-                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
-                  <td>{{ $t('conditions.consultationPublics') }}</td>
-                </tr>
+                  <tr>
+                    <td>
+                      <strong>{{ $t('roles.chefProjet') }}</strong>
+                    </td>
+                    <td>{{ $t('abonnement.prix') }}</td>
+                    <td>{{ $t('conditions.creationGestion') }}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>{{ $t('roles.membre') }}</strong>
+                    </td>
+                    <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                    <td>{{ $t('conditions.participationProjets') }}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>{{ $t('roles.visiteur') }}</strong>
+                    </td>
+                    <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                    <td>{{ $t('conditions.consultationPublics') }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -232,8 +243,8 @@
               <p class="small mb-0">
                 {{ $t('conditions.referenceRGPDText') }}
                 <router-link to="/politique-confidentialite" class="text-decoration-none fw-bold">
-                  {{ $t('auth.politiqueConfidentialite') }}
-                </router-link>.
+                  {{ $t('auth.politiqueConfidentialite') }} </router-link
+                >.
               </p>
             </div>
           </div>
@@ -330,7 +341,8 @@
             </h2>
             <p class="text-muted mb-3">
               {{ $t('conditions.contactText') }}
-              <strong>{{ $t('conditions.supportEmail') }}</strong>.
+              <strong>{{ $t('conditions.supportEmail') }}</strong
+              >.
             </p>
 
             <div class="row g-3">
@@ -372,7 +384,7 @@
               </router-link>
             </div>
 
-            <hr class="my-4">
+            <hr class="my-4" />
 
             <p class="small text-muted mb-0">
               <i class="fas fa-balance-scale me-2"></i>
@@ -389,57 +401,93 @@
 export default {
   name: 'ConditionsView',
   methods: {
+
     setLocale(locale) {
       this.$i18n.locale = locale
-      try { localStorage.setItem('locale', locale) } catch (e) {}
-    }
+      try {
+        localStorage.setItem('locale', locale)
+      } catch {
+
+      }
+    },
   },
   mounted() {
     window.scrollTo(0, 0)
-  }
+  },
 }
 </script>
 
 <style scoped>
-.text-collabpro { color: #007bff; }
+.text-collabpro {
+  color: #007bff;
+}
 
 .btn-collabpro {
   background: linear-gradient(135deg, #007bff, #0056b3);
-  border: none; color: #fff; font-weight: 600; transition: all .3s;
-  box-shadow: 0 2px 8px rgba(0,123,255,.2);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
 }
 .btn-collabpro:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,123,255,.3);
-  color:#fff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  color: #fff;
 }
 
-.card { transition: all .3s ease; border-radius: 8px; }
-.card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.1) !important; }
+.card {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
 
 /* Lang switch */
-.lang-wrap { color:#fff; }
-.lang-select{
+.lang-wrap {
+  color: #fff;
+}
+.lang-select {
   background: transparent;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.6);
-  padding:.2rem .5rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 0.2rem 0.5rem;
   font-size: 0.875rem;
 }
-.lang-select option { color:#000; }
+.lang-select option {
+  color: #000;
+}
 
 /* Animation */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.bg-white { animation: fadeInUp 0.6s ease-out; }
+.bg-white {
+  animation: fadeInUp 0.6s ease-out;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container { padding-left: 1rem; padding-right: 1rem; }
-  .col-lg-8 { padding-left: .5rem; padding-right: .5rem; }
-  .table-responsive { font-size: .875rem; }
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .col-lg-8 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .table-responsive {
+    font-size: 0.875rem;
+  }
 }
 </style>

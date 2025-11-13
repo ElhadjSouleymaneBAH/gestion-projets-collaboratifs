@@ -56,7 +56,7 @@ public class UtilisateurService {
     public Optional<Utilisateur> obtenirParEmail(String email) { return utilisateurRepository.findByEmail(email); }
 
     /**
-     * ✅ Ajout de compatibilité avec les anciens appels "findByEmail"
+     * Ajout de compatibilité avec les anciens appels "findByEmail"
      * (utilisé dans MessageController, etc.)
      */
     @Transactional(readOnly = true)
@@ -65,7 +65,7 @@ public class UtilisateurService {
     }
 
     /**
-     * 🔍 Récupère l'identifiant d'un utilisateur à partir de son email.
+     *  Récupère l'identifiant d'un utilisateur à partir de son email.
      */
     @Transactional(readOnly = true)
     public Long obtenirIdParEmail(String email) {
@@ -85,7 +85,48 @@ public class UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
-    public void supprimer(Long id) { utilisateurRepository.deleteById(id); }
+    /**
+     * SUPPRESSION CONFORME RGPD (Soft Delete + Anonymisation)
+     *
+     * Cette méthode anonymise les données personnelles de l'utilisateur
+     * conformément au RGPD Article 17 (Droit à l'oubli) tout en conservant
+     * les données financières pour conformité comptable et traçabilité.
+     *
+     * Les transactions, factures et abonnements restent dans la base de données
+     * avec un lien vers un utilisateur anonymisé, permettant ainsi :
+     * - La conformité avec les obligations comptables (conservation 10 ans)
+     * - L'audit et la traçabilité financière
+     * - Le respect du RGPD (données personnelles effacées)
+     *
+     * @param id L'identifiant de l'utilisateur à supprimer
+     * @throws RuntimeException si l'utilisateur n'existe pas
+     */
+    @Transactional
+    public void supprimer(Long id) {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + id));
+
+        //  ANONYMISATION des données personnelles (RGPD Article 17)
+        utilisateur.setNom("SUPPRIME");
+        utilisateur.setPrenom("SUPPRIME");
+        utilisateur.setEmail("supprime_" + id + "@anonyme.local");
+        utilisateur.setMotDePasse("ANONYMISE_" + System.currentTimeMillis());
+        utilisateur.setAdresse(null);
+        utilisateur.setRole(Role.VISITEUR); // Rôle neutre sans privilèges
+        utilisateur.setCguAccepte(false);
+
+        // Sauvegarde de l'utilisateur anonymisé
+        utilisateurRepository.save(utilisateur);
+
+
+        System.out.println("[RGPD] Utilisateur ID " + id + " anonymisé le "
+                + java.time.LocalDateTime.now()
+                + " conformément à l'Article 17 du RGPD");
+
+        //  Les relations (transactions, factures) sont conservées
+        // pour respecter les obligations légales de conservation comptable (10 ans)
+        // L'abonnement est automatiquement supprimé par la contrainte CASCADE
+    }
 
     @Transactional(readOnly = true)
     public boolean existeParEmail(String email) { return utilisateurRepository.existsByEmail(email); }
@@ -113,7 +154,8 @@ public class UtilisateurService {
         u.setMotDePasse(inscriptionDTO.getMotDePasse());
         u.setLangue(inscriptionDTO.getLangue() != null ? inscriptionDTO.getLangue() : "fr");
         u.setCguAccepte(inscriptionDTO.isCguAccepte());
-        u.setRole(Role.VISITEUR);
+        u.setRole(Role.MEMBRE);
+        u.setAdresse(inscriptionDTO.getAdresse());
 
         return enregistrer(u);
     }

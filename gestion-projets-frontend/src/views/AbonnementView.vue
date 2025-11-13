@@ -23,7 +23,7 @@
 
             <!-- Statut existant -->
             <div
-              v-if="abonnement"
+              v-if="abonnementExiste"
               class="alert"
               :class="abonnementActif ? 'alert-success' : 'alert-danger'"
             >
@@ -221,13 +221,16 @@
                           class="spinner-border spinner-border-sm me-2"
                         ></span>
                         <i v-else class="fas fa-credit-card me-2"></i>
-                        {{
-                          abonnementActif
-                            ? $t('abonnement.renouveler')
-                            : $t('abonnement.souscrirePremium', {
-                              prix: totalTTCFormatte,
-                            })
-                        }}
+
+                        <template v-if="!abonnementExiste">
+                          {{ $t('abonnement.souscrirePremium') }}
+                        </template>
+                        <template v-else-if="abonnementActif">
+                          {{ $t('abonnement.renouveler') }}
+                        </template>
+                        <template v-else>
+                          {{ $t('abonnement.reactiver') }}
+                        </template>
                       </button>
                     </form>
 
@@ -301,13 +304,28 @@ export default {
     utilisateur() {
       return useAuthStore().user
     },
+
+    // ✅ CORRECTION: Vérifier si l'abonnement est VRAIMENT actif
     abonnementActif() {
       const a = this.abonnement
-      if (!a) return false
-      if (typeof a.est_actif === 'boolean') return a.est_actif
-      const fin = a.date_fin ? new Date(a.date_fin) : null
-      return (a.statut || 'ACTIF') === 'ACTIF' && fin && fin > new Date()
+      if (!a || !a.id) return false
+
+      // Vérifier le statut
+      if (a.statut !== 'ACTIF') return false
+
+      // Vérifier la date d'expiration
+      if (!a.date_fin) return false
+      const dateFin = new Date(a.date_fin)
+      const maintenant = new Date()
+
+      return dateFin > maintenant
     },
+
+    // ✅ NOUVEAU: Vérifier si un abonnement existe (même expiré)
+    abonnementExiste() {
+      return this.abonnement && this.abonnement.id
+    },
+
     montantHT() {
       return this.prixMensuelHT
     },

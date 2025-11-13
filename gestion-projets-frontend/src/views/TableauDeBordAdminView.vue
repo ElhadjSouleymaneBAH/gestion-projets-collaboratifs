@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-3">
-    <!-- En-tête -->
+    <!-- ========== HEADER ========== -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h1 class="mb-1 d-flex align-items-center gap-2">
@@ -21,22 +21,26 @@
       </div>
     </div>
 
-    <!-- Loading / Error -->
+    <!-- ========== LOADING / ERROR ========== -->
     <div v-if="chargementGlobal" class="text-center py-5">
       <div class="spinner-border text-danger"></div>
       <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
     </div>
     <div v-else-if="erreurBackend" class="alert alert-danger d-flex justify-content-between align-items-center">
       <div><i class="fas fa-exclamation-triangle me-2"></i>{{ erreurBackend }}</div>
-      <button class="btn btn-sm btn-outline-danger" @click="chargerToutesDonnees">{{ $t('commun.actualiser') }}</button>
+      <button class="btn btn-sm btn-outline-danger" @click="chargerToutesDonnees">
+        {{ $t('commun.actualiser') }}
+      </button>
     </div>
 
-    <!-- Contenu -->
+    <!-- ========== CONTENU ========== -->
     <div v-else>
-      <!-- KPIs (cliquables) -->
+      <!-- ========== KPIs CLIQUABLES ========== -->
       <div class="row g-3 mb-4">
         <div class="col-md-3">
-          <button class="card h-100 shadow-sm border-0 kpi-card" @click="goTo('utilisateurs')" :aria-label="$t('admin.utilisateurs')">
+          <button class="card h-100 shadow-sm border-0 kpi-card"
+                  @click="goTo('utilisateurs')"
+                  :aria-label="$t('admin.utilisateurs')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="rounded-circle p-3 bg-primary bg-opacity-10">
                 <i class="fas fa-users fa-2x text-primary"></i>
@@ -50,7 +54,9 @@
           </button>
         </div>
         <div class="col-md-3">
-          <button class="card h-100 shadow-sm border-0 kpi-card" @click="goTo('projets')" :aria-label="$t('nav.projets')">
+          <button class="card h-100 shadow-sm border-0 kpi-card"
+                  @click="goTo('projets')"
+                  :aria-label="$t('nav.projets')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="rounded-circle p-3 bg-success bg-opacity-10">
                 <i class="fas fa-project-diagram fa-2x text-success"></i>
@@ -64,7 +70,9 @@
           </button>
         </div>
         <div class="col-md-3">
-          <button class="card h-100 shadow-sm border-0 kpi-card" @click="goToFinance('abonnements')" :aria-label="$t('admin.abonnements')">
+          <button class="card h-100 shadow-sm border-0 kpi-card"
+                  @click="goToFinance('abonnements')"
+                  :aria-label="$t('admin.abonnements')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="rounded-circle p-3 bg-warning bg-opacity-10">
                 <i class="fas fa-crown fa-2x text-warning"></i>
@@ -78,7 +86,9 @@
           </button>
         </div>
         <div class="col-md-3">
-          <button class="card h-100 shadow-sm border-0 kpi-card" @click="goToFinance('factures')" :aria-label="$t('admin.factures')">
+          <button class="card h-100 shadow-sm border-0 kpi-card"
+                  @click="goToFinance('factures')"
+                  :aria-label="$t('admin.factures')">
             <div class="card-body d-flex align-items-center gap-3">
               <div class="rounded-circle p-3 bg-info bg-opacity-10">
                 <i class="fas fa-file-invoice-dollar fa-2x text-info"></i>
@@ -93,30 +103,30 @@
         </div>
       </div>
 
-      <!-- Alertes et Activité -->
+      <!-- ========== ALERTES ET ACTIVITE ========== -->
       <div class="row g-3 mb-4">
-        <!-- Alertes importantes -->
         <div class="col-md-6">
           <div class="card border-0 shadow-sm">
             <div class="card-header bg-danger bg-opacity-10 d-flex justify-content-between align-items-center">
               <h6 class="mb-0 text-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('admin.alertes') || 'Alertes' }}
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('admin.alertes') }}
               </h6>
               <button class="btn btn-sm btn-outline-danger" @click="chargerToutesDonnees">
                 <i class="fas fa-sync-alt"></i>
               </button>
             </div>
             <div class="card-body">
-              <div v-if="abonnementsExpirantBientot.length === 0 && paiementsEchecs.length === 0" class="text-center py-3 text-muted">
+              <div v-if="abonnementsExpirantBientot.length === 0 && paiementsEchecs.length === 0"
+                   class="text-center py-3 text-muted">
                 <i class="fas fa-check-circle me-2"></i>
-                {{ $t('admin.aucuneAlerte') || 'Aucune alerte' }}
+                {{ $t('admin.aucuneAlerte') }}
               </div>
               <div v-else>
                 <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded"
                      :class="abonnementsExpirantBientot.length > 0 ? 'bg-warning bg-opacity-10' : ''">
                   <div>
                     <i class="fas fa-clock text-warning me-2"></i>
-                    <span>{{ $t('admin.abonnementsExpirant7j') || 'Abonnements expirant (7j)' }}</span>
+                    <span>{{ $t('admin.abonnementsExpirant7j') }}</span>
                   </div>
                   <span class="badge" :class="abonnementsExpirantBientot.length > 0 ? 'bg-warning' : 'bg-secondary'">
                     {{ abonnementsExpirantBientot.length }}
@@ -126,7 +136,7 @@
                      :class="paiementsEchecs.length > 0 ? 'bg-danger bg-opacity-10' : ''">
                   <div>
                     <i class="fas fa-times-circle text-danger me-2"></i>
-                    <span>{{ $t('admin.paiementsEchecs') || 'Paiements échoués' }}</span>
+                    <span>{{ $t('admin.paiementsEchecs') }}</span>
                   </div>
                   <span class="badge" :class="paiementsEchecs.length > 0 ? 'bg-danger' : 'bg-secondary'">
                     {{ paiementsEchecs.length }}
@@ -137,12 +147,11 @@
           </div>
         </div>
 
-        <!-- Activité récente -->
         <div class="col-md-6">
           <div class="card border-0 shadow-sm">
             <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
               <h6 class="mb-0 text-primary">
-                <i class="fas fa-clock me-2"></i>{{ $t('admin.dernieres24h') || 'Dernières 24h' }}
+                <i class="fas fa-clock me-2"></i>{{ $t('admin.dernieres24h') }}
               </h6>
               <span class="badge bg-light text-dark">
                 {{ new Date().toLocaleDateString($i18n.locale === 'fr' ? 'fr-FR' : 'en-US') }}
@@ -152,14 +161,14 @@
               <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded bg-success bg-opacity-10">
                 <div>
                   <i class="fas fa-user-plus text-success me-2"></i>
-                  <span>{{ $t('admin.nouveauxUtilisateurs') || 'Nouveaux utilisateurs' }}</span>
+                  <span>{{ $t('admin.nouveauxUtilisateurs') }}</span>
                 </div>
                 <span class="badge bg-success">{{ nouveauxUtilisateurs24h }}</span>
               </div>
               <div class="d-flex justify-content-between align-items-center p-2 rounded bg-primary bg-opacity-10">
                 <div>
                   <i class="fas fa-crown text-primary me-2"></i>
-                  <span>{{ $t('admin.nouveauxAbonnements') || 'Nouveaux abonnements' }}</span>
+                  <span>{{ $t('admin.nouveauxAbonnements') }}</span>
                 </div>
                 <span class="badge bg-primary">{{ nouveauxAbonnements24h }}</span>
               </div>
@@ -168,35 +177,56 @@
         </div>
       </div>
 
-      <!-- Onglets principaux -->
+      <!-- ========== ONGLETS PRINCIPAUX ========== -->
       <ul class="nav nav-pills bg-light rounded p-2 mb-4" ref="tabsTop">
         <li class="nav-item">
-          <a class="nav-link" :class="{active:ongletActuel==='utilisateurs'}" @click="changerOnglet('utilisateurs')" href="javascript:void(0)">
+          <a class="nav-link"
+             :class="{active:ongletActuel==='utilisateurs'}"
+             @click="changerOnglet('utilisateurs')"
+             href="javascript:void(0)">
             <i class="fas fa-users me-2"></i>{{ $t('admin.utilisateurs') }}
             <span class="badge bg-secondary ms-2">{{ totalUtilisateursApi }}</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:ongletActuel==='projets'}" @click="changerOnglet('projets')" href="javascript:void(0)">
+          <a class="nav-link"
+             :class="{active:ongletActuel==='projets'}"
+             @click="changerOnglet('projets')"
+             href="javascript:void(0)">
             <i class="fas fa-project-diagram me-2"></i>{{ $t('nav.projets') }}
             <span class="badge bg-secondary ms-2">{{ stats.totalProjets }}</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:ongletActuel==='finance'}" @click="changerOnglet('finance')" href="javascript:void(0)">
-            <i class="fas fa-euro-sign me-2"></i>{{ $t('admin.finance') || 'Finance' }}
-            <span class="badge bg-secondary ms-2">{{ stats.totalAbonnements + stats.totalFactures + transactions.length }}</span>
+          <a class="nav-link"
+             :class="{active:ongletActuel==='taches'}"
+             @click="changerOnglet('taches')"
+             href="javascript:void(0)">
+            <i class="fas fa-tasks me-2"></i>{{ $t('admin.taches') }}
+            <span class="badge bg-secondary ms-2">{{ taches.length }}</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" :class="{active:ongletActuel==='taches'}" @click="changerOnglet('taches')" href="javascript:void(0)">
-            <i class="fas fa-tasks me-2"></i>{{ $t('admin.taches') || 'Tâches' }}
-            <span class="badge bg-secondary ms-2">{{ taches.length }}</span>
+          <a class="nav-link"
+             :class="{active:ongletActuel==='commentaires'}"
+             @click="changerOnglet('commentaires')"
+             href="javascript:void(0)">
+            <i class="fas fa-comments me-2"></i>{{ $t('admin.commentaires') }}
+            <span class="badge bg-secondary ms-2">{{ commentaires.length }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             :class="{active:ongletActuel==='finance'}"
+             @click="changerOnglet('finance')"
+             href="javascript:void(0)">
+            <i class="fas fa-euro-sign me-2"></i>{{ $t('admin.finance') }}
+            <span class="badge bg-secondary ms-2">{{ stats.totalAbonnements + stats.totalFactures + transactions.length }}</span>
           </a>
         </li>
       </ul>
 
-      <!-- Utilisateurs -->
+      <!-- ========== ONGLET UTILISATEURS ========== -->
       <div v-if="ongletActuel==='utilisateurs'" ref="utilisateursSection">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -208,12 +238,16 @@
           <div class="card-body">
             <div class="row g-3 mb-3">
               <div class="col-md-4">
-                <input class="form-control" v-model="filtreUtilisateur" :placeholder="$t('commun.rechercher') + '...'">
+                <input class="form-control"
+                       v-model="filtreUtilisateur"
+                       :placeholder="$t('commun.rechercher') + '...'">
               </div>
               <div class="col-md-3">
                 <select class="form-select" v-model="filtreRole">
                   <option value="">{{ $t('admin.tousLesRoles') }}</option>
-                  <option v-for="role in rolesDisponibles" :key="role" :value="role">{{ $t('roles.' + role.toLowerCase()) }}</option>
+                  <option v-for="role in rolesDisponibles" :key="role" :value="role">
+                    {{ $t('roles.' + role.toLowerCase()) }}
+                  </option>
                 </select>
               </div>
               <div class="col-md-2 ms-auto">
@@ -232,52 +266,76 @@
             <div v-else-if="utilisateurs.length===0" class="alert alert-info">
               <i class="fas fa-info-circle me-2"></i>{{ $t('commun.aucunResultat') }}
             </div>
-            <div v-else class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>{{ $t('commun.utilisateur') }}</th>
-                  <th>{{ $t('inscription.email') }}</th>
-                  <th>{{ $t('profil.role') }}</th>
-                  <th>{{ $t('inscription.dateInscription') }}</th>
-                  <th>{{ $t('projets.statut') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="u in utilisateurs" :key="u.id">
-                  <td><span class="badge bg-light text-dark">{{ u.id }}</span></td>
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:35px;height:35px">
-                        {{ getInitiales(u) }}
+            <div v-else>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>{{ $t('commun.utilisateur') }}</th>
+                    <th>{{ $t('inscription.email') }}</th>
+                    <th>{{ $t('profil.role') }}</th>
+                    <th>{{ $t('inscription.dateInscription') }}</th>
+                    <th class="text-end">{{ $t('commun.actions') }}</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="u in utilisateurs" :key="u.id">
+                    <td><span class="badge bg-light text-dark">{{ u.id }}</span></td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:35px;height:35px">
+                          {{ getInitiales(u) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
+                          <small class="text-muted">{{ (u.langue || 'fr').toUpperCase() }}</small>
+                        </div>
                       </div>
-                      <div>
-                        <div class="fw-semibold">{{ u.prenom || u.firstName }} {{ u.nom || u.lastName }}</div>
-                        <small class="text-muted">{{ (u.langue || 'fr').toUpperCase() }}</small>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                      <span class="badge" :class="getRoleBadgeClass(u.role)">
+                        {{ $t('roles.' + (u.role || '').toLowerCase()) }}
+                      </span>
+                    </td>
+                    <td>{{ formatDate(u.dateInscription || u.date_inscription) }}</td>
+                    <td class="text-end">
+                      <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary"
+                                @click="ouvrirModalRole(u)"
+                                :title="$t('admin.modifierRole')">
+                          <i class="fas fa-user-cog"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @click="supprimerUtilisateur(u.id)"
+                                :title="$t('admin.supprimerCompte')">
+                          <i class="fas fa-trash"></i>
+                        </button>
                       </div>
-                    </div>
-                  </td>
-                  <td>{{ u.email }}</td>
-                  <td><span class="badge" :class="getRoleBadgeClass(u.role)">{{ $t('roles.' + (u.role || '').toLowerCase()) }}</span></td>
-                  <td>{{ formatDate(u.dateInscription || u.date_inscription) }}</td>
-                  <td><span class="badge" :class="getStatutUtilisateurClass(u.statut)">{{ getStatutUtilisateurLabel(u.statut) }}</span></td>
-                </tr>
-                </tbody>
-              </table>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
 
-              <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex justify-content-between align-items-center mt-3">
                 <small class="text-muted">
                   {{ $t('commun.affiche') }}
-                  {{ usersFromItem }}–{{ usersToItem }}
+                  {{ usersFromItem }}-{{ usersToItem }}
                   {{ $t('commun.sur') }} {{ totalUtilisateursApi }}
                 </small>
                 <div class="btn-group">
-                  <button class="btn btn-outline-secondary btn-sm" :disabled="isFirstUsersPage" @click="prevUsersPage">
-                    ‹ {{ $t('commun.precedent') }}
+                  <button class="btn btn-outline-secondary btn-sm"
+                          :disabled="isFirstUsersPage"
+                          @click="prevUsersPage">
+                    <span aria-hidden="true">&lsaquo;</span> {{ $t('commun.precedent') }}
                   </button>
-                  <button class="btn btn-outline-secondary btn-sm" :disabled="isLastUsersPage" @click="nextUsersPage">
-                    {{ $t('commun.suivant') }} ›
+                  <button class="btn btn-outline-secondary btn-sm"
+                          :disabled="isLastUsersPage"
+                          @click="nextUsersPage">
+                    {{ $t('commun.suivant') }} <span aria-hidden="true">&rsaquo;</span>
                   </button>
                 </div>
               </div>
@@ -286,22 +344,19 @@
         </div>
       </div>
 
-      <!-- Projets -->
+      <!-- ========== ONGLET PROJETS ========== -->
       <div v-if="ongletActuel==='projets'" ref="projetsSection">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <div>
               <h5 class="mb-0">{{ $t('admin.supervisionProjets') }}</h5>
-              <small class="text-muted">{{ $t('admin.surveillanceGlobale') }}</small>
+              <small class="text-muted">{{ $t('admin.vueSupervision') }}</small>
             </div>
             <div class="d-flex gap-2 align-items-center">
-              <input class="form-control" style="max-width:260px" v-model="filtreProjet" :placeholder="$t('commun.rechercher') + '...'">
-              <select class="form-select" style="max-width:180px" v-model="filtreProjetStatut">
-                <option value="">{{ $t('admin.tousLesStatuts') }}</option>
-                <option v-for="statut in statutsProjetsDisponibles" :key="statut" :value="statut">
-                  {{ $t('projets.statuts.' + statut.toLowerCase()) }}
-                </option>
-              </select>
+              <input class="form-control"
+                     style="max-width:260px"
+                     v-model="filtreProjet"
+                     :placeholder="$t('commun.rechercher') + '...'">
               <select class="form-select" style="max-width:120px" v-model.number="pageSize">
                 <option :value="10">10</option>
                 <option :value="20">20</option>
@@ -317,62 +372,70 @@
             <div v-else-if="projetsFiltres.length===0" class="alert alert-info">
               <i class="fas fa-info-circle me-2"></i>{{ $t('commun.aucunResultat') }}
             </div>
-            <div v-else class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>{{ $t('projets.nom') }}</th>
-                  <th>{{ $t('projets.chefProjet') }}</th>
-                  <th>{{ $t('projets.statut') }}</th>
-                  <th>{{ $t('commun.creeLe') }}</th>
-                  <th>{{ $t('commun.actions') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="p in projetsPagine" :key="p.id">
-                  <td>
-                    <div>
-                      <div class="fw-semibold">{{ translateProjectTitle(p.titre) }}</div>
-                      <small class="text-muted">{{ translateProjectDescription(getDescription(p)) }}</small>
-                    </div>
-                  </td>
-                  <td>{{ getProprietaireName(p) }}</td>
-                  <td><span class="badge" :class="getStatutProjetClass(p.statut)">{{ p.statut }}</span></td>
-                  <td><small class="text-muted">{{ formatDate(getDateCreation(p)) }}</small></td>
-                  <td>
-                      <button
-                          v-if="p.visibilite === 'PUBLIC'"
-                          class="btn btn-sm btn-outline-info"
-                          @click="navigateToProject(p.id)"
-                          :title="$t('commun.consulter')"
-                      >
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <span
-                          v-else
-                          class="text-muted small"
-                          :title="$t('admin.projetPrive')"
-                      >
-                        <i class="fas fa-lock"></i> Privé
+            <div v-else>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>{{ $t('projets.nom') }}</th>
+                    <th>{{ $t('projets.chefProjet') }}</th>
+                    <th>{{ $t('projets.visibilite') }}</th>
+                    <th>{{ $t('projets.statut') }}</th>
+                    <th>{{ $t('commun.creeLe') }}</th>
+                    <th class="text-end">{{ $t('commun.actions') }}</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="p in projetsPagine" :key="p.id">
+                    <td><span class="badge bg-light text-dark">#{{ p.id }}</span></td>
+                    <td>
+                      <div>
+                        <div class="fw-semibold">{{ translateProjectTitle(p.titre) }}</div>
+                        <small class="text-muted">{{ translateProjectDescription(getDescription(p)) }}</small>
+                      </div>
+                    </td>
+                    <td>{{ getProprietaireName(p) }}</td>
+                    <td>
+                      <span class="badge" :class="p.visibilite === 'PUBLIC' ? 'bg-success' : 'bg-secondary'">
+                        <i :class="p.visibilite === 'PUBLIC' ? 'fas fa-globe' : 'fas fa-lock'" class="me-1"></i>
+                        {{ p.visibilite }}
                       </span>
+                    </td>
+                    <td>
+                      <span class="badge" :class="getStatutProjetClass(p.statut)">
+                        {{ p.statut }}
+                      </span>
+                    </td>
+                    <td><small class="text-muted">{{ formatDate(getDateCreation(p)) }}</small></td>
+                    <td class="text-end">
+                      <button class="btn btn-sm btn-outline-info"
+                              @click="consulterProjetAdmin(p)"
+                              :title="$t('admin.consulterDetails')">
+                        <i class="fas fa-eye me-1"></i>{{ $t('admin.details') }}
+                      </button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
 
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-
-              <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex justify-content-between align-items-center mt-3">
                 <small class="text-muted">
                   {{ $t('commun.affiche') }}
-                  {{ fromItem }}–{{ toItem }}
-                  {{ $t('commun.sur') }} {{ stats.totalProjets }}
+                  {{ fromItem }}-{{ toItem }}
+                  {{ $t('commun.sur') }} {{ projetsFiltres.length }}
                 </small>
                 <div class="btn-group">
-                  <button class="btn btn-outline-secondary btn-sm" :disabled="pageIndex===0" @click="pageIndex--">
-                    ‹ {{ $t('commun.precedent') }}
+                  <button class="btn btn-outline-secondary btn-sm"
+                          :disabled="pageIndex===0"
+                          @click="pageIndex--">
+                    <span aria-hidden="true">&lsaquo;</span> {{ $t('commun.precedent') }}
                   </button>
-                  <button class="btn btn-outline-secondary btn-sm" :disabled="toItem>=stats.totalProjets" @click="pageIndex++">
-                    {{ $t('commun.suivant') }} ›
+                  <button class="btn btn-outline-secondary btn-sm"
+                          :disabled="toItem>=projetsFiltres.length"
+                          @click="pageIndex++">
+                    {{ $t('commun.suivant') }} <span aria-hidden="true">&rsaquo;</span>
                   </button>
                 </div>
               </div>
@@ -380,24 +443,156 @@
           </div>
         </div>
       </div>
+      <!-- ========== ONGLET TACHES ========== -->
+      <div v-if="ongletActuel==='taches'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">{{ $t('admin.gestionTaches') }}</h5>
+            <small class="text-muted">{{ $t('admin.toutesLesTaches') }}</small>
+          </div>
+          <div class="card-body">
+            <div v-if="chargementTaches" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            <div v-else-if="erreurTaches" class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>{{ $t('erreurs.chargement') }}</strong><br>
+              {{ $t('erreurs.verifierEndpoint') }}
+            </div>
+            <div v-else-if="taches.length===0" class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>{{ $t('admin.aucuneTache') }}
+            </div>
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>{{ $t('taches.titre') }}</th>
+                  <th>{{ $t('nav.projets') }}</th>
+                  <th>{{ $t('taches.assigne') }}</th>
+                  <th>{{ $t('projets.statut') }}</th>
+                  <th>{{ $t('commun.creeLe') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="ta in taches" :key="ta.id">
+                  <td><span class="badge bg-light text-dark">{{ ta.id }}</span></td>
+                  <td>
+                    <div class="fw-semibold">{{ ta.titre }}</div>
+                    <small class="text-muted">{{ (ta.description || '').substring(0, 50) }}...</small>
+                  </td>
+                  <td><small>{{ getProjetName(ta.idProjet || ta.id_projet) }}</small></td>
+                  <td>{{ getUserName(ta.idAssigne || ta.id_assigne) }}</td>
+                  <td><span class="badge" :class="getStatutTacheClass(ta.statut)">{{ ta.statut }}</span></td>
+                  <td>{{ formatDate(ta.dateCreation || ta.date_creation) }}</td>
+                  <td class="text-end">
+                    <button v-if="ta.statut !== 'ANNULE'"
+                            class="btn btn-sm btn-outline-danger"
+                            @click="annulerTache(ta.id)"
+                            :title="$t('admin.annulerTache')">
+                      <i class="fas fa-ban me-1"></i>{{ $t('commun.annuler') }}
+                    </button>
+                    <span v-else class="badge bg-secondary">
+                      <i class="fas fa-ban me-1"></i>{{ $t('taches.annulee') }}
+                    </span>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <!-- ONGLET FINANCE -->
+      <!-- ========== ONGLET COMMENTAIRES ========== -->
+      <div v-if="ongletActuel==='commentaires'">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">{{ $t('admin.gestionCommentaires') }}</h5>
+            <small class="text-muted">{{ $t('admin.tousLesCommentaires') }}</small>
+          </div>
+          <div class="card-body">
+            <div v-if="chargementCommentaires" class="text-center py-4">
+              <div class="spinner-border text-info"></div>
+            </div>
+            <div v-else-if="erreurCommentaires" class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>{{ $t('erreurs.chargement') }}</strong><br>
+              {{ $t('erreurs.verifierEndpoint') }}
+            </div>
+            <div v-else-if="commentaires.length===0" class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>{{ $t('admin.aucunCommentaire') }}
+            </div>
+            <div v-else class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>{{ $t('commentaires.auteur') }}</th>
+                  <th>{{ $t('taches.tache') }}</th>
+                  <th>{{ $t('commentaires.contenu') }}</th>
+                  <th>{{ $t('commentaires.date') }}</th>
+                  <th class="text-end">{{ $t('commun.actions') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="c in commentaires" :key="c.id">
+                  <td><span class="badge bg-light text-dark">{{ c.id }}</span></td>
+                  <td>
+                    <div class="fw-semibold">{{ c.auteurPrenom }} {{ c.auteurNom }}</div>
+                    <small class="text-muted">{{ c.auteurEmail }}</small>
+                  </td>
+                  <td><small>{{ getTacheNom(c.tacheId) }}</small></td>
+                  <td>
+                    <div style="max-width:300px">
+                      {{ (c.contenu || '').substring(0, 100) }}{{ c.contenu?.length > 100 ? '...' : '' }}
+                    </div>
+                  </td>
+                  <td>{{ formatDate(c.date) }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger"
+                            @click="supprimerCommentaire(c.id)"
+                            :title="$t('commentaires.supprimer')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ONGLET FINANCE ========== -->
       <div v-if="ongletActuel==='finance'">
-        <!-- Sous-menu Finance -->
         <ul class="nav nav-tabs mb-3">
           <li class="nav-item">
-            <a class="nav-link" :class="{active:sousOngletFinance==='abonnements'}" @click="sousOngletFinance='abonnements'" href="javascript:void(0)">
-              <i class="fas fa-crown me-1"></i>{{ $t('admin.abonnements') }} <span class="badge bg-secondary ms-1">{{ abonnements.length }}</span>
+            <a class="nav-link"
+               :class="{active:sousOngletFinance==='abonnements'}"
+               @click="sousOngletFinance='abonnements'"
+               href="javascript:void(0)">
+              <i class="fas fa-crown me-1"></i>{{ $t('admin.abonnements') }}
+              <span class="badge bg-secondary ms-1">{{ abonnements.length }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" :class="{active:sousOngletFinance==='factures'}" @click="sousOngletFinance='factures'" href="javascript:void(0)">
-              <i class="fas fa-file-invoice me-1"></i>{{ $t('admin.factures') }} <span class="badge bg-secondary ms-1">{{ factures.length }}</span>
+            <a class="nav-link"
+               :class="{active:sousOngletFinance==='factures'}"
+               @click="sousOngletFinance='factures'"
+               href="javascript:void(0)">
+              <i class="fas fa-file-invoice me-1"></i>{{ $t('admin.factures') }}
+              <span class="badge bg-secondary ms-1">{{ factures.length }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" :class="{active:sousOngletFinance==='transactions'}" @click="sousOngletFinance='transactions'" href="javascript:void(0)">
-              <i class="fas fa-exchange-alt me-1"></i>{{ $t('admin.transactions') || 'Transactions' }} <span class="badge bg-secondary ms-1">{{ transactions.length }}</span>
+            <a class="nav-link"
+               :class="{active:sousOngletFinance==='transactions'}"
+               @click="sousOngletFinance='transactions'"
+               href="javascript:void(0)">
+              <i class="fas fa-exchange-alt me-1"></i>{{ $t('admin.transactions') }}
+              <span class="badge bg-secondary ms-1">{{ transactions.length }}</span>
             </a>
           </li>
         </ul>
@@ -416,7 +611,7 @@
                   <tr>
                     <th>{{ $t('commun.utilisateur') }}</th>
                     <th>{{ $t('abonnement.plan') }}</th>
-                    <th>{{ $t('facture.prix') || 'Prix' }}</th>
+                    <th>{{ $t('facture.prix') }}</th>
                     <th>{{ $t('abonnement.dateDebut') }}</th>
                     <th>{{ $t('abonnement.dateFin') }}</th>
                     <th>{{ $t('abonnement.statut') }}</th>
@@ -433,13 +628,21 @@
                     <td><span class="fw-bold text-success">{{ formatPrix(a.prix) }}</span></td>
                     <td>{{ formatDate(getDateDebut(a)) }}</td>
                     <td>{{ formatDate(getDateFin(a)) }}</td>
-                    <td><span class="badge" :class="getStatutAbonnementClass(a.statut)">{{ a.statut || 'ACTIF' }}</span></td>
+                    <td>
+                      <span class="badge" :class="getStatutAbonnementClass(a.statut)">
+                        {{ a.statut || 'ACTIF' }}
+                      </span>
+                    </td>
                     <td>
                       <div class="btn-group">
-                        <button class="btn btn-sm btn-outline-info" @click="voirFacturesUtilisateur(getUtilisateurId(a))" :title="$t('admin.voirFactures')">
+                        <button class="btn btn-sm btn-outline-info"
+                                @click="voirFacturesUtilisateur(getUtilisateurId(a))"
+                                :title="$t('admin.voirFactures')">
                           <i class="fas fa-file-invoice"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" @click="annulerAbonnement(a.id)" :title="$t('abonnement.annuler')">
+                        <button class="btn btn-sm btn-outline-danger"
+                                @click="annulerAbonnement(a.id)"
+                                :title="$t('abonnement.annuler')">
                           <i class="fas fa-times"></i>
                         </button>
                       </div>
@@ -464,8 +667,10 @@
                 <small class="text-muted">{{ $t('admin.toutesLesFactures') }}</small>
               </div>
               <div class="d-flex gap-2">
-                <button v-if="filtreFactureUserId" class="btn btn-outline-secondary" @click="filtreFactureUserId = null">
-                  <i class="fas fa-times me-2"></i>{{ $t('commun.reinitialiser') || 'Réinitialiser' }}
+                <button v-if="filtreFactureUserId"
+                        class="btn btn-outline-secondary"
+                        @click="filtreFactureUserId = null">
+                  <i class="fas fa-times me-2"></i>{{ $t('commun.reinitialiser') }}
                 </button>
                 <button class="btn btn-outline-primary" @click="genererRapportFactures">
                   <i class="fas fa-download me-2"></i>{{ $t('admin.exporterFactures') }}
@@ -475,7 +680,7 @@
             <div class="card-body">
               <div v-if="filtreFactureUserId" class="alert alert-info mb-3">
                 <i class="fas fa-filter me-2"></i>
-                Filtré par utilisateur : <strong>{{ getUserName(filtreFactureUserId) }}</strong>
+                {{ $t('admin.filtreParUtilisateur') }} : <strong>{{ getUserName(filtreFactureUserId) }}</strong>
               </div>
 
               <div v-if="chargementFactures" class="text-center py-4">
@@ -490,7 +695,7 @@
                   <tr>
                     <th>{{ $t('facture.numero') }}</th>
                     <th>{{ $t('commun.utilisateur') }}</th>
-                    <th>{{ $t('facture.prix') || 'Prix' }}</th>
+                    <th>{{ $t('facture.prix') }}</th>
                     <th>{{ $t('facture.dateEmission') }}</th>
                     <th>{{ $t('facture.statut') }}</th>
                     <th>{{ $t('commun.actions') }}</th>
@@ -502,13 +707,20 @@
                     <td>{{ getUserName(f.utilisateurId || f.userId) }}</td>
                     <td><span class="fw-bold text-success">{{ formatPrix(f.montant || f.montantHT || f.montant_ht) }}</span></td>
                     <td>{{ formatDate(f.dateEmission || f.createdAt || f.date_emission) }}</td>
-                    <td><span class="badge bg-success">{{ f.statut || 'GENEREE' }}</span></td>
+                    <td>
+                      <span class="badge bg-success">{{ f.statut || 'GENEREE' }}</span>
+                    </td>
                     <td>
                       <div class="btn-group">
-                        <button v-if="hasDownloadAPI" class="btn btn-sm btn-outline-primary" @click="telechargerFacture(f.id)" :title="$t('facture.telecharger')">
+                        <button v-if="hasDownloadAPI"
+                                class="btn btn-sm btn-outline-primary"
+                                @click="telechargerFacture(f.id)"
+                                :title="$t('facture.telecharger')">
                           <i class="fas fa-download"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-info" @click="voirDetailFacture(f)" :title="$t('commun.consulter')">
+                        <button class="btn btn-sm btn-outline-info"
+                                @click="voirDetailFacture(f)"
+                                :title="$t('commun.consulter')">
                           <i class="fas fa-eye"></i>
                         </button>
                       </div>
@@ -525,8 +737,8 @@
         <div v-if="sousOngletFinance==='transactions'">
           <div class="card border-0 shadow-sm">
             <div class="card-header bg-white">
-              <h5 class="mb-0">{{ $t('admin.gestionTransactions') || 'Gestion des transactions' }}</h5>
-              <small class="text-muted">{{ $t('admin.historiquePaiements') || 'Historique complet des paiements' }}</small>
+              <h5 class="mb-0">{{ $t('admin.gestionTransactions') }}</h5>
+              <small class="text-muted">{{ $t('admin.historiquePaiements') }}</small>
             </div>
             <div class="card-body">
               <div v-if="chargementTransactions" class="text-center py-4">
@@ -534,10 +746,10 @@
               </div>
               <div v-else-if="erreurTransactions" class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                {{ $t('erreurs.chargementDonnees') || 'Erreur lors du chargement des transactions.' }}
+                {{ $t('erreurs.chargementDonnees') }}
               </div>
               <div v-else-if="transactions.length===0" class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>{{ $t('admin.aucuneTransaction') || 'Aucune transaction' }}
+                <i class="fas fa-info-circle me-2"></i>{{ $t('admin.aucuneTransaction') }}
               </div>
               <div v-else class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -545,9 +757,9 @@
                   <tr>
                     <th>ID</th>
                     <th>{{ $t('commun.utilisateur') }}</th>
-                    <th>Montant HT</th>
+                    <th>{{ $t('facture.montantHT') }}</th>
                     <th>TVA</th>
-                    <th>Montant TTC</th>
+                    <th>{{ $t('facture.montantTTC') }}</th>
                     <th>{{ $t('projets.statut') }}</th>
                     <th>Date</th>
                   </tr>
@@ -559,7 +771,11 @@
                     <td>{{ formatPrix(t.montant_ht || t.montantHT) }}</td>
                     <td>{{ formatPrix(t.tva) }}</td>
                     <td><span class="fw-bold text-success">{{ formatPrix(t.montant_ttc || t.montantTTC) }}</span></td>
-                    <td><span class="badge" :class="t.statut === 'COMPLETE' ? 'bg-success' : 'bg-danger'">{{ t.statut }}</span></td>
+                    <td>
+                      <span class="badge" :class="t.statut === 'COMPLETE' ? 'bg-success' : 'bg-danger'">
+                        {{ t.statut }}
+                      </span>
+                    </td>
                     <td>{{ formatDate(t.date_creation || t.dateCreation || t.date) }}</td>
                   </tr>
                   </tbody>
@@ -570,81 +786,180 @@
         </div>
       </div>
 
-      <!-- ONGLET TÂCHES -->
-      <div v-if="ongletActuel==='taches'">
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white">
-            <h5 class="mb-0">{{ $t('admin.gestionTaches') || 'Gestion des tâches' }}</h5>
-            <small class="text-muted">{{ $t('admin.toutesLesTaches') || 'Toutes les tâches de la plateforme (F7)' }}</small>
+    </div>
+
+    <!-- ========== MODAL MODIFICATION ROLE ========== -->
+    <div v-if="modalRole" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ $t('admin.modifierRole') }}</h5>
+            <button type="button" class="btn-close" @click="fermerModalRole"></button>
           </div>
-          <div class="card-body">
-            <div v-if="chargementTaches" class="text-center py-4">
-              <div class="spinner-border text-primary"></div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <strong>{{ $t('commun.utilisateur') }} :</strong>
+              {{ utilisateurSelectionne?.prenom }} {{ utilisateurSelectionne?.nom }}
             </div>
-            <div v-else-if="erreurTaches" class="alert alert-warning">
-              <i class="fas fa-exclamation-triangle me-2"></i>
-              <strong>Erreur de chargement</strong><br>
-              Impossible de charger les tâches. Vérifiez que l'endpoint backend est bien implémenté.
+            <div class="mb-3">
+              <strong>{{ $t('profil.role') }} {{ $t('commun.actuel') }} :</strong>
+              <span class="badge" :class="getRoleBadgeClass(utilisateurSelectionne?.role)">
+                {{ $t('roles.' + (utilisateurSelectionne?.role || '').toLowerCase()) }}
+              </span>
             </div>
-            <div v-else-if="taches.length===0" class="alert alert-info">
-              <i class="fas fa-info-circle me-2"></i>{{ $t('admin.aucuneTache') || 'Aucune tâche' }}
+            <div class="mb-3">
+              <label class="form-label fw-bold">{{ $t('admin.nouveauRole') }}</label>
+              <select class="form-select" v-model="nouveauRole">
+                <option value="VISITEUR">{{ $t('roles.visiteur') }}</option>
+                <option value="MEMBRE">{{ $t('roles.membre') }}</option>
+                <option value="CHEF_PROJET">{{ $t('roles.chef_projet') }}</option>
+                <option value="ADMINISTRATEUR">{{ $t('roles.administrateur') }}</option>
+              </select>
             </div>
-            <div v-else class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>{{ $t('taches.titre') || 'Titre' }}</th>
-                  <th>{{ $t('nav.projets') }}</th>
-                  <th>{{ $t('taches.assigne') || 'Assigné à' }}</th>
-                  <th>{{ $t('projets.statut') }}</th>
-                  <th>{{ $t('commun.creeLe') }}</th>
-                  <th>{{ $t('commun.actions') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="ta in taches" :key="ta.id">
-                  <td><span class="badge bg-light text-dark">{{ ta.id }}</span></td>
-                  <td>
-                    <div class="fw-semibold">{{ ta.titre }}</div>
-                    <small class="text-muted">{{ (ta.description || '').substring(0, 50) }}...</small>
-                  </td>
-                  <td><small>{{ getProjetName(ta.idProjet || ta.id_projet) }}</small></td>
-                  <td>{{ getUserName(ta.idAssigne || ta.id_assigne) }}</td>
-                  <td><span class="badge" :class="getStatutTacheClass(ta.statut)">{{ ta.statut }}</span></td>
-                  <td>{{ formatDate(ta.dateCreation || ta.date_creation) }}</td>
-                  <td>
-                    <button
-                      v-if="ta.statut !== 'ANNULE'"
-                      class="btn btn-sm btn-outline-danger"
-                      @click="annulerTache(ta.id)"
-                      :title="$t('admin.annulerTache') || 'Annuler cette tâche'">
-                      <i class="fas fa-ban me-1"></i>{{ $t('commun.annuler') || 'Annuler' }}
-                    </button>
-                    <span v-else class="badge bg-secondary">
-                      <i class="fas fa-ban me-1"></i>Annulée
-                    </span>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="fermerModalRole">
+              {{ $t('commun.annuler') }}
+            </button>
+            <button type="button" class="btn btn-primary" @click="confirmerChangementRole" :disabled="!nouveauRole">
+              {{ $t('commun.confirmer') }}
+            </button>
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- Modal détail facture -->
+    <!-- ========== MODAL DETAIL FACTURE ========== -->
     <div v-if="factureSelectionnee" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Détail facture {{ factureSelectionnee.numero || factureSelectionnee.numeroFacture }}</h5>
+            <h5 class="modal-title">
+              {{ $t('facture.detail') }} {{ factureSelectionnee.numero || factureSelectionnee.numeroFacture }}
+            </h5>
             <button type="button" class="btn-close" @click="factureSelectionnee = null"></button>
           </div>
           <div class="modal-body p-0">
             <Facture :facture="factureSelectionnee" mode="direct" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== MODAL DETAILS PROJET ========== -->
+    <div v-if="projetSelectionne" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-project-diagram me-2"></i>
+              {{ $t('admin.supervisionProjet') }} : {{ projetSelectionne.titre }}
+            </h5>
+            <button type="button" class="btn-close" @click="fermerModalProjet"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                      <i class="fas fa-info-circle me-2"></i>{{ $t('commun.informations') }}
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p><strong>{{ $t('projets.chefProjet') }} :</strong> {{ projetSelectionne.chefProjetNom }}</p>
+                    <p><strong>{{ $t('projets.description') }} :</strong> {{ projetSelectionne.description }}</p>
+                    <p>
+                      <strong>{{ $t('projets.visibilite') }} :</strong>
+                      <span class="badge" :class="projetSelectionne.visibilite === 'PUBLIC' ? 'bg-success' : 'bg-secondary'">
+                        <i :class="projetSelectionne.visibilite === 'PUBLIC' ? 'fas fa-globe' : 'fas fa-lock'" class="me-1"></i>
+                        {{ projetSelectionne.visibilite }}
+                      </span>
+                    </p>
+                    <p>
+                      <strong>{{ $t('projets.statut') }} :</strong>
+                      <span class="badge" :class="getStatutProjetClass(projetSelectionne.statut)">
+                        {{ projetSelectionne.statut }}
+                      </span>
+                    </p>
+                    <p><strong>{{ $t('commun.creeLe') }} :</strong> {{ formatDate(projetSelectionne.dateCreation) }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                      <i class="fas fa-users me-2"></i>
+                      {{ $t('projets.membres') }} ({{ projetSelectionne.membres?.length || 0 }})
+                    </h6>
+                  </div>
+                  <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                    <ul class="list-unstyled">
+                      <li v-for="m in projetSelectionne.membres" :key="m.id" class="mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                               style="width:30px;height:30px; font-size:12px;">
+                            {{ getInitiales(m) }}
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ m.prenom }} {{ m.nom }}</div>
+                            <small class="text-muted">{{ m.email }}</small>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                    <div v-if="!projetSelectionne.membres?.length" class="text-muted text-center py-2">
+                      <i class="fas fa-info-circle me-1"></i>{{ $t('admin.aucunMembre') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                      <i class="fas fa-chart-bar me-2"></i>{{ $t('admin.statistiques') }}
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row text-center">
+                      <div class="col-md-3">
+                        <div class="p-3 border rounded">
+                          <h3 class="mb-0 text-primary">{{ projetSelectionne.totalTaches || 0 }}</h3>
+                          <small class="text-muted">{{ $t('taches.total') }}</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="p-3 border rounded">
+                          <h3 class="mb-0 text-success">{{ projetSelectionne.tachesTerminees || 0 }}</h3>
+                          <small class="text-muted">{{ $t('taches.terminees') }}</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="p-3 border rounded">
+                          <h3 class="mb-0 text-warning">{{ projetSelectionne.tachesEnCours || 0 }}</h3>
+                          <small class="text-muted">{{ $t('taches.enCours') }}</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="p-3 border rounded">
+                          <h3 class="mb-0 text-secondary">{{ projetSelectionne.tachesBrouillon || 0 }}</h3>
+                          <small class="text-muted">{{ $t('taches.brouillon') }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="fermerModalProjet">
+              {{ $t('commun.fermer') }}
+            </button>
           </div>
         </div>
       </div>
@@ -662,7 +977,8 @@ import {
   abonnementAPI,
   factureAPI,
   transactionAPI,
-  taskAPI
+  taskAPI,
+  commentaireAPI
 } from '@/services/api'
 import Facture from '@/components/Facture.vue'
 
@@ -686,19 +1002,21 @@ export default {
       chargementFactures: false,
       chargementTransactions: false,
       chargementTaches: false,
+      chargementCommentaires: false,
       erreurBackend: '',
       erreurTransactions: false,
       erreurTaches: false,
+      erreurCommentaires: false,
       utilisateurs: [],
       abonnements: [],
       projets: [],
       factures: [],
       transactions: [],
       taches: [],
+      commentaires: [],
       filtreUtilisateur: '',
       filtreRole: '',
       filtreProjet: '',
-      filtreProjetStatut: '',
       filtreFactureUserId: null,
       pageIndex: 0,
       pageSize: 20,
@@ -707,6 +1025,10 @@ export default {
       totalUtilisateursApi: 0,
       userCache: {},
       factureSelectionnee: null,
+      projetSelectionne: null,
+      modalRole: false,
+      utilisateurSelectionne: null,
+      nouveauRole: '',
       _debouncedLoadUsers: null,
     }
   },
@@ -717,7 +1039,7 @@ export default {
     stats() {
       return {
         totalUtilisateurs: this.totalUtilisateursApi || this.utilisateurs.length,
-        utilisateursActifs: this.utilisateurs.filter(u => u.statut !== 'SUSPENDU').length,
+        utilisateursActifs: this.utilisateurs.length,
         totalProjets: this.projets.length,
         projetsActifs: this.projets.filter(p => p.statut === 'ACTIF').length,
         totalAbonnements: this.abonnements.length,
@@ -730,8 +1052,8 @@ export default {
     abonnementsActifs() {
       const list = Array.isArray(this.abonnements) ? this.abonnements : []
       return list.filter(a =>
-        (a.statut || 'ACTIF') === 'ACTIF' &&
-        new Date(this.getDateFin(a)) > new Date()
+          (a.statut || 'ACTIF') === 'ACTIF' &&
+          new Date(this.getDateFin(a)) > new Date()
       )
     },
 
@@ -748,7 +1070,8 @@ export default {
     paiementsEchecs() { return this.factures.filter(f => f.statut === 'ECHEC') },
 
     nouveauxUtilisateurs24h() {
-      const hier = new Date(); hier.setDate(hier.getDate() - 1)
+      const hier = new Date()
+      hier.setDate(hier.getDate() - 1)
       return this.utilisateurs.filter(u => {
         const d = new Date(u.dateInscription || u.date_inscription)
         return d >= hier
@@ -756,7 +1079,8 @@ export default {
     },
 
     nouveauxAbonnements24h() {
-      const hier = new Date(); hier.setDate(hier.getDate() - 1)
+      const hier = new Date()
+      hier.setDate(hier.getDate() - 1)
       return this.abonnements.filter(a => {
         const d = new Date(this.getDateDebut(a))
         return d >= hier
@@ -769,17 +1093,12 @@ export default {
     isLastUsersPage() { return (this.userPageIndex + 1) * this.userPageSize >= this.totalUtilisateursApi },
 
     rolesDisponibles() { return [...new Set(this.utilisateurs.map(u => u.role).filter(Boolean))] },
-    statutsProjetsDisponibles() { return [...new Set(this.projets.map(p => p.statut).filter(Boolean))] },
 
     projetsFiltres() {
-      const out = this.projets.filter(p => {
+      return this.projets.filter(p => {
         const matchTitre = (p.titre || '').toLowerCase().includes(this.filtreProjet.toLowerCase())
-        const matchStatut = this.filtreProjetStatut ? p.statut === this.filtreProjetStatut : true
-        return matchTitre && matchStatut
+        return matchTitre
       })
-      const maxPage = Math.max(0, Math.ceil(out.length / this.pageSize) - 1)
-      if (this.pageIndex > maxPage) this.pageIndex = 0
-      return out
     },
 
     projetsPagine() {
@@ -787,7 +1106,7 @@ export default {
       return this.projetsFiltres.slice(start, start + this.pageSize)
     },
 
-    fromItem() { return this.stats.totalProjets === 0 ? 0 : this.pageIndex * this.pageSize + 1 },
+    fromItem() { return this.projetsFiltres.length === 0 ? 0 : this.pageIndex * this.pageSize + 1 },
     toItem() { return Math.min(this.pageIndex * this.pageSize + this.pageSize, this.projetsFiltres.length) },
 
     facturesFiltrees() {
@@ -814,12 +1133,15 @@ export default {
   },
 
   async mounted() {
-    // init debounce (sans dépendance externe)
     this._debouncedLoadUsers = this.debounce(() => this.chargerUtilisateurs(), 300)
 
     const store = useAuthStore()
     if (!store.user && localStorage.getItem('user')) {
-      try { store.setUser(JSON.parse(localStorage.getItem('user'))) } catch {}
+      try {
+        store.setUser(JSON.parse(localStorage.getItem('user')))
+      } catch (e) {
+        console.warn('Erreur parse user:', e)
+      }
     }
     if (!store.user || store.user.role !== 'ADMINISTRATEUR') {
       this.erreurBackend = this.$t('erreurs.accesReserveAdmins')
@@ -829,7 +1151,6 @@ export default {
   },
 
   methods: {
-    // petit utilitaire debounce
     debounce(fn, delay = 300) {
       let t = null
       return (...args) => {
@@ -858,16 +1179,16 @@ export default {
     },
 
     formatDate(date) {
-      if (date == null) return '—'
+      if (date == null) return '-'
       try {
         const d = (typeof date === 'number')
-          ? new Date(date)
-          : new Date(String(date))
-        return isNaN(d) ? '—' : d.toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US')
-      } catch { return '—' }
+            ? new Date(date)
+            : new Date(String(date))
+        return isNaN(d) ? '-' : d.toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US')
+      } catch { return '-' }
     },
 
-    formatPrix(prix) { return (prix || prix === 0) ? `${Number(prix).toFixed(2)} €` : '—' },
+    formatPrix(prix) { return (prix || prix === 0) ? `${Number(prix).toFixed(2)} €` : '-' },
 
     async chargerToutesDonnees() {
       try {
@@ -879,7 +1200,8 @@ export default {
           this.chargerProjets(),
           this.chargerFactures(),
           this.chargerTransactions(),
-          this.chargerTaches()
+          this.chargerTaches(),
+          this.chargerCommentaires()
         ])
       } catch (e) {
         console.error('Erreur chargement global:', e)
@@ -906,7 +1228,6 @@ export default {
           this.utilisateurs = Array.isArray(res.data) ? res.data : []
           this.totalUtilisateursApi = this.utilisateurs.length
         }
-        // hydrate un cache local pour résoudre les noms sans N+1 appels
         this.utilisateurs.forEach(u => { this.userCache[u.id] = u })
       } catch (e) {
         console.error('Erreur utilisateurs:', e)
@@ -931,7 +1252,7 @@ export default {
       try {
         const res = await abonnementAPI.list()
         this.abonnements = Array.isArray(res?.data) ? res.data
-          : (Array.isArray(res?.data?.content) ? res.data.content : [])
+            : (Array.isArray(res?.data?.content) ? res.data.content : [])
       } catch (e) {
         console.error('Erreur abonnements:', e)
         this.abonnements = []
@@ -967,10 +1288,10 @@ export default {
       try {
         const res = await transactionAPI.getAllAdmin()
         this.transactions = Array.isArray(res?.data)
-          ? res.data
-          : (Array.isArray(res?.data?.content) ? res.data.content : [])
+            ? res.data
+            : (Array.isArray(res?.data?.content) ? res.data.content : [])
       } catch (e) {
-        console.warn('Erreur chargement transactions:', e)
+        console.warn('Erreur transactions:', e)
         this.transactions = []
         this.erreurTransactions = true
       } finally {
@@ -984,13 +1305,27 @@ export default {
       try {
         const res = await taskAPI.getAllAdmin()
         this.taches = Array.isArray(res?.data) ? res.data : []
-        console.log('✅ Tâches chargées:', this.taches.length)
       } catch (e) {
-        console.error('❌ Erreur chargement tâches:', e)
+        console.error('Erreur taches:', e)
         this.taches = []
         this.erreurTaches = true
       } finally {
         this.chargementTaches = false
+      }
+    },
+
+    async chargerCommentaires() {
+      this.chargementCommentaires = true
+      this.erreurCommentaires = false
+      try {
+        const res = await commentaireAPI.list()
+        this.commentaires = Array.isArray(res?.data) ? res.data : []
+      } catch (e) {
+        console.error('Erreur commentaires:', e)
+        this.commentaires = []
+        this.erreurCommentaires = true
+      } finally {
+        this.chargementCommentaires = false
       }
     },
 
@@ -1013,7 +1348,6 @@ export default {
     getDescription(p) { return (p.description || '').substring(0, 80) },
     getDateCreation(p) { return p.dateCreation || p.date_creation || p.createdAt },
 
-    // S'appuie sur la page chargée + cache
     getUserName(userId) {
       if (!userId) return this.$t('commun.inconnu')
       const fromList = this.utilisateurs.find(u => u.id === userId)
@@ -1028,28 +1362,43 @@ export default {
     },
 
     getProjetName(projetId) {
-      if (!projetId) return '—'
+      if (!projetId) return '-'
       const projet = this.projets.find(p => p.id === projetId)
       return projet ? projet.titre : `Projet #${projetId}`
     },
 
+    getTacheNom(tacheId) {
+      if (!tacheId) return '-'
+      const tache = this.taches.find(t => t.id === tacheId)
+      return tache ? tache.titre : `Tache #${tacheId}`
+    },
+
     getProprietaireName(p) {
-      const id = p.id_createur || p.idCreateur || p.createurId || p.ownerId || p.idCreateur
+      const id = p.id_createur || p.idCreateur || p.createurId || p.ownerId
       return this.getUserName(id)
     },
 
     getRoleBadgeClass(role) {
-      const classes = { ADMINISTRATEUR:'bg-danger', CHEF_PROJET:'bg-primary', MEMBRE:'bg-success', VISITEUR:'bg-secondary' }
+      const classes = {
+        ADMINISTRATEUR:'bg-danger',
+        CHEF_PROJET:'bg-primary',
+        MEMBRE:'bg-success',
+        VISITEUR:'bg-secondary'
+      }
       return classes[role] || 'bg-secondary'
     },
 
-    getStatutUtilisateurClass(statut) { return statut === 'SUSPENDU' ? 'bg-warning text-dark' : 'bg-success' },
-    getStatutUtilisateurLabel(statut) { return statut === 'SUSPENDU' ? this.$t('admin.suspendu') : this.$t('commun.actifs') },
-
-    getStatutAbonnementClass(statut) { return (statut || 'ACTIF') === 'ACTIF' ? 'bg-success' : 'bg-danger' },
+    getStatutAbonnementClass(statut) {
+      return (statut || 'ACTIF') === 'ACTIF' ? 'bg-success' : 'bg-danger'
+    },
 
     getStatutProjetClass(statut) {
-      const classes = { ACTIF:'bg-success', TERMINE:'bg-secondary', SUSPENDU:'bg-warning text-dark', ARCHIVE:'bg-dark' }
+      const classes = {
+        ACTIF:'bg-success',
+        TERMINE:'bg-secondary',
+        SUSPENDU:'bg-warning text-dark',
+        ARCHIVE:'bg-dark'
+      }
       return classes[statut] || 'bg-light'
     },
 
@@ -1069,19 +1418,26 @@ export default {
       await this.router.push('/')
     },
 
-    async navigateToProject(id) {
-      if (!id) {
-        console.error('ID projet manquant')
-        this.$toast?.error?.(this.$t('erreurs.projetIntrouvable'))
-        return
-      }
+    async consulterProjetAdmin(projet) {
       try {
-        console.log('Navigation vers projet ID:', id)
-        await this.router.push(`/projet/${id}`)
-      } catch (error) {
-        console.error('Erreur navigation projet:', error)
-        this.$toast?.error?.(this.$t('erreurs.navigationProjet'))
+        this.projetSelectionne = {
+          ...projet,
+          chefProjetNom: this.getProprietaireName(projet),
+          membres: [],
+          totalTaches: 0,
+          tachesTerminees: 0,
+          tachesEnCours: 0,
+          tachesBrouillon: 0
+        }
+        console.warn('API details projet admin non implementee')
+      } catch (e) {
+        console.error('Erreur consultation projet:', e)
+        alert(this.$t('erreurs.chargementProjet'))
       }
+    },
+
+    fermerModalProjet() {
+      this.projetSelectionne = null
     },
 
     voirFacturesUtilisateur(userId) {
@@ -1099,39 +1455,33 @@ export default {
       try {
         await abonnementAPI.cancel(id)
         this.abonnements = this.abonnements.filter(a => a.id !== id)
-        this.$toast?.success?.(this.$t('admin.abonnementAnnule') || 'Abonnement annulé')
+        alert(this.$t('admin.abonnementAnnule'))
       } catch (e) {
         console.error('Erreur annulation abonnement:', e)
-        this.$toast?.error?.(this.$t('admin.erreurAnnulation') || 'Erreur annulation')
+        alert(this.$t('admin.erreurAnnulation'))
       }
     },
 
     async annulerTache(id) {
-      if (!confirm(this.$t('admin.confirmerAnnulationTache') || 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.')) {
-        return
-      }
+      if (!confirm(this.$t('admin.confirmerAnnulationTache'))) return
       try {
-        console.log('INFO: Admin annule tâche ID:', id)
         const res = await taskAPI.annulerParAdmin(id)
         const index = this.taches.findIndex(t => t.id === id)
         if (index !== -1) this.taches[index] = res.data
-        this.$toast?.success?.(this.$t('admin.tacheAnnulee') || 'Tâche annulée avec succès')
+        alert(this.$t('admin.tacheAnnulee'))
       } catch (e) {
-        console.error('Erreur annulation tâche:', e)
-        this.$toast?.error?.(this.$t('admin.erreurAnnulationTache') || 'Erreur lors de l\'annulation de la tâche')
+        console.error('Erreur annulation tache:', e)
+        alert(this.$t('admin.erreurAnnulationTache'))
       }
     },
-
 
     async telechargerFacture(id) {
       try {
         if (!this.hasDownloadAPI) throw new Error('no_download_api')
 
-        // ✅ Déterminer la langue courante (FR/EN)
         const raw = (this.$i18n && this.$i18n.locale) || localStorage.getItem('lang') || navigator.language || 'fr'
         const langue = String(raw).toLowerCase().startsWith('fr') ? 'fr' : 'en'
 
-        // ✅ Passer la langue à l'API
         const res = await factureAPI.telechargerPDF(id, langue)
         if (!res?.data) throw new Error('download_failed')
 
@@ -1146,11 +1496,9 @@ export default {
         link.click()
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
-
-        this.$toast?.success?.(this.$t('factures.telechargementReussi'))
       } catch (e) {
-        console.error('Erreur téléchargement facture:', e)
-        this.$toast?.error?.(this.$t('factures.erreurTelechargement'))
+        console.error('Erreur telechargement facture:', e)
+        alert(this.$t('factures.erreurTelechargement'))
       }
     },
 
@@ -1172,6 +1520,57 @@ export default {
         link.click()
       } catch (e) { console.error('Erreur export factures:', e) }
     },
+
+    ouvrirModalRole(u) {
+      this.utilisateurSelectionne = u
+      this.nouveauRole = u.role
+      this.modalRole = true
+    },
+
+    fermerModalRole() {
+      this.modalRole = false
+      this.utilisateurSelectionne = null
+      this.nouveauRole = ''
+    },
+
+    async confirmerChangementRole() {
+      if (!this.nouveauRole || !this.utilisateurSelectionne) return
+      try {
+        await userAPI.updateRole(this.utilisateurSelectionne.id, this.nouveauRole)
+        this.utilisateurSelectionne.role = this.nouveauRole
+        alert(this.$t('admin.roleModifie'))
+        this.fermerModalRole()
+        await this.chargerUtilisateurs()
+      } catch (e) {
+        console.error('Erreur modification role:', e)
+        alert(this.$t('admin.erreurModificationRole'))
+      }
+    },
+
+    async supprimerUtilisateur(id) {
+      if (!confirm(this.$t('admin.confirmerSuppressionUtilisateur'))) return
+      try {
+        await userAPI.delete(id)
+        this.utilisateurs = this.utilisateurs.filter(u => u.id !== id)
+        this.totalUtilisateursApi--
+        alert(this.$t('admin.utilisateurSupprime'))
+      } catch (e) {
+        console.error('Erreur suppression utilisateur:', e)
+        alert(this.$t('admin.erreurSuppression'))
+      }
+    },
+
+    async supprimerCommentaire(id) {
+      if (!confirm(this.$t('commentaires.confirmerSuppression'))) return
+      try {
+        await commentaireAPI.delete(id)
+        this.commentaires = this.commentaires.filter(c => c.id !== id)
+        alert(this.$t('commentaires.suppressionReussie'))
+      } catch (e) {
+        console.error('Erreur suppression commentaire:', e)
+        alert(this.$t('commentaires.erreurSuppression'))
+      }
+    }
   }
 }
 </script>
@@ -1187,7 +1586,7 @@ export default {
 .badge { font-size: .75rem; padding: .375rem .75rem }
 
 .kpi-card { width: 100%; text-align: left; cursor: pointer; background: #fff;
-  transition: transform .08s ease, box-shadow .12s ease; }
+  transition: transform .08s ease, box-shadow .12s ease; border: none; }
 .kpi-card:focus, .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.10) }
 .kpi-card:active { transform: translateY(0) }
 

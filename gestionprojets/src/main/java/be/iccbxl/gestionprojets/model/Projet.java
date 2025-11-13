@@ -1,5 +1,7 @@
 package be.iccbxl.gestionprojets.model;
 
+import be.iccbxl.gestionprojets.enums.StatutProjet;
+import be.iccbxl.gestionprojets.enums.StatutTache;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,13 +32,13 @@ public class Projet {
     @JoinColumn(name = "id_createur", nullable = false)
     private Utilisateur createur;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String statut = "ACTIF";
+    private StatutProjet statut = StatutProjet.ACTIF;
 
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
 
-    // ✅ CORRECTION: champ manquant pour F3 (projets publics)
     @Column(name = "publique", nullable = false)
     private Boolean publique = false;
 
@@ -61,12 +63,14 @@ public class Projet {
         }
     }
 
+    /** Ajoute un membre à ce projet */
     public void ajouterMembre(Utilisateur utilisateur) {
         if (utilisateur == null) throw new IllegalArgumentException("L'utilisateur ne peut pas être null");
         membres.add(utilisateur);
         utilisateur.getProjets().add(this);
     }
 
+    /** Retire un membre de ce projet */
     public void retirerMembre(Utilisateur utilisateur) {
         if (utilisateur != null) {
             membres.remove(utilisateur);
@@ -74,6 +78,7 @@ public class Projet {
         }
     }
 
+    /** Crée un projet avec titre et description */
     public boolean ajouterProjet(String titre, String description) {
         if (titre != null && !titre.trim().isEmpty()) {
             this.titre = titre;
@@ -83,6 +88,7 @@ public class Projet {
         return false;
     }
 
+    /** Modifie un projet existant */
     public boolean modifierProjet(Long id, String titre, String description) {
         if (id != null && titre != null && !titre.trim().isEmpty()) {
             this.id = id;
@@ -93,25 +99,29 @@ public class Projet {
         return false;
     }
 
+    /** Supprime un projet par ID */
     public boolean supprimerProjet(Long id) {
         return id != null;
     }
 
-    /** ✅ Utilise le flag publique (F3) */
+    /** Indique si le projet est public */
     public boolean estPublic() {
         return Boolean.TRUE.equals(this.publique);
     }
 
+    /** Vérifie si un utilisateur est membre du projet */
     public boolean contientMembre(Utilisateur utilisateur) {
         return utilisateur != null && membres.contains(utilisateur);
     }
 
+    /** Retourne le nombre de tâches actives (non terminées) */
     public long getNombreTachesActives() {
         return taches.stream()
-                .filter(t -> !"TERMINE".equals(t.getStatut().toString()))
+                .filter(t -> t.getStatut() != StatutTache.TERMINE)
                 .count();
     }
 
+    /** Retourne l’ID du créateur (pour simplifier les DTO) */
     @Transient
     public Long getIdCreateur() {
         return (createur != null) ? createur.getId() : null;

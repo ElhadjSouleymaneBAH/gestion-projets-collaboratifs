@@ -517,7 +517,7 @@ const fetchAll = async () => {
         router.push('/projets-publics')
       }, 5000)
     } else {
-      showFlash('Erreur lors du chargement du projet.', 'danger')
+      //showFlash('Erreur lors du chargement du projet.', 'danger')
     }
   } finally {
     loading.value = false
@@ -531,8 +531,7 @@ const envoyerMessage = async () => {
 
   try {
     sending.value = true
-    const response = await messagesAPI.sendMessage({
-      contenu,
+    const response = await messagesAPI.send({      contenu,
       projetId: projetId.value,
       type: 'TEXT'
     })

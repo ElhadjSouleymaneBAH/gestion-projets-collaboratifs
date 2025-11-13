@@ -2,17 +2,24 @@
 import axios from 'axios'
 import i18n from './i18n'
 
-axios.defaults.baseURL = 'http://localhost:8080'
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  withCredentials: true,
+})
 
-axios.interceptors.request.use(
-  config => {
-    const currentLocale = i18n.global.locale.value || 'fr'
+//  Intercepteur pour ajouter dynamiquement la langue avant chaque requête
+axiosInstance.interceptors.request.use(
+  (config) => {
+
+    const currentLocale =
+      typeof i18n.global.locale === 'object'
+        ? i18n.global.locale.value
+        : i18n.global.locale || 'fr'
+
     config.headers['Accept-Language'] = currentLocale
     return config
   },
-  error => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-export default axios
+export default axiosInstance

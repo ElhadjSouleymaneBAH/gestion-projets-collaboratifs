@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-3">
-    <!-- HEADER -->
+    <!-- ========== HEADER ========== -->
     <div class="member-header mb-4">
       <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div>
@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <!-- PROMO PREMIUM -->
+    <!-- ========== PROMO PREMIUM ========== -->
     <div v-if="!chargementGlobal && !abonnementActif"
          class="alert alert-warning border-0 shadow-sm mb-4 d-flex justify-content-between align-items-center">
       <div>
@@ -41,7 +41,23 @@
       </router-link>
     </div>
 
-    <!-- ERREUR / CHARGEMENT -->
+    <!-- ========== TOAST NOTIFICATIONS ========== -->
+    <div v-if="toastMessage"
+         class="position-fixed top-0 end-0 p-3"
+         style="z-index:9999">
+      <div class="toast show" :class="'bg-' + toastType">
+        <div class="toast-body text-white d-flex align-items-center">
+          <i class="fas me-2" :class="{
+            'fa-check-circle': toastType === 'success',
+            'fa-exclamation-circle': toastType === 'error',
+            'fa-info-circle': toastType === 'info'
+          }"></i>
+          {{ toastMessage }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== ERREUR / CHARGEMENT ========== -->
     <div v-if="erreurBackend" class="alert alert-danger d-flex justify-content-between align-items-center">
       <div><i class="fas fa-exclamation-triangle me-2"></i>{{ erreurBackend }}</div>
       <button class="btn btn-sm btn-outline-danger"
@@ -56,10 +72,11 @@
       <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
     </div>
 
-    <!-- CONTENU PRINCIPAL -->
+    <!-- ========== CONTENU PRINCIPAL ========== -->
     <div v-else>
-      <!-- KPIs -->
+      <!-- ========== KPIs ========== -->
       <div class="row g-3 mb-4">
+        <!-- KPI 1: Projets -->
         <div class="col-md-3">
           <div class="card kpi-card border-0 shadow-sm h-100"
                @click="onglet = 'projets'"
@@ -75,6 +92,7 @@
           </div>
         </div>
 
+        <!-- KPI 2: Tâches assignées -->
         <div class="col-md-3">
           <div class="card kpi-card border-0 shadow-sm h-100"
                @click="onglet = 'taches'"
@@ -84,12 +102,13 @@
               <h3 class="fw-bold mb-0">{{ mesTaches.length }}</h3>
               <p class="text-muted mb-0 small">{{ $t('membre.kpi.tachesAttribuees') }}</p>
               <small class="text-warning">
-                {{ mesTaches.filter(t=>t.statut==='EN_COURS').length }} {{ $t('taches.enCours') }}
+                {{ tachesEnCours.length }} {{ $t('taches.enCours') }}
               </small>
             </div>
           </div>
         </div>
 
+        <!-- KPI 3: Tâches terminées -->
         <div class="col-md-3">
           <div class="card kpi-card border-0 shadow-sm h-100"
                @click="onglet = 'taches'"
@@ -103,6 +122,7 @@
           </div>
         </div>
 
+        <!-- KPI 4: Notifications -->
         <div class="col-md-3">
           <div class="card kpi-card border-0 shadow-sm h-100"
                @click="onglet = 'notifications'"
@@ -117,13 +137,14 @@
         </div>
       </div>
 
-      <!-- NAV ONGLETS -->
+      <!-- ========== NAV ONGLETS ========== -->
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
         <ul class="nav nav-pills bg-light rounded p-2">
           <li class="nav-item">
             <a class="nav-link"
                :class="{active:onglet==='projets'}"
                @click="onglet='projets'"
+               href="javascript:void(0)"
                :title="$t('tooltips.voirProjets')">
               <i class="fas fa-folder-open me-2"></i>{{ $t('nav.mesProjets') }}
             </a>
@@ -132,6 +153,7 @@
             <a class="nav-link"
                :class="{active:onglet==='taches'}"
                @click="onglet='taches'"
+               href="javascript:void(0)"
                :title="$t('tooltips.voirTaches')">
               <i class="fas fa-tasks me-2"></i>{{ $t('nav.mesTaches') }}
             </a>
@@ -140,6 +162,7 @@
             <a class="nav-link"
                :class="{active:onglet==='notifications'}"
                @click="onglet='notifications'"
+               href="javascript:void(0)"
                :title="$t('tooltips.voirNotifications')">
               <i class="fas fa-bell me-2"></i>{{ $t('nav.notifications') }}
               <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">
@@ -151,6 +174,7 @@
             <a class="nav-link"
                :class="{active:onglet==='collaboration'}"
                @click="onglet='collaboration'"
+               href="javascript:void(0)"
                :title="$t('tooltips.voirChat')">
               <i class="fas fa-comments me-2"></i>{{ $t('nav.collaboration') }}
             </a>
@@ -163,7 +187,7 @@
         </router-link>
       </div>
 
-      <!-- F12: ONGLET PROJETS -->
+      <!-- ========== ONGLET PROJETS ========== -->
       <div v-if="onglet==='projets'">
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white">
@@ -197,9 +221,8 @@
                     </small>
                   </td>
                   <td>
-                    <span v-if="p.createur">
-                      {{ p.createur.prenom || p.createur.firstName }}
-                      {{ p.createur.nom || p.createur.lastName }}
+                    <span v-if="p.createurNom || p.createurPrenom">
+                      {{ p.createurPrenom || '' }} {{ p.createurNom || '' }}
                     </span>
                     <span v-else class="text-muted">{{ $t('commun.nonDefini') }}</span>
                   </td>
@@ -251,7 +274,7 @@
         </div>
       </div>
 
-      <!-- F13: ONGLET TÂCHES -->
+      <!-- ========== F13: ONGLET TÂCHES AVEC COMMENTAIRES ========== -->
       <div v-else-if="onglet==='taches'">
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white">
@@ -270,6 +293,7 @@
                   <th>{{ $t('taches.titre') }}</th>
                   <th>{{ $t('projets.projet') }}</th>
                   <th>{{ $t('taches.statut') }}</th>
+                  <th>{{ $t('commentaires.titre') }}</th>
                   <th>{{ $t('taches.dateCreation') }}</th>
                   <th class="text-end">{{ $t('commun.actions') }}</th>
                 </tr>
@@ -287,19 +311,33 @@
                     </span>
                   </td>
                   <td>
+                    <button class="btn btn-sm btn-outline-info position-relative"
+                            @click="ouvrirCommentaires(t)"
+                            :title="$t('commentaires.voir')">
+                      <i class="fas fa-comments me-1"></i>
+                      <span class="badge bg-info ms-1">{{ getCommentairesTache(t.id).length }}</span>
+                    </button>
+                  </td>
+                  <td>
                     <small class="text-muted">
                       {{ formatDate(t.dateCreation || t.date_creation) }}
                     </small>
                   </td>
                   <td class="text-end">
                     <button
-                      v-if="t.statut === 'EN_COURS'"
+                      v-if="t.statut === 'BROUILLON'"
                       class="btn btn-sm btn-success"
                       @click="soumettreValidation(t)"
                       :title="$t('tooltips.soumettreValidation')">
                       <i class="fas fa-paper-plane me-1"></i>
                       {{ $t('taches.soumettre') }}
                     </button>
+                    <span v-else-if="t.statut === 'EN_ATTENTE_VALIDATION'" class="text-info small">
+                      <i class="fas fa-hourglass-half me-1"></i>{{ $t('taches.enAttenteValidation') }}
+                    </span>
+                    <span v-else-if="t.statut === 'TERMINE'" class="text-success small">
+                      <i class="fas fa-check-circle me-1"></i>{{ $t('taches.terminee') }}
+                    </span>
                     <span v-else class="text-muted small">
                       {{ $t('taches.pasActionPossible') }}
                     </span>
@@ -312,7 +350,7 @@
         </div>
       </div>
 
-      <!-- F15: ONGLET NOTIFICATIONS -->
+      <!-- ========== F15: ONGLET NOTIFICATIONS ========== -->
       <div v-else-if="onglet==='notifications'">
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -334,7 +372,8 @@
               <div
                 v-for="n in notifications"
                 :key="n.id"
-                class="list-group-item d-flex align-items-start gap-3">
+                class="list-group-item d-flex align-items-start gap-3 notification-item"
+                :class="{'bg-light': !n.lu}">
                 <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
                   <i :class="getNotificationIcon(n.type)"></i>
                 </div>
@@ -362,7 +401,7 @@
         </div>
       </div>
 
-      <!-- F14: ONGLET COLLABORATION -->
+      <!-- ========== F14: ONGLET COLLABORATION ========== -->
       <div v-else-if="onglet==='collaboration'">
         <div class="row g-3">
           <div class="col-md-4">
@@ -398,7 +437,7 @@
               </div>
 
               <div class="card-body d-flex flex-column" style="height:420px">
-                <div class="flex-grow-1 overflow-auto messages-container">
+                <div class="flex-grow-1 overflow-auto messages-container" ref="messagesContainer">
                   <div v-if="!projetChatActuel" class="text-center text-muted py-5">
                     {{ $t('projets.choisirProjet') }}
                   </div>
@@ -446,13 +485,106 @@
         </div>
       </div>
     </div>
+
+    <!-- ========== MODAL COMMENTAIRES (F12) - CORRIGÉE ========== -->
+    <div v-if="modalCommentaires"
+         class="modal d-block"
+         style="background:rgba(0,0,0,.6);z-index:1060"
+         @click.self="fermerModalCommentaires">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
+            </h5>
+            <button class="btn-close btn-close-white"
+                    @click="fermerModalCommentaires"
+                    :aria-label="$t('commun.fermer')"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Info tâche -->
+            <div class="alert alert-info mb-3">
+              <div><strong>{{ $t('taches.tache') }}:</strong> {{ tacheSelectionnee?.titre }}</div>
+              <div><strong>{{ $t('projets.projet') }}:</strong> {{ getProjetNom(tacheSelectionnee?.projetId || tacheSelectionnee?.id_projet) }}</div>
+            </div>
+
+            <!-- Liste des commentaires -->
+            <div v-if="chargementCommentaires" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+              <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
+            </div>
+
+            <div v-else-if="commentairesTache.length === 0" class="text-center py-4 text-muted">
+              <i class="fas fa-comment-slash fa-3x mb-3"></i>
+              <p>{{ $t('commentaires.aucunCommentaire') }}</p>
+            </div>
+
+            <div v-else class="comments-list mb-3" style="max-height:400px;overflow-y:auto">
+              <div v-for="c in commentairesTache" :key="c.id" class="card mb-2">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <strong>{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
+                      <br>
+                      <small class="text-muted">{{ formatDateRelative(c.date) }}</small>
+                    </div>
+                    <!-- Suppression uniquement pour CHEF_PROJET et ADMIN -->
+                    <button v-if="peutSupprimerCommentaire(c)"
+                            class="btn btn-sm btn-outline-danger"
+                            @click="supprimerCommentaire(c.id)"
+                            :disabled="suppressionEnCours"
+                            :title="$t('commentaires.supprimer')">
+                      <span v-if="suppressionEnCours" class="spinner-border spinner-border-sm"></span>
+                      <i v-else class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                  <p class="mb-0 text-break">{{ c.contenu }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formulaire nouveau commentaire -->
+            <div class="border-top pt-3">
+              <label class="form-label fw-bold">{{ $t('commentaires.nouveau') }}</label>
+              <textarea
+                class="form-control mb-2"
+                v-model.trim="nouveauCommentaire"
+                rows="3"
+                :placeholder="$t('commentaires.placeholder')"
+                maxlength="500"
+                :disabled="envoyantCommentaire"></textarea>
+              <small class="text-muted d-block mb-2">
+                {{ nouveauCommentaire.length }}/500 caractères
+              </small>
+              <button
+                class="btn btn-primary"
+                @click="ajouterCommentaire"
+                :disabled="!nouveauCommentaire || envoyantCommentaire">
+                <span v-if="envoyantCommentaire" class="spinner-border spinner-border-sm me-1"></span>
+                <i v-else class="fas fa-paper-plane me-1"></i>
+                {{ $t('commentaires.ajouter') }}
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="fermerModalCommentaires">
+              {{ $t('commun.fermer') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
+
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { projectAPI, taskAPI, notificationAPI, messagesAPI } from '@/services/api'
+import { projectAPI, taskAPI, notificationAPI, messagesAPI, commentaireAPI } from '@/services/api'
 import WebSocketService from '@/services/websocket.service.js'
 import { useI18n } from 'vue-i18n'
 import { useDataTranslation } from '@/composables/useDataTranslation'
@@ -462,7 +594,7 @@ const { translateData, translateProjectTitle, translateProjectDescription } = us
 const router = useRouter()
 const store = useAuthStore()
 
-// ===== HELPERS =====
+// ========== HELPERS ==========
 const getUserSafe = () => {
   if (store.user) return store.user
   try {
@@ -475,34 +607,70 @@ const getUserSafe = () => {
 
 const normalizeId = (v) => v == null ? v : String(v).split(':')[0]
 
-// ===== STATE =====
+// ========== STATE ==========
 const utilisateur = ref(getUserSafe())
 const mesProjets = ref([])
 const mesTaches = ref([])
 const notifications = ref([])
 const messagesChat = ref([])
 const messagesParProjet = ref({})
+const commentairesParTache = ref({})
 const nouveauMessage = ref('')
-const abonnementActif = ref(true)
+const nouveauCommentaire = ref('')
+const abonnementActif = ref(false)
 const erreurBackend = ref('')
 const chargementGlobal = ref(true)
+const chargementCommentaires = ref(false)
+const envoyantCommentaire = ref(false)
+const suppressionEnCours = ref(false)
 const onglet = ref('projets')
 const projetChatActuel = ref(null)
 const envoyantMessage = ref(false)
 const subscribedTopics = new Set()
+const messagesContainer = ref(null)
 
-// ===== COMPUTED =====
+// Toast notifications
+const toastMessage = ref('')
+const toastType = ref('info') // 'success', 'error', 'info'
+let toastTimeout = null
+
+// Modal commentaires
+const modalCommentaires = ref(false)
+const tacheSelectionnee = ref(null)
+const commentairesTache = ref([])
+
+// ========== COMPUTED ==========
 const tauxReussite = computed(() => {
   if (mesTaches.value.length === 0) return 0
   const terminees = mesTaches.value.filter(t => t.statut === 'TERMINE').length
   return Math.round((terminees / mesTaches.value.length) * 100)
 })
 
+const tachesEnCours = computed(() => {
+  return mesTaches.value.filter(t =>
+    t.statut === 'BROUILLON' || t.statut === 'EN_ATTENTE_VALIDATION'
+  )
+})
+
 const notificationsNonLues = computed(() => {
   return notifications.value.filter(n => !n.lu)
 })
 
-// ===== CHARGEMENT DONNÉES =====
+// ========== TOAST SYSTEM ==========
+const showToast = (message, type = 'info') => {
+  if (toastTimeout) {
+    clearTimeout(toastTimeout)
+  }
+
+  toastMessage.value = message
+  toastType.value = type
+
+  toastTimeout = setTimeout(() => {
+    toastMessage.value = ''
+  }, 3000)
+}
+
+// ========== CHARGEMENT DONNÉES ==========
 const chargerToutesDonnees = async () => {
   chargementGlobal.value = true
   erreurBackend.value = ''
@@ -531,11 +699,22 @@ const chargerToutesDonnees = async () => {
     ])
 
     mesProjets.value = pRes.status === 'fulfilled' && Array.isArray(pRes.value?.data)
-      ? pRes.value.data
+      ? pRes.value.data.map(p => ({ ...p, id: normalizeId(p.id) }))
       : []
 
     mesTaches.value = tRes.status === 'fulfilled' && Array.isArray(tRes.value?.data)
       ? tRes.value.data
+        .map(t => ({
+          ...t,
+          id: normalizeId(t.id),
+          projetId: normalizeId(t.projetId || t.id_projet),
+          id_projet: normalizeId(t.id_projet || t.projetId)
+        }))
+        .filter(t => {
+          // Filtrer les tâches dont le projet n'existe plus
+          const projetId = t.projetId || t.id_projet
+          return mesProjets.value.some(p => normalizeId(p.id) == normalizeId(projetId))
+        })
       : []
 
     notifications.value = nRes.status === 'fulfilled' && Array.isArray(nRes.value?.data)
@@ -569,13 +748,134 @@ const chargerMessagesProjet = async (projetId) => {
     const r = await messagesAPI.byProjet(projetId)
     messagesChat.value = Array.isArray(r.data) ? r.data : []
     messagesParProjet.value[projetId] = messagesChat.value
+
+    await nextTick()
+    scrollToBottom()
   } catch (e) {
     console.error('[Chat] Erreur chargement messages:', e)
     messagesChat.value = []
   }
 }
 
-// ===== WEBSOCKET =====
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+// ========== COMMENTAIRES (F12) - CONFORMES AU BACKEND ==========
+const chargerCommentairesTache = async (tacheId) => {
+  chargementCommentaires.value = true
+  try {
+    const tacheIdNormalized = normalizeId(tacheId)
+    console.log(`[F12] GET /api/commentaires/tache/${tacheIdNormalized}`)
+
+    const response = await commentaireAPI.getByTache(tacheIdNormalized)
+
+    commentairesTache.value = Array.isArray(response.data) ? response.data : []
+    commentairesParTache.value[tacheIdNormalized] = commentairesTache.value
+
+    console.log(`[F12] ${commentairesTache.value.length} commentaires chargés`)
+  } catch (e) {
+    console.error('[F12] Erreur chargement commentaires:', e)
+    commentairesTache.value = []
+    showToast(t('erreurs.chargementCommentaires'), 'error')
+  } finally {
+    chargementCommentaires.value = false
+  }
+}
+
+const ouvrirCommentaires = async (tache) => {
+  tacheSelectionnee.value = tache
+  modalCommentaires.value = true
+  await chargerCommentairesTache(tache.id)
+}
+
+const fermerModalCommentaires = () => {
+  modalCommentaires.value = false
+  tacheSelectionnee.value = null
+  commentairesTache.value = []
+  nouveauCommentaire.value = ''
+}
+
+const ajouterCommentaire = async () => {
+  if (!nouveauCommentaire.value.trim() || !tacheSelectionnee.value) {
+    showToast(t('erreurs.contenuVide'), 'error')
+    return
+  }
+
+  envoyantCommentaire.value = true
+  try {
+    const tacheIdNormalized = normalizeId(tacheSelectionnee.value.id)
+
+    console.log('[F12] POST /api/commentaires', {
+      contenu: nouveauCommentaire.value.trim(),
+      tacheId: parseInt(tacheIdNormalized, 10)
+    })
+
+    await commentaireAPI.create({
+      contenu: nouveauCommentaire.value.trim(),
+      tacheId: parseInt(tacheIdNormalized, 10)
+    })
+
+    await chargerCommentairesTache(tacheIdNormalized)
+    nouveauCommentaire.value = ''
+
+    showToast(t('commentaires.ajoutSucces'), 'success')
+  } catch (e) {
+    console.error('[F12] Erreur ajout commentaire:', e)
+    showToast(t('erreurs.ajoutCommentaire'), 'error')
+  } finally {
+    envoyantCommentaire.value = false
+  }
+}
+
+const supprimerCommentaire = async (commentaireId) => {
+  if (!confirm(t('commentaires.confirmerSuppression'))) return
+
+  suppressionEnCours.value = true
+  try {
+    const commentaireIdNormalized = normalizeId(commentaireId)
+
+    console.log(`[F12] DELETE /api/commentaires/${commentaireIdNormalized}`)
+
+    await commentaireAPI.delete(commentaireIdNormalized)
+    await chargerCommentairesTache(tacheSelectionnee.value.id)
+
+    showToast(t('commentaires.suppressionSucces'), 'success')
+  } catch (e) {
+    console.error('[F12] Erreur suppression commentaire:', e)
+
+    if (e.response?.status === 403) {
+      showToast(t('erreurs.nonAutorise'), 'error')
+    } else {
+      showToast(t('erreurs.suppressionCommentaire'), 'error')
+    }
+  } finally {
+    suppressionEnCours.value = false
+  }
+}
+
+/**
+ * CORRECTION CRITIQUE: Vérification permissions suppression
+ * Seuls CHEF_PROJET et ADMINISTRATEUR peuvent supprimer
+ */
+const peutSupprimerCommentaire = () => {
+  if (!utilisateur.value) return false
+
+  const role = utilisateur.value.role || utilisateur.value.roles?.[0]
+  const estChefOuAdmin = role === 'CHEF_PROJET' || role === 'ADMINISTRATEUR'
+
+  return estChefOuAdmin
+}
+
+const getCommentairesTache = (tacheId) => {
+  if (!tacheId) return []
+  const normalized = normalizeId(tacheId)
+  return commentairesParTache.value[normalized] || []
+}
+
+// ========== WEBSOCKET ==========
 const initWebsocket = () => {
   const token = localStorage.getItem('token')
   if (!token) {
@@ -597,7 +897,7 @@ const initWebsocket = () => {
     WebSocketService.subscribe(topicNotifications, (msg) => {
       console.log('[WS] Notification reçue:', msg)
 
-      if (msg?.type === 'NOTIFICATION') {
+      if (msg?.type === 'NOTIFICATION' || msg?.message) {
         notifications.value.unshift({
           id: msg.id || Date.now(),
           titre: msg.titre || t('notifications.notification'),
@@ -607,20 +907,23 @@ const initWebsocket = () => {
           type: msg.sousType || 'SYSTEME'
         })
 
+        // Notification navigateur
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(msg.titre || t('notifications.notification'), {
             body: msg.message || msg.contenu,
             icon: '/favicon.ico'
           })
         }
+
+        showToast(msg.message || msg.contenu, 'info')
       }
     })
     subscribedTopics.add(topicNotifications)
-    console.log('[WS] Souscription:', topicNotifications)
+    console.log('[WS] ✅ Souscription:', topicNotifications)
   }
 }
 
-// ===== ACTIONS PROJETS =====
+// ========== ACTIONS PROJETS ==========
 const consulterProjet = (p) => {
   const id = normalizeId(p.id)
   router.push(`/projet/${id}`)
@@ -646,22 +949,22 @@ const getProjetNom = (projetId) => {
   return p ? translateProjectTitle(p.titre) : t('projets.projetInconnu')
 }
 
-// ===== ACTIONS TÂCHES =====
+// ========== ACTIONS TÂCHES ==========
 const soumettreValidation = async (tache) => {
   if (!confirm(t('taches.confirmerSoumission'))) return
 
   try {
     await taskAPI.updateStatus(tache.id, 'EN_ATTENTE_VALIDATION')
     tache.statut = 'EN_ATTENTE_VALIDATION'
-    alert(t('taches.soumissionReussie'))
+    showToast(t('taches.soumissionReussie'), 'success')
     await chargerToutesDonnees()
   } catch (e) {
     console.error('[Tache] Erreur soumission:', e)
-    alert(t('erreurs.soumissionTache'))
+    showToast(t('erreurs.soumissionTache'), 'error')
   }
 }
 
-// ===== ACTIONS NOTIFICATIONS =====
+// ========== ACTIONS NOTIFICATIONS ==========
 const marquerNotificationLue = async (n) => {
   try {
     const userId = normalizeId(utilisateur.value.id)
@@ -677,7 +980,7 @@ const marquerToutesLues = async () => {
     const userId = normalizeId(utilisateur.value.id)
     await notificationAPI.markAllAsRead(userId)
     notifications.value.forEach(n => n.lu = true)
-    alert(t('notifications.toutesMarquees'))
+    showToast(t('notifications.toutesMarquees'), 'success')
   } catch (e) {
     console.error('[Notif] Erreur marque toutes:', e)
   }
@@ -689,16 +992,17 @@ const supprimerNotification = async (n) => {
     const userId = normalizeId(utilisateur.value.id)
     await notificationAPI.delete(n.id, userId)
     notifications.value = notifications.value.filter(x => x.id !== n.id)
+    showToast(t('notifications.suppressionSucces'), 'success')
   } catch (e) {
     console.error('[Notif] Erreur suppression:', e)
   }
 }
 
-// ===== ACTIONS CHAT =====
+// ========== ACTIONS CHAT ==========
 const ouvrirChatProjet = async (projet) => {
   if (projet.prive && !projet.estMembre) {
     console.warn('[Chat] Accès refusé au projet privé:', projet.titre)
-    alert(t('erreurs.accesRefuse'))
+    showToast(t('erreurs.accesRefuse'), 'error')
     return
   }
 
@@ -720,9 +1024,11 @@ const ouvrirChatProjet = async (projet) => {
       if (messagesParProjet.value[projet.id]) {
         messagesParProjet.value[projet.id].push(msg)
       }
+
+      nextTick(() => scrollToBottom())
     })
     subscribedTopics.add(topicProjet)
-    console.log('[Chat] Souscription:', topicProjet)
+    console.log('[Chat] ✅ Souscription:', topicProjet)
   }
 }
 
@@ -739,9 +1045,12 @@ const envoyerMessage = async () => {
 
     messagesChat.value.push(r.data)
     nouveauMessage.value = ''
+
+    await nextTick()
+    scrollToBottom()
   } catch (e) {
     console.error('[Chat] Erreur envoi:', e)
-    alert(t('erreurs.envoyerMessage'))
+    showToast(t('erreurs.envoyerMessage'), 'error')
   } finally {
     envoyantMessage.value = false
   }
@@ -758,9 +1067,13 @@ const getMessageClass = (m) => {
   return auteurId == monId ? 'bg-primary text-white ms-auto' : 'bg-white border shadow-sm'
 }
 
-// ===== HELPERS UI =====
+// ========== HELPERS UI ==========
 const seDeconnecter = () => {
-  try { useAuthStore().logout?.() } catch {}
+  try {
+    useAuthStore().logout?.()
+  } catch (e) {
+    console.warn('Erreur ignorée lors de la déconnexion :', e)
+  }
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   router.replace({ path: '/connexion', query: { switch: '1' } })
@@ -779,12 +1092,11 @@ const getStatutProjetClass = (statut) => {
 const getStatutTacheClass = (statut) => {
   const classes = {
     'BROUILLON': 'bg-secondary',
-    'EN_COURS': 'bg-warning text-dark',
-    'EN_ATTENTE_VALIDATION': 'bg-info',
+    'EN_ATTENTE_VALIDATION': 'bg-warning text-dark',
     'TERMINE': 'bg-success',
     'ANNULE': 'bg-danger'
   }
-  return classes[statut] || 'bg-secondary'
+  return classes[statut] || 'bg-info'
 }
 
 const getNotificationIconClass = (type) => {
@@ -839,19 +1151,27 @@ const formatTime = (timestamp) => {
   )
 }
 
-// ===== LIFECYCLE =====
+// ========== LIFECYCLE ==========
 onMounted(async () => {
   await chargerToutesDonnees()
   initWebsocket()
+
+  // Demander permission notifications navigateur
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission()
+  }
 })
 
 onBeforeUnmount(() => {
   WebSocketService.disconnect()
+  if (toastTimeout) {
+    clearTimeout(toastTimeout)
+  }
 })
 </script>
 
 <style scoped>
-/* ===== HEADER ===== */
+/* ========== HEADER ========== */
 .member-header {
   background: linear-gradient(135deg, #119c72, #96ddc8);
   border-radius: 12px;
@@ -863,7 +1183,13 @@ onBeforeUnmount(() => {
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* ===== CARDS ===== */
+/* ========== TOAST ========== */
+.toast {
+  min-width: 250px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ========== CARDS ========== */
 .kpi-card {
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -880,7 +1206,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-/* ===== NAVIGATION ===== */
+/* ========== NAVIGATION ========== */
 .nav-pills .nav-link {
   border-radius: 8px;
   margin: 0 2px;
@@ -894,7 +1220,7 @@ onBeforeUnmount(() => {
   transform: translateY(-1px);
 }
 
-/* ===== NOTIFICATIONS ===== */
+/* ========== NOTIFICATIONS ========== */
 .notification-icon {
   width: 40px;
   height: 40px;
@@ -902,9 +1228,21 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   color: white;
+  border-radius: 8px;
 }
 
-/* ===== CHAT ===== */
+.notification-item {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.notification-item:hover {
+  transform: translateX(5px);
+  background-color: rgba(17, 156, 114, 0.05);
+  border-left-color: #119c72;
+}
+
+/* ========== CHAT ========== */
 .chat-bubble {
   animation: slideIn 0.3s ease;
 }
@@ -913,15 +1251,18 @@ onBeforeUnmount(() => {
   scroll-behavior: smooth;
 }
 
-.messages-container::-webkit-scrollbar {
+.messages-container::-webkit-scrollbar,
+.comments-list::-webkit-scrollbar {
   width: 6px;
 }
 
-.messages-container::-webkit-scrollbar-track {
+.messages-container::-webkit-scrollbar-track,
+.comments-list::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-.messages-container::-webkit-scrollbar-thumb {
+.messages-container::-webkit-scrollbar-thumb,
+.comments-list::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
@@ -937,7 +1278,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* ===== TABLES ===== */
+/* ========== TABLES ========== */
 .table th {
   border-top: none;
   font-weight: 600;
@@ -949,19 +1290,19 @@ onBeforeUnmount(() => {
   background-color: rgba(17, 156, 114, 0.08);
 }
 
-/* ===== BADGES ===== */
+/* ========== BADGES ========== */
 .badge {
   font-size: 0.75rem;
   padding: 0.375rem 0.75rem;
 }
 
-/* ===== PROGRESS ===== */
+/* ========== PROGRESS ========== */
 .progress {
   background-color: #e9ecef;
   border-radius: 4px;
 }
 
-/* ===== LIST GROUP ===== */
+/* ========== LIST GROUP ========== */
 .list-group-item.active {
   background-color: #119c72;
   border-color: #119c72;
@@ -975,9 +1316,42 @@ onBeforeUnmount(() => {
   background-color: rgba(17, 156, 114, 0.05);
 }
 
-/* ===== BUTTONS ===== */
+/* ========== BUTTONS ========== */
 .btn-group .btn {
   border-radius: 6px;
   margin: 0 1px;
+}
+
+/* ========== MODAL ========== */
+.modal {
+  backdrop-filter: blur(5px);
+}
+
+.modal-header.bg-info {
+  border-bottom: none;
+}
+
+.modal-header .btn-close-white {
+  filter: brightness(0) invert(1);
+}
+
+/* ========== COMMENTAIRES ========== */
+.comments-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.comments-list .card {
+  transition: all 0.2s ease;
+}
+
+.comments-list .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== UTILITY ========== */
+.text-break {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 </style>

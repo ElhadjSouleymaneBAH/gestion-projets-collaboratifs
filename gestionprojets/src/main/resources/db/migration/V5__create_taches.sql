@@ -1,3 +1,5 @@
+-- V5__create_taches.sql
+
 CREATE TABLE taches (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         titre VARCHAR(255) NOT NULL,
@@ -5,7 +7,9 @@ CREATE TABLE taches (
                         id_projet BIGINT NOT NULL,
                         id_assigne BIGINT,
                         statut VARCHAR(50) NOT NULL DEFAULT 'BROUILLON',
+                        priorite VARCHAR(50) NOT NULL DEFAULT 'NORMALE',
                         date_creation DATETIME NOT NULL,
+                        date_echeance DATE NULL,
 
                         CONSTRAINT fk_taches_projet
                             FOREIGN KEY (id_projet) REFERENCES projets(id) ON DELETE CASCADE,

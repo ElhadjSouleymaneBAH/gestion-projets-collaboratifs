@@ -1,6 +1,7 @@
 package be.iccbxl.gestionprojets.repository;
 
 import be.iccbxl.gestionprojets.model.Projet;
+import be.iccbxl.gestionprojets.model.Utilisateur;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository JPA pour {@link Projet}.
+ * Repository JPA pour
  *
  * @author ElhadjSouleymaneBAH
  */
@@ -23,16 +24,16 @@ public interface ProjetRepository extends JpaRepository<Projet, Long> {
     List<Projet> findByCreateurId(Long createurId);
 
     /**
-     * Trouve les projets par créateur AVEC le créateur chargé
-     * Utilise JOIN FETCH pour éviter LazyInitializationException
-     * À UTILISER pour la conversion en DTO dans les contrôleurs
+     * Trouve les projets par créateur AVEC le créateur chargé.
+     * Utilise JOIN FETCH pour éviter LazyInitializationException.
+     * À utiliser pour la conversion en DTO dans les contrôleurs.
      */
     @Query("SELECT p FROM Projet p LEFT JOIN FETCH p.createur WHERE p.createur.id = :createurId")
     List<Projet> findByCreateurIdWithCreateur(@Param("createurId") Long createurId);
 
     /**
-     * rouve un projet par ID AVEC le créateur chargé
-     * Utilise JOIN FETCH pour éviter LazyInitializationException
+     * Trouve un projet par ID AVEC le créateur chargé.
+     * Utilise JOIN FETCH pour éviter LazyInitializationException.
      */
     @Query("SELECT p FROM Projet p LEFT JOIN FETCH p.createur WHERE p.id = :id")
     Optional<Projet> findByIdWithCreateur(@Param("id") Long id);
@@ -54,8 +55,23 @@ public interface ProjetRepository extends JpaRepository<Projet, Long> {
     List<Projet> findByPubliqueTrue();
 
     /**
-     * Trouve les projets publics AVEC le créateur chargé
+     * Trouve les projets publics AVEC le créateur chargé.
      */
     @Query("SELECT p FROM Projet p LEFT JOIN FETCH p.createur WHERE p.publique = true")
     List<Projet> findByPubliqueTrueWithCreateur();
+
+    /**
+     * Trouve les projets créés par un chef de projet.
+     */
+    @Query("SELECT p FROM Projet p WHERE p.createur.id = :idChef")
+    List<Projet> findByChefDeProjetId(@Param("idChef") Long idChef);
+
+    /**
+     * Récupère les membres d’un projet via la table de jointure ProjetUtilisateur.
+     * Retourne une liste d’utilisateurs associés à ce projet.
+     */
+    @Query("SELECT u FROM Utilisateur u " +
+            "JOIN ProjetUtilisateur pu ON pu.utilisateurId = u.id " +
+            "WHERE pu.projetId = :projetId AND pu.actif = true")
+    List<Utilisateur> findMembresByProjetId(@Param("projetId") Long projetId);
 }

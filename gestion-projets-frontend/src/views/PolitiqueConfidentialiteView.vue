@@ -538,7 +538,11 @@ export default {
   methods: {
     setLocale(locale) {
       this.$i18n.locale = locale
-      try { localStorage.setItem('locale', locale) } catch (e) {}
+      try {
+        localStorage.setItem('locale', locale)
+      } catch {
+        // stockage local non disponible
+      }
     }
   },
   mounted() {

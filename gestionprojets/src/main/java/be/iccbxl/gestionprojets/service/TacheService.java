@@ -37,65 +37,40 @@ public class TacheService {
         this.projetUtilisateurRepository = projetUtilisateurRepository;
     }
 
-    // ========== ✅ NOUVEAU : ASSIGNER UNE TÂCHE ==========
-    /**
-     * Assigner une tâche à un membre du projet
-     *
-     * @param tacheId ID de la tâche
-     * @param membreId ID du membre à assigner
-     * @return TacheDTO enrichi avec les infos de l'assigné
-     * @throws RuntimeException si la tâche n'existe pas, le membre n'existe pas,
-     *                          ou le membre n'appartient pas au projet
-     */
+    // ==========  ASSIGNER UNE TÂCHE ==========
     public TacheDTO assignerTache(Long tacheId, Long membreId) {
         System.out.println("DEBUG: [F7] Assignation tâche " + tacheId + " à membre " + membreId);
 
-        // 1. Vérifier que la tâche existe
         Tache tache = tacheRepository.findByIdWithRelations(tacheId)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
 
-        // 2. Vérifier que le membre existe
         Utilisateur membre = utilisateurRepository.findById(membreId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + membreId));
 
-        // 3. SÉCURITÉ : Vérifier que le membre appartient au projet
         Long projetId = tache.getProjet().getId();
         boolean appartientAuProjet = projetUtilisateurRepository
                 .existsByProjetIdAndUtilisateurId(projetId, membreId);
 
         if (!appartientAuProjet) {
-            System.err.println("ERROR: [F7] Utilisateur " + membreId + " n'appartient pas au projet " + projetId);
-            throw new RuntimeException(
-                    "L'utilisateur " + membre.getPrenom() + " " + membre.getNom() +
-                            " n'appartient pas au projet. Veuillez d'abord l'ajouter comme membre."
-            );
+            throw new RuntimeException("L'utilisateur " + membre.getPrenom() + " " + membre.getNom() +
+                    " n'appartient pas au projet. Veuillez d'abord l'ajouter comme membre.");
         }
 
-        // 4. Vérifier que la tâche n'est pas terminée ou annulée
         if (tache.getStatut() == StatutTache.TERMINE || tache.getStatut() == StatutTache.ANNULE) {
-            System.err.println("ERROR: [F7] Impossible d'assigner tâche avec statut: " + tache.getStatut());
-            throw new RuntimeException(
-                    "Impossible d'assigner une tâche avec le statut : " + tache.getStatut()
-            );
+            throw new RuntimeException("Impossible d'assigner une tâche avec le statut : " + tache.getStatut());
         }
 
-        // 5. Assigner la tâche
         tache.assignerA(membre);
         Tache tacheUpdated = tacheRepository.save(tache);
 
         System.out.println("SUCCESS: [F7] Tâche " + tacheId + " assignée à " +
                 membre.getPrenom() + " " + membre.getNom() + " (" + membre.getEmail() + ")");
 
-        // 6. Retourner le DTO enrichi
         return convertirEnDTO(tacheUpdated);
     }
 
-    // ========== MÉTHODES EXISTANTES ==========
-
+    // ========== CRÉER ==========
     public TacheDTO creerTache(TacheDTO tacheDTO) {
-        System.out.println("DEBUG: [F7] Début création tâche - Titre: " + tacheDTO.getTitre() +
-                ", Projet: " + tacheDTO.getIdProjet());
-
         if (tacheDTO.getTitre() == null || tacheDTO.getTitre().trim().isEmpty()) {
             throw new RuntimeException("Le titre de la tâche est obligatoire");
         }
@@ -104,230 +79,115 @@ public class TacheService {
             throw new RuntimeException("L'ID du projet est obligatoire");
         }
 
-        Tache tache = new Tache();
-
         Projet projet = projetRepository.findById(tacheDTO.getIdProjet())
                 .orElseThrow(() -> new RuntimeException("Projet non trouvé avec ID: " + tacheDTO.getIdProjet()));
 
-        System.out.println("DEBUG: [F7] Projet trouvé: " + projet.getTitre());
-
-        boolean creationReussie = tache.ajouterTache(
-                tacheDTO.getTitre(),
-                tacheDTO.getDescription(),
-                projet
-        );
+        Tache tache = new Tache();
+        boolean creationReussie = tache.ajouterTache(tacheDTO.getTitre(), tacheDTO.getDescription(), projet);
 
         if (!creationReussie) {
             throw new RuntimeException("Impossible de créer la tâche : données invalides");
         }
 
-        if (tacheDTO.getPriorite() != null) {
-            tache.setPriorite(tacheDTO.getPriorite());
-        } else {
-            tache.setPriorite(PrioriteTache.NORMALE);
-        }
-
-        if (tacheDTO.getDateEcheance() != null) {
-            tache.setDateEcheance(tacheDTO.getDateEcheance());
-        }
-
-
+        tache.setPriorite(tacheDTO.getPriorite() != null ? tacheDTO.getPriorite() : PrioriteTache.NORMALE);
+        tache.setDateEcheance(tacheDTO.getDateEcheance());
         tache.assignerA(null);
 
-        Tache tacheSauvee = tacheRepository.save(tache);
-        System.out.println("SUCCESS: [F7] Tâche créée avec ID: " + tacheSauvee.getId() +
-                ", Statut: " + tacheSauvee.getStatut() + ", Priorité: " + tacheSauvee.getPriorite());
-
-        return convertirEnDTO(tacheSauvee);
+        Tache saved = tacheRepository.save(tache);
+        return convertirEnDTO(saved);
     }
 
+    // ========== CONSULTER ==========
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirToutesLesTaches() {
-        System.out.println("DEBUG: [F7] Consultation toutes tâches (ADMIN)");
-
-        List<Tache> taches = tacheRepository.findAll()
+        return tacheRepository.findAll()
                 .stream()
-                .map(t -> tacheRepository.findByIdWithRelations(t.getId()).orElse(t))
-                .collect(Collectors.toList());
-
-        System.out.println("DEBUG: [F7] " + taches.size() + " tâches trouvées au total");
-
-        return taches.stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Optional<TacheDTO> obtenirTacheParId(Long id) {
-        System.out.println("DEBUG: [F7] Recherche tâche par ID: " + id);
-
-        Optional<Tache> tache = tacheRepository.findByIdWithRelations(id);
-        if (tache.isPresent()) {
-            System.out.println("DEBUG: [F7] Tâche trouvée: " + tache.get().getTitre() +
-                    " (Statut: " + tache.get().getStatut() + ")");
-        } else {
-            System.out.println("DEBUG: [F7] Aucune tâche trouvée avec ID: " + id);
-        }
-
-        return tache.map(this::convertirEnDTO);
+        return tacheRepository.findByIdWithRelations(id).map(this::convertirEnDTO);
     }
 
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirTachesParProjet(Long idProjet) {
-        System.out.println("DEBUG: [F7] Recherche tâches pour projet ID: " + idProjet);
-
-        List<Tache> taches = tacheRepository.findByProjetIdWithRelations(idProjet);
-        System.out.println("DEBUG: [F7] " + taches.size() + " tâches trouvées pour le projet " + idProjet);
-
-        return taches.stream()
+        return tacheRepository.findByProjetIdWithRelations(idProjet)
+                .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TacheDTO> obtenirTachesParUtilisateur(Long idUtilisateur) {
-        System.out.println("DEBUG: [F7] Recherche tâches assignées à l'utilisateur ID: " + idUtilisateur);
-
-        List<Tache> taches = tacheRepository.findByAssigneAIdWithRelations(idUtilisateur);
-        System.out.println("DEBUG: [F7] " + taches.size() + " tâches assignées à l'utilisateur " + idUtilisateur);
-
-        return taches.stream()
+        return tacheRepository.findByAssigneAIdWithRelations(idUtilisateur)
+                .stream()
                 .map(this::convertirEnDTO)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public List<TacheDTO> obtenirTachesEnRetard(Long idProjet) {
-        System.out.println("DEBUG: [F7] Recherche tâches en retard pour projet ID: " + idProjet);
-
-        List<Tache> tachesProjet = tacheRepository.findByProjetIdWithRelations(idProjet);
-        List<Tache> tachesEnRetard = tachesProjet.stream()
-                .filter(Tache::estEnRetard)
-                .collect(Collectors.toList());
-
-        System.out.println("DEBUG: [F7] " + tachesEnRetard.size() + " tâches en retard trouvées");
-
-        return tachesEnRetard.stream()
-                .map(this::convertirEnDTO)
-                .collect(Collectors.toList());
-    }
-
+    // ========== MODIFIER ==========
     public TacheDTO modifierTache(Long id, TacheDTO tacheDTO) {
-        System.out.println("DEBUG: [F7] Début modification tâche ID: " + id);
-
         Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
-        System.out.println("DEBUG: [F7] Tâche existante trouvée: " + tache.getTitre() +
-                " (Statut actuel: " + tache.getStatut() + ")");
+        boolean modifie = tache.modifierTache(tacheDTO.getTitre(), tacheDTO.getDescription(), tacheDTO.getStatut());
+        if (!modifie) throw new RuntimeException("Impossible de modifier la tâche : données invalides");
 
-        boolean modificationReussie = tache.modifierTache(
-                tacheDTO.getTitre(),
-                tacheDTO.getDescription(),
-                tacheDTO.getStatut()
-        );
-
-        if (!modificationReussie) {
-            throw new RuntimeException("Impossible de modifier la tâche : données invalides ou transition non autorisée");
-        }
-
-        if (tacheDTO.getPriorite() != null) {
-            tache.setPriorite(tacheDTO.getPriorite());
-            System.out.println("DEBUG: [F7] Priorité mise à jour: " + tacheDTO.getPriorite());
-        }
-
-        if (tacheDTO.getDateEcheance() != null) {
-            tache.setDateEcheance(tacheDTO.getDateEcheance());
-            System.out.println("DEBUG: [F7] Date d'échéance mise à jour: " + tacheDTO.getDateEcheance());
-        }
+        tache.setPriorite(tacheDTO.getPriorite());
+        tache.setDateEcheance(tacheDTO.getDateEcheance());
 
         if (tacheDTO.getIdAssigne() != null) {
-            System.out.println("DEBUG: [F7] Assignation/réassignation à l'utilisateur: " + tacheDTO.getIdAssigne());
-
             Utilisateur utilisateur = utilisateurRepository.findById(tacheDTO.getIdAssigne())
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + tacheDTO.getIdAssigne()));
-
             tache.assignerA(utilisateur);
-            System.out.println("DEBUG: [F7] Tâche assignée à: " + utilisateur.getEmail());
         } else {
-            System.out.println("DEBUG: [F7] Désassignation de la tâche");
             tache.assignerA(null);
         }
 
-        Tache tacheSauvee = tacheRepository.save(tache);
-        System.out.println("SUCCESS: [F7] Tâche " + id + " modifiée avec succès (Nouveau statut: " +
-                tacheSauvee.getStatut() + ")");
-
-        return convertirEnDTO(tacheSauvee);
+        return convertirEnDTO(tacheRepository.save(tache));
     }
 
+    // ========== CHANGER STATUT ==========
     public TacheDTO changerStatutTache(Long id, StatutTache nouveauStatut) {
-        System.out.println("DEBUG: [F7] Changement statut tâche " + id + " vers " + nouveauStatut);
-
         Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
-        StatutTache ancienStatut = tache.getStatut();
-        System.out.println("DEBUG: [F7] Transition demandée: " + ancienStatut + " → " + nouveauStatut);
+        boolean ok = tache.changerStatut(nouveauStatut);
+        if (!ok) throw new RuntimeException("Transition de statut non autorisée");
 
-        boolean changementReussi = tache.changerStatut(nouveauStatut);
-
-        if (!changementReussi) {
-            throw new RuntimeException("Transition de statut non autorisée selon le diagramme d'état: " +
-                    ancienStatut + " → " + nouveauStatut);
-        }
-
-        Tache tacheSauvee = tacheRepository.save(tache);
-        System.out.println("SUCCESS: [F7] Statut tâche " + id + " changé: " + ancienStatut + " → " + nouveauStatut);
-
-        return convertirEnDTO(tacheSauvee);
+        return convertirEnDTO(tacheRepository.save(tache));
     }
 
+    // ========== ANNULER PAR ADMIN ==========
     public TacheDTO annulerParAdmin(Long tacheId) {
-        System.out.println("DEBUG: [F7-ADMIN] Admin annule tâche ID: " + tacheId);
+        System.out.println("DEBUG: [F7-ADMIN] Annulation de la tâche ID=" + tacheId);
 
         Tache tache = tacheRepository.findByIdWithRelations(tacheId)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
 
-        StatutTache ancienStatut = tache.getStatut();
-        System.out.println("DEBUG: [F7-ADMIN] Statut actuel: " + ancienStatut);
+        boolean ok = tache.changerStatut(StatutTache.ANNULE);
+        if (!ok) throw new RuntimeException("Impossible d'annuler la tâche ID=" + tacheId);
 
-        boolean reussi = tache.changerStatut(StatutTache.ANNULE);
-
-        if (!reussi) {
-            throw new RuntimeException("Impossible d'annuler la tâche ID: " + tacheId);
-        }
-
-        Tache tacheSauvee = tacheRepository.save(tache);
-        System.out.println("SUCCESS: [F7-ADMIN] Admin a annulé tâche " + tacheId +
-                " (" + ancienStatut + " → ANNULE)");
-
-        return convertirEnDTO(tacheSauvee);
+        Tache saved = tacheRepository.save(tache);
+        System.out.println("SUCCESS: [F7-ADMIN] Tâche " + tacheId + " annulée.");
+        return convertirEnDTO(saved);
     }
 
+    // ========== SUPPRIMER ==========
     public void supprimerTache(Long id) {
-        System.out.println("DEBUG: [F7] Début suppression tâche ID: " + id);
-
         Tache tache = tacheRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + id));
 
-        System.out.println("DEBUG: [F7] Tâche trouvée pour suppression: " + tache.getTitre() +
-                " (Statut: " + tache.getStatut() + ")");
-
-        boolean suppressionReussie = tache.supprimerTache();
-
-        if (!suppressionReussie) {
+        if (!tache.supprimerTache()) {
             throw new RuntimeException("Impossible de supprimer la tâche ID: " + id);
         }
 
         tacheRepository.deleteById(id);
-        System.out.println("SUCCESS: [F7] Tâche " + id + " supprimée avec succès");
     }
 
-    /**
-     * ✅ Convertir une entité Tache en TacheDTO
-     * ENRICHI : Inclut prénom et email de l'assigné
-     */
+    // ========== CONVERTIR ==========
     private TacheDTO convertirEnDTO(Tache tache) {
         TacheDTO dto = new TacheDTO();
         dto.setId(tache.getId());
@@ -351,48 +211,19 @@ public class TacheService {
         dto.setPriorite(tache.getPriorite());
         dto.setDateEcheance(tache.getDateEcheance());
         dto.setDateCreation(tache.getDateCreation());
-
         return dto;
     }
 
+    // ========== TÂCHES PAR CHEF DE PROJET ==========
     @Transactional(readOnly = true)
-    public long compterTachesParStatut(Long idProjet, StatutTache statut) {
-        System.out.println("DEBUG: [F7] Comptage tâches projet " + idProjet + " avec statut " + statut);
+    public List<TacheDTO> obtenirTachesParChefDeProjet(Long idChef) {
+        List<Projet> projets = projetRepository.findByChefDeProjetId(idChef);
+        if (projets.isEmpty()) return List.of();
 
-        long count = tacheRepository.findByProjetIdAndStatut(idProjet, statut).size();
-        System.out.println("DEBUG: [F7] " + count + " tâches trouvées avec statut " + statut);
+        List<Long> idsProjets = projets.stream().map(Projet::getId).toList();
+        List<Tache> taches = tacheRepository.findByProjetIdInWithRelations(idsProjets);
 
-        return count;
+        return taches.stream().map(this::convertirEnDTO).collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public List<TacheDTO> obtenirTachesNonAssignees(Long idProjet) {
-        System.out.println("DEBUG: [F7] Recherche tâches non assignées pour projet " + idProjet);
-
-        List<Tache> tachesProjet = tacheRepository.findByProjetIdWithRelations(idProjet);
-        List<Tache> tachesNonAssignees = tachesProjet.stream()
-                .filter(t -> t.getAssigneA() == null)
-                .collect(Collectors.toList());
-
-        System.out.println("DEBUG: [F7] " + tachesNonAssignees.size() + " tâches non assignées trouvées");
-
-        return tachesNonAssignees.stream()
-                .map(this::convertirEnDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public boolean utilisateurATachesEnCours(Long idUtilisateur) {
-        System.out.println("DEBUG: [F7] Vérification tâches en cours pour utilisateur " + idUtilisateur);
-
-        List<Tache> taches = tacheRepository.findByAssigneAIdWithRelations(idUtilisateur);
-        boolean aTachesEnCours = taches.stream()
-                .anyMatch(t -> t.getStatut() == StatutTache.BROUILLON ||
-                        t.getStatut() == StatutTache.EN_ATTENTE_VALIDATION);
-
-        System.out.println("DEBUG: [F7] L'utilisateur " + idUtilisateur +
-                (aTachesEnCours ? " a" : " n'a pas") + " de tâches en cours");
-
-        return aTachesEnCours;
-    }
 }

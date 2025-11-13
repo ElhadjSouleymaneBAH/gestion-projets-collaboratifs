@@ -1,11 +1,12 @@
 import api from './api.js'
 
+
 /**
  * Service de gestion des tâches - Frontend Vue.js
  * Workflow : BROUILLON → EN_ATTENTE_VALIDATION → TERMINE ou ANNULE
  * Internationalisation complète FR/EN
 
- * @author ElhadjSouleymaneBAH
+ * @author Elhadj Souleymane BAH
  */
 class TacheService {
   /**
@@ -74,10 +75,11 @@ class TacheService {
    * Endpoints API
    */
   static ENDPOINTS = {
-    TASKS: '/taches',
-    PROJECT_TASKS: '/taches/projet',
-    USER_TASKS: '/taches/utilisateur'
+    TASKS: '/api/taches',
+    PROJECT_TASKS: '/api/taches/projet',
+    USER_TASKS: '/api/taches/utilisateur'
   }
+
 
   /**
    * Configuration de validation
@@ -898,7 +900,48 @@ class TacheService {
 
     return t('tasks.success.general')
   }
+
+  /**
+   * F7 - Obtenir les tâches par chef de projet
+   * Récupère toutes les tâches liées aux projets dont l'utilisateur est chef
+   *
+   * @param {number} idChef - ID du chef de projet
+   * @returns {Promise<Object>} Liste des tâches (DTO)
+   */
+  async byChefProjet(idChef) {
+    try {
+      console.log('[F7] Chargement des tâches du chef de projet', idChef);
+
+      // Vérification de l'ID
+      if (!this.isValidId(idChef)) {
+        throw {
+          success: false,
+          errorCode: TacheService.ERROR_CODES.USER_ID_INVALID,
+          message: 'ID chef de projet invalide'
+        };
+      }
+
+      // Appel à l’API backend
+      const response = await api.get(`/api/taches/chef/${idChef}`);
+
+      if (!response.data) {
+        throw new Error('Réponse serveur invalide');
+      }
+
+      console.log('[F7] Tâches du chef de projet chargées avec succès');
+
+      return {
+        success: true,
+        data: Array.isArray(response.data) ? response.data : [],
+        messageKey: TacheService.SUCCESS_MESSAGES.TASKS_LOADED
+      };
+    } catch (error) {
+      console.error('[F7] Erreur chargement tâches chef de projet:', error);
+      return this.handleTaskError(error, TacheService.ERROR_CODES.GET_TASKS_FAILED);
+    }
+  }
+
 }
 
-// Export instance unique
+
 export default new TacheService()

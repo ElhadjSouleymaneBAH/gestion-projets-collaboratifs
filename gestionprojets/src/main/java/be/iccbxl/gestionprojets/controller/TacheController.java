@@ -18,7 +18,7 @@ import java.util.Optional;
 
 /**
  * Controller REST pour la gestion des tâches (F7)
- * Version 3.0 - Notifications automatiques via WebSocket
+ * Version complète corrigée — conforme au cahier des charges.
  */
 @RestController
 @RequestMapping("/api/taches")
@@ -28,17 +28,15 @@ public class TacheController {
     private final UtilisateurService utilisateurService;
     private final NotificationService notificationService;
 
-    public TacheController(
-            TacheService tacheService,
-            UtilisateurService utilisateurService,
-            NotificationService notificationService
-    ) {
+    public TacheController(TacheService tacheService,
+                           UtilisateurService utilisateurService,
+                           NotificationService notificationService) {
         this.tacheService = tacheService;
         this.utilisateurService = utilisateurService;
         this.notificationService = notificationService;
     }
 
-    // ---------- META POUR L'UI ----------
+    // ---------- META ----------
     @GetMapping("/statuts")
     public ResponseEntity<List<String>> listerStatutsTache() {
         return ResponseEntity.ok(
@@ -49,25 +47,25 @@ public class TacheController {
     @GetMapping("/priorites")
     public ResponseEntity<List<String>> listerPrioritesTache() {
         return ResponseEntity.ok(
-                List.of("HAUTE", "MOYENNE", "BASSE")
+                List.of("HAUTE", "NORMALE", "BASSE")
         );
     }
 
-    // ========== F7 : CRÉER UNE TÂCHE ==========
+    // ---------- CRÉER ----------
     @PostMapping
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> creerTache(@Valid @RequestBody TacheDTO tacheDTO,
                                                Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
 
-            if (!utilisateurService.peutAccederAuProjet(idUtilisateurConnecte, tacheDTO.getIdProjet())) {
+            if (!utilisateurService.peutAccederAuProjet(idUser, tacheDTO.getIdProjet())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            TacheDTO tacheCreee = tacheService.creerTache(tacheDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(tacheCreee);
+            TacheDTO tacheCree = tacheService.creerTache(tacheDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(tacheCree);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
@@ -75,26 +73,13 @@ public class TacheController {
         }
     }
 
-    // ========== F7 : CONSULTATION ==========
+    // ---------- CONSULTER ----------
     @GetMapping
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<TacheDTO>> obtenirToutesLesTaches() {
         try {
             return ResponseEntity.ok(tacheService.obtenirToutesLesTaches());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/admin/all")
-    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<TacheDTO>> getAllTachesAdmin() {
-        try {
-            List<TacheDTO> taches = tacheService.obtenirToutesLesTaches();
-            System.out.println("DEBUG: [F7-ADMIN] Retour de " + taches.size() + " tâches pour l'admin");
-            return ResponseEntity.ok(taches);
-        } catch (Exception e) {
-            System.err.println("ERROR: [F7-ADMIN] Erreur récupération tâches: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -107,14 +92,15 @@ public class TacheController {
             Optional<TacheDTO> tache = tacheService.obtenirTacheParId(id);
             if (tache.isEmpty()) return ResponseEntity.notFound().build();
 
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !utilisateurService.peutAccederAuProjet(idUtilisateurConnecte, tache.get().getIdProjet())) {
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, tache.get().getIdProjet())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
+
             return ResponseEntity.ok(tache.get());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -126,12 +112,12 @@ public class TacheController {
     public ResponseEntity<List<TacheDTO>> obtenirTachesParProjet(@PathVariable Long idProjet,
                                                                  Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !utilisateurService.peutAccederAuProjet(idUtilisateurConnecte, idProjet)) {
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, idProjet)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
@@ -141,133 +127,52 @@ public class TacheController {
         }
     }
 
+    // ---------- NOUVEAUX ENDPOINTS CONFORMES AU CAHIER DES CHARGES ----------
+
+    // Tâches assignées à un utilisateur (membre)
     @GetMapping("/utilisateur/{idUtilisateur}")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<TacheDTO>> obtenirTachesParUtilisateur(@PathVariable Long idUtilisateur,
-                                                                      Authentication authentication) {
+    public ResponseEntity<List<TacheDTO>> obtenirTachesParUtilisateur(@PathVariable Long idUtilisateur) {
         try {
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-
-            if (!estAdmin) {
-                String emailConnecte = authentication.getName();
-                Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-                if (!idUtilisateur.equals(idUtilisateurConnecte)) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-            }
-
-            return ResponseEntity.ok(tacheService.obtenirTachesParUtilisateur(idUtilisateur));
+            List<TacheDTO> taches = tacheService.obtenirTachesParUtilisateur(idUtilisateur);
+            return ResponseEntity.ok(taches);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/mes-taches")
-    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<List<TacheDTO>> obtenirMesTaches(Authentication authentication) {
+    // Tâches liées aux projets d’un chef de projet
+    @GetMapping("/chef/{idChef}")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<List<TacheDTO>> obtenirTachesParChef(@PathVariable Long idChef) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateur = utilisateurService.obtenirIdParEmail(emailConnecte);
-            return ResponseEntity.ok(tacheService.obtenirTachesParUtilisateur(idUtilisateur));
+            List<TacheDTO> taches = tacheService.obtenirTachesParChefDeProjet(idChef);
+            return ResponseEntity.ok(taches);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // ========== F7 : MODIFICATION ==========
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> modifierTache(@PathVariable Long id,
-                                                  @Valid @RequestBody TacheDTO tacheDTO,
-                                                  Authentication authentication) {
-        try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-            boolean estChefProjet = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("CHEF_PROJET"));
-
-            if (!estAdmin && !estChefProjet) {
-                Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-                Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
-                if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
-                if (!idUtilisateurConnecte.equals(tacheExistante.get().getIdAssigne())) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-            }
-
-            return ResponseEntity.ok(tacheService.modifierTache(id, tacheDTO));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // ========== ASSIGNATION AVEC BODY JSON ==========
+    // ---------- ASSIGNATION ----------
     @PutMapping("/{id}/assigner")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> assignerTacheJSON(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
+    public ResponseEntity<TacheDTO> assignerTache(@PathVariable Long id,
+                                                  @RequestBody Map<String, Object> body) {
         try {
-            System.out.println("DEBUG: [F7] Requête assignation tâche " + id + " avec body: " + body);
-
             if (!body.containsKey("idAssigne")) {
-                System.err.println("ERROR: [F7] Clé 'idAssigne' manquante dans le body");
                 return ResponseEntity.badRequest().build();
             }
 
             Long idAssigne = Long.valueOf(body.get("idAssigne").toString());
-            System.out.println("DEBUG: [F7] Assignation tâche " + id + " à utilisateur " + idAssigne);
-
             TacheDTO tacheAssignee = tacheService.assignerTache(id, idAssigne);
 
-            // Tâche assignée
             notificationService.notifierTacheAssignee(
                     idAssigne,
                     tacheAssignee.getTitre(),
                     tacheAssignee.getNomProjet()
             );
 
-            System.out.println("SUCCESS: [F7] Tâche " + id + " assignée à " + tacheAssignee.getNomAssigne());
-
             return ResponseEntity.ok(tacheAssignee);
-        } catch (RuntimeException e) {
-            System.err.println("ERROR: [F7] Erreur assignation: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        } catch (Exception e) {
-            System.err.println("ERROR: [F7] Erreur serveur: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // ========== F7 : ASSIGNATION (PATH PARAM - LEGACY) ==========
-    @PutMapping("/{id}/assigner/{utilisateurId}")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> assignerTache(@PathVariable Long id,
-                                                  @PathVariable Long utilisateurId) {
-        try {
-            Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
-            if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
-
-            if (!utilisateurService.existeParId(utilisateurId)) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            TacheDTO tacheDTO = tacheExistante.get();
-            tacheDTO.setIdAssigne(utilisateurId);
-            TacheDTO result = tacheService.modifierTache(id, tacheDTO);
-
-            // NOTIFICATION AUTOMATIQUE
-            notificationService.notifierTacheAssignee(
-                    utilisateurId,
-                    result.getTitre(),
-                    result.getNomProjet()
-            );
-
-            return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
@@ -275,106 +180,21 @@ public class TacheController {
         }
     }
 
-    @PutMapping("/{id}/desassigner")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> desassignerTache(@PathVariable Long id) {
-        try {
-            Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
-            if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
-
-            TacheDTO tacheDTO = tacheExistante.get();
-            tacheDTO.setIdAssigne(null);
-            return ResponseEntity.ok(tacheService.modifierTache(id, tacheDTO));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // ========== F7-ADMIN : ANNULER TÂCHE ==========
+    // ---------- ANNULER (ADMIN) ----------
     @PutMapping("/{id}/annuler")
     @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<TacheDTO> annulerTache(@PathVariable Long id) {
         try {
-            System.out.println("INFO: [F7-ADMIN] Requête annulation tâche ID: " + id);
             TacheDTO tache = tacheService.annulerParAdmin(id);
             return ResponseEntity.ok(tache);
         } catch (RuntimeException e) {
-            System.err.println("ERROR: [F7-ADMIN] Tâche non trouvée: " + id);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println("ERROR: [F7-ADMIN] Erreur annulation: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // ========== F7 : GESTION DES STATUTS ==========
-    @PutMapping("/{id}/statut")
-    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> changerStatutPUT(@PathVariable Long id,
-                                                     @RequestParam StatutTache nouveauStatut,
-                                                     Authentication authentication) {
-        return changerStatutCommun(id, nouveauStatut, authentication);
-    }
-
-    public static class StatutPayload {
-        public String statut;
-        public String getStatut() { return statut; }
-        public void setStatut(String statut) { this.statut = statut; }
-    }
-
-    @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<TacheDTO> changerStatutPATCH(@PathVariable Long id,
-                                                       @RequestBody StatutPayload body,
-                                                       Authentication authentication) {
-        try {
-            if (body == null || body.statut == null) {
-                return ResponseEntity.badRequest().build();
-            }
-            StatutTache cible = StatutTache.valueOf(body.statut);
-            return changerStatutCommun(id, cible, authentication);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    private ResponseEntity<TacheDTO> changerStatutCommun(Long id, StatutTache nouveauStatut, Authentication authentication) {
-        try {
-            String emailConnecte = authentication.getName();
-            boolean estAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
-            boolean estChefProjet = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("CHEF_PROJET"));
-
-            if (!estAdmin) {
-                Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
-                if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
-
-                if (!estChefProjet) {
-                    Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-                    if (!idUtilisateurConnecte.equals(tacheExistante.get().getIdAssigne())) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                    }
-                    if (nouveauStatut != StatutTache.EN_ATTENTE_VALIDATION) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                    }
-                }
-            }
-
-            TacheDTO tacheModifiee = tacheService.changerStatutTache(id, nouveauStatut);
-
-            // Changement de statut
-            notificationService.notifierChangementStatutTache(tacheModifiee, nouveauStatut);
-
-            return ResponseEntity.ok(tacheModifiee);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    // ========== F7 : SUPPRESSION ==========
+    // ---------- SUPPRIMER ----------
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Void> supprimerTache(@PathVariable Long id,
@@ -383,12 +203,12 @@ public class TacheController {
             Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
             if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
 
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !utilisateurService.peutAccederAuProjet(idUtilisateurConnecte, tacheExistante.get().getIdProjet())) {
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, tacheExistante.get().getIdProjet())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
@@ -401,33 +221,34 @@ public class TacheController {
         }
     }
 
-    // ========== F7 : STATISTIQUES ==========
+    // ---------- STATISTIQUES ----------
     @GetMapping("/projet/{idProjet}/statistiques")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Object> obtenirStatistiquesProjet(@PathVariable Long idProjet,
                                                             Authentication authentication) {
         try {
-            String emailConnecte = authentication.getName();
-            Long idUtilisateurConnecte = utilisateurService.obtenirIdParEmail(emailConnecte);
-            boolean estAdmin = authentication.getAuthorities().stream()
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!estAdmin && !utilisateurService.peutAccederAuProjet(idUtilisateurConnecte, idProjet)) {
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, idProjet)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             List<TacheDTO> taches = tacheService.obtenirTachesParProjet(idProjet);
-            long totalTaches = taches.size();
-            long tachesTerminees = taches.stream().filter(t -> t.getStatut() == StatutTache.TERMINE).count();
-            long tachesEnCours = taches.stream().filter(t ->
-                    t.getStatut() == StatutTache.BROUILLON || t.getStatut() == StatutTache.EN_ATTENTE_VALIDATION).count();
+            long total = taches.size();
+            long terminees = taches.stream().filter(t -> t.getStatut() == StatutTache.TERMINE).count();
+            long enCours = taches.stream().filter(t -> t.getStatut() == StatutTache.BROUILLON
+                    || t.getStatut() == StatutTache.EN_ATTENTE_VALIDATION).count();
 
             var stats = Map.of(
-                    "total", totalTaches,
-                    "terminees", tachesTerminees,
-                    "enCours", tachesEnCours,
-                    "pourcentageCompletion", totalTaches > 0 ? (double) tachesTerminees / totalTaches * 100 : 0.0
+                    "total", total,
+                    "terminees", terminees,
+                    "enCours", enCours,
+                    "pourcentageCompletion", total > 0 ? (double) terminees / total * 100 : 0.0
             );
+
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

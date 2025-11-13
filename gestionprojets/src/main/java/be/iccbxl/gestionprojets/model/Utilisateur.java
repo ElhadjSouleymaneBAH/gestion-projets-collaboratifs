@@ -19,7 +19,7 @@ import java.util.HashSet;
  * - VISITEUR : Consultation des projets publics uniquement
  * - MEMBRE : Participation aux projets et collaboration en temps réel
  * - CHEF_PROJET : Création et gestion complète de projets (abonnement requis)
- * - ADMINISTRATEUR : Gestion globale de la plateforme
+ * - ADMINISTRATEUR: Gestion globale de la plateforme
  *
  * Fonctionnalités couvertes : F1 (S'inscrire), F4-F5 (Profil), F8 (Membres), F12 (Multilingue)
  *
@@ -118,7 +118,7 @@ public class Utilisateur {
      * Relation Many-to-Many bidirectionnelle avec l'entité Projet.
      * Supporte la fonctionnalité F8 : Ajouter des membres à un projet.
      *
-     * @see Projet#membres
+     * @see Projet membres
      */
     @ManyToMany(mappedBy = "membres", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -128,8 +128,7 @@ public class Utilisateur {
      * Liste des tâches assignées à cet utilisateur.
      * Relation One-to-Many avec l'entité Tache.
      * Supporte la fonctionnalité F7 : Gérer les tâches (assignation).
-     *
-     * @see Tache#assigneA
+
      */
     @OneToMany(mappedBy = "assigneA", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -173,7 +172,7 @@ public class Utilisateur {
      * Relation One-to-Many avec l'entité Commentaire.
      * Supporte la collaboration et communication dans les projets.
      *
-     * @see Commentaire#auteur
+     * @see Commentaire auteur
      */
     @OneToMany(mappedBy = "auteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

@@ -15,7 +15,7 @@ export const endpoints = {
   notifications: '/api/notifications',
   commentaires: '/api/commentaires',
   transactions: '/api/transactions',
-  public: '/api/public' // pour multilingue & ressources publiques
+  public: '/api/public'
 }
 
 /* ============================================
@@ -48,8 +48,6 @@ api.interceptors.request.use((config) => {
   if (token && !isPublic) {
     config.headers.Authorization = `Bearer ${token}`
   }
-
-
 
   console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`, {
     params: config.params,
@@ -201,7 +199,6 @@ export const taskAPI = {
       { headers: { 'Content-Type': 'application/json' } }
     ),
 
-
   assignTask: (taskId, userId) =>
     api.put(
       `${endpoints.tasks}/${cleanId(taskId)}/assigner`,
@@ -214,8 +211,9 @@ export const taskAPI = {
   byUser: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
 
-  byChefProjet: (userId) =>
-    api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
+  // ⚠️ CORRECTION CRITIQUE: Utiliser le bon endpoint pour les tâches du chef de projet
+  byChefProjet: (chefId) =>
+    api.get(`${endpoints.tasks}/chef/${cleanId(chefId)}`),
 
   byProjet: (projetId) =>
     api.get(`${endpoints.tasks}/projet/${cleanId(projetId)}`),
@@ -223,7 +221,7 @@ export const taskAPI = {
   getStatuses: () => api.get(`${endpoints.tasks}/statuts`),
   getPriorities: () => api.get(`${endpoints.tasks}/priorites`),
 
-  getAllAdmin: () => api.get(`${endpoints.tasks}/admin/all`),
+  getAllAdmin: () => api.get(`${endpoints.tasks}`),
   annulerParAdmin: (id) =>
     api.put(`${endpoints.tasks}/${cleanId(id)}/annuler`),
 }
@@ -249,18 +247,10 @@ export const messagesAPI = {
   byProjet: (projectId) =>
     api.get(`${endpoints.messages}/projet/${cleanId(projectId)}`),
 
-  /**
-   * CORRECTION CRITIQUE:
-   * Le backend attend POST /api/messages/projet/{projetId}
-   * et non POST /api/messages
-   *
-   * Payload attendu: { contenu: string, projetId: number, type?: string }
-   */
   send: (payload) => {
     if (!payload.projetId) {
       return Promise.reject(new Error('projetId est requis pour envoyer un message'))
     }
-    // Appel corrigé: POST /api/messages/projet/{projetId}
     return api.post(`${endpoints.messages}/projet/${cleanId(payload.projetId)}`, {
       contenu: payload.contenu,
       type: payload.type || 'TEXT'
@@ -291,7 +281,7 @@ export const notificationAPI = {
 /* ===================== COMMENTAIRES ===================== */
 export const commentaireAPI = {
   list: () => api.get(endpoints.commentaires),
-  byTache: (tacheId) =>
+  getByTache: (tacheId) =>
     api.get(`${endpoints.commentaires}/tache/${cleanId(tacheId)}`),
   create: (payload) => api.post(endpoints.commentaires, payload),
   update: (id, payload) =>

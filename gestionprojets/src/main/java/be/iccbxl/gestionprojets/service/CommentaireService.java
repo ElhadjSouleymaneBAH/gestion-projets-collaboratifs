@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 /**
  * Service de gestion des commentaires (F12) avec notifications temps réel (F13)
- *
- * ✅ CORRECTION: Intégration WebSocket pour notifications instantanées
+
+ *  Intégration WebSocket pour notifications instantanées
  *
  * @author ElhadjSouleymaneBAH
  * @version 1.1 - Ajout WebSocket
@@ -53,7 +53,7 @@ public class CommentaireService {
     // ============================================================================
 
     /**
-     * ✅ Créer un nouveau commentaire (F12) + Notification temps réel (F13)
+     * Créer un nouveau commentaire (F12) + Notification temps réel (F13)
      */
     public CommentaireDTO creerCommentaire(CommentaireDTO commentaireDTO, String emailAuteur) {
         log.info("[F12] Création commentaire par {}", emailAuteur);
@@ -79,10 +79,10 @@ public class CommentaireService {
         commentaire.setAuteur(auteur);
 
         Commentaire commentaireSauvegarde = commentaireRepository.save(commentaire);
-        log.info("[F12] ✅ Commentaire créé avec ID: {}", commentaireSauvegarde.getId());
+        log.info("[F12]  Commentaire créé avec ID: {}", commentaireSauvegarde.getId());
 
         // ========================================================================
-        // ✅ F13 : NOTIFICATION TEMPS RÉEL VIA WEBSOCKET
+        // F13 : NOTIFICATION TEMPS RÉEL VIA WEBSOCKET
         // ========================================================================
         if (tache.getAssigneA() != null && !tache.getAssigneA().getId().equals(auteur.getId())) {
             try {
@@ -97,22 +97,22 @@ public class CommentaireService {
                 // 1. Créer notification en base de données
                 notificationService.creerNotification(tache.getAssigneA().getId(), message);
 
-                // 2. ✅ CORRECTION: Envoyer notification WebSocket en temps réel
+                // 2. Envoyer notification WebSocket en temps réel
                 webSocketController.envoyerNotificationUtilisateur(
                         tache.getAssigneA().getId(),
                         titre,
                         message
                 );
 
-                log.info("[F13] ✅ Notification temps réel envoyée à l'utilisateur {}",
+                log.info("[F13]  Notification temps réel envoyée à l'utilisateur {}",
                         tache.getAssigneA().getId());
 
             } catch (Exception e) {
-                log.error("[F13] ❌ Échec notification: {}", e.getMessage());
+                log.error("[F13]  Échec notification: {}", e.getMessage());
                 // On continue même si la notification échoue (robustesse)
             }
         } else {
-            log.debug("[F13] ℹ️ Aucune notification (pas d'assigné ou auto-commentaire)");
+            log.debug("[F13]  Aucune notification (pas d'assigné ou auto-commentaire)");
         }
 
         return convertirEnDTO(commentaireSauvegarde);
@@ -154,7 +154,7 @@ public class CommentaireService {
         }
 
         commentaireRepository.deleteById(commentaireId);
-        log.info("[F12] ✅ Commentaire {} supprimé", commentaireId);
+        log.info("[F12]  Commentaire {} supprimé", commentaireId);
     }
 
     /**

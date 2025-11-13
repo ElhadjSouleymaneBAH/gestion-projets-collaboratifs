@@ -20,7 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Configuration de sécurité Spring Boot
- * Fonctionnalités ordonnées F1 à F14 selon le cahier des charges
+ * Fonctionnalités ordonnées F1 à F14
  */
 @Configuration
 @EnableWebSecurity
@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/error", "/favicon.ico", "/actuator/**").permitAll()
                         .requestMatchers("/", "/static/**", "/assets/**", "/public/**").permitAll()
 
-                        // ✅ Routes publiques front-end (accessibles sans JWT)
+                        //  Routes publiques front-end (accessibles sans JWT)
                         .requestMatchers(
                                 "/index.html",
                                 "/conditions",

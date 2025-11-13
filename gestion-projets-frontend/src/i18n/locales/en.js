@@ -101,6 +101,12 @@ export default {
     membre: 'Member',
     reinitialiser: 'Reset',
     affichageResultats: 'Showing {debut}–{fin} of {total}',
+    nonDefini: 'Undefined',
+    informations: "Informations",
+    totalTache: "Total tasks",
+    brouillon: "Draft",
+    ajouter: "Add",
+    recherche: "Searching..."
   },
 
   // ==================== LANGUAGES ====================
@@ -302,9 +308,11 @@ export default {
     creerValiderTaches: 'Create and validate your tasks',
     mesTachesAssignees: 'My assigned tasks',
     aucuneTache: 'No tasks',
+    tache: 'Task',
     nouvelle: 'New task',
     nouvelleTache: 'New Task',
     taches: 'Tasks',
+    tachesNonAssignees: 'Unassigned tasks',
     enAttenteValidation: 'Pending validation',
     enAttente: 'Pending',
     toutesLesTaches: 'All tasks',
@@ -366,6 +374,7 @@ export default {
       dateCreation: 'Creation Date',
       assigneeA: 'Assigned to',
       aucuneTache: 'No tasks found',
+      creationReussie: " Task created successfully!",
     },
     filtres: {
       statut: 'Status',
@@ -483,6 +492,9 @@ export default {
     ajoute: 'Comment added successfully',
     ajouteSucces: 'Comment added successfully',
     placeholder: 'Write your comment...',
+    auteur: 'Author',
+    contenu: 'Content',
+    date: 'Date',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -613,6 +625,10 @@ export default {
       support: 'Priority support',
       chat: 'Real-time chat',
       statistiques: 'Advanced statistics',
+      montantTTC: 'Total amount (incl. tax)',
+      reactiver: "Reactivate my subscription",
+      expire: "Expired",
+      souscrirePremium: "Subscribe to Premium",
     },
   },
 
@@ -781,7 +797,7 @@ export default {
     nom: 'Last Name',
     nomPlaceholder: 'Your last name',
     email: 'Email Address',
-    emailPlaceholder: 'example@@domain.com',
+    emailPlaceholder: 'example@domain.com',
     sauvegarder: 'Save',
     motDePasse: 'Password',
     ancienMotDePassePlaceholder: 'Your current password',
@@ -904,6 +920,9 @@ export default {
       titre: 'Member Dashboard',
       projetsParticipes: 'Projects I participate in',
       activiteRecente: 'Recent activity',
+      ajouterMembre: 'Add member',
+      mesTaches: 'My tasks',
+
 
       promoPremium: {
         titre: 'Upgrade to Premium!',
@@ -951,6 +970,8 @@ export default {
       taches: 'Tasks',
       finance: 'Finance',
       privateProject: 'Private project',
+      modifierRole: 'Change role',
+      suspendre: 'Suspend',
 
       alertes: 'Alerts',
       aucuneAlerte: 'No alert',
@@ -993,8 +1014,13 @@ export default {
       confirmerAnnulationTache: 'Are you sure you want to cancel this task? This action is irreversible.',
       tacheAnnulee: 'Task successfully canceled',
       erreurAnnulationTache: 'Error while canceling the task',
-
-      suspendu: 'Suspended'
+      suspendu: 'Suspended',
+      supervisionProjet: 'Project supervision',
+      aucunMembre: 'No member found',
+      statistiques: 'Statistics',
+      informations: 'Information',
+      total: 'Total',
+      brouillon: 'Draft',
     },
 
   },
@@ -1060,6 +1086,11 @@ export default {
       description: 'Create your projects and manage your teams',
       bouton: 'Upgrade to Premium',
     },
+    devenirChef: {
+      titre: 'Become a Project Manager and create your own projects!',
+      description: 'Subscribe to unlock full access to project creation and management features.',
+      bouton: 'Discover',
+      },
     notifications: {
       vide: 'No notifications at the moment',
     },
@@ -1122,6 +1153,7 @@ export default {
       validationTaches: 'Task validation',
       workflowApprobation: 'Approval workflow',
       aucuneTacheValider: 'No tasks to validate at the moment',
+      tache: 'Task',
     },
     membres: 'members',
   },
@@ -1135,6 +1167,8 @@ export default {
     finance: 'Finance',
     contenu: 'Content',
     systeme: 'System',
+    modifierRole: 'Change role',
+    suspendre: 'Suspend',
     gestionUtilisateurs: 'User Management',
     gererTousUtilisateurs: 'Manage all platform users',
     tousLesRoles: 'All roles',
@@ -1185,6 +1219,14 @@ export default {
     commentaires: 'Comments',
     notifications: 'Notifications',
     prix: 'Price',
+    archiver: 'Archive',
+    vueSupervision: 'Supervision view',
+    consulterDetails: 'View details',
+    details: 'Details',
+    supprimerCompte: 'Delete account',
+    filtreParUtilisateur: 'Filter by user',
+    genereAuto: 'Automatically generated',
+    montantTTC: 'Total amount (incl. taxes)',
   },
 
   // ==================== ABOUT ====================
@@ -1313,7 +1355,8 @@ export default {
     protectionText:
       'CollabPro is committed to protecting your personal data in accordance with GDPR.',
     referenceRGPD: 'GDPR Reference',
-    referenceRGPDText: 'For more details on the processing of your data, see our ',
+    referenceRGPDText: 'For more details on how your data is processed, please refer to our privacy policy.',
+
     responsabilites: 'Responsibilities',
     responsabilitesText:
       'CollabPro makes every effort to ensure the availability and security of the platform.',
@@ -1519,6 +1562,7 @@ export default {
     envoyerMessage: 'Error sending message',
     sauvegardeProfile: 'Error saving profile',
     telechargementFacture: 'Error downloading invoice',
+
   },
 
   // ==================== VALIDATION ====================
@@ -1541,6 +1585,8 @@ export default {
     connexionReussie: 'Login successful',
     erreurConnexion: 'Incorrect email or password',
     emailMotDePasseIncorrect: 'Incorrect email or password',
+    accepterConditionsAbonnement: "Please accept the subscription terms",
+    conditionsAbonnementRequises: "Accepting the subscription terms is required",
   },
 
   // ==================== STRIPE ====================
@@ -1549,7 +1595,7 @@ export default {
       titre: 'Payment Cancelled',
       description: 'Your payment was not completed. You can try again or return to your dashboard.',
       retour: 'Return to dashboard',
-      supportEmail: 'support@collabpro.com',
+      supportEmail: 'support@@collabpro.com',
     },
     success: {
       titre: 'Payment Successful',
@@ -1583,7 +1629,48 @@ export default {
     validerTache: 'Validate task',
     supprimerTache: 'Delete task',
     voirDetails: 'View details',
-  },
+    voirNotifications: 'View notifications',
+    voirChat: 'Open chat',
+    voirProfil: 'View profile',
+    // Team actions
+    ajouterMembre: 'Add a member to the project',
+    ajouterMembreProjet: 'Add a member to this project',
+    retirerMembre: 'Remove a member from the project',
+    aucunMembreProjet: 'Add a member to the project first',
+    aucuneTacheNonAssignee: 'No unassigned tasks available',
+    consulterProjet: 'View project details',
+    modifierProjet: 'Edit project',
+    voirProjets: 'View projects',
+    voirTaches: 'View tasks',
+    voirEquipe: 'View team',
+    voirFactures: 'View invoices',
+    kpiEquipe: 'View all collaborators',
+    supprimerProjet: 'Delete project',
+    // Notification actions
+    marquerLue: 'Mark as read',
+    marquerToutesLues: 'Mark all notifications as read',
+    supprimerNotification: 'Delete this notification',
+
+    // Invoice actions
+    telechargerFacture: 'Download invoice as PDF',
+
+    // Filter actions
+    filtrerParProjet: 'Filter tasks by project',
+
+    // Chat actions
+    ouvrirChat: 'Open project chat',
+    ecrireMessage: 'Write a message',
+    envoyerMessage: 'Send message',
+
+    // Task actions
+    annulerTache: 'Cancel task',
+    renvoyerBrouillon: 'Send task back to draft',
+    soumettreValidation: 'Submit this task for validation by the project manager',
+    kpiTachesTerminees: 'View all completed tasks',
+
+
+  }
+
 
 };
 

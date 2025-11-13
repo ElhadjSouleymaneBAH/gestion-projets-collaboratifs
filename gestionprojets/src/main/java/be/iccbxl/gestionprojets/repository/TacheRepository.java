@@ -112,4 +112,24 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
             "AND t.statut IN :actifs")
     boolean existsByAssigneAIdAndTachesActives(@Param("assigneId") Long assigneId,
                                                @Param("actifs") List<StatutTache> actifs);
+
+    /**
+     * Trouve les tâches par liste d'IDs de projets (utilisé pour les chefs de projet)
+     */
+    @Query("SELECT t FROM Tache t " +
+            "LEFT JOIN FETCH t.projet p " +
+            "LEFT JOIN FETCH p.createur " +
+            "LEFT JOIN FETCH t.assigneA " +
+            "WHERE t.projet.id IN :idsProjets")
+    List<Tache> findByProjetIdInWithRelations(@Param("idsProjets") List<Long> idsProjets);
+
+    /**
+     * Tâches non assignées pour un projet donné.
+     * Utilisée dans la fenêtre d’assignation de tâche.
+     */
+    @Query("SELECT t FROM Tache t " +
+            "LEFT JOIN FETCH t.projet p " +
+            "LEFT JOIN FETCH p.createur " +
+            "WHERE t.projet.id = :projetId AND t.assigneA IS NULL")
+    List<Tache> findNonAssigneesByProjetId(@Param("projetId") Long projetId);
 }

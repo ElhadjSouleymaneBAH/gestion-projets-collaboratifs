@@ -1,13 +1,8 @@
 import api from './api.js'
 
 /**
- * Service d'authentification - Frontend Vue.js
- * Implémente la fonctionnalité F2 du cahier des charges
- * Internationalisation complète FR/EN
- * Aucune donnée en dur - Configuration dynamique
- *
  * @author Équipe Développement
- * @version 1.0
+ * @version 1.1 - fixed
  */
 class AuthService {
   /**
@@ -39,11 +34,13 @@ class AuthService {
   }
 
   /**
-   * Clés de stockage de session
+   *  Utilisation des clés unifiées 'token' et 'user'
+   * au lieu de 'auth_token' et 'auth_user' pour compatibilité
+   * avec le reste de l'application
    */
   static STORAGE_KEYS = {
-    TOKEN: 'auth_token',
-    USER: 'auth_user',
+    TOKEN: 'token',
+    USER: 'user',
     REFRESH_TOKEN: 'auth_refresh_token',
     EXPIRES_AT: 'auth_expires_at',
     LANGUAGE: 'user_language'
