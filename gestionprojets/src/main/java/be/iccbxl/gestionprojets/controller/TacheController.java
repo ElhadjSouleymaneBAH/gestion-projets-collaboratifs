@@ -15,10 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Controller REST pour la gestion des tâches (F7)
- * Version complète corrigée — conforme au cahier des charges.
+ * Version CORRIGÉE COMPLÈTE — Tous les endpoints nécessaires
+ *
+ * @author Elhadj Souleymane BAH
+ * @version 3.1 - CORRECTION FINALE + DEBUG
  */
 @RestController
 @RequestMapping("/api/taches")
@@ -127,8 +131,6 @@ public class TacheController {
         }
     }
 
-    // ---------- NOUVEAUX ENDPOINTS CONFORMES AU CAHIER DES CHARGES ----------
-
     // Tâches assignées à un utilisateur (membre)
     @GetMapping("/utilisateur/{idUtilisateur}")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
@@ -141,14 +143,123 @@ public class TacheController {
         }
     }
 
-    // Tâches liées aux projets d’un chef de projet
+    // 🔧 CORRECTION CRITIQUE : Tâches liées aux projets d'un chef de projet
     @GetMapping("/chef/{idChef}")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<TacheDTO>> obtenirTachesParChef(@PathVariable Long idChef) {
         try {
+            System.out.println("🔍 [TacheController] Récupération des tâches pour le chef " + idChef);
+
             List<TacheDTO> taches = tacheService.obtenirTachesParChefDeProjet(idChef);
+
+            System.out.println("✅ [TacheController] " + taches.size() + " tâches trouvées");
+
+            // Debug: Afficher les détails des tâches
+            taches.forEach(t -> {
+                System.out.println("   📋 Tâche #" + t.getId() +
+                        " - idProjet=" + t.getIdProjet() +
+                        " - titre='" + t.getTitre() + "'" +
+                        " - statut=" + t.getStatut());
+            });
+
+            // Vérifier si des tâches ont un idProjet null
+            long tachesSansProjet = taches.stream()
+                    .filter(t -> t.getIdProjet() == null)
+                    .count();
+
+            if (tachesSansProjet > 0) {
+                System.err.println("⚠️ [TacheController] " + tachesSansProjet +
+                        " tâches SANS idProjet détectées !");
+            }
+
             return ResponseEntity.ok(taches);
         } catch (Exception e) {
+            System.err.println("❌ [TacheController] Erreur lors de la récupération des tâches: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ---------- MODIFIER TÂCHE ----------
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<TacheDTO> modifierTache(@PathVariable Long id,
+                                                  @Valid @RequestBody TacheDTO tacheDTO,
+                                                  Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+
+            Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
+            if (tacheExistante.isEmpty()) return ResponseEntity.notFound().build();
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, tacheExistante.get().getIdProjet())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            TacheDTO tacheModifiee = tacheService.modifierTache(id, tacheDTO);
+            return ResponseEntity.ok(tacheModifiee);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ---------- CHANGER STATUT ----------
+    @PutMapping("/{id}/statut")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<TacheDTO> changerStatutTache(@PathVariable Long id,
+                                                       @RequestBody Map<String, String> body,
+                                                       Authentication authentication) {
+        try {
+            System.out.println("🔄 [API] Changement statut tâche " + id);
+
+            if (!body.containsKey("statut")) {
+                System.err.println("❌ [API] Paramètre 'statut' manquant");
+                return ResponseEntity.badRequest().build();
+            }
+
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+
+            Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
+            if (tacheExistante.isEmpty()) {
+                System.err.println("❌ [API] Tâche " + id + " introuvable");
+                return ResponseEntity.notFound().build();
+            }
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+
+            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, tacheExistante.get().getIdProjet())) {
+                System.err.println("❌ [API] Accès refusé pour utilisateur " + idUser);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            StatutTache nouveauStatut = StatutTache.valueOf(body.get("statut"));
+            System.out.println("✅ [API] Nouveau statut: " + nouveauStatut);
+
+            TacheDTO tacheUpdated = tacheService.changerStatutTache(id, nouveauStatut);
+
+            // Notification automatique (F13)
+            notificationService.notifierChangementStatutTache(tacheUpdated, nouveauStatut);
+
+            System.out.println("✅ [API] Tâche " + id + " mise à jour avec statut " + nouveauStatut);
+            return ResponseEntity.ok(tacheUpdated);
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("❌ [API] Statut invalide: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            System.err.println("❌ [API] Erreur runtime: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.err.println("❌ [API] Erreur serveur: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -186,6 +297,10 @@ public class TacheController {
     public ResponseEntity<TacheDTO> annulerTache(@PathVariable Long id) {
         try {
             TacheDTO tache = tacheService.annulerParAdmin(id);
+
+            // Notification automatique
+            notificationService.notifierChangementStatutTache(tache, StatutTache.ANNULE);
+
             return ResponseEntity.ok(tache);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

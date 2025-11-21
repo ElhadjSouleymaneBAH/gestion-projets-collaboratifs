@@ -23,11 +23,14 @@ export default {
     equipe: 'Team',
     collaboration: 'Collaboration',
     connecter: 'Log In',
+    locale: "Language",
+
   },
 
 
   // ==================== APPLICATION ====================
   app: { nom: 'CollabPro' },
+  locale: 'English',
 
   // ==================== COMMON ====================
   commun: {
@@ -106,7 +109,8 @@ export default {
     totalTache: "Total tasks",
     brouillon: "Draft",
     ajouter: "Add",
-    recherche: "Searching..."
+    recherche: "Searching...",
+
   },
 
   // ==================== LANGUAGES ====================
@@ -305,6 +309,7 @@ export default {
   taches: {
     titre: 'Title',
     gestionTaches: 'Task Management',
+    tachesAssignees: "Assigned tasks",
     creerValiderTaches: 'Create and validate your tasks',
     mesTachesAssignees: 'My assigned tasks',
     aucuneTache: 'No tasks',
@@ -368,6 +373,18 @@ export default {
     saisieDescription: 'Describe the task to be done',
     choisirProjet: 'Choose a project',
     voirDetails: 'View details',
+    creerNouvelleTache: 'Create a new task',
+    creerTache: 'Create task',
+    infoCreation: "Information to create a task",
+    placeholderTitre: "Enter task title",
+    placeholderDescription: "Enter task description",
+    prioriteBasse: "Low",
+    prioriteNormale: "Normal",
+    prioriteHaute: "High",
+
+
+
+
     liste: {
       titre: 'Task List',
       description: 'All project tasks, with filters and sorting.',
@@ -375,6 +392,7 @@ export default {
       assigneeA: 'Assigned to',
       aucuneTache: 'No tasks found',
       creationReussie: " Task created successfully!",
+      creerNouvelleTache: "Create a new task",
     },
     filtres: {
       statut: 'Status',
@@ -415,6 +433,7 @@ export default {
     titre: 'Team',
     gestionEquipe: 'Team Management',
     ajouterMembresAuxProjets: 'Add members to your projects',
+    gestionMembresEtTaches: "Manage members and tasks",
     ajouterMembre: 'Add member',
     ajouter: 'Add',
     membres: 'Members',
@@ -432,6 +451,7 @@ export default {
     confirmerRetrait: 'Confirm removal of this member?',
     erreurRetrait: 'Error removing member',
     erreurAjout: 'Error adding member',
+    equipe: "Team",
     roles: {
       membre: 'Member',
       moderateur: 'Moderator',
@@ -924,10 +944,12 @@ export default {
       mesTaches: 'My tasks',
 
 
+
       promoPremium: {
         titre: 'Upgrade to Premium!',
         description: 'Enjoy advanced features and an enhanced collaborative experience.',
-        bouton: 'Discover the offer'
+        bouton: 'Discover the offer',
+        ajouterMembre: "Add member",
       },
 
       projets: {
@@ -1031,6 +1053,7 @@ export default {
     soumiseValidation: 'Task submitted for validation',
     chatEquipe: 'Team chat',
     profil: 'My profile',
+    aucunResultat: "No result found",
 
     profilSection: {
       titre: 'My profile',
@@ -1559,9 +1582,10 @@ export default {
     ajoutMembre: 'Error adding member',
     retraitMembre: 'Error removing member',
     ajoutCommentaire: 'Error adding comment',
-    envoyerMessage: 'Error sending message',
     sauvegardeProfile: 'Error saving profile',
     telechargementFacture: 'Error downloading invoice',
+    envoyerMessage: "Unable to send the message",
+    creationReussie: "Task created successfully!",
 
   },
 

@@ -56,11 +56,10 @@
                   </div>
                   <div class="card-body">
                     <div class="text-center mb-4">
+                      <!-- ✅ CORRECTION 1 : Prix avec HT -->
                       <h2 class="text-primary">
-                        {{ $t('abonnement.prix') }}
-                        <small class="text-muted">{{
-                            $t('abonnement.parMois')
-                          }}</small>
+                        10,00 € <small class="text-muted">HT</small>
+                        <small class="text-muted d-block" style="font-size: 0.9rem;">{{ $t('abonnement.parMois') }}</small>
                       </h2>
                     </div>
                     <ul class="list-unstyled mb-0 features-list">
@@ -147,7 +146,7 @@
                           <label class="form-label">{{
                               $t('paiement.cvv')
                             }}</label>
-                          <!-- 🔒 CVV masqué uniquement (modif demandée) -->
+                          <!-- 🔒 CVV masqué -->
                           <input
                             class="form-control"
                             type="password"
@@ -194,8 +193,9 @@
                           <h6 class="mb-3">
                             {{ $t('paiement.resumerCommande') }}
                           </h6>
+                          <!-- ✅ CORRECTION 2 : Ligne avec HT -->
                           <div class="d-flex justify-content-between">
-                            <span>{{ $t('paiement.abonnementMensuel') }}</span>
+                            <span>{{ $t('paiement.abonnementMensuel') }} <small class="text-muted">HT</small></span>
                             <strong>{{ montantHTFormatte }}</strong>
                           </div>
                           <div class="d-flex justify-content-between">
@@ -305,7 +305,7 @@ export default {
       return useAuthStore().user
     },
 
-    // ✅ CORRECTION: Vérifier si l'abonnement est VRAIMENT actif
+    // ✅ Vérifier si l'abonnement est VRAIMENT actif
     abonnementActif() {
       const a = this.abonnement
       if (!a || !a.id) return false
@@ -321,7 +321,7 @@ export default {
       return dateFin > maintenant
     },
 
-    // ✅ NOUVEAU: Vérifier si un abonnement existe (même expiré)
+    // ✅ Vérifier si un abonnement existe (même expiré)
     abonnementExiste() {
       return this.abonnement && this.abonnement.id
     },
@@ -428,8 +428,7 @@ export default {
     },
 
     /**
-     * Souscription/Renouvellement avec Stripe RÉEL
-     * Flux dynamique aligné au backend
+     * Souscription/Renouvellement avec Stripe
      */
     async souscrire() {
       if (!this.validerForm()) return
@@ -463,7 +462,7 @@ export default {
           throw new Error(confirmRes?.data?.message || 'Paiement échoué')
         }
 
-        // Étape 3 : Souscription backend (gère tout automatiquement)
+        // Étape 3 : Souscription backend
         const { data } = await abonnementAPI.souscrire({
           nom: 'Plan Premium Mensuel',
           prix: this.prixMensuelHT,

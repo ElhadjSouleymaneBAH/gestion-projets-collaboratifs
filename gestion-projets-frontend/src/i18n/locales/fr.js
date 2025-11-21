@@ -23,12 +23,14 @@ export default {
     equipe: 'Équipe',
     collaboration: 'Collaboration',
     connecter: 'Se connecter',
+    locale: "Langue",
   },
 
   // ==================== APPLICATION ====================
   app: {
     nom: 'CollabPro',
   },
+  locale: 'Français',
 
   // ==================== COMMUN ====================
   commun: {
@@ -106,7 +108,9 @@ export default {
     nonDefini: 'Non défini',
     informations: "Information",
     brouillon: "Brouillon",
-    recherche: "Recherche..."
+    recherche: "Recherche...",
+    ajouter: "Ajouter",
+
 
 
   },
@@ -228,7 +232,11 @@ export default {
     aucunProjetDescription: "Aucun projet public n'est disponible pour le moment",
     modeConsultationDescription: 'Vous êtes en mode consultation. Veuillez vous',
     erreurChargement: 'Erreur lors du chargement des projets publics',
+    creerNouvelleTache: "Créer une nouvelle tâche",
+    creerTache: "Créer une tâche"
   },
+
+
 
   // ==================== PROJET (SINGULIER) ====================
   projet: {
@@ -314,6 +322,7 @@ export default {
   taches: {
     titre: 'Titre',
     gestionTaches: 'Gestion des tâches',
+    tachesAssignees: "Tâches assignées",
     creerValiderTaches: 'Créez et validez vos tâches',
     mesTachesAssignees: 'Mes tâches assignées',
     aucuneTache: 'Aucune tâche',
@@ -321,6 +330,8 @@ export default {
     aucuneTacheDisponible: 'Aucune tâche disponible',
     nouvelle: 'Nouvelle tâche',
     nouvelleTache: 'Nouvelle tâche',
+    creerNouvelleTache: 'Créer une nouvelle tâche',
+    creerTache: 'Créer une tâche',
     taches: 'Tâches',
     tache: 'Tâche',
     enAttenteValidation: 'En attente de validation',
@@ -389,6 +400,7 @@ export default {
     tachesNonAssignees: 'Tâches non assignées',
     aucunMembreProjet: 'Aucun membre dans ce projet',
     voirDetails: 'Voir les détails',
+    creationReussie: "Tâche créée avec succès !",
     liste: {
       titre: 'Liste des tâches',
       description: 'Toutes les tâches du projet, avec filtres et tri.',
@@ -397,6 +409,17 @@ export default {
       aucuneTache: 'Aucune tâche trouvée',
       total: "Total",
       creationReussie: "Tâche créée avec succès !",
+      creerNouvelleTache: "Créer une nouvelle tâche",
+      creerTache: "Créer une tâche",
+      infoCreation: "Informations pour créer une tâche",
+      placeholderTitre: "Entrez le titre de la tâche",
+      placeholderDescription: "Entrez la description de la tâche",
+      prioriteBasse: "Basse",
+      prioriteNormale: "Normale",
+      prioriteHaute: "Haute",
+
+
+
     },
     filtres: {
       statut: 'Statut',
@@ -436,7 +459,8 @@ export default {
   equipe: {
     titre: 'Équipe',
     gestionEquipe: "Gestion de l'équipe",
-    gestionMembresEtTaches: 'Gestion des membres et assignation des tâches',
+    //gestionMembresEtTaches: 'Gestion des membres et assignation des tâches',
+    gestionMembresEtTaches: "Gestion des membres et des tâches",
     ajouterMembresAuxProjets: 'Ajoutez des membres à vos projets',
     ajouterMembre: 'Ajouter un membre',
     ajouterMembreProjet: 'Ajouter un membre au projet',
@@ -460,6 +484,7 @@ export default {
     erreurAjout: "Erreur lors de l'ajout du membre",
     selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
     aucunResultat: 'Aucun résultat trouvé',
+    equipe: "Équipe",
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
@@ -904,6 +929,8 @@ export default {
       titre: 'Passez à Premium !',
       description: 'Devenez Chef de Projet et créez vos propres équipes',
       decouvrir: 'Découvrir Premium',
+      ajouterMembre: "Ajouter un membre",
+      aucunResultat: "Aucun résultat trouvé",
     },
     kpis: {
       projetsRejoints: 'Projets rejoints',

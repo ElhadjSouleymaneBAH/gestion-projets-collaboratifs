@@ -234,6 +234,17 @@
           </a>
         </li>
       </ul>
+      <!-- ========== SUPPORT PREMIUM ========== -->
+      <div v-if="abonnementActif" class="alert alert-success mb-3 d-flex align-items-center justify-content-between">
+        <div>
+          <i class="fas fa-headset me-2"></i>
+          <strong>Support Premium</strong> : Contactez-nous pour une assistance prioritaire
+        </div>
+        <router-link to="/contact" class="btn btn-sm btn-outline-success">
+          <i class="fas fa-envelope me-1"></i>Contacter le support
+        </router-link>
+      </div>
+
 
       <!-- ========== F6: GESTION PROJETS ========== -->
       <div v-if="onglet === 'projets'">
@@ -506,6 +517,7 @@
                 <tr>
                   <th>{{ $t('projets.projet') }}</th>
                   <th>{{ $t('equipe.equipe') }}</th>
+                  <th>{{ $t('taches.tachesAssignees') }}</th>
                   <th>{{ $t('taches.tachesNonAssignees') }}</th>
                   <th class="text-end">{{ $t('commun.actions') }}</th>
                 </tr>
@@ -527,6 +539,12 @@
                         {{ $t('equipe.aucunMembre') }}
                       </span>
                   </td>
+                  <td>
+                      <span class="badge bg-success">
+                        {{ getTachesAssigneesProjet(p.id).length }}
+                      </span>
+                  </td>
+
                   <td>
                       <span class="badge bg-warning">
                         {{ getTachesNonAssigneesProjet(p.id).length }}
@@ -1507,6 +1525,12 @@ export default {
       } catch (e) {
         console.error('[Projets] Erreur:', e)
         this.mesProjets = []
+        // Afficher un message à l'utilisateur
+        if (e.response?.status === 401) {
+          this.erreurBackend = 'Session expirée. Veuillez vous reconnecter'
+        } else {
+          this.erreurBackend = 'Erreur de chargement des projets'
+        }
       } finally {
         this.chargementProjets = false
       }
@@ -1528,44 +1552,62 @@ export default {
       this.chargementTaches = true
       try {
         const userId = this.normalizeId(this.utilisateur.id)
+        console.log('🔍 [chargerTaches] Chargement pour userId:', userId)
+
         const r = await taskAPI.byChefProjet(userId)
+        console.log('🔍 [chargerTaches] Réponse API:', r.data)
+
         let taches = Array.isArray(r.data)
           ? r.data
           : Array.isArray(r.data?.content)
             ? r.data.content
             : []
 
-        const projetsExistantsIds = new Set(
-          this.mesProjets.map(p => this.normalizeId(p.id))
-        )
+        console.log('🔍 [chargerTaches] Tâches extraites:', taches.length)
+        console.log('🔍 [chargerTaches] Projets existants:', this.mesProjets.length)
 
-        this.totalTaches = taches
-          .map((t) => ({
+        // ⚠️ SI AUCUN PROJET, CHARGER QUAND MÊME LES TÂCHES
+        if (this.mesProjets.length === 0) {
+          console.warn('⚠️ [chargerTaches] Aucun projet chargé, mais on garde les tâches')
+          this.totalTaches = taches.map((t) => ({
             ...t,
             id: this.normalizeId(t.id),
-            projetId: t.projetId
-              ? this.normalizeId(t.projetId)
-              : t.id_projet
-                ? this.normalizeId(t.id_projet)
-                : null,
-            id_projet: t.id_projet
-              ? this.normalizeId(t.id_projet)
-              : t.projetId
-                ? this.normalizeId(t.projetId)
-                : null,
+            projetId: this.normalizeId(t.projetId || t.id_projet),
+            id_projet: this.normalizeId(t.id_projet || t.projetId),
             assigneId: t.assigneId ?? t.idAssigne ?? t.id_assigne ?? null,
             id_assigne: t.id_assigne ?? t.assigneId ?? t.idAssigne ?? null,
             idAssigne: t.idAssigne ?? t.assigneId ?? t.id_assigne ?? null,
           }))
-          .filter((t) => {
-            const projetId = t.projetId || t.id_projet
-            // Filtrer silencieusement les tâches orphelines
-            return projetId && projetsExistantsIds.has(this.normalizeId(projetId))
-          })
+        } else {
+          // FILTRE NORMAL SI DES PROJETS EXISTENT
+          const projetsExistantsIds = new Set(
+            this.mesProjets.map(p => this.normalizeId(p.id))
+          )
 
-        console.log(' Tâches valides chargées:', this.totalTaches.length)
+          this.totalTaches = taches
+            .map((t) => ({
+              ...t,
+              id: this.normalizeId(t.id),
+              projetId: this.normalizeId(t.projetId || t.id_projet),
+              id_projet: this.normalizeId(t.id_projet || t.projetId),
+              assigneId: t.assigneId ?? t.idAssigne ?? t.id_assigne ?? null,
+              id_assigne: t.id_assigne ?? t.assigneId ?? t.idAssigne ?? null,
+              idAssigne: t.idAssigne ?? t.assigneId ?? t.id_assigne ?? null,
+            }))
+            .filter((t) => {
+              const projetId = t.projetId || t.id_projet
+              return projetId && projetsExistantsIds.has(this.normalizeId(projetId))
+            })
+        }
+
+        console.log(' [chargerTaches] Tâches valides chargées:', this.totalTaches.length)
+
+        //  COMPTER LES TÂCHES NON ASSIGNÉES
+        const nonAssignees = this.totalTaches.filter(t => t.idAssigne == null)
+        console.log('📊 [chargerTaches] Tâches NON assignées:', nonAssignees.length)
+
       } catch (e) {
-        console.error('[Taches] Erreur:', e)
+        console.error(' [chargerTaches] Erreur:', e)
         this.totalTaches = []
       } finally {
         this.chargementTaches = false
@@ -1872,9 +1914,42 @@ export default {
       this.modalCommentaires = true
       this.nouveauCommentaire = ''
       await this.chargerCommentairesTache(tache.id)
+      const tacheId = this.normalizeId(tache.id)
+      const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
+
+      if (!this.subscribedTopics.has(topicCommentaires)) {
+        WebSocketService.subscribeToTacheCommentaires(tacheId, (nouveauCommentaire) => {
+          console.log('[F12] ✅ Nouveau commentaire temps réel:', nouveauCommentaire)
+
+          // Ajouter si c'est la tâche actuellement ouverte
+          if (this.tacheSelectionnee && this.normalizeId(this.tacheSelectionnee.id) === tacheId) {
+            const existe = this.commentairesTache.some(c => c.id === nouveauCommentaire.id)
+            if (!existe) {
+              this.commentairesTache.push(nouveauCommentaire)
+            }
+          }
+        })
+
+        // Écoute des suppressions
+        WebSocketService.subscribeToTacheCommentairesSuppression(tacheId, (commentaireId) => {
+          console.log('[F12] ✅ Suppression commentaire temps réel:', commentaireId)
+          this.commentairesTache = this.commentairesTache.filter(c => c.id !== commentaireId)
+        })
+
+        this.subscribedTopics.add(topicCommentaires)
+        console.log('[F12] ✅ Abonné aux commentaires tâche', tacheId)
+      }
     },
 
     fermerModalCommentaires() {
+      if (this.tacheSelectionnee) {
+        const tacheId = this.normalizeId(this.tacheSelectionnee.id)
+        WebSocketService.unsubscribeFromTacheCommentaires(tacheId)
+
+        const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
+        this.subscribedTopics.delete(topicCommentaires)
+        console.log('[F12] Désabonné des commentaires tâche', tacheId)
+      }
       this.modalCommentaires = false
       this.tacheSelectionnee = null
       this.commentairesTache = []
@@ -1907,9 +1982,8 @@ export default {
           tacheId: this.tacheSelectionnee.id
         }
 
-        const response = await commentaireAPI.create(commentaireDTO)
+        await commentaireAPI.create(commentaireDTO)
 
-        this.commentairesTache.push(response.data)
         this.nouveauCommentaire = ''
 
         console.log('💬 Commentaire ajouté avec succès')
@@ -1926,7 +2000,7 @@ export default {
 
       try {
         await commentaireAPI.delete(commentaireId)
-        this.commentairesTache = this.commentairesTache.filter(c => c.id !== commentaireId)
+
         console.log('💬 Commentaire supprimé')
       } catch (e) {
         console.error('[Commentaires] Erreur suppression:', e)
@@ -2120,12 +2194,12 @@ export default {
       if (!this.nouveauMessage.trim() || !this.projetChatActuel) return
       this.envoyantMessage = true
       try {
-        const r = await messagesAPI.send({
+        await messagesAPI.send({
           projetId: this.projetChatActuel.id,
           contenu: this.nouveauMessage,
           type: 'TEXT',
         })
-        this.messagesChat.push(r.data)
+
         this.nouveauMessage = ''
       } catch (e) {
         console.error('[Chat] Erreur envoi:', e)
@@ -2215,7 +2289,15 @@ export default {
       return this.totalTaches.filter(
         (t) =>
           (t.projetId === projetId || t.id_projet === projetId) &&
-          !(t.idAssigne || t.assigneId || t.id_assigne),
+          t.idAssigne == null
+      )
+    },
+
+    getTachesAssigneesProjet(projetId) {
+      return this.totalTaches.filter(
+        (t) =>
+          (t.projetId === projetId || t.id_projet === projetId) &&
+          (t.idAssigne || t.assigneId || t.id_assigne)
       )
     },
 

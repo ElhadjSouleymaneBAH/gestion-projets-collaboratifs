@@ -205,6 +205,11 @@ public class TacheService {
             dto.setNomAssigne(assigne.getPrenom() + " " + assigne.getNom());
             dto.setPrenomAssigne(assigne.getPrenom());
             dto.setEmailAssigne(assigne.getEmail());
+        } else {
+            dto.setIdAssigne(null);
+            dto.setNomAssigne(null);
+            dto.setPrenomAssigne(null);
+            dto.setEmailAssigne(null);
         }
 
         dto.setStatut(tache.getStatut());

@@ -91,16 +91,25 @@ public class CommentaireController {
 
     /**
      * Supprimer un commentaire (F9)
+     * Règles métier :
+     * - ADMINISTRATEUR : peut supprimer tous les commentaires
+     * - CHEF_PROJET : peut supprimer tous les commentaires
+     * - MEMBRE : peut supprimer UNIQUEMENT ses propres commentaires
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<Map<String, String>> supprimerCommentaire(@PathVariable Long id,
                                                                     Authentication authentication) {
         try {
-            commentaireService.supprimerCommentaire(id);
+            String emailUtilisateur = authentication.getName();
+            commentaireService.supprimerCommentaire(id, emailUtilisateur);
             return ResponseEntity.ok(Map.of("message", "Commentaire supprimé avec succès"));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Erreur: " + e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Erreur: " + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erreur interne du serveur"));

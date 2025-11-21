@@ -25,7 +25,6 @@
                 {{ getInitiales(commentaire) }}
               </div>
               <div>
-                <!-- ✅ suppression des warnings -->
                 <strong>{{ commentaire?.['auteurPrenom'] ?? '' }} {{ commentaire?.['auteurNom'] ?? '' }}</strong>
                 <small class="text-muted d-block">{{ formatDate(commentaire?.date) }}</small>
               </div>
@@ -71,9 +70,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
+import websocketService from '@/services/websocket.service' // ⭐ AJOUT
 
 defineOptions({ name: 'TacheCommentaires' })
 const { t } = useI18n()
@@ -100,6 +100,53 @@ const utilisateur = JSON.parse(localStorage.getItem('user') || '{}')
 const token = localStorage.getItem('token')
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
+// ========================================================================
+// ⭐ WEBSOCKET - TEMPS RÉEL (F9 + F12)
+// ========================================================================
+
+/**
+ * Abonnement aux nouveaux commentaires en temps réel
+ */
+const setupWebSocketCommentaires = () => {
+  if (!websocketService.connected) {
+    console.warn('[Commentaires] WebSocket non connecté, abonnement impossible')
+    return
+  }
+
+  // Écouter les nouveaux commentaires
+  websocketService.subscribeToTacheCommentaires(props.tacheId, (nouveauCommentaire) => {
+    console.log('[F9] ✅ Nouveau commentaire reçu en temps réel:', nouveauCommentaire)
+
+    // Vérifier si le commentaire n'existe pas déjà (éviter les doublons)
+    const existe = commentaires.value.some(c => c.id === nouveauCommentaire.id)
+    if (!existe) {
+      commentaires.value.push(nouveauCommentaire)
+    }
+  })
+
+  // Écouter les suppressions de commentaires
+  websocketService.subscribeToTacheCommentairesSuppression(props.tacheId, (commentaireId) => {
+    console.log('[F9] ✅ Suppression commentaire reçue en temps réel:', commentaireId)
+
+    // Retirer le commentaire de la liste
+    commentaires.value = commentaires.value.filter(c => c.id !== commentaireId)
+  })
+
+  console.log('[F9] ✅ Abonné aux commentaires de la tâche', props.tacheId)
+}
+
+/**
+ * Désabonnement propre au démontage du composant
+ */
+const cleanupWebSocket = () => {
+  websocketService.unsubscribeFromTacheCommentaires(props.tacheId)
+  console.log('[F9] Désabonné des commentaires de la tâche', props.tacheId)
+}
+
+// ========================================================================
+// FIN WEBSOCKET
+// ========================================================================
+
 // ========== CHARGEMENT ==========
 const chargerCommentaires = async () => {
   try {
@@ -120,13 +167,15 @@ const publierCommentaire = async () => {
   if (!nouveauCommentaire.value || envoi.value) return
   try {
     envoi.value = true
-    const { data } = await axios.post(
+    await axios.post(
       `${API_BASE}/commentaires`,
       { contenu: nouveauCommentaire.value, tacheId: props.tacheId },
       { headers: { Authorization: `Bearer ${token}` } }
     )
-    commentaires.value.push(data)
+
+
     nouveauCommentaire.value = ''
+    console.log('[F9] Commentaire publié, réception WebSocket attendue...')
   } catch (error) {
     console.error('Erreur publication commentaire:', error)
     alert(t('erreurs.ajouterCommentaire'))
@@ -141,7 +190,11 @@ const supprimerCommentaire = async (commentaireId) => {
     await axios.delete(`${API_BASE}/commentaires/${commentaireId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    commentaires.value = commentaires.value.filter(c => c.id !== commentaireId)
+
+    // ⭐ NE PAS supprimer manuellement - le WebSocket le fera automatiquement
+    // commentaires.value = commentaires.value.filter(c => c.id !== commentaireId) // ❌ SUPPRIMÉ
+
+    console.log('[F9] Commentaire supprimé, réception WebSocket attendue...')
   } catch (error) {
     console.error('Erreur suppression commentaire:', error)
     alert(t('erreurs.supprimerCommentaire'))
@@ -179,7 +232,18 @@ const formatDate = (iso) => {
   }
 }
 
-onMounted(chargerCommentaires)
+// ========== LIFECYCLE ==========
+onMounted(async () => {
+  await chargerCommentaires()
+
+  // ⭐ Configurer WebSocket après le chargement initial
+  setupWebSocketCommentaires()
+})
+
+onBeforeUnmount(() => {
+  // ⭐ Nettoyage WebSocket au démontage
+  cleanupWebSocket()
+})
 </script>
 
 <style scoped>

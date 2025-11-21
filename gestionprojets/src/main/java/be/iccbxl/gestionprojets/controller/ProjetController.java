@@ -197,25 +197,54 @@ public class ProjetController {
         }
     }
 
+    // =====================================================================
+    // ENDPOINT CORRIGÉ : DELETE
+    // =====================================================================
     @DeleteMapping("/{id:\\d+}")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
-    public ResponseEntity<Void> supprimerProjet(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<Map<String, String>> supprimerProjet(
+            @PathVariable Long id,
+            Authentication authentication) {
         try {
+            System.out.println("📥 Requête DELETE pour projet ID=" + id);
+
+            // Vérifier que le projet existe
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
+            if (projetOpt.isEmpty()) {
+                System.err.println("❌ Projet introuvable: ID=" + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Projet non trouvé avec ID: " + id));
+            }
+
+            // Vérifier les permissions
             String email = authentication.getName();
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
-            if (!isAdmin && !projetService.utilisateurPeutModifierProjet(id, email))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            if (!isAdmin && !projetService.utilisateurPeutModifierProjet(id, email)) {
+                System.err.println("❌ Accès refusé pour l'utilisateur: " + email);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Vous n'êtes pas autorisé à supprimer ce projet"));
+            }
 
+            // Supprimer le projet
             projetService.supprimerProjet(id);
-            return ResponseEntity.ok().build();
+
+            System.out.println("✅ Projet supprimé avec succès par: " + email);
+            return ResponseEntity.ok(Map.of("message", "Projet supprimé avec succès"));
+
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            System.err.println("❌ Erreur métier: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("❌ Erreur serveur: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur serveur lors de la suppression"));
         }
     }
+
     // ---------- MEMBRES DU PROJET ----------
     @GetMapping("/{id:\\d+}/membres")
     @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
@@ -224,7 +253,7 @@ public class ProjetController {
             Authentication authentication
     ) {
         try {
-            // Vérification de l’accès
+            // Vérification de l'accès
             String email = authentication.getName();
             Long userId = utilisateurService.obtenirIdParEmail(email);
             boolean isAdmin = authentication.getAuthorities().stream()
@@ -235,7 +264,7 @@ public class ProjetController {
 
             ProjetDTO projet = projetOpt.get();
 
-            // Vérifie si l’utilisateur a le droit de consulter les membres
+            // Vérifie si l'utilisateur a le droit de consulter les membres
             if (!isAdmin && !projet.getIdCreateur().equals(userId)
                     && !projetService.estMembreDuProjet(userId, id)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -250,6 +279,98 @@ public class ProjetController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Ajouter un membre à un projet (F8)
+     */
+    @PostMapping("/{projetId}/membres/{membreId}")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Map<String, String>> ajouterMembreAuProjet(
+            @PathVariable Long projetId,
+            @PathVariable Long membreId,
+            Authentication authentication) {
+        try {
+            // Vérifier les permissions
+            String email = authentication.getName();
+            Long userId = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(projetId);
+            if (projetOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Projet non trouvé"));
+            }
+
+            ProjetDTO projet = projetOpt.get();
+
+            // Vérifier que l'utilisateur est le créateur ou admin
+            if (!isAdmin && !projet.getIdCreateur().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Vous n'êtes pas autorisé à ajouter des membres à ce projet"));
+            }
+
+            // Ajouter le membre
+            projetService.ajouterMembreAuProjet(projetId, membreId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Membre ajouté avec succès au projet"
+            ));
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors de l'ajout du membre"));
+        }
+    }
+
+    /**
+     * Retirer un membre d'un projet (F8)
+     */
+    @DeleteMapping("/{projetId}/membres/{membreId}")
+    @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Map<String, String>> retirerMembreDuProjet(
+            @PathVariable Long projetId,
+            @PathVariable Long membreId,
+            Authentication authentication) {
+        try {
+            // Vérifier les permissions
+            String email = authentication.getName();
+            Long userId = utilisateurService.obtenirIdParEmail(email);
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(projetId);
+            if (projetOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Projet non trouvé"));
+            }
+
+            ProjetDTO projet = projetOpt.get();
+
+            // Vérifier que l'utilisateur est le créateur ou admin
+            if (!isAdmin && !projet.getIdCreateur().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Vous n'êtes pas autorisé à retirer des membres de ce projet"));
+            }
+
+            // Retirer le membre
+            projetService.retirerMembreDuProjet(projetId, membreId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Membre retiré avec succès du projet"
+            ));
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erreur lors du retrait du membre"));
         }
     }
 

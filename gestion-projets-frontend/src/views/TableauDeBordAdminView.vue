@@ -1067,7 +1067,7 @@ export default {
       })
     },
 
-    paiementsEchecs() { return this.factures.filter(f => f.statut === 'ECHEC') },
+    paiementsEchecs() {return this.transactions.filter(t => t.statut === 'ECHEC')  },
 
     nouveauxUtilisateurs24h() {
       const hier = new Date()
@@ -1124,11 +1124,11 @@ export default {
     },
     filtreRole() {
       this.userPageIndex = 0
-      this.chargerUtilisateurs()
+      this._debouncedLoadUsers?.()
     },
     userPageSize() {
       this.userPageIndex = 0
-      this.chargerUtilisateurs()
+      this._debouncedLoadUsers?.()
     },
   },
 
@@ -1454,7 +1454,12 @@ export default {
       if (!confirm(this.$t('admin.confirmerAnnulation'))) return
       try {
         await abonnementAPI.cancel(id)
-        this.abonnements = this.abonnements.filter(a => a.id !== id)
+
+        const index = this.abonnements.findIndex(a => a.id === id)
+        if (index !== -1) {
+          this.abonnements[index] = { ...this.abonnements[index], statut: 'ANNULE' }
+        }
+
         alert(this.$t('admin.abonnementAnnule'))
       } catch (e) {
         console.error('Erreur annulation abonnement:', e)

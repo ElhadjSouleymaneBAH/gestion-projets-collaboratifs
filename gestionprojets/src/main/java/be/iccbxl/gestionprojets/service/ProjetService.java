@@ -121,20 +121,10 @@ public class ProjetService {
             throw new RuntimeException("Utilisateur non trouvé avec ID: " + utilisateurId);
         }
 
-        List<Projet> projetsCrees = projetRepository.findByCreateurIdWithCreateur(utilisateurId);
-        List<Long> idsCommeMembre = projetUtilisateurRepository.findProjetIdsByUtilisateurId(utilisateurId);
-        List<Projet> projetsCommeMembre = idsCommeMembre.isEmpty()
-                ? List.of()
-                : projetRepository.findAllById(idsCommeMembre);
-
-        List<Projet> tous = new ArrayList<>(projetsCrees);
-        for (Projet p : projetsCommeMembre) {
-            if (tous.stream().noneMatch(x -> x.getId().equals(p.getId()))) {
-                tous.add(p);
-            }
-        }
-
-        return tous.stream().map(this::convertirEnDTO).collect(Collectors.toList());
+        return projetRepository.findByCreateurIdWithCreateur(utilisateurId)
+                .stream()
+                .map(this::convertirEnDTO)
+                .collect(Collectors.toList());
     }
 
     public ProjetDTO modifierProjet(Long id, ProjetDTO dto) {
@@ -154,12 +144,44 @@ public class ProjetService {
         return convertirEnDTO(saved);
     }
 
+    // =====================================================================
+    // MÉTHODE CORRIGÉE : supprimerProjet
+    // =====================================================================
     public void supprimerProjet(Long id) {
-        if (!projetRepository.existsById(id)) {
-            throw new RuntimeException("Projet non trouvé");
+        // Vérifier si le projet existe
+        Optional<Projet> projetOpt = projetRepository.findById(id);
+        if (projetOpt.isEmpty()) {
+            System.err.println("❌ Tentative de suppression d'un projet inexistant: ID=" + id);
+            throw new RuntimeException("Projet non trouvé avec ID: " + id);
         }
-        projetUtilisateurRepository.deleteByProjetId(id);
-        projetRepository.deleteById(id);
+
+        Projet projet = projetOpt.get();
+        System.out.println("🗑️ Suppression du projet: " + projet.getTitre() + " (ID=" + id + ")");
+
+        try {
+            // 1. Compter les membres avant suppression (optionnel, pour les logs)
+            long nbMembres = projetUtilisateurRepository.countByProjetIdAndActif(id, true);
+            System.out.println("   - Projet avec " + nbMembres + " membre(s)");
+
+            // 2. Supprimer les relations dans projet_utilisateur
+            projetUtilisateurRepository.deleteByProjetId(id);
+            System.out.println("   - Relations membres supprimées");
+
+            // 3. Note: Si vous avez d'autres tables liées (taches, messages, commentaires),
+            //    assurez-vous qu'elles ont CASCADE DELETE ou supprimez-les manuellement ici
+            //    Exemple:
+            //    tacheRepository.deleteByProjetId(id);
+            //    messageRepository.deleteByProjetId(id);
+
+            // 4. Supprimer le projet
+            projetRepository.deleteById(id);
+
+            System.out.println("✅ Projet supprimé avec succès: ID=" + id);
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la suppression du projet ID=" + id);
+            e.printStackTrace();
+            throw new RuntimeException("Erreur lors de la suppression du projet: " + e.getMessage(), e);
+        }
     }
 
     public ProjetDTO creerProjet(ProjetDTO dto, String emailCreateur) {

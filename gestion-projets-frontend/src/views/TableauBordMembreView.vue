@@ -274,7 +274,7 @@
         </div>
       </div>
 
-      <!-- ========== F13: ONGLET TÂCHES AVEC COMMENTAIRES ========== -->
+      <!-- ========== F13: ONGLET TÂCHES AVEC COMMENTAIRES (CORRIGÉ) ========== -->
       <div v-else-if="onglet==='taches'">
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white">
@@ -311,11 +311,19 @@
                     </span>
                   </td>
                   <td>
+                    <!-- ✨ CORRECTION: Badge avec affichage conditionnel -->
                     <button class="btn btn-sm btn-outline-info position-relative"
                             @click="ouvrirCommentaires(t)"
                             :title="$t('commentaires.voir')">
                       <i class="fas fa-comments me-1"></i>
-                      <span class="badge bg-info ms-1">{{ getCommentairesTache(t.id).length }}</span>
+                      <span
+                        v-if="commentairesParTache[normalizeId(t.id)]"
+                        class="badge bg-info ms-1 animate-badge">
+                        {{ getCommentairesTache(t.id).length }}
+                      </span>
+                      <span v-else class="badge bg-secondary ms-1">
+                        <i class="fas fa-spinner fa-spin fa-xs"></i>
+                      </span>
                     </button>
                   </td>
                   <td>
@@ -670,7 +678,7 @@ const showToast = (message, type = 'info') => {
   }, 3000)
 }
 
-// ========== CHARGEMENT DONNÉES ==========
+// ========== CHARGEMENT DONNÉES (CORRIGÉ AVEC PRÉCHARGEMENT COMMENTAIRES) ==========
 const chargerToutesDonnees = async () => {
   chargementGlobal.value = true
   erreurBackend.value = ''
@@ -721,10 +729,29 @@ const chargerToutesDonnees = async () => {
       ? nRes.value.data
       : []
 
-    console.log('[Load] Données chargées:', {
+    // ✨ CORRECTION F12: Précharger les commentaires de chaque tâche
+    console.log('[F12] 🔄 Préchargement des commentaires pour', mesTaches.value.length, 'tâches')
+
+    const commentairesPromises = mesTaches.value.map(async (tache) => {
+      try {
+        const tacheIdNormalized = normalizeId(tache.id)
+        const response = await commentaireAPI.getByTache(tacheIdNormalized)
+        commentairesParTache.value[tacheIdNormalized] = Array.isArray(response.data) ? response.data : []
+        console.log(`[F12] ✅ Tâche ${tacheIdNormalized}: ${commentairesParTache.value[tacheIdNormalized].length} commentaires`)
+      } catch (e) {
+        console.warn(`[F12] ⚠️ Erreur chargement commentaires tâche ${tache.id}:`, e)
+        commentairesParTache.value[normalizeId(tache.id)] = []
+      }
+    })
+
+    // Attendre que tous les commentaires soient chargés
+    await Promise.allSettled(commentairesPromises)
+
+    console.log('[Load] ✅ Données chargées:', {
       projets: mesProjets.value.length,
       taches: mesTaches.value.length,
-      notifications: notifications.value.length
+      notifications: notifications.value.length,
+      commentaires: Object.keys(commentairesParTache.value).length
     })
 
     const erreurs = [pRes, tRes, nRes].filter(r => r.status === 'rejected')
@@ -789,9 +816,62 @@ const ouvrirCommentaires = async (tache) => {
   tacheSelectionnee.value = tache
   modalCommentaires.value = true
   await chargerCommentairesTache(tache.id)
+
+  // ⭐ AJOUT : Écoute WebSocket des nouveaux commentaires
+  const tacheId = normalizeId(tache.id)
+  const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
+
+  if (!subscribedTopics.has(topicCommentaires)) {
+    WebSocketService.subscribeToTacheCommentaires(tacheId, (nouveauCommentaire) => {
+      console.log('[F12] ✅ Nouveau commentaire temps réel:', nouveauCommentaire)
+
+      // Ajouter à la modal si c'est la tâche actuellement ouverte
+      if (tacheSelectionnee.value && normalizeId(tacheSelectionnee.value.id) === tacheId) {
+        const existe = commentairesTache.value.some(c => c.id === nouveauCommentaire.id)
+        if (!existe) {
+          commentairesTache.value.push(nouveauCommentaire)
+        }
+      }
+
+      // Mettre à jour le cache
+      if (!commentairesParTache.value[tacheId]) {
+        commentairesParTache.value[tacheId] = []
+      }
+      const existeDansCache = commentairesParTache.value[tacheId].some(c => c.id === nouveauCommentaire.id)
+      if (!existeDansCache) {
+        commentairesParTache.value[tacheId].push(nouveauCommentaire)
+      }
+    })
+
+    // Écoute des suppressions
+    WebSocketService.subscribeToTacheCommentairesSuppression(tacheId, (commentaireId) => {
+      console.log('[F12]  Suppression commentaire temps réel:', commentaireId)
+
+      // Retirer de la modal
+      commentairesTache.value = commentairesTache.value.filter(c => c.id !== commentaireId)
+
+      // Retirer du cache
+      if (commentairesParTache.value[tacheId]) {
+        commentairesParTache.value[tacheId] = commentairesParTache.value[tacheId].filter(c => c.id !== commentaireId)
+      }
+    })
+
+    subscribedTopics.add(topicCommentaires)
+    console.log('[F12]  Abonné aux commentaires tâche', tacheId)
+  }
 }
 
 const fermerModalCommentaires = () => {
+
+  if (tacheSelectionnee.value) {
+    const tacheId = normalizeId(tacheSelectionnee.value.id)
+    WebSocketService.unsubscribeFromTacheCommentaires(tacheId)
+
+    const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
+    subscribedTopics.delete(topicCommentaires)
+    console.log('[F12] Désabonné des commentaires tâche', tacheId)
+  }
+
   modalCommentaires.value = false
   tacheSelectionnee.value = null
   commentairesTache.value = []
@@ -818,7 +898,7 @@ const ajouterCommentaire = async () => {
       tacheId: parseInt(tacheIdNormalized, 10)
     })
 
-    await chargerCommentairesTache(tacheIdNormalized)
+
     nouveauCommentaire.value = ''
 
     showToast(t('commentaires.ajoutSucces'), 'success')
@@ -840,7 +920,7 @@ const supprimerCommentaire = async (commentaireId) => {
     console.log(`[F12] DELETE /api/commentaires/${commentaireIdNormalized}`)
 
     await commentaireAPI.delete(commentaireIdNormalized)
-    await chargerCommentairesTache(tacheSelectionnee.value.id)
+
 
     showToast(t('commentaires.suppressionSucces'), 'success')
   } catch (e) {
@@ -1294,6 +1374,22 @@ onBeforeUnmount(() => {
 .badge {
   font-size: 0.75rem;
   padding: 0.375rem 0.75rem;
+}
+
+/* ✨ CORRECTION F12: Animation badge commentaires */
+.animate-badge {
+  animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ========== PROGRESS ========== */

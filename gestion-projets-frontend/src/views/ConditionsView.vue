@@ -192,34 +192,34 @@
             <div class="table-responsive mt-3">
               <table class="table table-sm">
                 <thead class="table-light">
-                  <tr>
-                    <th>{{ $t('conditions.typeAbonnement') }}</th>
-                    <th>{{ $t('admin.prix') }}</th>
-                    <th>{{ $t('abonnement.fonctionnalites') }}</th>
-                  </tr>
+                <tr>
+                  <th>{{ $t('conditions.typeAbonnement') }}</th>
+                  <th>{{ $t('admin.prix') }}</th>
+                  <th>{{ $t('abonnement.fonctionnalites') }}</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>
-                      <strong>{{ $t('roles.chefProjet') }}</strong>
-                    </td>
-                    <td>{{ $t('abonnement.prix') }}</td>
-                    <td>{{ $t('conditions.creationGestion') }}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>{{ $t('roles.membre') }}</strong>
-                    </td>
-                    <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
-                    <td>{{ $t('conditions.participationProjets') }}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>{{ $t('roles.visiteur') }}</strong>
-                    </td>
-                    <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
-                    <td>{{ $t('conditions.consultationPublics') }}</td>
-                  </tr>
+                <tr>
+                  <td>
+                    <strong>{{ $t('roles.chefProjet') }}</strong>
+                  </td>
+                  <td>{{ $t('abonnement.prix') }}</td>
+                  <td>{{ $t('conditions.creationGestion') }}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>{{ $t('roles.membre') }}</strong>
+                  </td>
+                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                  <td>{{ $t('conditions.participationProjets') }}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>{{ $t('roles.visiteur') }}</strong>
+                  </td>
+                  <td>{{ $t('commun.gratuit') || 'Gratuit' }}</td>
+                  <td>{{ $t('conditions.consultationPublics') }}</td>
+                </tr>
                 </tbody>
               </table>
             </div>

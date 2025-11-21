@@ -155,6 +155,76 @@ class WebSocketService {
     }
   }
 
+  // ========================================================================
+  // ⭐ NOUVELLES MÉTHODES POUR LES COMMENTAIRES (F12 + F9)
+  // ========================================================================
+
+  /** ⭐ Abonnement aux commentaires d'une tâche (F12 + F9) */
+  subscribeToTacheCommentaires(tacheId, callback) {
+    try {
+      if (!this.connected)
+        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
+      const dest = `/topic/tache/${tacheId}/commentaires`
+      const sub = this.client.subscribe(dest, (msg) => callback(JSON.parse(msg.body)))
+      this.subscriptions.set(`tache-commentaires-${tacheId}`, sub)
+      console.log(`[WS] ✅ Abonné aux commentaires de la tâche ${tacheId}`)
+      return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
+    } catch (e) {
+      console.error('[WS] ❌ Erreur abonnement commentaires tâche :', e)
+      return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
+    }
+  }
+
+  /** ⭐ Abonnement aux suppressions de commentaires d'une tâche */
+  subscribeToTacheCommentairesSuppression(tacheId, callback) {
+    try {
+      if (!this.connected)
+        return { success: false, errorCode: ERROR_CODES.CONNECTION_NOT_ESTABLISHED }
+      const dest = `/topic/tache/${tacheId}/commentaires/supprime`
+      const sub = this.client.subscribe(dest, (msg) => {
+        // Le message contient juste l'ID du commentaire supprimé
+        const commentaireId = typeof msg.body === 'string' ? parseInt(msg.body) : msg.body
+        callback(commentaireId)
+      })
+      this.subscriptions.set(`tache-commentaires-suppression-${tacheId}`, sub)
+      console.log(`[WS] ✅ Abonné aux suppressions de commentaires de la tâche ${tacheId}`)
+      return { success: true, messageKey: SUCCESS_MESSAGES.SUBSCRIBED }
+    } catch (e) {
+      console.error('[WS] ❌ Erreur abonnement suppressions commentaires :', e)
+      return { success: false, errorCode: ERROR_CODES.SUBSCRIPTION_FAILED }
+    }
+  }
+
+  /** ⭐ Désabonnement des commentaires d'une tâche */
+  unsubscribeFromTacheCommentaires(tacheId) {
+    try {
+      // Désabonnement des nouveaux commentaires
+      const subCommentaires = this.subscriptions.get(`tache-commentaires-${tacheId}`)
+      if (subCommentaires) {
+        subCommentaires.unsubscribe()
+        this.subscriptions.delete(`tache-commentaires-${tacheId}`)
+        console.log(`[WS] Désabonné des commentaires de la tâche ${tacheId}`)
+      }
+
+      // Désabonnement des suppressions
+      const subSuppressions = this.subscriptions.get(`tache-commentaires-suppression-${tacheId}`)
+      if (subSuppressions) {
+        subSuppressions.unsubscribe()
+        this.subscriptions.delete(`tache-commentaires-suppression-${tacheId}`)
+        console.log(`[WS] Désabonné des suppressions de commentaires de la tâche ${tacheId}`)
+      }
+
+      return { success: true }
+    } catch (e) {
+      console.error('[WS] Erreur désabonnement commentaires tâche:', e)
+      return { success: false, error: e.message }
+    }
+  }
+
+  // ========================================================================
+  // FIN DES MÉTHODES COMMENTAIRES
+  // ========================================================================
+
   /** ✉ Envoi d'un message normal */
   sendMessage(projectId, content) {
     try {
