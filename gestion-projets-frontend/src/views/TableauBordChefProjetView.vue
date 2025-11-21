@@ -1511,20 +1511,36 @@ export default {
       this.chargementProjets = true
       try {
         const userId = this.normalizeId(this.utilisateur.id)
+        console.log('🔍 [chargerProjets] Chargement pour userId:', userId)
+
         const r = await projectAPI.byUser(userId)
+        console.log('🔍 [chargerProjets] Réponse API - Projets reçus:', r.data?.length || 0)
+
         let projets = Array.isArray(r.data)
           ? r.data
           : Array.isArray(r.data?.content)
             ? r.data.content
             : []
+
+        console.log('🔍 [chargerProjets] Projets avant filtre:', projets.length)
+
+
         projets = projets.filter((p) => this.normalizeId(p.idCreateur) === userId)
+
+        console.log(' [chargerProjets] Projets APRÈS filtre:', projets.length)
+
+        //  Assigner à mesProjets avec IDs normalisés
         this.mesProjets = projets.map((p) => ({ ...p, id: this.normalizeId(p.id) }))
+
+        //  Charger les membres (seulement pour les projets filtrés)
         await Promise.all(this.mesProjets.map((projet) => this.chargerMembresProjet(projet.id)))
+
         this.$forceUpdate()
-        console.log('📊 Projets chargés:', this.mesProjets.length)
+        console.log(' Projets chargés:', this.mesProjets.length)
       } catch (e) {
         console.error('[Projets] Erreur:', e)
         this.mesProjets = []
+
         // Afficher un message à l'utilisateur
         if (e.response?.status === 401) {
           this.erreurBackend = 'Session expirée. Veuillez vous reconnecter'

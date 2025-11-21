@@ -9,6 +9,7 @@ import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
+import be.iccbxl.gestionprojets.service.ListeColonneService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +26,16 @@ public class ProjetService {
     private final ProjetRepository projetRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final ProjetUtilisateurRepository projetUtilisateurRepository;
+    private final ListeColonneService listeColonneService;
 
     public ProjetService(ProjetRepository projetRepository,
                          UtilisateurRepository utilisateurRepository,
-                         ProjetUtilisateurRepository projetUtilisateurRepository) {
+                         ProjetUtilisateurRepository projetUtilisateurRepository,
+                         ListeColonneService listeColonneService) {
         this.projetRepository = projetRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.projetUtilisateurRepository = projetUtilisateurRepository;
+        this.listeColonneService = listeColonneService;
     }
 
     // =====================================================================
@@ -78,6 +82,16 @@ public class ProjetService {
         }
 
         Projet saved = projetRepository.save(projet);
+
+        // ========== NOUVEAU: Créer les colonnes Kanban par défaut ==========
+        try {
+            System.out.println("[ProjetService] Création colonnes Kanban pour projet " + saved.getId());
+            listeColonneService.creerColonnesParDefaut(saved.getId());
+            System.out.println("[ProjetService] Colonnes Kanban créées avec succès");
+        } catch (Exception e) {
+            System.err.println("[ProjetService] Erreur création colonnes Kanban: " + e.getMessage());
+        }
+        // ===================================================================
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
@@ -211,6 +225,16 @@ public class ProjetService {
         }
 
         Projet saved = projetRepository.save(p);
+
+        // ========== NOUVEAU: Créer les colonnes Kanban par défaut ==========
+        try {
+            System.out.println("[ProjetService] Création colonnes Kanban pour projet " + saved.getId());
+            listeColonneService.creerColonnesParDefaut(saved.getId());
+            System.out.println("[ProjetService] Colonnes Kanban créées avec succès");
+        } catch (Exception e) {
+            System.err.println("[ProjetService] Erreur création colonnes Kanban: " + e.getMessage());
+        }
+        // ===================================================================
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());

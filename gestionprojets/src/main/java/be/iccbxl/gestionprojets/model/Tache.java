@@ -29,7 +29,7 @@ import java.util.HashSet;
  * - F9 : Collaborer en temps réel (commentaires, notifications)
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0
+ * @version 1.0f
  * @see StatutTache
  * @see PrioriteTache
  * @see Projet
@@ -124,6 +124,12 @@ public class Tache {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_projet", nullable = false)
     private Projet projet;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_liste_colonne")
+    private ListeColonne listeColonne;
+
+    @Column(nullable = false)
+    private Integer position = 0;
 
     /**
      * Utilisateur à qui la tâche est assignée.
@@ -401,6 +407,22 @@ public class Tache {
     public int getNombreCommentaires() {
         return commentaires != null ? commentaires.size() : 0;
     }
+
+    // ← AJOUTE ICI
+    public void deplacerVersColonne(ListeColonne nouvelleColonne) {
+        if (this.listeColonne != null) {
+            this.listeColonne.getTaches().remove(this);
+        }
+        this.listeColonne = nouvelleColonne;
+        if (nouvelleColonne != null) {
+            nouvelleColonne.getTaches().add(this);
+            this.position = nouvelleColonne.getNombreTaches();
+        }
+    }
+
+    // ========== MÉTHODES UTILITAIRES ==========
+
+
 
     // ========== MÉTHODES UTILITAIRES ==========
 
