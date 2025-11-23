@@ -49,128 +49,175 @@
         <button type="button" class="btn-close" @click="flash.text = ''"></button>
       </div>
 
-      <div class="row">
-        <!-- Membres -->
-        <div class="col-lg-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">
-                <i class="fas fa-users me-2"></i>
-                {{ t('membres.titre') }} ({{ membres.length }})
-              </h5>
-            </div>
+      <!-- Navigation par onglets -->
+      <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: ongletActif === 'membres' }"
+            @click="ongletActif = 'membres'"
+            href="javascript:void(0)"
+          >
+            <i class="fas fa-users me-2"></i>{{ t('membres.titre') }}
+            <span class="badge bg-secondary ms-1">{{ membres.length }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: ongletActif === 'chat' }"
+            @click="ongletActif = 'chat'"
+            href="javascript:void(0)"
+          >
+            <i class="fas fa-comments me-2"></i>{{ t('chat.titre') }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: ongletActif === 'fichiers' }"
+            @click="ongletActif = 'fichiers'"
+            href="javascript:void(0)"
+          >
+            <i class="fas fa-paperclip me-2"></i>{{ t('fichiers.titre') }}
+          </a>
+        </li>
+      </ul>
 
-            <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
-              <div v-if="membres.length === 0" class="p-3 text-center text-muted">
-                <i class="fas fa-user-slash fa-3x mb-3 opacity-25"></i>
-                <p class="mb-0">{{ t('membres.aucun') }}</p>
+      <!-- Contenu des onglets -->
+      <div class="tab-content">
+        <!-- ========== ONGLET MEMBRES ========== -->
+        <div v-show="ongletActif === 'membres'" class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-users me-2"></i>
+                  {{ t('membres.titre') }} ({{ membres.length }})
+                </h5>
               </div>
 
-              <ul class="list-group list-group-flush" v-else>
-                <li
-                  v-for="m in membres"
-                  :key="m.id"
-                  class="list-group-item d-flex justify-content-between align-items-center"
+              <div class="card-body p-0" style="max-height: 500px; overflow-y: auto;">
+                <div v-if="membres.length === 0" class="p-3 text-center text-muted">
+                  <i class="fas fa-user-slash fa-3x mb-3 opacity-25"></i>
+                  <p class="mb-0">{{ t('membres.aucun') }}</p>
+                </div>
+
+                <ul class="list-group list-group-flush" v-else>
+                  <li
+                    v-for="m in membres"
+                    :key="m.id"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <div class="d-flex align-items-center">
+                      <div class="avatar-circle bg-primary text-white me-3">
+                        {{ getInitiales(m) }}
+                      </div>
+                      <div>
+                        <div class="fw-semibold">{{ m.prenom }} {{ m.nom }}</div>
+                        <small class="text-muted">{{ m.email }}</small>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                      <span :class="['badge', getRoleBadge(translateRole(m.role) || 'MEMBRE')]">
+                        {{ translateRole(m.role || 'MEMBRE') }}
+                      </span>
+                      <button
+                        v-if="peutSupprimerMembre(m)"
+                        class="btn btn-sm btn-outline-danger"
+                        @click="retirerMembre(m.id)"
+                        :disabled="busyMember[m.id]"
+                        :title="t('membres.retirer')"
+                      >
+                        <span v-if="busyMember[m.id]" class="spinner-border spinner-border-sm"></span>
+                        <i v-else class="fas fa-user-minus"></i>
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div v-if="estChefProjet" class="card-footer bg-light">
+                <button
+                  class="btn btn-primary w-100"
+                  @click="ouvrirModalAjoutMembre"
+                  :disabled="ajoutEnCours"
                 >
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-circle bg-primary text-white me-3">
-                      {{ getInitiales(m) }}
-                    </div>
-                    <div>
-                      <div class="fw-semibold">{{ m.prenom }} {{ m.nom }}</div>
-                      <small class="text-muted">{{ m.email }}</small>
-                    </div>
-                  </div>
-
-                  <div class="d-flex align-items-center gap-2">
-                    <span :class="['badge', getRoleBadge(translateRole(m.role) || 'MEMBRE')]">
-                      {{ translateRole(m.role || 'MEMBRE') }}
-                    </span>
-                    <button
-                      v-if="peutSupprimerMembre(m)"
-                      class="btn btn-sm btn-outline-danger"
-                      @click="retirerMembre(m.id)"
-                      :disabled="busyMember[m.id]"
-                      :title="t('membres.retirer')"
-                    >
-                      <span v-if="busyMember[m.id]" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="fas fa-user-minus"></i>
-                    </button>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <div v-if="estChefProjet" class="card-footer bg-light">
-              <button
-                class="btn btn-primary w-100"
-                @click="ouvrirModalAjoutMembre"
-                :disabled="ajoutEnCours"
-              >
-                <i class="fas fa-user-plus me-2"></i>{{ t('membres.ajouter') }}
-              </button>
+                  <i class="fas fa-user-plus me-2"></i>{{ t('membres.ajouter') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Chat -->
-        <div class="col-lg-8">
-          <div class="card h-100 shadow-sm">
-            <div class="card-header bg-success text-white">
-              <h5 class="mb-0">
-                <i class="fas fa-comments me-2"></i>{{ t('chat.titre') }}
-              </h5>
-            </div>
+        <!-- ========== ONGLET CHAT ========== -->
+        <div v-show="ongletActif === 'chat'" class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-comments me-2"></i>{{ t('chat.titre') }}
+                </h5>
+              </div>
 
-            <div class="card-body p-0 d-flex flex-column" style="height: 450px;">
-              <div class="flex-grow-1 overflow-auto p-3 bg-light" ref="messagesContainer">
-                <div v-if="messages.length === 0" class="text-center text-muted py-5">
-                  <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
-                  <h6>{{ t('chat.aucunMessage') }}</h6>
-                  <p class="small">{{ t('chat.commencerConversation') }}</p>
-                </div>
+              <div class="card-body p-0 d-flex flex-column" style="height: 500px;">
+                <div class="flex-grow-1 overflow-auto p-3 bg-light" ref="messagesContainer">
+                  <div v-if="messages.length === 0" class="text-center text-muted py-5">
+                    <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
+                    <h6>{{ t('chat.aucunMessage') }}</h6>
+                    <p class="small">{{ t('chat.commencerConversation') }}</p>
+                  </div>
 
-                <div
-                  v-for="msg in messages"
-                  :key="msg.id"
-                  class="mb-3 d-flex"
-                  :class="{ 'justify-content-end': estMonMessage(msg) }"
-                >
-                  <div class="message-bubble" :class="estMonMessage(msg) ? 'message-own' : 'message-other'">
-                    <div class="d-flex justify-content-between mb-1">
-                      <small class="fw-bold" v-if="!estMonMessage(msg)">{{ msg.utilisateurNom }}</small>
-                      <small class="text-muted ms-2">{{ formatTime(msg.dateEnvoi) }}</small>
+                  <div
+                    v-for="msg in messages"
+                    :key="msg.id"
+                    class="mb-3 d-flex"
+                    :class="{ 'justify-content-end': estMonMessage(msg) }"
+                  >
+                    <div class="message-bubble" :class="estMonMessage(msg) ? 'message-own' : 'message-other'">
+                      <div class="d-flex justify-content-between mb-1">
+                        <small class="fw-bold" v-if="!estMonMessage(msg)">{{ msg.utilisateurNom }}</small>
+                        <small class="text-muted ms-2">{{ formatTime(msg.dateEnvoi) }}</small>
+                      </div>
+                      <div class="message-content">{{ msg.contenu }}</div>
                     </div>
-                    <div class="message-content">{{ msg.contenu }}</div>
                   </div>
                 </div>
-              </div>
 
-              <div class="border-top p-3 bg-white">
-                <form @submit.prevent="envoyerMessage">
-                  <div class="input-group">
-                    <input
-                      type="text"
-                      class="form-control"
-                      v-model="nouveauMessage"
-                      :placeholder="t('chat.placeholder')"
-                      maxlength="500"
-                      :disabled="sending"
-                    >
-                    <button
-                      type="submit"
-                      class="btn btn-success"
-                      :disabled="!nouveauMessage.trim() || sending"
-                    >
-                      <span v-if="sending" class="spinner-border spinner-border-sm me-1"></span>
-                      <i v-else class="fas fa-paper-plane me-1"></i>
-                      {{ t('commun.envoyer') }}
-                    </button>
-                  </div>
-                  <small class="text-muted d-block mt-1">{{ nouveauMessage.length }}/500</small>
-                </form>
+                <div class="border-top p-3 bg-white">
+                  <form @submit.prevent="envoyerMessage">
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="nouveauMessage"
+                        :placeholder="t('chat.placeholder')"
+                        maxlength="500"
+                        :disabled="sending"
+                      >
+                      <button
+                        type="submit"
+                        class="btn btn-success"
+                        :disabled="!nouveauMessage.trim() || sending"
+                      >
+                        <span v-if="sending" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="fas fa-paper-plane me-1"></i>
+                        {{ t('commun.envoyer') }}
+                      </button>
+                    </div>
+                    <small class="text-muted d-block mt-1">{{ nouveauMessage.length }}/500</small>
+                  </form>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- ========== ONGLET FICHIERS ========== -->
+        <div v-show="ongletActif === 'fichiers'" class="row">
+          <div class="col-12">
+            <GestionFichiers :projet-id="projetId" @refresh="chargerFichiers" />
           </div>
         </div>
       </div>
@@ -294,13 +341,13 @@
   </div>
 </template>
 
-
 <script setup>
 import { useDataTranslation } from '@/composables/useDataTranslation'
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { projectAPI, messagesAPI, userAPI } from '@/services/api'
+import GestionFichiers from '@/components/GestionFichiers.vue'
 
 const { t } = useI18n()
 const { translateRole } = useDataTranslation()
@@ -313,6 +360,7 @@ const sending = ref(false)
 const accesDenie = ref(false)
 const messageErreur = ref('')
 
+const ongletActif = ref('membres')
 const projet = ref(null)
 const membres = ref([])
 const messages = ref([])
@@ -396,42 +444,38 @@ const peutSupprimerMembre = (m) => {
   return estChefProjet.value && m.role !== 'CHEF_PROJET' && m.id !== utilisateurActuel.value?.id
 }
 
-// ========== CHARGEMENT AMÉLIORÉ AVEC GESTION 403 ==========
+// ========== CHARGEMENT ==========
 const fetchAll = async () => {
   try {
     loading.value = true
     accesDenie.value = false
     messageErreur.value = ''
 
-    console.log(' Chargement du projet:', projetId.value)
+    console.log('[Projet] Chargement du projet:', projetId.value)
 
     // Étape 1: Charger les informations du projet
-
     try {
       let projetRes
       if (utilisateurActuel.value?.id) {
         try {
-          // Essayer la route protégée (authentifiée)
           projetRes = await projectAPI.byId(projetId.value)
         } catch (err) {
-          // Si erreur 403 → tenter la version publique
           if (err.response?.status === 403) {
-            console.warn('Accès restreint - tentative route publique')
+            console.warn('[Projet] Accès restreint - tentative route publique')
             projetRes = await projectAPI.getPublicProjectById(projetId.value)
           } else {
             throw err
           }
         }
       } else {
-        // Si pas connecté → route publique directe
         projetRes = await projectAPI.getPublicProjectById(projetId.value)
       }
 
       projet.value = projetRes.data
-      console.log('Projet chargé:', projet.value?.titre)
+      console.log('[Projet] Projet chargé:', projet.value?.titre)
     } catch (error) {
       if (error.response?.status === 403) {
-        console.error('403 sur projet - Accès refusé')
+        console.error('[Projet] 403 - Accès refusé')
         accesDenie.value = true
         messageErreur.value = "Vous n'avez pas les permissions pour accéder à ce projet."
         return
@@ -439,40 +483,33 @@ const fetchAll = async () => {
       throw error
     }
 
-
     // Étape 2: Charger les membres du projet
     try {
       const membresRes = await projectAPI.getProjectMembers(projetId.value)
       membres.value = Array.isArray(membresRes.data) ? membresRes.data : []
-      console.log('', membres.value.length)
+      console.log('[Membres]', membres.value.length, 'membres')
 
-      // Vérifier si l'utilisateur actuel est membre du projet
       const estMembre = membres.value.some(
         m => m.id === utilisateurActuel.value?.id ||
           m.email === utilisateurActuel.value?.email
       )
 
-      console.log('👤 Utilisateur actuel:', utilisateurActuel.value?.email)
-      console.log(' Est membre du projet:', estMembre)
-
-      // Si le projet est privé et que l'utilisateur n'est pas membre
       if (!estMembre && projet.value?.visibilite !== 'PUBLIC') {
-        console.warn(' Utilisateur non membre d\'un projet privé')
+        console.warn('[Projet] Utilisateur non membre d\'un projet privé')
         accesDenie.value = true
         messageErreur.value = 'Ce projet est privé. Seuls les membres peuvent y accéder.'
         return
       }
 
-      // Si l'utilisateur n'est pas membre (même pour un projet public), on ne charge pas les messages
       if (!estMembre) {
-        console.info(' Utilisateur non membre - Pas de chargement des messages')
+        console.info('[Projet] Utilisateur non membre - Pas de chargement des messages')
         messages.value = []
         return
       }
 
     } catch (error) {
       if (error.response?.status === 403) {
-        console.error(' 403 sur membres - Accès refusé')
+        console.error('[Membres] 403 - Accès refusé')
         accesDenie.value = true
         messageErreur.value = 'Vous devez être membre de ce projet pour voir la liste des membres.'
         return
@@ -482,20 +519,17 @@ const fetchAll = async () => {
 
     // Étape 3: Charger les messages (seulement si membre)
     try {
-
       const messagesRes = await messagesAPI.byProjet(projetId.value)
-
       messages.value = (Array.isArray(messagesRes.data) ? messagesRes.data : [])
         .sort((a, b) => new Date(a.dateEnvoi) - new Date(b.dateEnvoi))
 
-      console.log('', messages.value.length)
+      console.log('[Messages]', messages.value.length, 'messages')
 
       await nextTick()
       scrollToBottom()
     } catch (error) {
       if (error.response?.status === 403) {
-        console.error(' 403 sur messages - Accès refusé')
-        // Ne pas bloquer complètement, juste ne pas charger les messages
+        console.error('[Messages] 403 - Accès refusé')
         messages.value = []
         showFlash('Vous n\'avez pas accès aux messages de ce projet.', 'warning')
         return
@@ -504,24 +538,24 @@ const fetchAll = async () => {
     }
 
   } catch (error) {
-    console.error(' Erreur chargement projet:', error)
+    console.error('[Projet] Erreur chargement:', error)
 
-    // Gestion globale des erreurs 403
     if (error.response?.status === 403) {
       accesDenie.value = true
       messageErreur.value = error.response?.data?.message ||
         'Accès refusé. Vous n\'avez pas les permissions nécessaires.'
 
-      // Redirection après 5 secondes
       setTimeout(() => {
         router.push('/projets-publics')
       }, 5000)
-    } else {
-      //showFlash('Erreur lors du chargement du projet.', 'danger')
     }
   } finally {
     loading.value = false
   }
+}
+
+const chargerFichiers = () => {
+  console.log('[Fichiers] Rafraîchissement demandé')
 }
 
 // ========== CHAT ==========
@@ -531,7 +565,8 @@ const envoyerMessage = async () => {
 
   try {
     sending.value = true
-    const response = await messagesAPI.send({      contenu,
+    const response = await messagesAPI.send({
+      contenu,
       projetId: projetId.value,
       type: 'TEXT'
     })
@@ -549,7 +584,7 @@ const envoyerMessage = async () => {
     await nextTick()
     scrollToBottom()
   } catch (error) {
-    console.error('Erreur envoi message:', error)
+    console.error('[Chat] Erreur envoi message:', error)
 
     if (error.response?.status === 403) {
       showFlash('Vous n\'avez pas les permissions pour envoyer des messages dans ce projet.', 'danger')
@@ -577,7 +612,7 @@ const retirerMembre = async (membreId) => {
     membres.value = membres.value.filter(m => m.id !== membreId)
     showFlash(t('membres.membreRetire'), 'success')
   } catch (error) {
-    console.error('Erreur retrait membre:', error)
+    console.error('[Membres] Erreur retrait membre:', error)
     showFlash(t('erreurs.retirerMembre'), 'danger')
   } finally {
     busyMember.value[membreId] = false
@@ -618,7 +653,7 @@ const rechercherUtilisateurs = async (query) => {
     const response = await userAPI.search(encodeURIComponent(query))
     utilisateursRecherche.value = Array.isArray(response.data) ? response.data : []
   } catch (error) {
-    console.error('Erreur recherche utilisateur:', error)
+    console.error('[Recherche] Erreur recherche utilisateur:', error)
     utilisateursRecherche.value = []
   } finally {
     rechercheEnCours.value = false
@@ -650,7 +685,7 @@ const ajouterUtilisateurAuProjet = async (user) => {
 
     fermerModalAjoutMembre()
   } catch (error) {
-    console.error('Erreur ajout membre:', error)
+    console.error('[Membres] Erreur ajout membre:', error)
     const message = error.response?.data?.message || t('erreurs.ajouterMembre')
     showFlash(message, 'danger')
   } finally {
@@ -676,6 +711,19 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.nav-tabs .nav-link {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+  font-weight: 600;
+}
+
 .avatar-circle {
   width: 40px;
   height: 40px;

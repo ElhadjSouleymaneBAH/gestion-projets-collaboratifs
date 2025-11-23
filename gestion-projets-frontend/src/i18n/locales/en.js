@@ -302,11 +302,26 @@ export default {
       termine: 'Completed',
       annule: 'Cancelled',
       archive: 'Archived',
+      brouillon: "Draft",
+      en_attente_validation: "Pending validation",
+      enAttente: "Pending",
+
+
     },
   },
 
   // ==================== TASK MANAGEMENT ====================
   taches: {
+    kanban: {
+      titre: "Kanban View",
+      aucuneTache: "No task",
+      deplacementReussi: "Task moved successfully",
+      erreurDeplacement: "Error while moving the task"
+    },
+    vue: {
+      liste: "List",
+      kanban: "Kanban"
+    },
     titre: 'Title',
     gestionTaches: 'Task Management',
     tachesAssignees: "Assigned tasks",
@@ -320,6 +335,7 @@ export default {
     tachesNonAssignees: 'Unassigned tasks',
     enAttenteValidation: 'Pending validation',
     enAttente: 'Pending',
+    enattente: 'Pending',
     toutesLesTaches: 'All tasks',
     supprimee: 'Task deleted',
     confirmerSuppression: 'Delete this task?',
@@ -381,10 +397,6 @@ export default {
     prioriteBasse: "Low",
     prioriteNormale: "Normal",
     prioriteHaute: "High",
-
-
-
-
     liste: {
       titre: 'Task List',
       description: 'All project tasks, with filters and sorting.',
@@ -747,6 +759,10 @@ export default {
       envoyee: 'Sent',
       payee: 'Paid',
       annulee: 'Cancelled',
+      enAttente: "Pending",
+      enCours: "In progress",
+      terminee: "Completed",
+
     },
     montantHTValue: '€10.00',
     tvaValue: '€2.10',
@@ -763,6 +779,27 @@ export default {
       loaded: 'Invoices loaded successfully',
       pdfDownloaded: 'PDF downloaded successfully',
       general: 'Operation successful',
+    },
+    // ==================== FILES ====================
+    files: {
+      title: "Project files",
+      upload: "Upload",
+      uploadFile: "Upload a file",
+      uploadFirst: "Upload the first file",
+      noFile: "No file",
+      name: "File name",
+      size: "Size",
+      uploadedBy: "Uploaded by",
+      date: "Date",
+      download: "Download",
+      delete: "Delete",
+      dragDrop: "Drag and drop your file here",
+      or: "or",
+      clickBrowse: "click to browse",
+      uploading: "Uploading...",
+      uploadSuccess: "File uploaded successfully!",
+      deleteSuccess: "File deleted successfully!",
+      confirmDelete: "Do you really want to delete this file?"
     },
   },
 
@@ -935,6 +972,11 @@ export default {
       aucunProjetActif: 'No active project at the moment',
       aucuneTacheValidation: 'No task pending validation',
       aucuneNotificationRecente: 'No recent notifications',
+      supportPremium: {
+        titre: 'Premium Support',
+        description: 'Contact us for priority assistance',
+        bouton: 'Contact support'
+      }
     },
     membre: {
       titre: 'Member Dashboard',
@@ -980,8 +1022,6 @@ export default {
       },
 
       profil: 'My profile'
-
-
     },
     admin: {
       tableauDeBord: 'Administrator Dashboard',
@@ -1230,8 +1270,7 @@ export default {
     voirFactures: 'View invoices',
     exporterFactures: 'Export invoices',
     confirmerAnnulation: 'Are you sure you want to cancel this subscription?',
-    confirmerAnnulationTache:
-      'Are you sure you want to cancel this task? This action is irreversible.',
+    confirmerAnnulationTache:'Are you sure you want to cancel this task? This action is irreversible.',
     tacheAnnulee: 'Task cancelled successfully',
     erreurAnnulationTache: 'Error cancelling task',
     annulerTache: 'Cancel this task',
@@ -1586,6 +1625,9 @@ export default {
     telechargementFacture: 'Error downloading invoice',
     envoyerMessage: "Unable to send the message",
     creationReussie: "Task created successfully!",
+    uploadFile: "Error during file upload",
+    downloadFile: "Error during file download",
+    deleteFile: "Error during file deletion",
 
   },
 
@@ -1691,9 +1733,31 @@ export default {
     renvoyerBrouillon: 'Send task back to draft',
     soumettreValidation: 'Submit this task for validation by the project manager',
     kpiTachesTerminees: 'View all completed tasks',
-
-
+    enAttente: 'Pending',
+    infoCreation: "Information to create a task",
+    placeholderTitre: "Enter task title",
+    placeholderDescription: "Enter task description",
+    prioriteBasse: "Low",
+    prioriteNormale: "Normal",
+    prioriteHaute: "High",
+    creerTache: "Create task",
+  },
+  kanban: {
+    titre: "Kanban",
+    aucuneTache: "No tasks",
+    colonnes: {
+      aFaire: "To do",
+      enCours: "In progress",
+      termine: "Completed"
+    }
+  },
+  priorities: {
+    BASSE: "Low",
+    NORMALE: "Normal",
+    HAUTE: "High",
+    URGENTE: "Urgent"
   }
+
 
 
 };

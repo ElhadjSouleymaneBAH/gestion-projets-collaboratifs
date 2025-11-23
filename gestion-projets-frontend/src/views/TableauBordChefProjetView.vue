@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-3">
-    <!-- ========== HEADER PREMIUM ========== -->
+
     <div class="chef-header mb-4">
       <div class="d-flex justify-content-between align-items-center">
         <div>
@@ -191,6 +191,11 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" :class="{ active: onglet === 'kanban' }" @click="onglet = 'kanban'" href="javascript:void(0)">
+            <i class="fas fa-columns me-2"></i>Kanban
+          </a>
+        </li>
+        <li class="nav-item">
           <a
             class="nav-link"
             :class="{ active: onglet === 'equipe' }"
@@ -238,10 +243,11 @@
       <div v-if="abonnementActif" class="alert alert-success mb-3 d-flex align-items-center justify-content-between">
         <div>
           <i class="fas fa-headset me-2"></i>
-          <strong>Support Premium</strong> : Contactez-nous pour une assistance prioritaire
+          <strong>{{ $t('tableauBord.chefProjet.supportPremium.titre') }}</strong> :
+          {{ $t('tableauBord.chefProjet.supportPremium.description') }}
         </div>
         <router-link to="/contact" class="btn btn-sm btn-outline-success">
-          <i class="fas fa-envelope me-1"></i>Contacter le support
+          <i class="fas fa-envelope me-1"></i>{{ $t('tableauBord.chefProjet.supportPremium.bouton') }}
         </router-link>
       </div>
 
@@ -354,24 +360,128 @@
         </div>
       </div>
 
-      <!-- ========== F7: TÂCHES (AMÉLIORÉ + F12 COMMENTAIRES) ========== -->
       <div v-if="onglet === 'taches'">
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white d-flex align-items-center gap-2">
-            <h5 class="mb-0">{{ $t('nav.taches') }} ({{ tachesFiltrees.length }})</h5>
-            <div class="ms-auto d-flex align-items-center gap-2">
-              <select
-                class="form-select form-select-sm"
-                v-model="filtreProjetTache"
-                style="width: 280px"
-                :title="$t('tooltips.filtrerParProjet')"
-              >
-                <option value="">{{ $t('projets.tousLesProjets') }}</option>
-                <option v-for="p in mesProjets" :key="p.id" :value="p.id">
-                  {{ translateProjectTitle(p.titre) }}
-                </option>
-              </select>
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-file text-secondary fa-2x mb-2"></i>
+                <h4 class="mb-0">{{ statsTaches.brouillon }}</h4>
+                <small class="text-muted">{{ $t('taches.statuts.brouillon') }}</small>
+              </div>
             </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-clock text-warning fa-2x mb-2"></i>
+                <h4 class="mb-0">{{ statsTaches.enAttente }}</h4>
+                <small class="text-muted">{{ $t('taches.statuts.enAttente') }}</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                <h4 class="mb-0">{{ statsTaches.termine }}</h4>
+                <small class="text-muted">{{ $t('taches.statuts.termine') }}</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-times-circle text-danger fa-2x mb-2"></i>
+                <h4 class="mb-0">{{ statsTaches.annule }}</h4>
+                <small class="text-muted">{{ $t('taches.statuts.annule') }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== RECHERCHE ET FILTRES ========== -->
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="row g-2 align-items-center">
+              <!-- Barre de recherche -->
+              <div class="col-md-4">
+                <div class="input-group">
+            <span class="input-group-text bg-white">
+              <i class="fas fa-search text-muted"></i>
+            </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="rechercheTache"
+                    placeholder="Rechercher une tâche..."
+                    @input="filtrerTachesRecherche"
+                  />
+                  <button
+                    v-if="rechercheTache"
+                    class="btn btn-outline-secondary"
+                    @click="rechercheTache = ''; filtrerTachesRecherche()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filtre par projet (existant) -->
+              <div class="col-md-4">
+                <select
+                  class="form-select"
+                  v-model="filtreProjetTache"
+                  @change="filtrerTachesRecherche"
+                  :title="$t('tooltips.filtrerParProjet')">
+                  <option value="">{{ $t('projets.tousLesProjets') }}</option>
+                  <option v-for="p in mesProjets" :key="p.id" :value="p.id">
+                    {{ translateProjectTitle(p.titre) }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Filtres rapides par statut -->
+              <div class="col-md-4">
+                <div class="btn-group w-100" role="group">
+                  <button
+                    class="btn btn-sm"
+                    :class="filtreStatutTache === 'TOUS' ? 'btn-primary' : 'btn-outline-primary'"
+                    @click="filtreStatutTache = 'TOUS'; filtrerTachesRecherche()">
+                    Toutes ({{ totalTaches.length }})
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    :class="filtreStatutTache === 'EN_ATTENTE_VALIDATION' ? 'btn-warning' : 'btn-outline-warning'"
+                    @click="filtreStatutTache = 'EN_ATTENTE_VALIDATION'; filtrerTachesRecherche()">
+                    À valider ({{ statsTaches.enAttente }})
+                  </button>
+                  <button
+                    class="btn btn-sm"
+                    :class="filtreStatutTache === 'TERMINE' ? 'btn-success' : 'btn-outline-success'"
+                    @click="filtreStatutTache = 'TERMINE'; filtrerTachesRecherche()">
+                    Terminées ({{ statsTaches.termine }})
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========  TÂCHES ========== -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">{{ $t('nav.taches') }} ({{ tachesFiltrees.length }})</h5>
+              <small class="text-muted" v-if="rechercheTache || filtreStatutTache !== 'TOUS' || filtreProjetTache">
+                Filtré
+              </small>
+            </div>
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              @click="reinitialiserFiltresTache"
+              v-if="rechercheTache || filtreStatutTache !== 'TOUS'">
+              <i class="fas fa-redo me-1"></i>Réinitialiser
+            </button>
           </div>
 
           <div class="card-body">
@@ -380,8 +490,8 @@
             </div>
 
             <div v-else-if="tachesFiltrees.length === 0" class="text-center py-5 text-muted">
-              <i class="fas fa-tasks fa-3x mb-3"></i>
-              <div>{{ $t('taches.aucuneTache') }}</div>
+              <i class="fas fa-3x mb-3" :class="rechercheTache || filtreStatutTache !== 'TOUS' ? 'fa-search' : 'fa-tasks'"></i>
+              <div>{{ rechercheTache || filtreStatutTache !== 'TOUS' ? 'Aucun résultat trouvé' : $t('taches.aucuneTache') }}</div>
             </div>
 
             <div v-else class="table-responsive">
@@ -399,30 +509,28 @@
                 <tr v-for="t in tachesFiltrees" :key="t.id">
                   <td class="fw-semibold">{{ t.titre }}</td>
                   <td>
-                      <span
-                        :class="getProjetNom(t.projetId || t.id_projet) === $t('projets.projetInconnu') ? 'text-danger' : ''"
-                      >
-                        {{ getProjetNom(t.projetId || t.id_projet) }}
-                      </span>
+              <span
+                :class="getProjetNom(t.projetId || t.id_projet) === $t('projets.projetInconnu') ? 'text-danger' : ''">
+                {{ getProjetNom(t.projetId || t.id_projet) }}
+              </span>
                   </td>
                   <td>
-                      <span v-if="t.nomAssigne || getAssigneNom(t.assigneId || t.id_assigne)">
-                        {{ t.nomAssigne || getAssigneNom(t.assigneId || t.id_assigne) }}
-                      </span>
+              <span v-if="t.nomAssigne || getAssigneNom(t.assigneId || t.id_assigne)">
+                {{ t.nomAssigne || getAssigneNom(t.assigneId || t.id_assigne) }}
+              </span>
                     <span v-else class="text-muted">{{ $t('taches.nonAssignee') }}</span>
                   </td>
                   <td>
-                      <span class="badge" :class="getStatutTacheClass(t.statut)">
-                        {{ translateData('taskStatus', t.statut) }}
-                      </span>
+              <span class="badge" :class="getStatutTacheClass(t.statut)">
+                {{ translateData('taskStatus', t.statut) }}
+              </span>
                   </td>
                   <td class="text-end">
                     <div class="btn-group">
                       <button
                         class="btn btn-sm btn-outline-info"
                         @click="ouvrirModalCommentaires(t)"
-                        :title="$t('tooltips.voirCommentaires')"
-                      >
+                        :title="$t('tooltips.voirCommentaires')">
                         <i class="fas fa-comments"></i>
                       </button>
 
@@ -430,8 +538,7 @@
                         v-if="t.statut === 'BROUILLON' && peutModifierTache(t)"
                         class="btn btn-sm btn-outline-warning"
                         @click="modifierTache(t)"
-                        :title="$t('tooltips.modifierTache')"
-                      >
+                        :title="$t('tooltips.modifierTache')">
                         <i class="fas fa-edit"></i>
                       </button>
 
@@ -439,8 +546,7 @@
                         v-if="t.statut === 'BROUILLON' && peutSoumettreTache(t)"
                         class="btn btn-sm btn-outline-primary"
                         @click="soumettreTache(t)"
-                        :title="$t('tooltips.soumettreTache')"
-                      >
+                        :title="$t('tooltips.soumettreTache')">
                         <i class="fas fa-paper-plane"></i>
                       </button>
 
@@ -448,32 +554,28 @@
                         v-if="t.statut === 'EN_ATTENTE_VALIDATION'"
                         class="btn btn-sm btn-outline-success"
                         @click="validerTache(t)"
-                        :title="$t('tooltips.validerTache')"
-                      >
+                        :title="$t('tooltips.validerTache')">
                         <i class="fas fa-check"></i>
                       </button>
                       <button
                         v-if="t.statut === 'EN_ATTENTE_VALIDATION'"
                         class="btn btn-sm btn-outline-secondary"
                         @click="renvoyerEnBrouillon(t)"
-                        :title="$t('tooltips.renvoyerBrouillon')"
-                      >
+                        :title="$t('tooltips.renvoyerBrouillon')">
                         <i class="fas fa-undo"></i>
                       </button>
                       <button
                         v-if="t.statut !== 'ANNULE'"
                         class="btn btn-sm btn-outline-warning"
                         @click="annulerTache(t)"
-                        :title="$t('tooltips.annulerTache')"
-                      >
+                        :title="$t('tooltips.annulerTache')">
                         <i class="fas fa-ban"></i>
                       </button>
                       <button
                         v-if="peutSupprimerTache(t)"
                         class="btn btn-sm btn-outline-danger"
                         @click="supprimerTache(t.id)"
-                        :title="$t('tooltips.supprimerTache')"
-                      >
+                        :title="$t('tooltips.supprimerTache')">
                         <i class="fas fa-trash"></i>
                       </button>
                     </div>
@@ -485,7 +587,14 @@
           </div>
         </div>
       </div>
-      <!-- Suite de PARTIE 1 -->
+      <!-- ========== ONGLET KANBAN ========== -->
+      <div v-if="onglet === 'kanban'">
+        <KanbanBoard v-if="projetChatActuel" :projetId="projetChatActuel.id" />
+        <div v-else class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>Sélectionnez un projet dans l'onglet Chat pour voir le Kanban
+        </div>
+      </div>
+
 
       <!-- ========== F8: ÉQUIPE ========== -->
       <div v-if="onglet === 'equipe'">
@@ -1315,6 +1424,7 @@
 </template>
 
 <script>
+import KanbanBoard from '@/components/KanbanBoard.vue'
 import { useDataTranslation } from '@/composables/useDataTranslation'
 import { useAuthStore } from '@/stores/auth'
 import {
@@ -1332,6 +1442,9 @@ import tacheService from '@/services/tache.service.js'
 
 export default {
   name: 'TableauBordChefProjet',
+  components: {
+    KanbanBoard
+  },
   setup() {
     const { translateData, translateProjectTitle, translateProjectDescription } =
       useDataTranslation()
@@ -1381,6 +1494,11 @@ export default {
       showCreateProject: false,
       projetForm: { titre: '', description: '' },
       subscribedTopics: new Set(),
+      // ========== NOUVEAUX POUR RECHERCHE ==========
+      rechercheTache: '',
+      filtreStatutTache: 'TOUS',
+      tachesFiltreesRecherche: [],
+      chartCanvasTaches: null,
     }
   },
   computed: {
@@ -1400,8 +1518,15 @@ export default {
       return this.totalTaches.filter((t) => t.statut === 'EN_ATTENTE_VALIDATION')
     },
     tachesFiltrees() {
-      if (this.filtreProjetTache)
+
+      if (this.rechercheTache || this.filtreStatutTache !== 'TOUS') {
+        return this.tachesFiltreesRecherche
+      }
+
+      if (this.filtreProjetTache) {
         return this.totalTaches.filter((t) => (t.id_projet || t.projetId) == this.filtreProjetTache)
+      }
+
       return this.totalTaches
     },
     totalMembres() {
@@ -1413,6 +1538,16 @@ export default {
     },
     notificationsNonLues() {
       return this.notifications.filter((n) => !n.lu)
+    },
+
+    // ========== STATS TÂCHES ==========
+    statsTaches() {
+      return {
+        brouillon: this.totalTaches.filter(t => t.statut === 'BROUILLON').length,
+        enAttente: this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION').length,
+        termine: this.totalTaches.filter(t => t.statut === 'TERMINE').length,
+        annule: this.totalTaches.filter(t => t.statut === 'ANNULE').length
+      }
     },
   },
   async mounted() {
@@ -1439,6 +1574,7 @@ export default {
     const token = localStorage.getItem('token')
     if (token && Array.isArray(this.mesProjets) && this.mesProjets.length > 0) this.initWebsocket()
     if (this.$route.query.newProject === '1') this.ouvrirModalProjet()
+    this.filtrerTachesRecherche()
   },
   watch: {
     onglet(nv) {
@@ -1446,6 +1582,10 @@ export default {
       if (nv === 'taches' && this.totalTaches.length === 0) this.chargerTaches()
       if (nv === 'chat' && !this.projetChatActuel && this.mesProjets[0])
         this.ouvrirChatProjet(this.mesProjets[0])
+    },
+
+    totalTaches() {
+      this.filtrerTachesRecherche()
     },
   },
   methods: {
@@ -1693,6 +1833,46 @@ export default {
       } finally {
         this.chargementNotifications = false
       }
+    },
+
+    // ========== RECHERCHE ET FILTRES TÂCHES ==========
+    filtrerTachesRecherche() {
+      let resultats = [...this.totalTaches]
+
+      // Filtre par projet (comportement existant)
+      if (this.filtreProjetTache) {
+        resultats = resultats.filter(t => (t.id_projet || t.projetId) == this.filtreProjetTache)
+      }
+
+      // Filtre par statut
+      if (this.filtreStatutTache !== 'TOUS') {
+        if (this.filtreStatutTache === 'EN_COURS') {
+          resultats = resultats.filter(t =>
+            t.statut === 'BROUILLON' || t.statut === 'EN_ATTENTE_VALIDATION'
+          )
+        } else {
+          resultats = resultats.filter(t => t.statut === this.filtreStatutTache)
+        }
+      }
+
+      // Filtre par recherche
+      if (this.rechercheTache.trim()) {
+        const terme = this.rechercheTache.toLowerCase()
+        resultats = resultats.filter(t =>
+          t.titre?.toLowerCase().includes(terme) ||
+          t.description?.toLowerCase().includes(terme) ||
+          this.getProjetNom(t.projetId || t.id_projet).toLowerCase().includes(terme) ||
+          this.getAssigneNom(t.assigneId || t.id_assigne).toLowerCase().includes(terme)
+        )
+      }
+
+      this.tachesFiltreesRecherche = resultats
+    },
+
+    reinitialiserFiltresTache() {
+      this.rechercheTache = ''
+      this.filtreStatutTache = 'TOUS'
+      this.filtrerTachesRecherche()
     },
 
     initWebsocket() {
@@ -2609,4 +2789,40 @@ export default {
 .text-danger {
   font-weight: 600;
 }
+/* ========== STATS MINI-CARTES ========== */
+.card-body i.fa-2x {
+  opacity: 0.8;
+}
+
+.card-body:hover i.fa-2x {
+  opacity: 1;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* ========== RECHERCHE ========== */
+.input-group .input-group-text {
+  border-right: 0;
+  background-color: white;
+}
+
+.input-group .form-control {
+  border-left: 0;
+}
+
+.input-group .form-control:focus {
+  border-color: #ced4da;
+  box-shadow: none;
+}
+
+/* ========== FILTRES BOUTONS ========== */
+.btn-group .btn-sm {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.btn-group .btn-sm.active {
+  font-weight: 600;
+}
+
 </style>

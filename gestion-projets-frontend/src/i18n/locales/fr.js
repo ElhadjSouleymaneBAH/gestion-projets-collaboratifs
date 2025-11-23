@@ -23,7 +23,7 @@ export default {
     equipe: 'Équipe',
     collaboration: 'Collaboration',
     connecter: 'Se connecter',
-    locale: "Langue",
+    locale: 'Langue',
   },
 
   // ==================== APPLICATION ====================
@@ -106,13 +106,10 @@ export default {
     reinitialiser: 'Réinitialiser',
     affichageResultats: 'Affichage {debut}–{fin} sur {total}',
     nonDefini: 'Non défini',
-    informations: "Information",
-    brouillon: "Brouillon",
-    recherche: "Recherche...",
-    ajouter: "Ajouter",
-
-
-
+    informations: 'Information',
+    brouillon: 'Brouillon',
+    recherche: 'Recherche...',
+    ajouter: 'Ajouter',
   },
 
   // ==================== LANGUES ====================
@@ -232,11 +229,9 @@ export default {
     aucunProjetDescription: "Aucun projet public n'est disponible pour le moment",
     modeConsultationDescription: 'Vous êtes en mode consultation. Veuillez vous',
     erreurChargement: 'Erreur lors du chargement des projets publics',
-    creerNouvelleTache: "Créer une nouvelle tâche",
-    creerTache: "Créer une tâche"
+    creerNouvelleTache: 'Créer une nouvelle tâche',
+    creerTache: 'Créer une tâche',
   },
-
-
 
   // ==================== PROJET (SINGULIER) ====================
   projet: {
@@ -315,14 +310,28 @@ export default {
       termine: 'Terminé',
       annule: 'Annulé',
       archive: 'Archivé',
+      brouillon: 'Brouillon',
+      en_attente_validation: 'En attente de validation',
+      enAttente: 'En attente',
     },
   },
 
   // ==================== GESTION DES TÂCHES ====================
   taches: {
+    kanban: {
+      titre: '"Vue Kanban",',
+      aucuneTache: 'Aucune tâche',
+      deplacementReussi: 'Tâche déplacée avec succès',
+      erreurDeplacement: 'Erreur lors du déplacement de la tâche',
+    },
+    vue: {
+      liste: 'Liste',
+      kanban: 'Kanban',
+    },
+
     titre: 'Titre',
     gestionTaches: 'Gestion des tâches',
-    tachesAssignees: "Tâches assignées",
+    tachesAssignees: 'Tâches assignées',
     creerValiderTaches: 'Créez et validez vos tâches',
     mesTachesAssignees: 'Mes tâches assignées',
     aucuneTache: 'Aucune tâche',
@@ -400,26 +409,23 @@ export default {
     tachesNonAssignees: 'Tâches non assignées',
     aucunMembreProjet: 'Aucun membre dans ce projet',
     voirDetails: 'Voir les détails',
-    creationReussie: "Tâche créée avec succès !",
+    creationReussie: 'Tâche créée avec succès !',
     liste: {
       titre: 'Liste des tâches',
       description: 'Toutes les tâches du projet, avec filtres et tri.',
       dateCreation: 'Date de création',
       assigneeA: 'Assigné à',
       aucuneTache: 'Aucune tâche trouvée',
-      total: "Total",
-      creationReussie: "Tâche créée avec succès !",
-      creerNouvelleTache: "Créer une nouvelle tâche",
-      creerTache: "Créer une tâche",
-      infoCreation: "Informations pour créer une tâche",
-      placeholderTitre: "Entrez le titre de la tâche",
-      placeholderDescription: "Entrez la description de la tâche",
-      prioriteBasse: "Basse",
-      prioriteNormale: "Normale",
-      prioriteHaute: "Haute",
-
-
-
+      total: 'Total',
+      creationReussie: 'Tâche créée avec succès !',
+      creerNouvelleTache: 'Créer une nouvelle tâche',
+      creerTache: 'Créer une tâche',
+      infoCreation: 'Informations pour créer une tâche',
+      placeholderTitre: 'Entrez le titre de la tâche',
+      placeholderDescription: 'Entrez la description de la tâche',
+      prioriteBasse: 'Basse',
+      prioriteNormale: 'Normale',
+      prioriteHaute: 'Haute',
     },
     filtres: {
       statut: 'Statut',
@@ -437,6 +443,9 @@ export default {
       enattente: 'En attente',
       termine: 'Terminé',
       annule: 'Annulé',
+      enAttente: 'En attente',
+      enCours: 'En cours',
+      terminee: 'Terminée',
     },
     details: {
       titre: 'Détails de la tâche',
@@ -460,7 +469,7 @@ export default {
     titre: 'Équipe',
     gestionEquipe: "Gestion de l'équipe",
     //gestionMembresEtTaches: 'Gestion des membres et assignation des tâches',
-    gestionMembresEtTaches: "Gestion des membres et des tâches",
+    gestionMembresEtTaches: 'Gestion des membres et des tâches',
     ajouterMembresAuxProjets: 'Ajoutez des membres à vos projets',
     ajouterMembre: 'Ajouter un membre',
     ajouterMembreProjet: 'Ajouter un membre au projet',
@@ -484,7 +493,7 @@ export default {
     erreurAjout: "Erreur lors de l'ajout du membre",
     selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
     aucunResultat: 'Aucun résultat trouvé',
-    equipe: "Équipe",
+    equipe: 'Équipe',
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
@@ -676,9 +685,9 @@ export default {
       chat: 'Chat temps réel',
       statistiques: 'Statistiques avancées',
       montantTTC: 'Montant TTC',
-      reactiver: "Réactiver mon abonnement",
-      expire: "Expiré",
-      souscrirePremium: "Souscrire à Premium",
+      reactiver: 'Réactiver mon abonnement',
+      expire: 'Expiré',
+      souscrirePremium: 'Souscrire à Premium',
     },
   },
 
@@ -794,6 +803,28 @@ export default {
       loaded: 'Factures chargées avec succès',
       pdfDownloaded: 'PDF téléchargé avec succès',
       general: 'Opération réussie',
+    },
+    // ==================== FICHIERS ====================
+
+    fichiers: {
+      titre: 'Fichiers du projet',
+      televerser: 'Téléverser',
+      televerserFichier: 'Téléverser un fichier',
+      televerserPremier: 'Téléverser le premier fichier',
+      aucunFichier: 'Aucun fichier',
+      nom: 'Nom du fichier',
+      taille: 'Taille',
+      uploadePar: 'Téléversé par',
+      date: 'Date',
+      telecharger: 'Télécharger',
+      supprimer: 'Supprimer',
+      glisserDeposer: 'Glissez-déposez votre fichier ici',
+      ou: 'ou',
+      cliquerParcourir: 'cliquez pour parcourir',
+      telechargement: 'Téléversement...',
+      uploadReussi: 'Fichier téléversé avec succès !',
+      suppressionReussie: 'Fichier supprimé avec succès !',
+      confirmerSuppression: 'Voulez-vous vraiment supprimer ce fichier ?',
     },
   },
 
@@ -929,8 +960,8 @@ export default {
       titre: 'Passez à Premium !',
       description: 'Devenez Chef de Projet et créez vos propres équipes',
       decouvrir: 'Découvrir Premium',
-      ajouterMembre: "Ajouter un membre",
-      aucunResultat: "Aucun résultat trouvé",
+      ajouterMembre: 'Ajouter un membre',
+      aucunResultat: 'Aucun résultat trouvé',
     },
     kpis: {
       projetsRejoints: 'Projets rejoints',
@@ -955,6 +986,7 @@ export default {
   tableauBord: {
     chefProjet: {
       titre: 'Tableau de bord Chef de Projet',
+
       messageBienvenue: 'Bienvenue sur votre tableau de bord Chef de Projet',
       statsGlobales: 'Statistiques globales',
       projetsEnCours: 'Projets en cours',
@@ -967,6 +999,11 @@ export default {
       aucunProjetActif: 'Aucun projet actif pour le moment',
       aucuneTacheValidation: 'Aucune tâche en attente de validation',
       aucuneNotificationRecente: 'Aucune notification récente',
+      supportPremium: {
+        titre: 'Support Premium',
+        description: 'Contactez-nous pour une assistance prioritaire',
+        bouton: 'Contacter le support',
+      },
     },
 
     membre: {
@@ -1134,7 +1171,8 @@ export default {
     },
     devenirChef: {
       titre: 'Passez Chef de Projet et créez vos propres projets !',
-      description: 'Souscrivez un abonnement pour débloquer la création et la gestion complète de projets collaboratifs.',
+      description:
+        'Souscrivez un abonnement pour débloquer la création et la gestion complète de projets collaboratifs.',
       bouton: 'Découvrir',
     },
     notifications: {
@@ -1311,7 +1349,12 @@ export default {
     ajoutMembre: "Erreur lors de l'ajout du membre",
     retraitMembre: 'Erreur lors du retrait du membre',
     telechargementFacture: 'Erreur lors du téléchargement de la facture',
-    envoyerMessage: "Impossible d'envoyer le message"
+    envoyerMessage: "Impossible d'envoyer le message",
+    uploadFichier: 'Erreur lors du téléversement du fichier',
+    telechargementFichier: 'Erreur lors du téléchargement du fichier',
+    suppressionFichier: 'Erreur lors de la suppression du fichier',
+    deplacementTache: 'Impossible de déplacer la tâche',
+    chargementTache: 'Erreur lors du chargement de la tâche',
   },
 
   // ==================== VALIDATION ====================
@@ -1336,7 +1379,6 @@ export default {
     emailMotDePasseIncorrect: 'Email ou mot de passe incorrect',
     accepterConditionsAbonnement: "Veuillez accepter les conditions d'abonnement",
     conditionsAbonnementRequises: "L'acceptation des conditions d'abonnement est obligatoire",
-
   },
 
   // ==================== STRIPE ====================
@@ -1380,7 +1422,6 @@ export default {
     kpiNotifications: 'Voir les notifications',
     kpiEquipe: 'Voir tous les collaborateurs',
 
-
     // Navigation onglets
     voirProjets: 'Voir tous les projets',
     voirTaches: 'Voir toutes les tâches',
@@ -1405,14 +1446,12 @@ export default {
     kpiTachesTerminees: 'Voir toutes les tâches terminées',
     voirProfil: 'Voir le profil',
 
-
     // Actions équipe
     ajouterMembre: 'Ajouter un membre au projet',
     ajouterMembreProjet: 'Ajouter un membre à ce projet',
     retirerMembre: 'Retirer un membre du projet',
-    aucunMembreProjet: 'Ajoutez d\'abord un membre au projet',
+    aucunMembreProjet: "Ajoutez d'abord un membre au projet",
     aucuneTacheNonAssignee: 'Aucune tâche non assignée disponible',
-
 
     // Actions notifications
     marquerLue: 'Marquer comme lue',
@@ -1561,7 +1600,8 @@ export default {
     protectionDonnees: 'Protection des données',
     protectionText: "CollabPro s'engage à protéger vos données personnelles conformément au RGPD.",
     referenceRGPD: 'Référence RGPD',
-    referenceRGPDText: 'Pour plus de détails sur le traitement de vos données, consultez notre politique de confidentialité.',
+    referenceRGPDText:
+      'Pour plus de détails sur le traitement de vos données, consultez notre politique de confidentialité.',
 
     responsabilites: 'Responsabilités',
     responsabilitesText:
@@ -1727,14 +1767,32 @@ export default {
     },
     email: {
       titre: 'Adresse e-mail',
-      adresse: 'contact@@collabpro.be',
+      adresse: 'contact\u0040collabpro.be',
     },
     tva: {
       titre: 'Numéro de TVA',
       numero: 'BE0123.456.789',
     },
-
+    enAttente: 'En attente',
     retourAccueil: "Retour à l'accueil",
+  },
+  kanban: {
+    titre: 'Kanban',
+    aucuneTache: 'Aucune tâche',
+    colonnes: {
+      aFaire: 'À faire',
+      enCours: 'En cours',
+      termine: 'Terminé',
+    },
+  },
+  navigation: {
+    accueil: 'Accueil',
+    taches: 'Tâches',
+  },
+  priorites: {
+    BASSE: "Basse",
+    NORMALE: "Normale",
+    HAUTE: "Haute",
+    URGENTE: "Urgente"
   }
-
-};
+}

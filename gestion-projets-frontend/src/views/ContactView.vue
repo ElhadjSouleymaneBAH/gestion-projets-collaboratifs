@@ -56,13 +56,14 @@
                   <div>
                     <h5 class="fw-bold mb-2">{{ $t('contact.email.titre') }}</h5>
                     <a href="mailto:contact@collabpro.be" class="text-collabpro text-decoration-none">
-                      {{ $t('contact.email.adresse') }}
-                    </a>
-                  </div>
-                </div>
-              </div>
+                      <!-- {{ $t('contact.email.adresse') }} -->
+                      contact@collabpro.be
+                   </a>
+                 </div>
+               </div>
+             </div>
 
-              <!-- Numéro TVA -->
+             <!-- Numéro TVA -->
               <div class="contact-info-item">
                 <div class="d-flex align-items-start">
                   <div class="contact-icon-wrapper me-3">

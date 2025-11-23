@@ -42,7 +42,7 @@
               <div class="d-flex flex-wrap gap-2 align-items-center">
                 <span :class="['badge fs-6 px-3 py-2', getStatutBadgeClass(tache.statut)]">
                   <i :class="getStatutIcon(tache.statut)" class="me-1"></i>
-                  {{ translateTaskStatus(tache.statut) }}
+                  {{ translateData('taskStatus', tache.statut) }}
                 </span>
                 <small class="text-muted">
                   <i class="far fa-calendar-alt me-1"></i>
@@ -228,7 +228,7 @@ import { taskAPI } from '@/services/api'
 import Commentaires from '@/components/Commentaires.vue'
 
 const { t, locale } = useI18n()
-const { translateTaskStatus } = useDataTranslation()
+const { translateData } = useDataTranslation()
 const route = useRoute()
 const router = useRouter()
 

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-3">
-    <!-- ========== HEADER ========== -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h1 class="mb-1 d-flex align-items-center gap-2">
@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <!-- ========== LOADING / ERROR ========== -->
+
     <div v-if="chargementGlobal" class="text-center py-5">
       <div class="spinner-border text-danger"></div>
       <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
@@ -32,10 +32,8 @@
         {{ $t('commun.actualiser') }}
       </button>
     </div>
-
-    <!-- ========== CONTENU ========== -->
     <div v-else>
-      <!-- ========== KPIs CLIQUABLES ========== -->
+
       <div class="row g-3 mb-4">
         <div class="col-md-3">
           <button class="card h-100 shadow-sm border-0 kpi-card"
@@ -103,7 +101,7 @@
         </div>
       </div>
 
-      <!-- ========== ALERTES ET ACTIVITE ========== -->
+
       <div class="row g-3 mb-4">
         <div class="col-md-6">
           <div class="card border-0 shadow-sm">
@@ -177,7 +175,7 @@
         </div>
       </div>
 
-      <!-- ========== ONGLETS PRINCIPAUX ========== -->
+
       <ul class="nav nav-pills bg-light rounded p-2 mb-4" ref="tabsTop">
         <li class="nav-item">
           <a class="nav-link"
@@ -226,7 +224,6 @@
         </li>
       </ul>
 
-      <!-- ========== ONGLET UTILISATEURS ========== -->
       <div v-if="ongletActuel==='utilisateurs'" ref="utilisateursSection">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -236,6 +233,57 @@
             </div>
           </div>
           <div class="card-body">
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="card h-100 border-danger">
+                  <div class="card-body text-center">
+                    <i class="fas fa-shield-alt text-danger fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-danger">{{ statsUtilisateurs.admins }}</h4>
+                    <small class="text-muted">Administrateurs</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-primary">
+                  <div class="card-body text-center">
+                    <i class="fas fa-user-tie text-primary fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-primary">{{ statsUtilisateurs.chefs }}</h4>
+                    <small class="text-muted">Chefs de Projet</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-success">
+                  <div class="card-body text-center">
+                    <i class="fas fa-users text-success fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-success">{{ statsUtilisateurs.membres }}</h4>
+                    <small class="text-muted">Membres</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-secondary">
+                  <div class="card-body text-center">
+                    <i class="fas fa-user text-secondary fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-secondary">{{ statsUtilisateurs.visiteurs }}</h4>
+                    <small class="text-muted">Visiteurs</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="card mb-4 border-0 shadow-sm">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">
+                  <i class="fas fa-chart-pie me-2"></i>Répartition des rôles
+                </h6>
+              </div>
+              <div class="card-body">
+                <canvas id="chartRoles" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
             <div class="row g-3 mb-3">
               <div class="col-md-4">
                 <input class="form-control"
@@ -344,7 +392,7 @@
         </div>
       </div>
 
-      <!-- ========== ONGLET PROJETS ========== -->
+
       <div v-if="ongletActuel==='projets'" ref="projetsSection">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -366,6 +414,58 @@
             </div>
           </div>
           <div class="card-body">
+
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="card h-100 border-success">
+                  <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-success">{{ statsProjets.actifs }}</h4>
+                    <small class="text-muted">Projets Actifs</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-secondary">
+                  <div class="card-body text-center">
+                    <i class="fas fa-flag-checkered text-secondary fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-secondary">{{ statsProjets.termines }}</h4>
+                    <small class="text-muted">Terminés</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-warning">
+                  <div class="card-body text-center">
+                    <i class="fas fa-pause-circle text-warning fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-warning">{{ statsProjets.suspendus }}</h4>
+                    <small class="text-muted">Suspendus</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card h-100 border-info">
+                  <div class="card-body text-center">
+                    <i class="fas fa-globe text-info fa-2x mb-2"></i>
+                    <h4 class="mb-0 text-info">{{ statsProjets.publics }}</h4>
+                    <small class="text-muted">Publics</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="card mb-4 border-0 shadow-sm">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">
+                  <i class="fas fa-chart-bar me-2"></i>Statistiques des projets
+                </h6>
+              </div>
+              <div class="card-body">
+                <canvas id="chartProjets" style="max-height: 300px;"></canvas>
+              </div>
+            </div>
             <div v-if="chargementProjets" class="text-center py-4">
               <div class="spinner-border text-success"></div>
             </div>
@@ -443,7 +543,7 @@
           </div>
         </div>
       </div>
-      <!-- ========== ONGLET TACHES ========== -->
+
       <div v-if="ongletActuel==='taches'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
@@ -505,7 +605,7 @@
         </div>
       </div>
 
-      <!-- ========== ONGLET COMMENTAIRES ========== -->
+
       <div v-if="ongletActuel==='commentaires'">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
@@ -565,7 +665,7 @@
         </div>
       </div>
 
-      <!-- ========== ONGLET FINANCE ========== -->
+
       <div v-if="ongletActuel==='finance'">
         <ul class="nav nav-tabs mb-3">
           <li class="nav-item">
@@ -788,7 +888,7 @@
 
     </div>
 
-    <!-- ========== MODAL MODIFICATION ROLE ========== -->
+
     <div v-if="modalRole" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -829,7 +929,7 @@
       </div>
     </div>
 
-    <!-- ========== MODAL DETAIL FACTURE ========== -->
+
     <div v-if="factureSelectionnee" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -846,7 +946,7 @@
       </div>
     </div>
 
-    <!-- ========== MODAL DETAILS PROJET ========== -->
+
     <div v-if="projetSelectionne" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -1030,6 +1130,9 @@ export default {
       utilisateurSelectionne: null,
       nouveauRole: '',
       _debouncedLoadUsers: null,
+      chartRoles: null,
+      chartProjetsEvolution: null,
+      chartRevenus: null,
     }
   },
 
@@ -1047,6 +1150,42 @@ export default {
         totalFactures: this.factures.length,
         chiffreAffaires: this.factures.reduce((s, f) => s + (f.montant || f.montantHT || f.montant_ht || 0), 0),
       }
+    },
+    // ========== STATS DÉTAILLÉES UTILISATEURS ==========
+    statsUtilisateurs() {
+      const admins = this.utilisateurs.filter(u => u.role === 'ADMINISTRATEUR').length
+      const chefs = this.utilisateurs.filter(u => u.role === 'CHEF_PROJET').length
+      const membres = this.utilisateurs.filter(u => u.role === 'MEMBRE').length
+      const visiteurs = this.utilisateurs.filter(u => u.role === 'VISITEUR').length
+
+      return { admins, chefs, membres, visiteurs }
+    },
+
+// ========== STATS DÉTAILLÉES PROJETS ==========
+    statsProjets() {
+      const actifs = this.projets.filter(p => p.statut === 'ACTIF').length
+      const termines = this.projets.filter(p => p.statut === 'TERMINE').length
+      const suspendus = this.projets.filter(p => p.statut === 'SUSPENDU').length
+      const publics = this.projets.filter(p => p.visibilite === 'PUBLIC').length
+      const prives = this.projets.filter(p => p.visibilite === 'PRIVE').length
+
+      return { actifs, termines, suspendus, publics, prives }
+    },
+
+// ========== STATS FINANCE ==========
+    statsFinance() {
+      const revenuTotal = this.factures.reduce((s, f) =>
+        s + (f.montant || f.montantHT || f.montant_ht || 0), 0
+      )
+      const revenuMoisActuel = this.factures
+        .filter(f => {
+          const date = new Date(f.dateEmission || f.createdAt || f.date_emission)
+          const now = new Date()
+          return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+        })
+        .reduce((s, f) => s + (f.montant || f.montantHT || f.montant_ht || 0), 0)
+
+      return { revenuTotal, revenuMoisActuel }
     },
 
     abonnementsActifs() {
@@ -1148,6 +1287,9 @@ export default {
       return
     }
     await this.chargerToutesDonnees()
+    this.$nextTick(() => {
+      this.creerGraphiqueRoles()
+    })
   },
 
   methods: {
@@ -1328,10 +1470,112 @@ export default {
         this.chargementCommentaires = false
       }
     },
+    // ========== GRAPHIQUES ==========
+    async creerGraphiqueRoles() {
+      await this.$nextTick()
+      const canvas = document.getElementById('chartRoles')
+      if (!canvas) return
+
+      if (!window.Chart) {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
+        script.onload = () => this.initialiserGraphiqueRoles()
+        document.head.appendChild(script)
+      } else {
+        this.initialiserGraphiqueRoles()
+      }
+    },
+
+    initialiserGraphiqueRoles() {
+      const canvas = document.getElementById('chartRoles')
+      if (!canvas) return
+
+      if (this.chartRoles) this.chartRoles.destroy()
+
+      const ctx = canvas.getContext('2d')
+      this.chartRoles = new window.Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Admins', 'Chefs de Projet', 'Membres', 'Visiteurs'],
+          datasets: [{
+            data: [
+              this.statsUtilisateurs.admins,
+              this.statsUtilisateurs.chefs,
+              this.statsUtilisateurs.membres,
+              this.statsUtilisateurs.visiteurs
+            ],
+            backgroundColor: ['#dc3545', '#0d6efd', '#198754', '#6c757d'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      })
+    },
+
+    async creerGraphiqueProjets() {
+      await this.$nextTick()
+      const canvas = document.getElementById('chartProjets')
+      if (!canvas) return
+
+      if (!window.Chart) {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
+        script.onload = () => this.initialiserGraphiqueProjets()
+        document.head.appendChild(script)
+      } else {
+        this.initialiserGraphiqueProjets()
+      }
+    },
+
+    initialiserGraphiqueProjets() {
+      const canvas = document.getElementById('chartProjets')
+      if (!canvas) return
+
+      if (this.chartProjetsEvolution) this.chartProjetsEvolution.destroy()
+
+      const ctx = canvas.getContext('2d')
+      this.chartProjetsEvolution = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Actifs', 'Terminés', 'Suspendus'],
+          datasets: [{
+            label: 'Nombre de projets',
+            data: [
+              this.statsProjets.actifs,
+              this.statsProjets.termines,
+              this.statsProjets.suspendus
+            ],
+            backgroundColor: ['#198754', '#6c757d', '#ffc107'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      })
+    },
 
     changerOnglet(ong) {
       this.ongletActuel = ong
       if (ong === 'finance') this.sousOngletFinance = 'abonnements'
+      this.$nextTick(() => {
+        if (ong === 'utilisateurs') this.creerGraphiqueRoles()
+        if (ong === 'projets') this.creerGraphiqueProjets()
+      })
     },
 
     getInitiales(u) {
@@ -1597,4 +1841,44 @@ export default {
 
 .modal { z-index: 1060 }
 .modal-xl { max-width: 90vw }
+
+
+.card.border-danger,
+.card.border-primary,
+.card.border-success,
+.card.border-secondary,
+.card.border-warning,
+.card.border-info {
+  border-width: 2px !important;
+  transition: all 0.3s ease;
+}
+
+.card.border-danger:hover,
+.card.border-primary:hover,
+.card.border-success:hover,
+.card.border-secondary:hover,
+.card.border-warning:hover,
+.card.border-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card.border-danger .card-body i,
+.card.border-primary .card-body i,
+.card.border-success .card-body i,
+.card.border-secondary .card-body i,
+.card.border-warning .card-body i,
+.card.border-info .card-body i {
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.card:hover .card-body i {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+canvas {
+  max-width: 100%;
+}
 </style>

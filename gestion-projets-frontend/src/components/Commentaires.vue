@@ -73,7 +73,8 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
-import websocketService from '@/services/websocket.service' // ⭐ AJOUT
+import websocketService from '@/services/websocket.service'
+import { commentaireAPI } from '@/services/api'
 
 defineOptions({ name: 'TacheCommentaires' })
 const { t } = useI18n()
@@ -143,17 +144,11 @@ const cleanupWebSocket = () => {
   console.log('[F9] Désabonné des commentaires de la tâche', props.tacheId)
 }
 
-// ========================================================================
-// FIN WEBSOCKET
-// ========================================================================
-
 // ========== CHARGEMENT ==========
 const chargerCommentaires = async () => {
   try {
     loading.value = true
-    const { data } = await axios.get(`${API_BASE}/commentaires/tache/${props.tacheId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const { data } = await commentaireAPI.getByTache(props.tacheId)
     commentaires.value = Array.isArray(data) ? data : []
   } catch (error) {
     console.error('Erreur chargement commentaires:', error)
@@ -167,11 +162,10 @@ const publierCommentaire = async () => {
   if (!nouveauCommentaire.value || envoi.value) return
   try {
     envoi.value = true
-    await axios.post(
-      `${API_BASE}/commentaires`,
-      { contenu: nouveauCommentaire.value, tacheId: props.tacheId },
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    await commentaireAPI.create({
+      contenu: nouveauCommentaire.value,
+      tacheId: props.tacheId
+    })
 
 
     nouveauCommentaire.value = ''
@@ -187,12 +181,7 @@ const publierCommentaire = async () => {
 const supprimerCommentaire = async (commentaireId) => {
   if (!confirm(t('commentaires.confirmerSuppression'))) return
   try {
-    await axios.delete(`${API_BASE}/commentaires/${commentaireId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    // ⭐ NE PAS supprimer manuellement - le WebSocket le fera automatiquement
-    // commentaires.value = commentaires.value.filter(c => c.id !== commentaireId) // ❌ SUPPRIMÉ
+    await commentaireAPI.delete(commentaireId)
 
     console.log('[F9] Commentaire supprimé, réception WebSocket attendue...')
   } catch (error) {

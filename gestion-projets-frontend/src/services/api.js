@@ -15,6 +15,7 @@ export const endpoints = {
   notifications: '/api/notifications',
   commentaires: '/api/commentaires',
   transactions: '/api/transactions',
+  fichiers: '/api/fichiers',
   public: '/api/public'
 }
 
@@ -191,7 +192,7 @@ export const taskAPI = {
 
   update: (id, payload) =>
     api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
-
+  getById: (id) => api.get(`${endpoints.tasks}/${cleanId(id)}`),
   updateStatus: (id, statut) =>
     api.patch(
       `${endpoints.tasks}/${cleanId(id)}/statut`,
@@ -211,12 +212,12 @@ export const taskAPI = {
   byUser: (userId) =>
     api.get(`${endpoints.tasks}/utilisateur/${cleanId(userId)}`),
 
-  // ⚠️ CORRECTION CRITIQUE: Utiliser le bon endpoint pour les tâches du chef de projet
   byChefProjet: (chefId) =>
     api.get(`${endpoints.tasks}/chef/${cleanId(chefId)}`),
 
   byProjet: (projetId) =>
     api.get(`${endpoints.tasks}/projet/${cleanId(projetId)}`),
+  getByIdWithDetails: (id) => api.get(`${endpoints.tasks}/${cleanId(id)}`),
 
   getStatuses: () => api.get(`${endpoints.tasks}/statuts`),
   getPriorities: () => api.get(`${endpoints.tasks}/priorites`),
@@ -294,6 +295,66 @@ export const transactionAPI = {
   getAllAdmin: () => api.get(`${endpoints.transactions}/admin/all`),
   getById: (id) => api.get(`${endpoints.transactions}/${cleanId(id)}`),
   listMine: () => api.get(`${endpoints.stripe}/mes-transactions`),
+}
+
+/* ===================== FICHIERS ===================== */
+export const fichierAPI = {
+  /**
+   * Upload un fichier dans un projet
+   * @param {FormData} formData - FormData contenant le fichier
+   * @param {Number} projetId - ID du projet
+   */
+  upload: (formData, projetId) => {
+    const token = localStorage.getItem('token')
+    return api.post(`${endpoints.fichiers}/upload`, formData, {
+      params: { projetId: cleanId(projetId) },
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+
+  /**
+   * Récupère tous les fichiers d'un projet
+   * @param {Number} projetId - ID du projet
+   */
+  getByProjet: (projetId) =>
+    api.get(`${endpoints.fichiers}/projet/${cleanId(projetId)}`),
+
+  /**
+   * Télécharge un fichier
+   * @param {Number} fichierId - ID du fichier
+   * @param {Number} projetId - ID du projet
+   */
+  download: (fichierId, projetId) =>
+    api.get(`${endpoints.fichiers}/${cleanId(fichierId)}/telecharger`, {
+      params: { projetId: cleanId(projetId) },
+      responseType: 'blob'
+    }),
+
+  /**
+   * Supprime un fichier
+   * @param {Number} fichierId - ID du fichier
+   * @param {Number} projetId - ID du projet
+   */
+  delete: (fichierId, projetId) => {
+    const token = localStorage.getItem('token')
+    return api.delete(`${endpoints.fichiers}/${cleanId(fichierId)}`, {
+      params: { projetId: cleanId(projetId) },
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+  },
+
+  /**
+   * Récupère les informations d'un fichier
+   * @param {Number} fichierId - ID du fichier
+   * @param {Number} projetId - ID du projet
+   */
+  getInfo: (fichierId, projetId) =>
+    api.get(`${endpoints.fichiers}/${cleanId(fichierId)}`, {
+      params: { projetId: cleanId(projetId) }
+    })
 }
 
 export default api
