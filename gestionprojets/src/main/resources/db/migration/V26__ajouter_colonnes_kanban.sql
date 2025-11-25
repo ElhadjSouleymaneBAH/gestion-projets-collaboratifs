@@ -1,12 +1,3 @@
--- Migration V26: Ajout des colonnes Kanban pour vue Trello
--- VERSION FRANÇAISE COMPLÈTE
--- Auteur: Elhadj Souleymane BAH
--- Date: 2025-11-21
-
--- ========================================
--- 1. CRÉER LA TABLE listes_colonnes (Colonnes Kanban)
--- ========================================
-
 CREATE TABLE listes_colonnes (
                                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                  nom VARCHAR(100) NOT NULL,                    -- "À faire", "En cours", "Terminé"

@@ -181,6 +181,9 @@ export const projectAPI = {
   getProjectMembers: (projectId) =>
     api.get(`${endpoints.projects}/${cleanId(projectId)}/membres`),
 
+  getAdminDetails: (id) =>
+    api.get(`${endpoints.projects}/admin/${cleanId(id)}/details`),
+
   getStatuses: () => api.get(`${endpoints.projects}/statuts`),
 }
 

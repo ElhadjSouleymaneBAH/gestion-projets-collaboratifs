@@ -1133,6 +1133,7 @@ export default {
       chartRoles: null,
       chartProjetsEvolution: null,
       chartRevenus: null,
+
     }
   },
 
@@ -1664,6 +1665,22 @@ export default {
 
     async consulterProjetAdmin(projet) {
       try {
+        // Appeler l'API admin pour les détails complets
+        const response = await projectAPI.getAdminDetails(projet.id)
+        const data = response.data
+
+        this.projetSelectionne = {
+          ...data.projet,
+          chefProjetNom: this.getProprietaireName(data.projet),
+          membres: data.membres || [],
+          totalTaches: data.totalTaches || 0,
+          tachesTerminees: data.tachesTerminees || 0,
+          tachesEnCours: data.tachesEnCours || 0,
+          tachesBrouillon: data.tachesBrouillon || 0
+        }
+      } catch (e) {
+        console.error('Erreur consultation projet:', e)
+
         this.projetSelectionne = {
           ...projet,
           chefProjetNom: this.getProprietaireName(projet),
@@ -1673,10 +1690,6 @@ export default {
           tachesEnCours: 0,
           tachesBrouillon: 0
         }
-        console.warn('API details projet admin non implementee')
-      } catch (e) {
-        console.error('Erreur consultation projet:', e)
-        alert(this.$t('erreurs.chargementProjet'))
       }
     },
 

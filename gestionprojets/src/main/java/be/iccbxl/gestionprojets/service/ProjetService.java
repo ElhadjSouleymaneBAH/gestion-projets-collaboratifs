@@ -9,6 +9,7 @@ import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
+import be.iccbxl.gestionprojets.repository.TacheRepository;
 import be.iccbxl.gestionprojets.service.ListeColonneService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,15 +28,18 @@ public class ProjetService {
     private final UtilisateurRepository utilisateurRepository;
     private final ProjetUtilisateurRepository projetUtilisateurRepository;
     private final ListeColonneService listeColonneService;
+    private final TacheRepository tacheRepository;
 
     public ProjetService(ProjetRepository projetRepository,
                          UtilisateurRepository utilisateurRepository,
                          ProjetUtilisateurRepository projetUtilisateurRepository,
-                         ListeColonneService listeColonneService) {
+                         ListeColonneService listeColonneService,
+                         TacheRepository tacheRepository) {
         this.projetRepository = projetRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.projetUtilisateurRepository = projetUtilisateurRepository;
         this.listeColonneService = listeColonneService;
+        this.tacheRepository = tacheRepository;
     }
 
     // =====================================================================
@@ -312,6 +316,37 @@ public class ProjetService {
     @Transactional(readOnly = true)
     public boolean utilisateurEstMembreProjet(Long projetId, Long utilisateurId) {
         return projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId);
+    }
+
+    // =====================================================================
+// STATISTIQUES TÂCHES POUR ADMIN
+// =====================================================================
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Long> obtenirStatistiquesTachesProjet(Long projetId) {
+        java.util.Map<String, Long> stats = new java.util.HashMap<>();
+
+        // Compter toutes les tâches du projet
+        Long total = tacheRepository.countByProjetId(projetId);
+        stats.put("total", total != null ? total : 0L);
+
+        // Compter par statut (utiliser l'enum StatutTache)
+        stats.put("terminees", countTachesByStatut(projetId, "TERMINE"));
+        stats.put("enCours", countTachesByStatut(projetId, "EN_COURS"));
+        stats.put("brouillon", countTachesByStatut(projetId, "BROUILLON"));
+        stats.put("enAttente", countTachesByStatut(projetId, "EN_ATTENTE_VALIDATION"));
+
+        return stats;
+    }
+
+    private Long countTachesByStatut(Long projetId, String statut) {
+        try {
+            be.iccbxl.gestionprojets.enums.StatutTache enumStatut =
+                    be.iccbxl.gestionprojets.enums.StatutTache.valueOf(statut);
+            Long count = tacheRepository.countByProjetIdAndStatut(projetId, enumStatut);
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 
     private ProjetDTO convertirEnDTO(Projet p) {

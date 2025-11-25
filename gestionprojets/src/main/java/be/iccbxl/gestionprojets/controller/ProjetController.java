@@ -206,12 +206,12 @@ public class ProjetController {
             @PathVariable Long id,
             Authentication authentication) {
         try {
-            System.out.println("📥 Requête DELETE pour projet ID=" + id);
+            System.out.println(" Requête DELETE pour projet ID=" + id);
 
             // Vérifier que le projet existe
             Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
             if (projetOpt.isEmpty()) {
-                System.err.println("❌ Projet introuvable: ID=" + id);
+                System.err.println(" Projet introuvable: ID=" + id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("message", "Projet non trouvé avec ID: " + id));
             }
@@ -222,7 +222,7 @@ public class ProjetController {
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
 
             if (!isAdmin && !projetService.utilisateurPeutModifierProjet(id, email)) {
-                System.err.println("❌ Accès refusé pour l'utilisateur: " + email);
+                System.err.println(" Accès refusé pour l'utilisateur: " + email);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("message", "Vous n'êtes pas autorisé à supprimer ce projet"));
             }
@@ -230,18 +230,59 @@ public class ProjetController {
             // Supprimer le projet
             projetService.supprimerProjet(id);
 
-            System.out.println("✅ Projet supprimé avec succès par: " + email);
+            System.out.println(" Projet supprimé avec succès par: " + email);
             return ResponseEntity.ok(Map.of("message", "Projet supprimé avec succès"));
 
         } catch (RuntimeException e) {
-            System.err.println("❌ Erreur métier: " + e.getMessage());
+            System.err.println(" Erreur métier: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("❌ Erreur serveur: " + e.getMessage());
+            System.err.println(" Erreur serveur: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erreur serveur lors de la suppression"));
+        }
+    }
+            // =====================================================================
+            // ENDPOINT ADMIN : Détails complets d'un projet
+            // =====================================================================
+    @GetMapping("/admin/{id}/details")
+    @PreAuthorize("hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<Map<String, Object>> obtenirDetailsProjetAdmin(
+            @PathVariable Long id,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String acceptLanguage
+    ) {
+        try {
+            Optional<ProjetDTO> projetOpt = projetService.obtenirProjetParId(id);
+            if (projetOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            ProjetDTO projet = projetOpt.get();
+            traduireProjet(projet, acceptLanguage);
+
+            // Récupérer les membres du projet
+            List<UtilisateurDTO> membres = projetService.obtenirMembresProjet(id);
+
+            // Récupérer les statistiques des tâches
+            Map<String, Long> statsTaches = projetService.obtenirStatistiquesTachesProjet(id);
+
+            // Construire la réponse complète
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("projet", projet);
+            response.put("membres", membres != null ? membres : List.of());
+            response.put("totalTaches", statsTaches.getOrDefault("total", 0L));
+            response.put("tachesTerminees", statsTaches.getOrDefault("terminees", 0L));
+            response.put("tachesEnCours", statsTaches.getOrDefault("enCours", 0L));
+            response.put("tachesBrouillon", statsTaches.getOrDefault("brouillon", 0L));
+            response.put("tachesEnAttente", statsTaches.getOrDefault("enAttente", 0L));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println(" Erreur détails projet admin: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

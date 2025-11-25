@@ -1,23 +1,22 @@
 <template>
   <div class="container my-4" v-if="!loading">
-    <!-- Alerte d'erreur d'accès -->
-    <div v-if="accesDenie" class="alert alert-danger alert-dismissible fade show" role="alert">
-      <div class="d-flex align-items-start">
-        <i class="fas fa-lock fa-2x me-3 mt-1"></i>
-        <div class="flex-grow-1">
-          <h5 class="alert-heading mb-2">
-            <i class="fas fa-exclamation-triangle me-2"></i>{{ t('erreurs.accesRestreint') }}
-          </h5>
-          <p class="mb-3">
+    <!-- Carte d'accès restreint - sobre et pro -->
+    <div v-if="accesDenie" class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+      <div class="card border-0 shadow-sm text-center" style="max-width: 400px;">
+        <div class="card-body p-4">
+          <div class="mb-3">
+            <i class="fas fa-lock text-secondary" style="font-size: 2.5rem;"></i>
+          </div>
+          <h5 class="card-title text-dark mb-2">{{ t('erreurs.accesRestreint') }}</h5>
+          <p class="card-text text-muted small mb-4">
             {{ messageErreur || t('erreurs.projetNonAccessible') }}
           </p>
-          <hr>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-light" @click="$router.push('/projets-publics')">
+          <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @click="$router.push('/projets-publics')">
               <i class="fas fa-arrow-left me-1"></i>{{ t('commun.retour') }}
             </button>
-            <button class="btn btn-light" @click="$router.push('/tableau-de-bord')">
-              <i class="fas fa-home me-1"></i>{{ t('commun.tableauDeBord') }}
+            <button class="btn btn-primary btn-sm" @click="$router.push('/connexion')">
+              <i class="fas fa-sign-in-alt me-1"></i>{{ t('commun.seConnecter') }}
             </button>
           </div>
         </div>

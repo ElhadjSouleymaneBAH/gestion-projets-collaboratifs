@@ -19,7 +19,7 @@
 
     <!-- Loader -->
     <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem"></div>
       <p class="text-muted mt-3">{{ t('commun.chargement') }}</p>
     </div>
 
@@ -102,7 +102,10 @@
 
       <!-- Alertes -->
       <div v-if="flash.text" :class="['alert alert-dismissible fade show', `alert-${flash.type}`]">
-        <i :class="flash.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'" class="me-2"></i>
+        <i
+          :class="flash.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"
+          class="me-2"
+        ></i>
         {{ flash.text }}
         <button type="button" class="btn-close" @click="flash.text = ''"></button>
       </div>
@@ -117,7 +120,7 @@
               </h5>
             </div>
             <div class="card-body">
-              <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6;">
+              <p class="mb-0" style="white-space: pre-wrap; line-height: 1.6">
                 {{ tache.description || t('commun.aucuneDescription') }}
               </p>
             </div>
@@ -217,6 +220,68 @@
       </div>
     </div>
   </div>
+  <!-- Modal Modification -->
+  <div
+    v-if="showModalModification"
+    class="modal d-block"
+    style="background: rgba(0, 0, 0, 0.5); z-index: 1060"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>{{ t('taches.modifier') || 'Modifier la tâche' }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            @click="fermerModalModification"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">{{ t('taches.titre') || 'Titre' }} *</label>
+            <input
+              type="text"
+              class="form-control"
+              v-model="formModification.titre"
+              maxlength="200"
+              :placeholder="t('taches.titrePlaceholder') || 'Titre de la tâche'"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">{{ t('taches.description') || 'Description' }}</label>
+            <textarea
+              class="form-control"
+              v-model="formModification.description"
+              rows="4"
+              maxlength="1000"
+              :placeholder="t('taches.descriptionPlaceholder') || 'Description de la tâche'"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            @click="fermerModalModification"
+          >
+            <i class="fas fa-times me-1"></i>{{ t('commun.annuler') || 'Annuler' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="sauvegarderModification"
+            :disabled="actionEnCours || !formModification.titre.trim()"
+          >
+            <span v-if="actionEnCours" class="spinner-border spinner-border-sm me-1"></span>
+            <i v-else class="fas fa-save me-1"></i>
+            {{ t('commun.sauvegarder') || 'Sauvegarder' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -237,7 +302,12 @@ const loading = ref(true)
 const actionEnCours = ref(false)
 const tache = ref(null)
 const flash = ref({ text: '', type: 'success' })
-
+// ========== MODAL MODIFICATION ==========
+const showModalModification = ref(false)
+const formModification = ref({
+  titre: '',
+  description: ''
+})
 const utilisateurActuel = computed(() => {
   const user = localStorage.getItem('user')
   return user ? JSON.parse(user) : null
@@ -348,7 +418,48 @@ const annulerTache = async () => {
 }
 
 const modifierTache = () => {
-  router.push(`/taches/${tacheId.value}/modifier`)
+  // Ouvrir le modal avec les données actuelles
+  formModification.value = {
+    titre: tache.value?.titre || '',
+    description: tache.value?.description || ''
+  }
+  showModalModification.value = true
+}
+
+const fermerModalModification = () => {
+  showModalModification.value = false
+  formModification.value = { titre: '', description: '' }
+}
+
+const sauvegarderModification = async () => {
+  if (!formModification.value.titre.trim()) {
+    showFlash(t('erreurs.titreRequis') || 'Le titre est requis', 'danger')
+    return
+  }
+
+  try {
+    actionEnCours.value = true
+
+    const payload = {
+      ...tache.value,
+      titre: formModification.value.titre.trim(),
+      description: formModification.value.description.trim()
+    }
+
+    await taskAPI.update(tacheId.value, payload)
+
+    // Mettre à jour localement
+    tache.value.titre = formModification.value.titre.trim()
+    tache.value.description = formModification.value.description.trim()
+
+    showFlash(t('taches.modifiee') || 'Tâche modifiée avec succès', 'success')
+    fermerModalModification()
+  } catch (error) {
+    console.error('Erreur modification:', error)
+    showFlash(t('erreurs.modificationTache') || 'Erreur lors de la modification', 'danger')
+  } finally {
+    actionEnCours.value = false
+  }
 }
 
 // ========== HELPERS ==========
@@ -362,7 +473,7 @@ const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString(locale.value || 'fr-FR', {
       day: '2-digit',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
     })
   } catch {
     return '—'
@@ -372,20 +483,22 @@ const formatDate = (dateStr) => {
 const getAssigneName = () => {
   if (!tache.value?.assigne) return t('taches.details.nonDefini')
   const assigne = tache.value.assigne
-  return `${assigne.prenom || ''} ${assigne.nom || ''}`.trim() ||
+  return (
+    `${assigne.prenom || ''} ${assigne.nom || ''}`.trim() ||
     assigne.email ||
     t('taches.details.nonDefini')
+  )
 }
 
 const mapStatutKey = (statut) => {
   const s = String(statut || '').toUpperCase()
   const mapping = {
-    'BROUILLON': 'brouillon',
-    'EN_ATTENTE_VALIDATION': 'enAttente',
-    'TERMINE': 'termine',
-    'TERMINÉ': 'termine',
-    'ANNULE': 'annule',
-    'ANNULÉ': 'annule'
+    BROUILLON: 'brouillon',
+    EN_ATTENTE_VALIDATION: 'enAttente',
+    TERMINE: 'termine',
+    TERMINÉ: 'termine',
+    ANNULE: 'annule',
+    ANNULÉ: 'annule',
   }
   return mapping[s] || 'enAttente'
 }
@@ -393,12 +506,12 @@ const mapStatutKey = (statut) => {
 const getStatutBadgeClass = (statut) => {
   const s = String(statut || '').toUpperCase()
   const classes = {
-    'BROUILLON': 'bg-secondary',
-    'EN_ATTENTE_VALIDATION': 'bg-warning text-dark',
-    'TERMINE': 'bg-success',
-    'TERMINÉ': 'bg-success',
-    'ANNULE': 'bg-danger',
-    'ANNULÉ': 'bg-danger'
+    BROUILLON: 'bg-secondary',
+    EN_ATTENTE_VALIDATION: 'bg-warning text-dark',
+    TERMINE: 'bg-success',
+    TERMINÉ: 'bg-success',
+    ANNULE: 'bg-danger',
+    ANNULÉ: 'bg-danger',
   }
   return classes[s] || 'bg-info'
 }
@@ -406,12 +519,12 @@ const getStatutBadgeClass = (statut) => {
 const getStatutIcon = (statut) => {
   const s = String(statut || '').toUpperCase()
   const icons = {
-    'BROUILLON': 'fas fa-file',
-    'EN_ATTENTE_VALIDATION': 'fas fa-clock',
-    'TERMINE': 'fas fa-check-circle',
-    'TERMINÉ': 'fas fa-check-circle',
-    'ANNULE': 'fas fa-times-circle',
-    'ANNULÉ': 'fas fa-times-circle'
+    BROUILLON: 'fas fa-file',
+    EN_ATTENTE_VALIDATION: 'fas fa-clock',
+    TERMINE: 'fas fa-check-circle',
+    TERMINÉ: 'fas fa-check-circle',
+    ANNULE: 'fas fa-times-circle',
+    ANNULÉ: 'fas fa-times-circle',
   }
   return icons[s] || 'fas fa-circle'
 }
@@ -470,12 +583,14 @@ const showFlash = (text, type = 'success') => {
   margin: 0.5rem 0;
 }
 
-dl dt, dl dd {
+dl dt,
+dl dd {
   padding: 0.5rem 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-dl dt:last-of-type, dl dd:last-of-type {
+dl dt:last-of-type,
+dl dd:last-of-type {
   border-bottom: none;
 }
 </style>

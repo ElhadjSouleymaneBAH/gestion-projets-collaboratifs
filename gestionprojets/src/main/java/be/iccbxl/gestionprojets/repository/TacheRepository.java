@@ -60,7 +60,11 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
      */
     @Query("SELECT COUNT(t) FROM Tache t WHERE t.projet.id = :projetId")
     Long countByProjetId(@Param("projetId") Long projetId);
-
+    /**
+     * Compte les tâches par projet et statut
+     */
+    @Query("SELECT COUNT(t) FROM Tache t WHERE t.projet.id = :projetId AND t.statut = :statut")
+    Long countByProjetIdAndStatut(@Param("projetId") Long projetId, @Param("statut") StatutTache statut);
     /**
      * Compte les tâches par utilisateur assigné
      */

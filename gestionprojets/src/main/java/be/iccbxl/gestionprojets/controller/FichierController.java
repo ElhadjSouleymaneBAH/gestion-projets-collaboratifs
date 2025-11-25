@@ -23,7 +23,6 @@ import java.util.Map;
 @RequestMapping("/api/fichiers")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 public class FichierController {
 
     private final FichierService fichierService;

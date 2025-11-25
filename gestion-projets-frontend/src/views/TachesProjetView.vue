@@ -249,7 +249,7 @@ onMounted(async () => {
 const chargerTaches = async () => {
   try {
     loading.value = true
-    const response = await taskAPI.getByProjet(projetId.value)
+    const response = await taskAPI.byProjet(projetId.value)
     taches.value = Array.isArray(response.data) ? response.data : []
     tachesFiltrees.value = [...taches.value]
     trierTaches()

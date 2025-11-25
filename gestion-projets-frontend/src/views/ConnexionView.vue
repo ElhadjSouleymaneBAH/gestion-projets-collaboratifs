@@ -38,6 +38,7 @@
                     v-model="form.email"
                     required
                     placeholder="votre@email.com"
+                    autocomplete="email"
                   >
                 </div>
 
@@ -51,6 +52,7 @@
                       v-model="form.motDePasse"
                       required
                       placeholder="••••••••"
+                      autocomplete="current-password"
                     >
                     <button
                       type="button"

@@ -343,6 +343,15 @@
                         <i class="fas fa-edit"></i>
                       </button>
                       <button
+                        v-if="peutModifierProjet(p)"
+                        class="btn btn-sm"
+                        :class="p.publique ? 'btn-outline-warning' : 'btn-outline-info'"
+                        @click="toggleVisibilite(p)"
+                        :title="p.publique ? $t('projets.rendrePrive') : $t('projets.rendrePublic')"
+                      >
+                        <i :class="p.publique ? 'fas fa-lock' : 'fas fa-globe'"></i>
+                      </button>
+                      <button
                         v-if="peutSupprimerProjet(p)"
                         class="btn btn-sm btn-outline-danger"
                         @click="supprimerProjet(p.id)"
@@ -533,12 +542,11 @@
                         :title="$t('tooltips.voirCommentaires')">
                         <i class="fas fa-comments"></i>
                       </button>
-
                       <button
                         v-if="t.statut === 'BROUILLON' && peutModifierTache(t)"
                         class="btn btn-sm btn-outline-warning"
-                        @click="modifierTache(t)"
-                        :title="$t('tooltips.modifierTache')">
+                        @click.prevent="modifierTache(t)"
+                        :title="$t('taches.modifier')">
                         <i class="fas fa-edit"></i>
                       </button>
 
@@ -589,9 +597,39 @@
       </div>
       <!-- ========== ONGLET KANBAN ========== -->
       <div v-if="onglet === 'kanban'">
-        <KanbanBoard v-if="projetChatActuel" :projetId="projetChatActuel.id" />
-        <div v-else class="alert alert-info">
-          <i class="fas fa-info-circle me-2"></i>Sélectionnez un projet dans l'onglet Chat pour voir le Kanban
+        <div v-if="mesProjets.length === 0" class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ $t('projets.aucunProjet') }}
+        </div>
+
+        <div v-else>
+          <!-- Sélecteur de projet -->
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <label class="form-label fw-bold">
+                <i class="fas fa-project-diagram me-2"></i>{{ $t('projets.selectionnerProjet') }}
+              </label>
+              <select
+                class="form-select form-select-lg"
+                v-model="projetKanbanSelectionne"
+                @change="changerProjetKanban">
+                <option :value="null">-- {{ $t('projets.choisirProjet') }} --</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p">
+                  {{ translateProjectTitle(p.titre) }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Kanban Board -->
+          <KanbanBoard
+            v-if="projetKanbanSelectionne"
+            :projetId="projetKanbanSelectionne.id"
+            :key="projetKanbanSelectionne.id"
+          />
+          <div v-else class="alert alert-info text-center py-5">
+            <i class="fas fa-hand-pointer fa-3x mb-3 text-muted"></i>
+            <h5>{{ $t('projets.selectionnerProjetPourKanban') }}</h5>
+          </div>
         </div>
       </div>
 
@@ -978,6 +1016,28 @@
                 maxlength="500"
                 :placeholder="$t('projets.descriptionProjet')"
               ></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ $t('projets.visibilite') }}</label>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="projetPublique"
+                  v-model="projetForm.publique"
+                >
+                <label class="form-check-label" for="projetPublique">
+      <span v-if="projetForm.publique">
+        <i class="fas fa-globe text-success me-1"></i>{{ $t('projets.public') }}
+      </span>
+                  <span v-else>
+        <i class="fas fa-lock text-secondary me-1"></i>{{ $t('projets.prive') }}
+      </span>
+                </label>
+              </div>
+              <small class="text-muted">
+                {{ projetForm.publique ? $t('projets.publicDescription') : $t('projets.priveDescription') }}
+              </small>
             </div>
           </div>
           <div class="modal-footer">
@@ -1492,13 +1552,13 @@ export default {
       membreARetirer: null,
       erreurBackend: null,
       showCreateProject: false,
-      projetForm: { titre: '', description: '' },
+      projetForm: { titre: '', description: '', publique: false },
       subscribedTopics: new Set(),
-      // ========== NOUVEAUX POUR RECHERCHE ==========
       rechercheTache: '',
       filtreStatutTache: 'TOUS',
       tachesFiltreesRecherche: [],
       chartCanvasTaches: null,
+      projetKanbanSelectionne: null,
     }
   },
   computed: {
@@ -1708,10 +1768,17 @@ export default {
       this.chargementTaches = true
       try {
         const userId = this.normalizeId(this.utilisateur.id)
-        console.log('🔍 [chargerTaches] Chargement pour userId:', userId)
+        console.log(' [chargerTaches] Chargement pour userId:', userId)
 
         const r = await taskAPI.byChefProjet(userId)
-        console.log('🔍 [chargerTaches] Réponse API:', r.data)
+        console.log(' [chargerTaches] Réponse API:', r.data)
+
+        if (!r || !r.data) {
+          console.error(' [chargerTaches] Aucune donnée reçue de l\'API')
+          this.totalTaches = []
+          this.chargementTaches = false
+          return
+        }
 
         let taches = Array.isArray(r.data)
           ? r.data
@@ -1719,12 +1786,11 @@ export default {
             ? r.data.content
             : []
 
-        console.log('🔍 [chargerTaches] Tâches extraites:', taches.length)
-        console.log('🔍 [chargerTaches] Projets existants:', this.mesProjets.length)
+        console.log(' [chargerTaches] Tâches extraites:', taches.length)
+        console.log(' [chargerTaches] Projets existants:', this.mesProjets.length)
 
-        // ⚠️ SI AUCUN PROJET, CHARGER QUAND MÊME LES TÂCHES
         if (this.mesProjets.length === 0) {
-          console.warn('⚠️ [chargerTaches] Aucun projet chargé, mais on garde les tâches')
+          console.warn(' [chargerTaches] Aucun projet chargé, mais on garde les tâches')
           this.totalTaches = taches.map((t) => ({
             ...t,
             id: this.normalizeId(t.id),
@@ -1967,11 +2033,12 @@ export default {
         await projectAPI.create({
           titre: this.projetForm.titre,
           description: this.projetForm.description,
+          publique: this.projetForm.publique,
         })
         await this.chargerProjets()
         await this.chargerTaches()
         this.showCreateProject = false
-        this.projetForm = { titre: '', description: '' }
+        this.projetForm = { titre: '', description: '', publique: false }
         alert(this.$t('projets.projetCree'))
       } catch (e) {
         console.error('[Projet] Erreur création:', e)
@@ -1997,6 +2064,28 @@ export default {
         console.error('[Projet] Erreur modification:', e)
         if (e.response?.status === 403) alert(this.$t('erreurs.pasAutoriseModifier'))
         else alert(this.$t('erreurs.modificationProjet'))
+      }
+    },
+
+    async toggleVisibilite(projet) {
+      const nouveauStatut = !projet.publique
+      const message = nouveauStatut
+        ? 'Rendre ce projet visible par tous les visiteurs ?'
+        : 'Rendre ce projet privé (visible uniquement par les membres) ?'
+
+      if (!confirm(message)) return
+
+      try {
+        await projectAPI.update(projet.id, {
+          ...projet,
+          publique: nouveauStatut
+        })
+        projet.publique = nouveauStatut
+        this.$forceUpdate()
+        alert('Visibilité modifiée avec succès')
+      } catch (e) {
+        console.error('[Projet] Erreur changement visibilité:', e)
+        alert(this.$t('erreurs.modificationProjet'))
       }
     },
 
@@ -2072,25 +2161,55 @@ export default {
     },
 
     async modifierTache(tache) {
-      const nouveauTitre = prompt(this.$t('taches.nouveauTitre'), tache.titre)
+      const nouveauTitre = prompt(this.$t('taches.nouveauTitre') || 'Nouveau titre :', tache.titre)
       if (!nouveauTitre || nouveauTitre === tache.titre) return
 
-      const nouvelleDescription = prompt(this.$t('taches.nouvelleDescription'), tache.description || '')
+      const nouvelleDescription = prompt(
+        this.$t('taches.nouvelleDescription') || 'Nouvelle description :',
+        tache.description || ''
+      )
       if (nouvelleDescription === null) return
 
       try {
-        await taskAPI.update(tache.id, {
-          ...tache,
+        const payload = {
           titre: nouveauTitre,
-          description: nouvelleDescription
-        })
+          description: nouvelleDescription,
+          statut: tache.statut,
+          projetId: tache.projetId || tache.id_projet,
+          priorite: tache.priorite || 'MOYENNE',
+          dateEcheance: tache.dateEcheance || tache.date_echeance
+        }
+
+        await taskAPI.update(tache.id, payload)
+
+        // Mise à jour locale
         tache.titre = nouveauTitre
         tache.description = nouvelleDescription
-        alert(this.$t('taches.modifiee'))
+
+        this.$forceUpdate()
+        alert(this.$t('taches.modifiee') || 'Tâche modifiée avec succès')
       } catch (e) {
         console.error('[Tache] Erreur modification:', e)
-        alert(this.$t('erreurs.modificationTache'))
+        alert(this.$t('erreurs.modificationTache') || 'Erreur lors de la modification')
       }
+
+    },
+    changerProjetKanban() {
+      // Force le rafraîchissement du Kanban
+      this.$nextTick(() => {
+        this.$forceUpdate()
+      })
+    },
+
+    creerTacheDansKanban() {
+      if (!this.projetKanbanSelectionne) {
+        alert(this.$t('projets.selectionnerProjetAvant') || 'Veuillez sélectionner un projet')
+        return
+      }
+
+      this.$router.push({
+        path: `/projet/${this.projetKanbanSelectionne.id}/taches/nouvelle`
+      })
     },
 
     async soumettreTache(tache) {
