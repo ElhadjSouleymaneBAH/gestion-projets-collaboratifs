@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * DTO pour les tâches (F7)
  *
  * @author Elhadj Souleymane BAH
- * @version 3.0 - Ajout mapping Jackson pour compatibilité SQL
+ * @version 1.1 - Ajout idListeColonne pour Kanban
  */
 @Data
 public class TacheDTO {
@@ -23,14 +23,11 @@ public class TacheDTO {
     private StatutTache statut;
     private PrioriteTache priorite;
 
-    // 🔧 Mapping vers date_echeance en SQL
     @JsonProperty("dateEcheance")
     private LocalDate dateEcheance;
 
-    // 🔧 Mapping vers date_creation en SQL
     @JsonProperty("dateCreation")
     private LocalDateTime dateCreation;
-
 
     @JsonProperty("idProjet")
     private Long idProjet;
@@ -38,18 +35,18 @@ public class TacheDTO {
     @JsonProperty("nomProjet")
     private String nomProjet;
 
-    // Assignation
-
     @JsonProperty("idAssigne")
     private Long idAssigne;
 
     @JsonProperty("nomAssigne")
     private String nomAssigne;
 
-    // Détails enrichis de l'assigné
     @JsonProperty("prenomAssigne")
     private String prenomAssigne;
 
     @JsonProperty("emailAssigne")
     private String emailAssigne;
+
+    @JsonProperty("idListeColonne")
+    private Long idListeColonne;
 }

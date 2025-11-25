@@ -119,6 +119,8 @@ export default {
     sauvegarder: 'Sauvegarder',
     actuel: 'Actuel',
     seConnecter: 'Se connecter',
+    optionsSuivantes: 'Options suivantes',
+    caracteres: 'caractères',
   },
 
   // ==================== TEMPS ET DATES ====================
@@ -429,6 +431,11 @@ export default {
     creationReussie: 'Tâche créée avec succès !',
     creationEnCours: 'Création en cours...',
     modifiee: 'Tâche modifiée avec succès',
+    toutesLesTachesAssignees: 'Toutes les tâches assignées',
+    toutesAssignees: 'Toutes assignées',
+    reassignerTacheExistante: 'Réassigner une tâche existante',
+    dateCreation: 'Date de création',
+    pasActionPossible: 'Aucune action disponible',
 
     kanban: {
       titre: 'Vue Kanban',
@@ -591,6 +598,7 @@ export default {
     ajout: 'Ajouter des membres',
     descriptionAjout: 'Invitez des utilisateurs à rejoindre vos projets',
     aucun: 'Aucun membre',
+    aucunResultat: 'Aucun résultat trouvé',
     confirmerRetrait: 'Confirmer le retrait de ce membre ?',
     membreRetire: 'Membre retiré avec succès',
     erreurRetrait: 'Erreur lors du retrait du membre',
@@ -669,7 +677,11 @@ export default {
     placeholder: 'Écrivez votre commentaire...',
     auteur: 'Auteur',
     contenu: 'Contenu',
-    date: 'Date'
+    date: 'Date',
+    commentairesTache: 'Commentaires de la tâche',
+    ajouterCommentaire: 'Ajouter un commentaire',
+    votreMessage: 'Votre message',
+    nouveau: 'Nouveau commentaire',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -1448,7 +1460,9 @@ export default {
     ouvrirChat: 'Ouvrir le chat du projet',
     ecrireMessage: 'Écrire un message',
     envoyerMessage: 'Envoyer le message',
-    premium: 'Premium actif – accès à toutes les fonctionnalités'
+    premium: 'Premium actif – accès à toutes les fonctionnalités',
+    soumettreTache: 'Soumettre la tâche pour validation',
+    voirCommentaires: 'Voir les commentaires',
   },
 
   // ==================== À PROPOS ====================
@@ -1470,6 +1484,7 @@ export default {
       },
       gestionTaches: {
         titre: 'Gestion des tâches',
+        disponibles: 'Tâches disponibles',
         description: "Assignez des tâches, suivez leur progression et validez les résultats avec un workflow d'approbation complet."
       },
       collaborationEquipe: {

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * Entité de liaison entre Projet et Utilisateur
  * Correspond à la table projet_membres dans votre base de données
- *
+
  * Implémente la fonctionnalité F8 du cahier des charges :
  * "Ajouter des membres à un projet"
  *

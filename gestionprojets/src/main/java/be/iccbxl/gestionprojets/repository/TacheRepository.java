@@ -3,6 +3,7 @@ package be.iccbxl.gestionprojets.repository;
 import be.iccbxl.gestionprojets.model.Tache;
 import be.iccbxl.gestionprojets.enums.StatutTache;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -60,11 +61,13 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
      */
     @Query("SELECT COUNT(t) FROM Tache t WHERE t.projet.id = :projetId")
     Long countByProjetId(@Param("projetId") Long projetId);
+
     /**
      * Compte les tâches par projet et statut
      */
     @Query("SELECT COUNT(t) FROM Tache t WHERE t.projet.id = :projetId AND t.statut = :statut")
     Long countByProjetIdAndStatut(@Param("projetId") Long projetId, @Param("statut") StatutTache statut);
+
     /**
      * Compte les tâches par utilisateur assigné
      */
@@ -129,11 +132,22 @@ public interface TacheRepository extends JpaRepository<Tache, Long> {
 
     /**
      * Tâches non assignées pour un projet donné.
-     * Utilisée dans la fenêtre d’assignation de tâche.
+     * Utilisée dans la fenêtre d'assignation de tâche.
      */
     @Query("SELECT t FROM Tache t " +
             "LEFT JOIN FETCH t.projet p " +
             "LEFT JOIN FETCH p.createur " +
             "WHERE t.projet.id = :projetId AND t.assigneA IS NULL")
     List<Tache> findNonAssigneesByProjetId(@Param("projetId") Long projetId);
+
+    // ========== MÉTHODE DE SUPPRESSION ==========
+
+    /**
+     * Supprime toutes les tâches d'un projet.
+     * Utilisé lors de suppression de projet (F6).
+     * @Modifying évite les conflits Hibernate en exécutant directement le DELETE en SQL.
+     */
+    @Modifying
+    @Query("DELETE FROM Tache t WHERE t.projet.id = :projetId")
+    void deleteByProjetId(@Param("projetId") Long projetId);
 }

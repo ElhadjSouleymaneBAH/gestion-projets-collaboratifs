@@ -119,6 +119,8 @@ export default {
     sauvegarder: 'Save',
     actuel: 'Current',
     seConnecter: 'Sign in',
+    optionsSuivantes: 'Next options',
+    caracteres: 'characters',
   },
 
   // ==================== TIME AND DATES ====================
@@ -428,6 +430,11 @@ export default {
     creationReussie: 'Task created successfully!',
     creationEnCours: 'Creating...',
     modifiee: 'Task updated successfully',
+    toutesLesTachesAssignees: 'All assigned tasks',
+    toutesAssignees: 'All assigned',
+    reassignerTacheExistante: 'Reassign an existing task',
+    dateCreation: 'Creation date',
+    pasActionPossible: 'No action available',
 
     kanban: {
       titre: 'Kanban View',
@@ -589,6 +596,7 @@ export default {
     ajout: 'Add members',
     descriptionAjout: 'Invite users to join your projects',
     aucun: 'No members',
+    aucunResultat: 'No result found',
     confirmerRetrait: 'Confirm removal of this member?',
     membreRetire: 'Member removed successfully',
     erreurRetrait: 'Error removing member',
@@ -667,7 +675,11 @@ export default {
     placeholder: 'Write your comment...',
     auteur: 'Author',
     contenu: 'Content',
-    date: 'Date'
+    date: 'Date',
+    commentairesTache: 'Task comments',
+    ajouterCommentaire: 'Add a comment',
+    votreMessage: 'Your message',
+    nouveau: 'New comment',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -1446,7 +1458,9 @@ export default {
     ouvrirChat: 'Open project chat',
     ecrireMessage: 'Write a message',
     envoyerMessage: 'Send message',
-    premium: 'Premium active – access all features'
+    premium: 'Premium active – access all features',
+    soumettreTache: 'Submit task for validation',
+    voirCommentaires: 'View comments',
   },
 
   // ==================== ABOUT ====================
@@ -1468,6 +1482,7 @@ export default {
       },
       gestionTaches: {
         titre: 'Task Management',
+        disponibles: 'Available tasks',
         description: 'Assign tasks, track their progress and validate results with a complete approval workflow.'
       },
       collaborationEquipe: {

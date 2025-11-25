@@ -22,10 +22,10 @@ import java.util.Optional;
 
 /**
  * Service de gestion des notifications avec WebSocket
- * Version 2.0 - Notifications automatiques changement statut tâches
+ * Version 2.1 - Méthode supprimerNotification avec retour boolean
  *
  * @author ElhadjSouleymaneBAH
- * @version 2.0
+ * @version 2.1
  */
 @Service
 @RequiredArgsConstructor
@@ -251,21 +251,31 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    public void supprimerNotification(Long notificationId, Long utilisateurId) {
-        log.debug("Suppression notification {} pour utilisateur {}", notificationId, utilisateurId);
+    /**
+     * ✅ MODIFIÉ : Supprimer une notification avec retour boolean
+     * @return true si supprimée, false si non trouvée ou non autorisée
+     */
+    public boolean supprimerNotification(Long notificationId, Long utilisateurId) {
+        log.debug("[Notif] Suppression notification {} pour utilisateur {}", notificationId, utilisateurId);
 
         Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
         if (notificationOpt.isEmpty()) {
-            throw new RuntimeException("Notification non trouvée avec l'ID : " + notificationId);
+            log.warn("[Notif] Notification {} introuvable", notificationId);
+            return false;
         }
 
         Notification notification = notificationOpt.get();
 
+        // Vérifier que l'utilisateur est bien le propriétaire
         if (!notification.getUtilisateur().getId().equals(utilisateurId)) {
-            throw new RuntimeException("Accès non autorisé à cette notification");
+            log.warn("[Notif] Utilisateur {} non autorisé à supprimer notification {}",
+                    utilisateurId, notificationId);
+            return false;
         }
 
         notificationRepository.delete(notification);
+        log.info("[Notif] ✅ Notification {} supprimée avec succès", notificationId);
+        return true;
     }
 
     @Transactional(readOnly = true)

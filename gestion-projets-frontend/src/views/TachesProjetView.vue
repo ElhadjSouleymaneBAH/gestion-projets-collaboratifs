@@ -125,7 +125,7 @@
               <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <span :class="['badge', getStatutBadgeClass(tache.statut)]">
                   <i :class="getStatutIcon(tache.statut)" class="me-1"></i>
-                  {{ translateTaskStatus(tache.statut) }}
+                  {{ translateData('taskStatus', tache.statut) }}
                 </span>
                 <div class="dropdown" v-if="peutGererTache(tache)">
                   <button
@@ -211,7 +211,7 @@ import { taskAPI } from '@/services/api'
 import KanbanBoard from '@/components/KanbanBoard.vue'
 
 const { t, locale } = useI18n()
-const { translateTaskStatus, translatePriority } = useDataTranslation()
+const { translateData } = useDataTranslation()  // ✅ CORRIGÉ
 const route = useRoute()
 const router = useRouter()
 

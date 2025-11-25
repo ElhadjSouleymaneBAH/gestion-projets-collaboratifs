@@ -959,39 +959,54 @@ const chargerToutesDonnees = async () => {
         .map(t => ({
           ...t,
           id: normalizeId(t.id),
-          projetId: normalizeId(t.projetId || t.id_projet),
-          id_projet: normalizeId(t.id_projet || t.projetId)
+          projetId: normalizeId(t.projetId || t.id_projet || t.idProjet),
+          id_projet: normalizeId(t.id_projet || t.projetId || t.idProjet),
+          idProjet: normalizeId(t.idProjet || t.projetId || t.id_projet)
         }))
-        .filter(t => {
-          // Filtrer les tâches dont le projet n'existe plus
-          const projetId = t.projetId || t.id_projet
-          return mesProjets.value.some(p => normalizeId(p.id) == normalizeId(projetId))
-        })
       : []
+    //  Charger les projets manquants des tâches
+    const projetsManquants = new Set()
+    mesTaches.value.forEach(t => {
+      const projetId = t.projetId || t.id_projet || t.idProjet
+      if (projetId && !mesProjets.value.some(p => normalizeId(p.id) == normalizeId(projetId))) {
+        projetsManquants.add(projetId)
+      }
+    })
+
+    for (const projetId of projetsManquants) {
+      try {
+        const pRes = await projectAPI.getById(projetId)
+        if (pRes.data) {
+          mesProjets.value.push({ ...pRes.data, id: normalizeId(pRes.data.id) })
+          console.log('[Load]  Projet manquant chargé:', pRes.data.titre)
+        }
+      } catch (e) {
+        console.warn('[Load]  Impossible de charger projet:', projetId)
+      }
+    }
 
     notifications.value = nRes.status === 'fulfilled' && Array.isArray(nRes.value?.data)
       ? nRes.value.data
       : []
 
-    // ✨ CORRECTION F12: Précharger les commentaires de chaque tâche
-    console.log('[F12] 🔄 Préchargement des commentaires pour', mesTaches.value.length, 'tâches')
+    // Précharger les commentaires de chaque tâche
+    console.log('[F12]  Préchargement des commentaires pour', mesTaches.value.length, 'tâches')
 
     const commentairesPromises = mesTaches.value.map(async (tache) => {
       try {
         const tacheIdNormalized = normalizeId(tache.id)
         const response = await commentaireAPI.getByTache(tacheIdNormalized)
         commentairesParTache.value[tacheIdNormalized] = Array.isArray(response.data) ? response.data : []
-        console.log(`[F12] ✅ Tâche ${tacheIdNormalized}: ${commentairesParTache.value[tacheIdNormalized].length} commentaires`)
+        console.log(`[F12]  Tâche ${tacheIdNormalized}: ${commentairesParTache.value[tacheIdNormalized].length} commentaires`)
       } catch (e) {
-        console.warn(`[F12] ⚠️ Erreur chargement commentaires tâche ${tache.id}:`, e)
+        console.warn(`[F12]  Erreur chargement commentaires tâche ${tache.id}:`, e)
         commentairesParTache.value[normalizeId(tache.id)] = []
       }
     })
 
-    // Attendre que tous les commentaires soient chargés
     await Promise.allSettled(commentairesPromises)
 
-    console.log('[Load] ✅ Données chargées:', {
+    console.log('[Load]  Données chargées:', {
       projets: mesProjets.value.length,
       taches: mesTaches.value.length,
       notifications: notifications.value.length,

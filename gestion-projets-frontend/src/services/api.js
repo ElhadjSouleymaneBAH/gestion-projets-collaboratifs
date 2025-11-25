@@ -186,7 +186,6 @@ export const projectAPI = {
 
   getStatuses: () => api.get(`${endpoints.projects}/statuts`),
 }
-
 /* ===================== TÂCHES ===================== */
 export const taskAPI = {
   list: () => api.get(endpoints.tasks),
@@ -197,7 +196,7 @@ export const taskAPI = {
     api.put(`${endpoints.tasks}/${cleanId(id)}`, payload),
   getById: (id) => api.get(`${endpoints.tasks}/${cleanId(id)}`),
   updateStatus: (id, statut) =>
-    api.patch(
+      api.put(
       `${endpoints.tasks}/${cleanId(id)}/statut`,
       { statut: String(statut) },
       { headers: { 'Content-Type': 'application/json' } }

@@ -491,6 +491,12 @@
               v-if="rechercheTache || filtreStatutTache !== 'TOUS'">
               <i class="fas fa-redo me-1"></i>Réinitialiser
             </button>
+            <button
+                class="btn btn-success ms-2"
+                @click="ouvrirModalCreationTache"
+                :disabled="!abonnementActif || mesProjets.length === 0">
+              <i class="fas fa-plus me-2"></i>Nouvelle tâche
+            </button>
           </div>
 
           <div class="card-body">
@@ -1480,6 +1486,56 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal création tâche -->
+    <div v-if="modalCreationTache" class="modal d-block" style="background: rgba(0, 0, 0, 0.5); z-index: 1060">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Nouvelle tâche</h5>
+            <button class="btn-close btn-close-white" @click="modalCreationTache = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Projet *</label>
+              <select class="form-select" v-model="nouvelleTache.projetId" required>
+                <option :value="null">-- Choisir un projet --</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p.id">{{ p.titre }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Titre *</label>
+              <input class="form-control" v-model="nouvelleTache.titre" maxlength="120" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" v-model="nouvelleTache.description" rows="3"></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Priorité</label>
+                <select class="form-select" v-model="nouvelleTache.priorite">
+                  <option value="BASSE">Basse</option>
+                  <option value="NORMALE">Normale</option>
+                  <option value="HAUTE">Haute</option>
+                  <option value="URGENTE">Urgente</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Date d'échéance</label>
+                <input type="date" class="form-control" v-model="nouvelleTache.dateEcheance" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="modalCreationTache = false">Annuler</button>
+            <button class="btn btn-success" @click="creerNouvelleTache" :disabled="!nouvelleTache.titre || !nouvelleTache.projetId">
+              <i class="fas fa-check me-1"></i>Créer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1559,6 +1615,8 @@ export default {
       tachesFiltreesRecherche: [],
       chartCanvasTaches: null,
       projetKanbanSelectionne: null,
+      modalCreationTache: false,
+      nouvelleTache: { projetId: null, titre: '', description: '', priorite: 'NORMALE', dateEcheance: null },
     }
   },
   computed: {
@@ -1794,8 +1852,9 @@ export default {
           this.totalTaches = taches.map((t) => ({
             ...t,
             id: this.normalizeId(t.id),
-            projetId: this.normalizeId(t.projetId || t.id_projet),
-            id_projet: this.normalizeId(t.id_projet || t.projetId),
+            projetId: this.normalizeId(t.projetId || t.id_projet || t.idProjet),
+            id_projet: this.normalizeId(t.id_projet || t.projetId || t.idProjet),
+            idProjet: this.normalizeId(t.idProjet || t.projetId || t.id_projet),
             assigneId: t.assigneId ?? t.idAssigne ?? t.id_assigne ?? null,
             id_assigne: t.id_assigne ?? t.assigneId ?? t.idAssigne ?? null,
             idAssigne: t.idAssigne ?? t.assigneId ?? t.id_assigne ?? null,
@@ -1810,14 +1869,15 @@ export default {
             .map((t) => ({
               ...t,
               id: this.normalizeId(t.id),
-              projetId: this.normalizeId(t.projetId || t.id_projet),
-              id_projet: this.normalizeId(t.id_projet || t.projetId),
+              projetId: this.normalizeId(t.projetId || t.id_projet || t.idProjet),
+              id_projet: this.normalizeId(t.id_projet || t.projetId || t.idProjet),
+              idProjet: this.normalizeId(t.idProjet || t.projetId || t.id_projet),
               assigneId: t.assigneId ?? t.idAssigne ?? t.id_assigne ?? null,
               id_assigne: t.id_assigne ?? t.assigneId ?? t.idAssigne ?? null,
               idAssigne: t.idAssigne ?? t.assigneId ?? t.id_assigne ?? null,
             }))
             .filter((t) => {
-              const projetId = t.projetId || t.id_projet
+              const projetId = t.projetId || t.id_projet || t.idProjet
               return projetId && projetsExistantsIds.has(this.normalizeId(projetId))
             })
         }
@@ -2200,7 +2260,30 @@ export default {
         this.$forceUpdate()
       })
     },
+    ouvrirModalCreationTache() {
+      this.nouvelleTache = { projetId: null, titre: '', description: '', priorite: 'NORMALE', dateEcheance: null }
+      this.modalCreationTache = true
+    },
 
+    async creerNouvelleTache() {
+      if (!this.nouvelleTache.titre || !this.nouvelleTache.projetId) return
+      try {
+        await taskAPI.create({
+          titre: this.nouvelleTache.titre,
+          description: this.nouvelleTache.description,
+          idProjet: this.nouvelleTache.projetId,
+          priorite: this.nouvelleTache.priorite,
+          dateEcheance: this.nouvelleTache.dateEcheance,
+          statut: 'BROUILLON'
+        })
+        await this.chargerTaches()
+        this.modalCreationTache = false
+        alert('Tâche créée avec succès')
+      } catch (e) {
+        console.error('[Tache] Erreur création:', e)
+        alert('Erreur lors de la création')
+      }
+    },
     creerTacheDansKanban() {
       if (!this.projetKanbanSelectionne) {
         alert(this.$t('projets.selectionnerProjetAvant') || 'Veuillez sélectionner un projet')
@@ -2601,19 +2684,23 @@ export default {
     },
 
     getTachesNonAssigneesProjet(projetId) {
-      return this.totalTaches.filter(
-        (t) =>
-          (t.projetId === projetId || t.id_projet === projetId) &&
-          t.idAssigne == null
-      )
+      const normalizedProjetId = this.normalizeId(projetId)
+      return this.totalTaches.filter((t) => {
+        const tacheProjetId = this.normalizeId(t.id_projet || t.projetId)
+        const estDansProjet = tacheProjetId == normalizedProjetId
+        const nonAssignee = t.idAssigne == null && t.assigneId == null && t.id_assigne == null
+        return estDansProjet && nonAssignee
+      })
     },
 
     getTachesAssigneesProjet(projetId) {
-      return this.totalTaches.filter(
-        (t) =>
-          (t.projetId === projetId || t.id_projet === projetId) &&
-          (t.idAssigne || t.assigneId || t.id_assigne)
-      )
+      const normalizedProjetId = this.normalizeId(projetId)
+      return this.totalTaches.filter((t) => {
+        const tacheProjetId = this.normalizeId(t.id_projet || t.projetId)
+        const estDansProjet = tacheProjetId == normalizedProjetId
+        const estAssignee = t.idAssigne != null || t.assigneId != null || t.id_assigne != null
+        return estDansProjet && estAssignee
+      })
     },
 
     getProjetNom(projetId) {

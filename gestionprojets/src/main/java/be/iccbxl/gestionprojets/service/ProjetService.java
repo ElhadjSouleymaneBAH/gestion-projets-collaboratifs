@@ -16,8 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,7 +89,7 @@ public class ProjetService {
 
         Projet saved = projetRepository.save(projet);
 
-        // ========== NOUVEAU: Créer les colonnes Kanban par défaut ==========
+        // Créer les colonnes Kanban par défaut
         try {
             System.out.println("[ProjetService] Création colonnes Kanban pour projet " + saved.getId());
             listeColonneService.creerColonnesParDefaut(saved.getId());
@@ -95,7 +97,6 @@ public class ProjetService {
         } catch (Exception e) {
             System.err.println("[ProjetService] Erreur création colonnes Kanban: " + e.getMessage());
         }
-        // ===================================================================
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
@@ -133,16 +134,43 @@ public class ProjetService {
                 .collect(Collectors.toList());
     }
 
+    // =====================================================================
+    // ✅ MÉTHODE CORRIGÉE : Récupère les projets créés ET les projets membre
+    // =====================================================================
     @Transactional(readOnly = true)
     public List<ProjetDTO> obtenirProjetsParUtilisateur(Long utilisateurId) {
         if (!utilisateurRepository.existsById(utilisateurId)) {
             throw new RuntimeException("Utilisateur non trouvé avec ID: " + utilisateurId);
         }
 
-        return projetRepository.findByCreateurIdWithCreateur(utilisateurId)
-                .stream()
-                .map(this::convertirEnDTO)
-                .collect(Collectors.toList());
+        System.out.println("🔍 [ProjetService] Récupération projets pour utilisateur " + utilisateurId);
+
+        // Set pour éviter les doublons (par ID de projet)
+        Set<Long> projetsIds = new HashSet<>();
+        List<ProjetDTO> resultat = new ArrayList<>();
+
+        // 1. Projets où l'utilisateur est CRÉATEUR
+        List<Projet> projetsCrees = projetRepository.findByCreateurIdWithCreateur(utilisateurId);
+        System.out.println("   📁 Projets créés: " + projetsCrees.size());
+        for (Projet p : projetsCrees) {
+            if (projetsIds.add(p.getId())) {
+                resultat.add(convertirEnDTO(p));
+            }
+        }
+
+        // 2. Projets où l'utilisateur est MEMBRE (via projet_utilisateurs)
+        List<Long> projetIdsMembre = projetUtilisateurRepository.findProjetIdsByUtilisateurId(utilisateurId);
+        System.out.println("   👥 Projets membre (IDs): " + projetIdsMembre);
+
+        for (Long projetId : projetIdsMembre) {
+            if (projetsIds.add(projetId)) {  // Ajoute seulement si pas déjà présent
+                Optional<Projet> projetOpt = projetRepository.findByIdWithCreateur(projetId);
+                projetOpt.ifPresent(p -> resultat.add(convertirEnDTO(p)));
+            }
+        }
+
+        System.out.println("✅ [ProjetService] Total projets trouvés: " + resultat.size());
+        return resultat;
     }
 
     public ProjetDTO modifierProjet(Long id, ProjetDTO dto) {
@@ -177,19 +205,17 @@ public class ProjetService {
         System.out.println("🗑️ Suppression du projet: " + projet.getTitre() + " (ID=" + id + ")");
 
         try {
-            // 1. Compter les membres avant suppression (optionnel, pour les logs)
-            long nbMembres = projetUtilisateurRepository.countByProjetIdAndActif(id, true);
-            System.out.println("   - Projet avec " + nbMembres + " membre(s)");
+            // 1. Supprimer les tâches du projet
+            tacheRepository.deleteByProjetId(id);
+            System.out.println("   - Tâches supprimées");
 
-            // 2. Supprimer les relations dans projet_utilisateur
+            // 2. Supprimer les colonnes Kanban
+            listeColonneService.supprimerColonnesParProjet(id);
+            System.out.println("   - Colonnes Kanban supprimées");
+
+            // 3. Supprimer les relations membres
             projetUtilisateurRepository.deleteByProjetId(id);
             System.out.println("   - Relations membres supprimées");
-
-            // 3. Note: Si vous avez d'autres tables liées (taches, messages, commentaires),
-            //    assurez-vous qu'elles ont CASCADE DELETE ou supprimez-les manuellement ici
-            //    Exemple:
-            //    tacheRepository.deleteByProjetId(id);
-            //    messageRepository.deleteByProjetId(id);
 
             // 4. Supprimer le projet
             projetRepository.deleteById(id);
@@ -230,7 +256,7 @@ public class ProjetService {
 
         Projet saved = projetRepository.save(p);
 
-        // ========== NOUVEAU: Créer les colonnes Kanban par défaut ==========
+        // Créer les colonnes Kanban par défaut
         try {
             System.out.println("[ProjetService] Création colonnes Kanban pour projet " + saved.getId());
             listeColonneService.creerColonnesParDefaut(saved.getId());
@@ -238,7 +264,6 @@ public class ProjetService {
         } catch (Exception e) {
             System.err.println("[ProjetService] Erreur création colonnes Kanban: " + e.getMessage());
         }
-        // ===================================================================
 
         ProjetUtilisateur lien = new ProjetUtilisateur();
         lien.setProjetId(saved.getId());
@@ -319,8 +344,8 @@ public class ProjetService {
     }
 
     // =====================================================================
-// STATISTIQUES TÂCHES POUR ADMIN
-// =====================================================================
+    // STATISTIQUES TÂCHES POUR ADMIN
+    // =====================================================================
     @Transactional(readOnly = true)
     public java.util.Map<String, Long> obtenirStatistiquesTachesProjet(Long projetId) {
         java.util.Map<String, Long> stats = new java.util.HashMap<>();
@@ -329,7 +354,7 @@ public class ProjetService {
         Long total = tacheRepository.countByProjetId(projetId);
         stats.put("total", total != null ? total : 0L);
 
-        // Compter par statut (utiliser l'enum StatutTache)
+        // Compter par statut
         stats.put("terminees", countTachesByStatut(projetId, "TERMINE"));
         stats.put("enCours", countTachesByStatut(projetId, "EN_COURS"));
         stats.put("brouillon", countTachesByStatut(projetId, "BROUILLON"));

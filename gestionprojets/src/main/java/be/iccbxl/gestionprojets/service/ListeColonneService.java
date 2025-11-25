@@ -39,6 +39,9 @@ public class ListeColonneService {
         this.projetRepository = projetRepository;
     }
 
+    /**
+     * Crée les colonnes Kanban par défaut pour un nouveau projet
+     */
     public List<ListeColonneDTO> creerColonnesParDefaut(Long idProjet) {
         System.out.println("[ListeColonneService] Création colonnes par défaut pour projet " + idProjet);
 
@@ -60,6 +63,9 @@ public class ListeColonneService {
         return obtenirColonnesParProjet(idProjet);
     }
 
+    /**
+     * Récupère toutes les colonnes d'un projet avec leurs tâches
+     */
     @Transactional(readOnly = true)
     public List<ListeColonneDTO> obtenirColonnesParProjet(Long idProjet) {
         System.out.println("[ListeColonneService] Récupération colonnes pour projet " + idProjet);
@@ -73,12 +79,18 @@ public class ListeColonneService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Récupère une colonne par son ID
+     */
     @Transactional(readOnly = true)
     public Optional<ListeColonneDTO> obtenirColonneParId(Long id) {
         return listeColonneRepository.findById(id)
                 .map(this::convertirEnDTO);
     }
 
+    /**
+     * Crée une nouvelle colonne dans un projet
+     */
     public ListeColonneDTO creerColonne(ListeColonneDTO dto) {
         System.out.println("[ListeColonneService] Création colonne: " + dto.getNom());
 
@@ -96,6 +108,9 @@ public class ListeColonneService {
         return convertirEnDTO(colonneCreee);
     }
 
+    /**
+     * Renomme une colonne existante
+     */
     public ListeColonneDTO renommerColonne(Long id, String nouveauNom) {
         System.out.println("[ListeColonneService] Renommage colonne " + id + " → " + nouveauNom);
 
@@ -108,6 +123,9 @@ public class ListeColonneService {
         return convertirEnDTO(colonneModifiee);
     }
 
+    /**
+     * Réorganise l'ordre des colonnes d'un projet
+     */
     public void reorganiserColonnes(Long idProjet, List<Long> nouvelOrdre) {
         System.out.println("[ListeColonneService] Réorganisation colonnes projet " + idProjet);
 
@@ -123,6 +141,9 @@ public class ListeColonneService {
         System.out.println("[ListeColonneService] " + nouvelOrdre.size() + " colonnes réorganisées");
     }
 
+    /**
+     * Supprime une colonne (déplace ses tâches vers "À faire")
+     */
     public void supprimerColonne(Long id) {
         System.out.println("[ListeColonneService] Suppression colonne " + id);
 
@@ -143,6 +164,20 @@ public class ListeColonneService {
         System.out.println("[ListeColonneService] Colonne supprimée");
     }
 
+    /**
+     * Supprime toutes les colonnes d'un projet.
+     * Utilisé lors de la suppression d'un projet (F6).
+     */
+    @Transactional
+    public void supprimerColonnesParProjet(Long projetId) {
+        System.out.println("[ListeColonneService] Suppression colonnes projet " + projetId);
+        listeColonneRepository.deleteByProjetId(projetId);
+        System.out.println("[ListeColonneService] Colonnes supprimées");
+    }
+
+    /**
+     * Vérifie si un projet possède des colonnes
+     */
     @Transactional(readOnly = true)
     public boolean projetADesColonnes(Long idProjet) {
         return listeColonneRepository.existsByProjetId(idProjet);

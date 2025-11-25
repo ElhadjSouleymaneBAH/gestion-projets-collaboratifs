@@ -23,7 +23,7 @@ import java.util.*;
  * + Intégration WebSocket pour notifications temps réel (via NotificationWebSocketController)
  *
  * @author ElhadjSouleymaneBAH
- * @version 2.0
+ * @version 2.1 - Ajout endpoint DELETE
  */
 @RestController
 @RequestMapping("/api/notifications")
@@ -202,6 +202,61 @@ public class NotificationController {
 
         } catch (Exception e) {
             log.error("Erreur marquage toutes notifications : {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ================================
+    //  SUPPRESSION DE NOTIFICATIONS
+    // ================================
+
+    /**
+     * ✅ NOUVEAU : Supprimer une notification
+     * DELETE /api/notifications/{notificationId}?userId={userId}
+     */
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<Map<String, String>> supprimerNotification(
+            @PathVariable Long notificationId,
+            @RequestParam Long userId,
+            Authentication authentication) {
+
+        try {
+            log.info("[Notif] Demande suppression notification {} par userId {}", notificationId, userId);
+
+            // Vérifier que l'utilisateur existe
+            Optional<Utilisateur> utilisateurExistantOpt = utilisateurService.obtenirParId(userId);
+            if (utilisateurExistantOpt.isEmpty()) {
+                log.warn("[Notif] Utilisateur {} introuvable", userId);
+                return ResponseEntity.notFound().build();
+            }
+
+            Utilisateur utilisateurExistant = utilisateurExistantOpt.get();
+            String emailConnecte = authentication.getName();
+
+            boolean estAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMINISTRATEUR"));
+            boolean estSonPropreProfil = utilisateurExistant.getEmail().equals(emailConnecte);
+
+            // Seul le propriétaire ou un admin peut supprimer
+            if (estAdmin || estSonPropreProfil) {
+                boolean supprime = notificationService.supprimerNotification(notificationId, userId);
+
+                if (supprime) {
+                    log.info("[Notif] ✅ Notification {} supprimée avec succès", notificationId);
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Notification supprimée avec succès");
+                    return ResponseEntity.ok(response);
+                } else {
+                    log.warn("[Notif] ❌ Notification {} introuvable ou non autorisée", notificationId);
+                    return ResponseEntity.notFound().build();
+                }
+            } else {
+                log.warn("[Notif] ❌ Accès refusé pour suppression notification {}", notificationId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+        } catch (Exception e) {
+            log.error("[Notif] ❌ Erreur suppression notification {} : {}", notificationId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

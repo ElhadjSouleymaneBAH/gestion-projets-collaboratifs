@@ -209,11 +209,6 @@
                   <span>{{ t('taches.statuts.termine') }}</span>
                 </div>
               </div>
-              <div class="mt-3 pt-3 border-top">
-                <small class="text-muted">
-                  <i class="fas fa-info-circle me-1"></i>{{ t('taches.workflow.aide') }}
-                </small>
-              </div>
             </div>
           </div>
         </div>

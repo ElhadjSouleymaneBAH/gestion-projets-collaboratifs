@@ -4,15 +4,18 @@ import be.iccbxl.gestionprojets.dto.TacheDTO;
 import be.iccbxl.gestionprojets.model.Tache;
 import be.iccbxl.gestionprojets.model.Projet;
 import be.iccbxl.gestionprojets.model.Utilisateur;
+import be.iccbxl.gestionprojets.model.ProjetUtilisateur;
+import be.iccbxl.gestionprojets.model.ListeColonne;
 import be.iccbxl.gestionprojets.enums.StatutTache;
 import be.iccbxl.gestionprojets.enums.PrioriteTache;
 import be.iccbxl.gestionprojets.repository.TacheRepository;
 import be.iccbxl.gestionprojets.repository.ProjetRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
+import be.iccbxl.gestionprojets.repository.ListeColonneRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,21 +28,79 @@ public class TacheService {
     private final ProjetRepository projetRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final ProjetUtilisateurRepository projetUtilisateurRepository;
+    private final ListeColonneRepository listeColonneRepository;
 
     public TacheService(
             TacheRepository tacheRepository,
             ProjetRepository projetRepository,
             UtilisateurRepository utilisateurRepository,
-            ProjetUtilisateurRepository projetUtilisateurRepository) {
+            ProjetUtilisateurRepository projetUtilisateurRepository,
+            ListeColonneRepository listeColonneRepository) {
         this.tacheRepository = tacheRepository;
         this.projetRepository = projetRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.projetUtilisateurRepository = projetUtilisateurRepository;
+        this.listeColonneRepository = listeColonneRepository;
     }
 
-    // ==========  ASSIGNER UNE TÂCHE ==========
+    // ========== CORRECTION AUTOMATIQUE AU DÉMARRAGE ==========
+    @PostConstruct
+    public void corrigerTachesSansColonneKanban() {
+        System.out.println(" [Kanban] Vérification des tâches sans colonne au démarrage...");
+
+        List<Tache> tachesSansColonne = tacheRepository.findAll()
+                .stream()
+                .filter(t -> t.getListeColonne() == null && t.getProjet() != null)
+                .collect(Collectors.toList());
+
+        if (tachesSansColonne.isEmpty()) {
+            System.out.println(" [Kanban] Toutes les tâches ont une colonne assignée.");
+            return;
+        }
+
+        System.out.println(" [Kanban] " + tachesSansColonne.size() + " tâches sans colonne détectées. Correction en cours...");
+
+        for (Tache tache : tachesSansColonne) {
+            assignerColonneSelonStatut(tache);
+        }
+
+        System.out.println(" [Kanban] Correction automatique terminée !");
+    }
+
+    // ========== ASSIGNER COLONNE SELON STATUT ==========
+    private void assignerColonneSelonStatut(Tache tache) {
+        if (tache.getProjet() == null) return;
+
+        String nomColonne;
+        switch (tache.getStatut()) {
+            case TERMINE:
+            case ANNULE:
+                nomColonne = "Terminé";
+                break;
+            case BROUILLON:
+            case EN_ATTENTE_VALIDATION:
+            default:
+                nomColonne = "À faire";
+        }
+
+        // S'assurer que les colonnes existent pour ce projet
+        creerColonnesParDefaut(tache.getProjet());
+
+        // Chercher et assigner la colonne
+        Optional<ListeColonne> colonneOpt = listeColonneRepository
+                .findByProjetIdAndNom(tache.getProjet().getId(), nomColonne);
+
+        if (colonneOpt.isPresent()) {
+            tache.setListeColonne(colonneOpt.get());
+            tache.setPosition(0);
+            tacheRepository.save(tache);
+            System.out.println("    Tâche " + tache.getId() + " (" + tache.getTitre() + ") → " + nomColonne);
+        }
+    }
+
+    // ========== ASSIGNER UNE TÂCHE (F7) ==========
     public TacheDTO assignerTache(Long tacheId, Long membreId) {
-        System.out.println("DEBUG: [F7] Assignation tâche " + tacheId + " à membre " + membreId);
+        System.out.println(" [F7] Assignation tâche " + tacheId + " à membre " + membreId);
 
         Tache tache = tacheRepository.findByIdWithRelations(tacheId)
                 .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
@@ -47,30 +108,47 @@ public class TacheService {
         Utilisateur membre = utilisateurRepository.findById(membreId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + membreId));
 
-        Long projetId = tache.getProjet().getId();
+        Projet projet = tache.getProjet();
+        Long projetId = projet.getId();
+
+        //  Ajouter automatiquement le membre au projet si pas encore membre
         boolean appartientAuProjet = projetUtilisateurRepository
                 .existsByProjetIdAndUtilisateurId(projetId, membreId);
 
         if (!appartientAuProjet) {
-            throw new RuntimeException("L'utilisateur " + membre.getPrenom() + " " + membre.getNom() +
-                    " n'appartient pas au projet. Veuillez d'abord l'ajouter comme membre.");
+            System.out.println(" [F7] Membre " + membreId + " pas encore dans le projet " + projetId + " - Ajout automatique...");
+
+            ProjetUtilisateur pu = new ProjetUtilisateur(projetId, membreId, "MEMBRE");
+            projetUtilisateurRepository.save(pu);
+
+            System.out.println(" [F7] Membre " + membre.getPrenom() + " " + membre.getNom() +
+                    " ajouté automatiquement au projet " + projet.getTitre());
         }
 
+        // Vérifier le statut de la tâche
         if (tache.getStatut() == StatutTache.TERMINE || tache.getStatut() == StatutTache.ANNULE) {
             throw new RuntimeException("Impossible d'assigner une tâche avec le statut : " + tache.getStatut());
         }
 
+        //  S'assurer que la tâche a une colonne Kanban
+        if (tache.getListeColonne() == null) {
+            assignerColonneSelonStatut(tache);
+        }
+
+        // Assigner la tâche
         tache.assignerA(membre);
         Tache tacheUpdated = tacheRepository.save(tache);
 
-        System.out.println("SUCCESS: [F7] Tâche " + tacheId + " assignée à " +
+        System.out.println(" [F7] Tâche " + tacheId + " assignée à " +
                 membre.getPrenom() + " " + membre.getNom() + " (" + membre.getEmail() + ")");
 
         return convertirEnDTO(tacheUpdated);
     }
 
-    // ========== CRÉER ==========
+    // ========== CRÉER UNE TÂCHE (F7 + KANBAN) ==========
     public TacheDTO creerTache(TacheDTO tacheDTO) {
+        System.out.println(" [F7] Création tâche: " + tacheDTO.getTitre());
+
         if (tacheDTO.getTitre() == null || tacheDTO.getTitre().trim().isEmpty()) {
             throw new RuntimeException("Le titre de la tâche est obligatoire");
         }
@@ -93,8 +171,55 @@ public class TacheService {
         tache.setDateEcheance(tacheDTO.getDateEcheance());
         tache.assignerA(null);
 
+        //  KANBAN: S'assurer que les colonnes existent
+        creerColonnesParDefaut(projet);
+
+        //  KANBAN: Assigner automatiquement à la colonne "À faire"
+        Optional<ListeColonne> colonneAFaire = listeColonneRepository
+                .findByProjetIdAndNom(projet.getId(), "À faire");
+
+        if (colonneAFaire.isPresent()) {
+            ListeColonne colonne = colonneAFaire.get();
+            tache.setListeColonne(colonne);
+
+            // Calculer la position (à la fin de la colonne)
+            int nouvellePosition = colonne.getTaches() != null ? colonne.getTaches().size() : 0;
+            tache.setPosition(nouvellePosition);
+
+            System.out.println(" [Kanban] Tâche assignée à la colonne 'À faire' (id=" + colonne.getId() + ")");
+        }
+
         Tache saved = tacheRepository.save(tache);
+        System.out.println(" [F7] Tâche créée avec ID: " + saved.getId());
+
         return convertirEnDTO(saved);
+    }
+
+    // ========== CRÉER LES COLONNES PAR DÉFAUT ==========
+    private void creerColonnesParDefaut(Projet projet) {
+        if (!listeColonneRepository.existsByProjetId(projet.getId())) {
+            System.out.println(" [Kanban] Création des 3 colonnes par défaut pour projet " + projet.getId());
+
+            ListeColonne aFaire = new ListeColonne();
+            aFaire.setNom("À faire");
+            aFaire.setPosition(0);
+            aFaire.setProjet(projet);
+            listeColonneRepository.save(aFaire);
+
+            ListeColonne enCours = new ListeColonne();
+            enCours.setNom("En cours");
+            enCours.setPosition(1);
+            enCours.setProjet(projet);
+            listeColonneRepository.save(enCours);
+
+            ListeColonne termine = new ListeColonne();
+            termine.setNom("Terminé");
+            termine.setPosition(2);
+            termine.setProjet(projet);
+            listeColonneRepository.save(termine);
+
+            System.out.println(" [Kanban] Colonnes créées pour projet " + projet.getId());
+        }
     }
 
     // ========== CONSULTER ==========
@@ -146,6 +271,11 @@ public class TacheService {
             tache.assignerA(null);
         }
 
+        // S'assurer que la tâche a une colonne Kanban
+        if (tache.getListeColonne() == null) {
+            assignerColonneSelonStatut(tache);
+        }
+
         return convertirEnDTO(tacheRepository.save(tache));
     }
 
@@ -157,7 +287,40 @@ public class TacheService {
         boolean ok = tache.changerStatut(nouveauStatut);
         if (!ok) throw new RuntimeException("Transition de statut non autorisée");
 
+        // KANBAN: Déplacer la tâche vers la colonne correspondante au statut
+        deplacerTacheSelonStatut(tache, nouveauStatut);
+
         return convertirEnDTO(tacheRepository.save(tache));
+    }
+
+    // ========== DÉPLACER TÂCHE SELON STATUT (KANBAN) ==========
+    private void deplacerTacheSelonStatut(Tache tache, StatutTache nouveauStatut) {
+        if (tache.getProjet() == null) return;
+
+        // S'assurer que les colonnes existent
+        creerColonnesParDefaut(tache.getProjet());
+
+        String nomColonne;
+        switch (nouveauStatut) {
+            case BROUILLON:
+            case EN_ATTENTE_VALIDATION:
+                nomColonne = "À faire";
+                break;
+            case TERMINE:
+            case ANNULE:
+                nomColonne = "Terminé";
+                break;
+            default:
+                nomColonne = "À faire";
+        }
+
+        Optional<ListeColonne> colonneOpt = listeColonneRepository
+                .findByProjetIdAndNom(tache.getProjet().getId(), nomColonne);
+
+        if (colonneOpt.isPresent()) {
+            tache.setListeColonne(colonneOpt.get());
+            System.out.println(" [Kanban] Tâche " + tache.getId() + " déplacée vers '" + nomColonne + "'");
+        }
     }
 
     // ========== ANNULER PAR ADMIN ==========
@@ -169,6 +332,9 @@ public class TacheService {
 
         boolean ok = tache.changerStatut(StatutTache.ANNULE);
         if (!ok) throw new RuntimeException("Impossible d'annuler la tâche ID=" + tacheId);
+
+        // Déplacer vers "Terminé" dans le Kanban
+        deplacerTacheSelonStatut(tache, StatutTache.ANNULE);
 
         Tache saved = tacheRepository.save(tache);
         System.out.println("SUCCESS: [F7-ADMIN] Tâche " + tacheId + " annulée.");
@@ -187,7 +353,7 @@ public class TacheService {
         tacheRepository.deleteById(id);
     }
 
-    // ========== CONVERTIR ==========
+    // ========== CONVERTIR EN DTO ==========
     private TacheDTO convertirEnDTO(Tache tache) {
         TacheDTO dto = new TacheDTO();
         dto.setId(tache.getId());
@@ -216,6 +382,12 @@ public class TacheService {
         dto.setPriorite(tache.getPriorite());
         dto.setDateEcheance(tache.getDateEcheance());
         dto.setDateCreation(tache.getDateCreation());
+
+        //KANBAN: Ajouter l'ID de la colonne
+        if (tache.getListeColonne() != null) {
+            dto.setIdListeColonne(tache.getListeColonne().getId());
+        }
+
         return dto;
     }
 
@@ -230,5 +402,4 @@ public class TacheService {
 
         return taches.stream().map(this::convertirEnDTO).collect(Collectors.toList());
     }
-
 }
