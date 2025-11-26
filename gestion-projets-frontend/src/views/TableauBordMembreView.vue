@@ -144,8 +144,7 @@
             <a class="nav-link"
                :class="{active:onglet==='projets'}"
                @click="onglet='projets'"
-               href="javascript:void(0)"
-               :title="$t('tooltips.voirProjets')">
+               href="javascript:void(0)">
               <i class="fas fa-folder-open me-2"></i>{{ $t('nav.mesProjets') }}
             </a>
           </li>
@@ -153,8 +152,7 @@
             <a class="nav-link"
                :class="{active:onglet==='taches'}"
                @click="onglet='taches'"
-               href="javascript:void(0)"
-               :title="$t('tooltips.voirTaches')">
+               href="javascript:void(0)">
               <i class="fas fa-tasks me-2"></i>{{ $t('nav.mesTaches') }}
             </a>
           </li>
@@ -162,8 +160,7 @@
             <a class="nav-link"
                :class="{active:onglet==='notifications'}"
                @click="onglet='notifications'"
-               href="javascript:void(0)"
-               :title="$t('tooltips.voirNotifications')">
+               href="javascript:void(0)">
               <i class="fas fa-bell me-2"></i>{{ $t('nav.notifications') }}
               <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">
                 {{ notificationsNonLues.length }}
@@ -174,15 +171,12 @@
             <a class="nav-link"
                :class="{active:onglet==='collaboration'}"
                @click="onglet='collaboration'"
-               href="javascript:void(0)"
-               :title="$t('tooltips.voirChat')">
+               href="javascript:void(0)">
               <i class="fas fa-comments me-2"></i>{{ $t('nav.collaboration') }}
             </a>
           </li>
         </ul>
-        <router-link to="/profil"
-                     class="btn btn-link text-decoration-none"
-                     :title="$t('tooltips.voirProfil')">
+        <router-link to="/profil" class="btn btn-link text-decoration-none">
           <i class="fas fa-user me-1"></i>{{ $t('membre.profil') }}
         </router-link>
       </div>
@@ -235,10 +229,7 @@
                     <div class="progress" style="height:6px;">
                       <div class="progress-bar bg-success"
                            role="progressbar"
-                           :style="{width: progressionProjet(p.id)+'%'}"
-                           :aria-valuenow="progressionProjet(p.id)"
-                           aria-valuemin="0"
-                           aria-valuemax="100"></div>
+                           :style="{width: progressionProjet(p.id)+'%'}"></div>
                     </div>
                     <small>{{ progressionProjet(p.id) }}%</small>
                   </td>
@@ -274,121 +265,43 @@
         </div>
       </div>
 
-      <!-- ========== À REMPLACER DANS <template> - ONGLET TÂCHES AMÉLIORÉ ========== -->
-      <!-- Remplace tout le bloc : <div v-else-if="onglet==='taches'"> ... </div> par ceci : -->
-
+      <!-- ========== ONGLET TÂCHES (SIMPLIFIÉ) ========== -->
       <div v-else-if="onglet==='taches'">
-        <!-- ========== GRAPHIQUE ET STATS ========== -->
-        <div class="row g-3 mb-3">
-          <!-- Graphique -->
-          <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100">
-              <div class="card-header bg-white">
-                <h6 class="mb-0">
-                  <i class="fas fa-chart-pie me-2"></i>Répartition des tâches
-                </h6>
-              </div>
-              <div class="card-body">
-                <canvas ref="chartCanvas" style="max-height:250px"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Stats mini -->
-          <div class="col-md-8">
-            <div class="card shadow-sm border-0 h-100">
-              <div class="card-header bg-white">
-                <h6 class="mb-0">
-                  <i class="fas fa-chart-bar me-2"></i>Aperçu rapide
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="row g-2 text-center">
-                  <div class="col-6 col-md-3">
-                    <div class="stat-mini p-3 rounded bg-light">
-                      <i class="fas fa-file text-secondary fa-2x mb-2"></i>
-                      <h4 class="mb-0">{{ statsTaskes.brouillon }}</h4>
-                      <small class="text-muted">{{ $t('taches.statuts.brouillon') }}</small>
-                    </div>
-                  </div>
-                  <div class="col-6 col-md-3">
-                    <div class="stat-mini p-3 rounded bg-light">
-                      <i class="fas fa-clock text-warning fa-2x mb-2"></i>
-                      <h4 class="mb-0">{{ statsTaskes.enAttente }}</h4>
-                      <small class="text-muted">{{ $t('taches.statuts.enAttente') }}</small>
-                    </div>
-                  </div>
-                  <div class="col-6 col-md-3">
-                    <div class="stat-mini p-3 rounded bg-light">
-                      <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
-                      <h4 class="mb-0">{{ statsTaskes.termine }}</h4>
-                      <small class="text-muted">{{ $t('taches.statuts.termine') }}</small>
-                    </div>
-                  </div>
-                  <div class="col-6 col-md-3">
-                    <div class="stat-mini p-3 rounded bg-light">
-                      <i class="fas fa-times-circle text-danger fa-2x mb-2"></i>
-                      <h4 class="mb-0">{{ statsTaskes.annule }}</h4>
-                      <small class="text-muted">{{ $t('taches.statuts.annule') }}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ========== RECHERCHE ET FILTRES ========== -->
+        <!-- Recherche et filtres -->
         <div class="card shadow-sm border-0 mb-3">
           <div class="card-body">
             <div class="row g-2 align-items-center">
-              <!-- Barre de recherche -->
               <div class="col-md-6">
                 <div class="input-group">
             <span class="input-group-text bg-white">
               <i class="fas fa-search text-muted"></i>
             </span>
-                  <input
-                    type="text"
-                    class="form-control border-start-0"
-                    v-model="rechercheTask"
-                    placeholder="Rechercher une tâche..."
-                    @input="filtrerTaches">
-                  <button
-                    v-if="rechercheTask"
-                    class="btn btn-outline-secondary"
-                    @click="rechercheTask = ''; filtrerTaches()">
+                  <input type="text" class="form-control border-start-0"
+                         v-model="rechercheTask"
+                         :placeholder="$t('taches.rechercher')"
+                         @input="filtrerTaches">
+                  <button v-if="rechercheTask" class="btn btn-outline-secondary"
+                          @click="rechercheTask = ''; filtrerTaches()">
                     <i class="fas fa-times"></i>
                   </button>
                 </div>
               </div>
-
-              <!-- Filtres rapides -->
               <div class="col-md-6">
                 <div class="btn-group w-100" role="group">
-                  <button
-                    class="btn btn-sm"
-                    :class="filtreStatut === 'TOUS' ? 'btn-primary' : 'btn-outline-primary'"
-                    @click="filtreStatut = 'TOUS'; filtrerTaches()">
-                    Toutes ({{ mesTaches.length }})
+                  <button class="btn btn-sm"
+                          :class="filtreStatut === 'TOUS' ? 'btn-primary' : 'btn-outline-primary'"
+                          @click="filtreStatut = 'TOUS'; filtrerTaches()">
+                    {{ $t('commun.toutes') }} ({{ mesTaches.length }})
                   </button>
-                  <button
-                    class="btn btn-sm"
-                    :class="filtreStatut === 'EN_COURS' ? 'btn-warning' : 'btn-outline-warning'"
-                    @click="filtreStatut = 'EN_COURS'; filtrerTaches()">
-                    En cours ({{ tachesEnCours.length }})
+                  <button class="btn btn-sm"
+                          :class="filtreStatut === 'EN_COURS' ? 'btn-warning' : 'btn-outline-warning'"
+                          @click="filtreStatut = 'EN_COURS'; filtrerTaches()">
+                    {{ $t('taches.enCours') }} ({{ tachesEnCours.length }})
                   </button>
-                  <button
-                    class="btn btn-sm"
-                    :class="filtreStatut === 'TERMINE' ? 'btn-success' : 'btn-outline-success'"
-                    @click="filtreStatut = 'TERMINE'; filtrerTaches()">
-                    Terminées ({{ statsTaskes.termine }})
-                  </button>
-                  <button
-                    class="btn btn-sm"
-                    :class="filtreStatut === 'EN_ATTENTE_VALIDATION' ? 'btn-info' : 'btn-outline-info'"
-                    @click="filtreStatut = 'EN_ATTENTE_VALIDATION'; filtrerTaches()">
-                    En attente ({{ statsTaskes.enAttente }})
+                  <button class="btn btn-sm"
+                          :class="filtreStatut === 'TERMINE' ? 'btn-success' : 'btn-outline-success'"
+                          @click="filtreStatut = 'TERMINE'; filtrerTaches()">
+                    {{ $t('taches.statuts.termine') }} ({{ statsTaskes.termine }})
                   </button>
                 </div>
               </div>
@@ -396,27 +309,26 @@
           </div>
         </div>
 
-        <!-- ========== TABLEAU TÂCHES ========== -->
+        <!-- Tableau des tâches -->
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <div>
               <h5 class="mb-0">{{ $t('membre.sections.taches') }}</h5>
               <small class="text-muted">
-                {{ tachesFiltrees.length }} résultat(s)
-                <span v-if="rechercheTask || filtreStatut !== 'TOUS'"> · Filtré</span>
+                {{ tachesFiltrees.length }} {{ $t('commun.resultats') }}
+                <span v-if="rechercheTask || filtreStatut !== 'TOUS'"> · {{ $t('commun.filtre') }}</span>
               </small>
             </div>
-            <button
-              class="btn btn-sm btn-outline-secondary"
-              @click="reinitialiserFiltres"
-              v-if="rechercheTask || filtreStatut !== 'TOUS'">
-              <i class="fas fa-redo me-1"></i>Réinitialiser
+            <button class="btn btn-sm btn-outline-secondary"
+                    @click="reinitialiserFiltres"
+                    v-if="rechercheTask || filtreStatut !== 'TOUS'">
+              <i class="fas fa-redo me-1"></i>{{ $t('commun.reinitialiser') }}
             </button>
           </div>
           <div class="card-body">
             <div v-if="tachesFiltrees.length===0" class="text-center text-muted py-5">
-              <i class="fas fa-3x mb-3" :class="rechercheTask || filtreStatut !== 'TOUS' ? 'fa-search' : 'fa-tasks'"></i>
-              <p>{{ rechercheTask || filtreStatut !== 'TOUS' ? 'Aucun résultat trouvé' : $t('membre.taches.aucuneTache') }}</p>
+              <i class="fas fa-tasks fa-3x mb-3"></i>
+              <p>{{ $t('membre.taches.aucuneTache') }}</p>
             </div>
             <div v-else class="table-responsive">
               <table class="table table-hover align-middle">
@@ -424,9 +336,9 @@
                 <tr>
                   <th>{{ $t('taches.titre') }}</th>
                   <th>{{ $t('projets.projet') }}</th>
+                  <th>{{ $t('taches.priorite') }}</th>
+                  <th>{{ $t('taches.echeance') }}</th>
                   <th>{{ $t('taches.statut') }}</th>
-                  <th>{{ $t('commentaires.titre') }}</th>
-                  <th>{{ $t('taches.dateCreation') }}</th>
                   <th class="text-end">{{ $t('commun.actions') }}</th>
                 </tr>
                 </thead>
@@ -434,52 +346,60 @@
                 <tr v-for="t in tachesFiltrees" :key="t.id">
                   <td>
                     <strong>{{ t.titre }}</strong><br>
-                    <small class="text-muted">{{ t.description }}</small>
+                    <small class="text-muted">
+                      {{ (t.description || '').substring(0, 40) }}{{ t.description?.length > 40 ? '...' : '' }}
+                    </small>
                   </td>
                   <td>{{ getProjetNom(t.projetId || t.id_projet) }}</td>
+                  <td>
+              <span class="badge" :class="getPrioriteClass(t.priorite)">
+                <i :class="getPrioriteIcon(t.priorite)" class="me-1"></i>
+                {{ translateData('priority', t.priorite) || $t('taches.priorites.normale') }}
+              </span>
+                  </td>
+                  <td>
+                    <div v-if="t.dateEcheance || t.date_echeance" class="d-flex align-items-center gap-1">
+                      <i :class="getEcheanceIcon(t.dateEcheance || t.date_echeance)"></i>
+                      <small :class="getEcheanceClass(t.dateEcheance || t.date_echeance)">
+                        {{ formatDate(t.dateEcheance || t.date_echeance) }}
+                      </small>
+                    </div>
+                    <small v-else class="text-muted">—</small>
+                  </td>
                   <td>
               <span class="badge" :class="getStatutTacheClass(t.statut)">
                 {{ translateData('taskStatus', t.statut) }}
               </span>
                   </td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-info position-relative"
-                            @click="ouvrirCommentaires(t)"
-                            :title="$t('commentaires.voir')">
-                      <i class="fas fa-comments me-1"></i>
-                      <span
-                        v-if="commentairesParTache[normalizeId(t.id)]"
-                        class="badge bg-info ms-1 animate-badge">
-                  {{ getCommentairesTache(t.id).length }}
-                </span>
-                      <span v-else class="badge bg-secondary ms-1">
-                  <i class="fas fa-spinner fa-spin fa-xs"></i>
-                </span>
-                    </button>
-                  </td>
-                  <td>
-                    <small class="text-muted">
-                      {{ formatDate(t.dateCreation || t.date_creation) }}
-                    </small>
-                  </td>
                   <td class="text-end">
-                    <button
-                      v-if="t.statut === 'BROUILLON'"
-                      class="btn btn-sm btn-success"
-                      @click="soumettreValidation(t)"
-                      :title="$t('tooltips.soumettreValidation')">
-                      <i class="fas fa-paper-plane me-1"></i>
-                      {{ $t('taches.soumettre') }}
-                    </button>
-                    <span v-else-if="t.statut === 'EN_ATTENTE_VALIDATION'" class="text-info small">
-                <i class="fas fa-hourglass-half me-1"></i>{{ $t('taches.enAttenteValidation') }}
-              </span>
-                    <span v-else-if="t.statut === 'TERMINE'" class="text-success small">
-                <i class="fas fa-check-circle me-1"></i>{{ $t('taches.terminee') }}
-              </span>
-                    <span v-else class="text-muted small">
-                {{ $t('taches.pasActionPossible') }}
-              </span>
+                    <div class="btn-group">
+                      <!-- Bouton Voir détails -->
+                      <button class="btn btn-sm btn-outline-secondary"
+                              @click="ouvrirDetailTache(t)"
+                              :title="$t('taches.voirDetails')">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <!-- Bouton Soumettre (si BROUILLON) -->
+                      <button v-if="t.statut === 'BROUILLON'"
+                              class="btn btn-sm btn-success"
+                              @click="soumettreValidation(t)"
+                              :title="$t('tooltips.soumettreValidation')">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        {{ $t('taches.soumettre') }}
+                      </button>
+                      <!-- Indicateur pour EN_ATTENTE -->
+                      <span v-else-if="t.statut === 'EN_ATTENTE_VALIDATION'"
+                            class="btn btn-sm btn-outline-info disabled">
+                  <i class="fas fa-hourglass-half me-1"></i>
+                  {{ $t('taches.enAttenteValidation') }}
+                </span>
+                      <!-- Indicateur pour TERMINE -->
+                      <span v-else-if="t.statut === 'TERMINE'"
+                            class="btn btn-sm btn-outline-success disabled">
+                  <i class="fas fa-check-circle me-1"></i>
+                  {{ $t('taches.terminee') }}
+                </span>
+                    </div>
                   </td>
                 </tr>
                 </tbody>
@@ -489,234 +409,350 @@
         </div>
       </div>
 
-      <!-- ========== F15: ONGLET NOTIFICATIONS ========== -->
-      <div v-else-if="onglet==='notifications'">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">{{ $t('membre.sections.notifications') }}</h5>
-            <button
-              class="btn btn-outline-secondary btn-sm"
-              @click="marquerToutesLues"
-              :disabled="notificationsNonLues.length===0"
-              :title="$t('tooltips.marquerToutesLues')">
-              <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
-            </button>
+<!-- ========== ONGLET NOTIFICATIONS ========== -->
+<div v-else-if="onglet==='notifications'">
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">{{ $t('membre.sections.notifications') }}</h5>
+    <button class="btn btn-outline-secondary btn-sm"
+            @click="marquerToutesLues"
+            :disabled="notificationsNonLues.length===0">
+      <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
+    </button>
+  </div>
+  <div class="card-body">
+    <div v-if="notifications.length===0" class="text-center text-muted py-5">
+      <i class="fas fa-bell-slash fa-3x mb-3"></i>
+      <p>{{ $t('membre.notifications.vide') }}</p>
+    </div>
+    <div v-else class="list-group">
+      <div v-for="n in notifications" :key="n.id"
+           class="list-group-item d-flex align-items-start gap-3 notification-item"
+           :class="{'bg-light': !n.lu}">
+        <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
+          <i :class="getNotificationIcon(n.type)"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ n.titre || n.title || $t('notifications.notification') }}</div>
+          <div class="small text-muted">{{ n.message || n.contenu }}</div>
+          <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
+        </div>
+        <div class="btn-group">
+          <button v-if="!n.lu" class="btn btn-sm btn-outline-success"
+                  @click="marquerNotificationLue(n)">
+            <i class="fas fa-check"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger"
+                  @click="supprimerNotification(n)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== ONGLET COLLABORATION ========== -->
+<div v-else-if="onglet==='collaboration'">
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white">
+        <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
+      </div>
+      <div class="list-group list-group-flush">
+        <button v-for="p in mesProjets" :key="p.id"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
+                @click="ouvrirChatProjet(p)">
+          <span class="text-truncate">{{ translateProjectTitle(p.titre) }}</span>
+          <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
+        </button>
+        <div v-if="mesProjets.length===0" class="text-center text-muted py-4">
+          {{ $t('projets.aucunProjet') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white d-flex align-items-center gap-2">
+        <h6 class="mb-0">
+          <i class="fas fa-comments me-2"></i>
+          {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('nav.collaboration') }}
+        </h6>
+      </div>
+
+      <div class="card-body d-flex flex-column" style="height:420px">
+        <div class="flex-grow-1 overflow-auto messages-container" ref="messagesContainer">
+          <div v-if="!projetChatActuel" class="text-center text-muted py-5">
+            {{ $t('projets.choisirProjet') }}
           </div>
-          <div class="card-body">
-            <div v-if="notifications.length===0" class="text-center text-muted py-5">
-              <i class="fas fa-bell fa-3x mb-3"></i>
-              <p>{{ $t('membre.notifications.vide') }}</p>
+
+          <div v-else>
+            <div v-if="messagesChat.length===0" class="text-center text-muted py-5">
+              {{ $t('chat.aucunMessage') }}
             </div>
-            <div v-else class="list-group">
-              <div
-                v-for="n in notifications"
-                :key="n.id"
-                class="list-group-item d-flex align-items-start gap-3 notification-item"
-                :class="{'bg-light': !n.lu}">
-                <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
-                  <i :class="getNotificationIcon(n.type)"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="fw-semibold">{{ n.titre || n.title || $t('notifications.notification') }}</div>
-                  <div class="small text-muted">{{ n.message || n.contenu }}</div>
-                  <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
-                </div>
-                <div class="btn-group">
-                  <button v-if="!n.lu"
-                          class="btn btn-sm btn-outline-success"
-                          @click="marquerNotificationLue(n)"
-                          :title="$t('tooltips.marquerLue')">
-                    <i class="fas fa-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger"
-                          @click="supprimerNotification(n)"
-                          :title="$t('tooltips.supprimerNotification')">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
+
+            <div v-for="m in messagesChat" :key="m.id"
+                 class="p-2 rounded mb-2 chat-bubble"
+                 :class="getMessageClass(m)"
+                 style="max-width:80%">
+              <div class="small opacity-75 mb-1">
+                {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || $t('commun.inconnu') }}
+                · {{ formatTime(m.dateEnvoi || m.date || m.createdAt) }}
               </div>
+              <div>{{ m.contenu }}</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ========== F14: ONGLET COLLABORATION ========== -->
-      <div v-else-if="onglet==='collaboration'">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-white">
-                <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
-              </div>
-              <div class="list-group list-group-flush">
-                <button
-                  v-for="p in mesProjets"
-                  :key="p.id"
-                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                  :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
-                  @click="ouvrirChatProjet(p)"
-                  :title="$t('tooltips.ouvrirChat')">
-                  <span class="text-truncate">{{ translateProjectTitle(p.titre) }}</span>
-                  <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
-                </button>
-                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">
-                  {{ $t('projets.aucunProjet') }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-8">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-white d-flex align-items-center gap-2">
-                <h6 class="mb-0">
-                  <i class="fas fa-comments me-2"></i>
-                  {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('nav.collaboration') }}
-                </h6>
-              </div>
-
-              <div class="card-body d-flex flex-column" style="height:420px">
-                <div class="flex-grow-1 overflow-auto messages-container" ref="messagesContainer">
-                  <div v-if="!projetChatActuel" class="text-center text-muted py-5">
-                    {{ $t('projets.choisirProjet') }}
-                  </div>
-
-                  <div v-else>
-                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">
-                      {{ $t('chat.aucunMessage') }}
-                    </div>
-
-                    <div
-                      v-for="m in messagesChat"
-                      :key="m.id"
-                      class="p-2 rounded mb-2 chat-bubble"
-                      :class="getMessageClass(m)"
-                      style="max-width:80%">
-                      <div class="small opacity-75 mb-1">
-                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || $t('commun.inconnu') }}
-                        · {{ formatTime(m.dateEnvoi || m.date || m.createdAt) }}
-                      </div>
-                      <div>{{ m.contenu }}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="pt-2 border-top" v-if="projetChatActuel">
-                  <div class="input-group">
-                    <input
-                      class="form-control"
-                      v-model.trim="nouveauMessage"
-                      :placeholder="$t('collaboration.ecrireMessage')"
-                      @keyup.enter="envoyerMessage"
-                      :title="$t('tooltips.ecrireMessage')">
-                    <button class="btn btn-success"
-                            :disabled="envoyantMessage || !nouveauMessage"
-                            @click="envoyerMessage"
-                            :title="$t('tooltips.envoyerMessage')">
-                      <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="pt-2 border-top" v-if="projetChatActuel">
+          <div class="input-group">
+            <input class="form-control"
+                   v-model.trim="nouveauMessage"
+                   :placeholder="$t('collaboration.ecrireMessage')"
+                   @keyup.enter="envoyerMessage">
+            <button class="btn btn-success"
+                    :disabled="envoyantMessage || !nouveauMessage"
+                    @click="envoyerMessage">
+              <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+</div>
+</div>
 
-    <!-- ========== MODAL COMMENTAIRES (F12) - CORRIGÉE ========== -->
-    <div v-if="modalCommentaires"
-         class="modal d-block"
-         style="background:rgba(0,0,0,.6);z-index:1060"
-         @click.self="fermerModalCommentaires">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-info text-white">
-            <h5 class="modal-title">
-              <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
-            </h5>
-            <button class="btn-close btn-close-white"
-                    @click="fermerModalCommentaires"
-                    :aria-label="$t('commun.fermer')"></button>
-          </div>
+<!-- ========== MODAL COMMENTAIRES ========== -->
+<div v-if="modalCommentaires"
+     class="modal d-block"
+     style="background:rgba(0,0,0,.6);z-index:1060"
+     @click.self="fermerModalCommentaires">
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header bg-info text-white">
+      <h5 class="modal-title">
+        <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
+      </h5>
+      <button class="btn-close btn-close-white"
+              @click="fermerModalCommentaires"></button>
+    </div>
 
-          <div class="modal-body">
-            <!-- Info tâche -->
-            <div class="alert alert-info mb-3">
-              <div><strong>{{ $t('taches.tache') }}:</strong> {{ tacheSelectionnee?.titre }}</div>
-              <div><strong>{{ $t('projets.projet') }}:</strong> {{ getProjetNom(tacheSelectionnee?.projetId || tacheSelectionnee?.id_projet) }}</div>
-            </div>
+    <div class="modal-body">
+      <!-- Info tâche -->
+      <div class="alert alert-info mb-3">
+        <div><strong>{{ $t('taches.tache') }}:</strong> {{ tacheSelectionnee?.titre }}</div>
+        <div><strong>{{ $t('projets.projet') }}:</strong> {{ getProjetNom(tacheSelectionnee?.projetId || tacheSelectionnee?.id_projet) }}</div>
+      </div>
 
-            <!-- Liste des commentaires -->
-            <div v-if="chargementCommentaires" class="text-center py-4">
-              <div class="spinner-border text-primary"></div>
-              <p class="text-muted mt-2">{{ $t('commun.chargement') }}</p>
-            </div>
+      <!-- Liste des commentaires -->
+      <div v-if="chargementCommentaires" class="text-center py-4">
+        <div class="spinner-border text-primary"></div>
+      </div>
 
-            <div v-else-if="commentairesTache.length === 0" class="text-center py-4 text-muted">
-              <i class="fas fa-comment-slash fa-3x mb-3"></i>
-              <p>{{ $t('commentaires.aucunCommentaire') }}</p>
-            </div>
+      <div v-else-if="commentairesTache.length === 0" class="text-center py-4 text-muted">
+        <i class="fas fa-comment-slash fa-3x mb-3"></i>
+        <p>{{ $t('commentaires.aucunCommentaire') }}</p>
+      </div>
 
-            <div v-else class="comments-list mb-3" style="max-height:400px;overflow-y:auto">
-              <div v-for="c in commentairesTache" :key="c.id" class="card mb-2">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <strong>{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
-                      <br>
-                      <small class="text-muted">{{ formatDateRelative(c.date) }}</small>
-                    </div>
-                    <!-- Suppression uniquement pour CHEF_PROJET et ADMIN -->
-                    <button v-if="peutSupprimerCommentaire(c)"
-                            class="btn btn-sm btn-outline-danger"
-                            @click="supprimerCommentaire(c.id)"
-                            :disabled="suppressionEnCours"
-                            :title="$t('commentaires.supprimer')">
-                      <span v-if="suppressionEnCours" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                  <p class="mb-0 text-break">{{ c.contenu }}</p>
-                </div>
+      <div v-else class="comments-list mb-3" style="max-height:300px;overflow-y:auto">
+        <div v-for="c in commentairesTache" :key="c.id" class="card mb-2">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
+                <small class="text-muted ms-2">{{ formatDateRelative(c.date) }}</small>
               </div>
-            </div>
-
-            <!-- Formulaire nouveau commentaire -->
-            <div class="border-top pt-3">
-              <label class="form-label fw-bold">{{ $t('commentaires.nouveau') }}</label>
-              <textarea
-                class="form-control mb-2"
-                v-model.trim="nouveauCommentaire"
-                rows="3"
-                :placeholder="$t('commentaires.placeholder')"
-                maxlength="500"
-                :disabled="envoyantCommentaire"></textarea>
-              <small class="text-muted d-block mb-2">
-                {{ nouveauCommentaire.length }}/500 caractères
-              </small>
-              <button
-                class="btn btn-primary"
-                @click="ajouterCommentaire"
-                :disabled="!nouveauCommentaire || envoyantCommentaire">
-                <span v-if="envoyantCommentaire" class="spinner-border spinner-border-sm me-1"></span>
-                <i v-else class="fas fa-paper-plane me-1"></i>
-                {{ $t('commentaires.ajouter') }}
+              <button v-if="peutSupprimerCommentaire(c)"
+                      class="btn btn-sm btn-outline-danger"
+                      @click="supprimerCommentaire(c.id)"
+                      :disabled="suppressionEnCours">
+                <i class="fas fa-trash"></i>
               </button>
             </div>
+            <p class="mb-0 mt-2 text-break">{{ c.contenu }}</p>
           </div>
+        </div>
+      </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="fermerModalCommentaires">
-              {{ $t('commun.fermer') }}
-            </button>
+      <!-- Formulaire nouveau commentaire -->
+      <div class="border-top pt-3">
+        <label class="form-label fw-bold">{{ $t('commentaires.nouveau') }}</label>
+        <textarea class="form-control mb-2"
+                  v-model.trim="nouveauCommentaire"
+                  rows="3"
+                  :placeholder="$t('commentaires.placeholder')"
+                  maxlength="500"></textarea>
+        <div class="d-flex justify-content-between align-items-center">
+          <small class="text-muted">{{ nouveauCommentaire.length }}/500</small>
+          <button class="btn btn-primary"
+                  @click="ajouterCommentaire"
+                  :disabled="!nouveauCommentaire || envoyantCommentaire">
+            <span v-if="envoyantCommentaire" class="spinner-border spinner-border-sm me-1"></span>
+            <i v-else class="fas fa-paper-plane me-1"></i>
+            {{ $t('commentaires.ajouter') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" @click="fermerModalCommentaires">
+        {{ $t('commun.fermer') }}
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== MODAL DÉTAIL TÂCHE ========== -->
+<div v-if="modalDetailTache"
+     class="modal d-block"
+     style="background:rgba(0,0,0,.6);z-index:1060"
+     @click.self="fermerModalDetailTache">
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header bg-primary text-white">
+      <h5 class="modal-title">
+        <i class="fas fa-tasks me-2"></i>{{ $t('taches.detailTache') }}
+      </h5>
+      <button class="btn-close btn-close-white"
+              @click="fermerModalDetailTache"></button>
+    </div>
+
+    <div class="modal-body" v-if="tacheDetail">
+      <!-- En-tête avec titre et statut -->
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h4 class="mb-1">{{ tacheDetail.titre }}</h4>
+          <small class="text-muted">
+            {{ $t('projets.projet') }}: {{ getProjetNom(tacheDetail.projetId || tacheDetail.id_projet) }}
+          </small>
+        </div>
+        <span class="badge fs-6" :class="getStatutTacheClass(tacheDetail.statut)">
+                {{ translateData('taskStatus', tacheDetail.statut) }}
+              </span>
+      </div>
+
+      <!-- Infos principales -->
+      <div class="row g-3 mb-4">
+        <!-- Priorité -->
+        <div class="col-md-4">
+          <div class="card border h-100">
+            <div class="card-body text-center">
+              <i :class="getPrioriteIcon(tacheDetail.priorite)" class="fa-2x mb-2"
+                 :style="{color: getPrioriteColor(tacheDetail.priorite)}"></i>
+              <h6 class="mb-1">{{ $t('taches.priorite') }}</h6>
+              <span class="badge" :class="getPrioriteClass(tacheDetail.priorite)">
+                      {{ translateData('priority', tacheDetail.priorite) || $t('taches.priorites.normale') }}
+                    </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Échéance -->
+        <div class="col-md-4">
+          <div class="card border h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-calendar-alt fa-2x mb-2"
+                 :class="getEcheanceIconClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)"></i>
+              <h6 class="mb-1">{{ $t('taches.echeance') }}</h6>
+              <div v-if="tacheDetail.dateEcheance || tacheDetail.date_echeance">
+                      <span :class="getEcheanceClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)">
+                        {{ formatDate(tacheDetail.dateEcheance || tacheDetail.date_echeance) }}
+                      </span>
+                <div class="mt-1">
+                  <small :class="getEcheanceAlertClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)">
+                    {{ getEcheanceMessage(tacheDetail.dateEcheance || tacheDetail.date_echeance) }}
+                  </small>
+                </div>
+              </div>
+              <span v-else class="text-muted">{{ $t('commun.nonDefini') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date création -->
+        <div class="col-md-4">
+          <div class="card border h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-clock fa-2x mb-2 text-secondary"></i>
+              <h6 class="mb-1">{{ $t('taches.dateCreation') }}</h6>
+              <span>{{ formatDate(tacheDetail.dateCreation || tacheDetail.date_creation) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <h6 class="fw-bold">
+          <i class="fas fa-align-left me-2"></i>{{ $t('taches.description') }}
+        </h6>
+        <div class="card border">
+          <div class="card-body">
+            <p class="mb-0" v-if="tacheDetail.description">{{ tacheDetail.description }}</p>
+            <p class="mb-0 text-muted fst-italic" v-else>{{ $t('taches.aucuneDescription') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentaires récents -->
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0">
+            <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
+          </h6>
+          <button class="btn btn-sm btn-outline-info"
+                  @click="fermerModalDetailTache(); ouvrirCommentaires(tacheDetail)">
+            {{ $t('commentaires.voirTous') }}
+          </button>
+        </div>
+        <div class="card border">
+          <div class="card-body py-2">
+            <div v-if="getCommentairesTache(tacheDetail.id).length === 0" class="text-muted text-center py-2">
+              {{ $t('commentaires.aucunCommentaire') }}
+            </div>
+            <div v-else>
+              <div v-for="c in getCommentairesTache(tacheDetail.id).slice(0, 3)" :key="c.id" class="mb-2 pb-2 border-bottom">
+                <div class="d-flex justify-content-between">
+                  <strong class="small">{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
+                  <small class="text-muted">{{ formatDateRelative(c.date) }}</small>
+                </div>
+                <small>{{ c.contenu.substring(0, 100) }}{{ c.contenu.length > 100 ? '...' : '' }}</small>
+              </div>
+              <small v-if="getCommentairesTache(tacheDetail.id).length > 3" class="text-muted">
+                +{{ getCommentairesTache(tacheDetail.id).length - 3 }} {{ $t('commentaires.autres') }}
+              </small>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
+    <div class="modal-footer">
+      <!-- Action selon statut -->
+      <button v-if="tacheDetail?.statut === 'BROUILLON'"
+              class="btn btn-success"
+              @click="soumettreValidation(tacheDetail); fermerModalDetailTache()">
+        <i class="fas fa-paper-plane me-1"></i>{{ $t('taches.soumettre') }}
+      </button>
+      <button class="btn btn-secondary" @click="fermerModalDetailTache">
+        {{ $t('commun.fermer') }}
+      </button>
+    </div>
   </div>
+</div>
+</div>
+
+</div>
 </template>
 
 <script setup>
@@ -767,22 +803,25 @@ const projetChatActuel = ref(null)
 const envoyantMessage = ref(false)
 const subscribedTopics = new Set()
 const messagesContainer = ref(null)
-// ========== NOUVEAUX STATE POUR RECHERCHE ET FILTRES ==========
+
+// Recherche et filtres
 const rechercheTask = ref('')
 const filtreStatut = ref('TOUS')
 const tachesFiltrees = ref([])
-const chartCanvas = ref(null)
-let chartInstance = null
 
-// Toast notifications
+// Toast
 const toastMessage = ref('')
-const toastType = ref('info') // 'success', 'error', 'info'
+const toastType = ref('info')
 let toastTimeout = null
 
 // Modal commentaires
 const modalCommentaires = ref(false)
 const tacheSelectionnee = ref(null)
 const commentairesTache = ref([])
+
+// Modal détail tâche
+const modalDetailTache = ref(false)
+const tacheDetail = ref(null)
 
 // ========== COMPUTED ==========
 const tauxReussite = computed(() => {
@@ -801,7 +840,6 @@ const notificationsNonLues = computed(() => {
   return notifications.value.filter(n => !n.lu)
 })
 
-// ========== STATS POUR GRAPHIQUE ==========
 const statsTaskes = computed(() => {
   return {
     brouillon: mesTaches.value.filter(t => t.statut === 'BROUILLON').length,
@@ -810,7 +848,16 @@ const statsTaskes = computed(() => {
     annule: mesTaches.value.filter(t => t.statut === 'ANNULE').length
   }
 })
-// ========== RECHERCHE ET FILTRES ==========
+
+// ========== TOAST ==========
+const showToast = (message, type = 'info') => {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = message
+  toastType.value = type
+  toastTimeout = setTimeout(() => { toastMessage.value = '' }, 3000)
+}
+
+// ========== FILTRES ==========
 const filtrerTaches = () => {
   let resultats = [...mesTaches.value]
 
@@ -842,98 +889,120 @@ const reinitialiserFiltres = () => {
   filtrerTaches()
 }
 
-// ========== GRAPHIQUE CHART.JS ==========
-const creerGraphique = async () => {
-  if (!chartCanvas.value) return
-
-  if (!window.Chart) {
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
-    script.onload = () => initialiserGraphique()
-    document.head.appendChild(script)
-  } else {
-    initialiserGraphique()
+// ========== PRIORITÉ (Erratum N°3) ==========
+const getPrioriteClass = (priorite) => {
+  const classes = {
+    'BASSE': 'bg-success',
+    'NORMALE': 'bg-info',
+    'HAUTE': 'bg-warning text-dark',
+    'URGENTE': 'bg-danger'
   }
+  return classes[priorite] || 'bg-secondary'
 }
 
-const initialiserGraphique = () => {
-  if (chartInstance) {
-    chartInstance.destroy()
+const getPrioriteIcon = (priorite) => {
+  const icons = {
+    'BASSE': 'fas fa-arrow-down',
+    'NORMALE': 'fas fa-minus',
+    'HAUTE': 'fas fa-arrow-up',
+    'URGENTE': 'fas fa-exclamation-triangle'
   }
-
-  const ctx = chartCanvas.value.getContext('2d')
-  const Chart = window.Chart
-
-  chartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: [
-        t('taches.statuts.brouillon'),
-        t('taches.statuts.enAttente'),
-        t('taches.statuts.termine'),
-        t('taches.statuts.annule')
-      ],
-      datasets: [{
-        data: [
-          statsTaskes.value.brouillon,
-          statsTaskes.value.enAttente,
-          statsTaskes.value.termine,
-          statsTaskes.value.annule
-        ],
-        backgroundColor: ['#6c757d', '#ffc107', '#28a745', '#dc3545'],
-        borderWidth: 2,
-        borderColor: '#fff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { padding: 10, font: { size: 11 } }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || ''
-              const value = context.parsed || 0
-              const total = context.dataset.data.reduce((a, b) => a + b, 0)
-              const percentage = total > 0 ? Math.round((value / total) * 100) : 0
-              return `${label}: ${value} (${percentage}%)`
-            }
-          }
-        }
-      }
-    }
-  })
-}
-// ========== TOAST SYSTEM ==========
-const showToast = (message, type = 'info') => {
-  if (toastTimeout) {
-    clearTimeout(toastTimeout)
-  }
-
-  toastMessage.value = message
-  toastType.value = type
-
-  toastTimeout = setTimeout(() => {
-    toastMessage.value = ''
-  }, 3000)
+  return icons[priorite] || 'fas fa-minus'
 }
 
-// ========== CHARGEMENT DONNÉES (CORRIGÉ AVEC PRÉCHARGEMENT COMMENTAIRES) ==========
+const getPrioriteColor = (priorite) => {
+  const colors = {
+    'BASSE': '#28a745',
+    'NORMALE': '#17a2b8',
+    'HAUTE': '#ffc107',
+    'URGENTE': '#dc3545'
+  }
+  return colors[priorite] || '#6c757d'
+}
+
+// ========== ÉCHÉANCE (Erratum N°3) ==========
+const getJoursRestants = (dateEcheance) => {
+  if (!dateEcheance) return null
+  const aujourdhui = new Date()
+  aujourdhui.setHours(0, 0, 0, 0)
+  const echeance = new Date(dateEcheance)
+  echeance.setHours(0, 0, 0, 0)
+  const diffTime = echeance - aujourdhui
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+}
+
+const getEcheanceIcon = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return 'fas fa-calendar text-muted'
+  if (jours < 0) return 'fas fa-exclamation-circle text-danger'
+  if (jours <= 3) return 'fas fa-exclamation-triangle text-warning'
+  return 'fas fa-calendar-check text-success'
+}
+
+const getEcheanceIconClass = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return 'text-muted'
+  if (jours < 0) return 'text-danger'
+  if (jours <= 3) return 'text-warning'
+  return 'text-success'
+}
+
+const getEcheanceClass = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return 'text-muted'
+  if (jours < 0) return 'text-danger fw-bold'
+  if (jours <= 3) return 'text-warning fw-bold'
+  return 'text-success'
+}
+
+const getEcheanceAlertClass = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return ''
+  if (jours < 0) return 'badge bg-danger'
+  if (jours <= 3) return 'badge bg-warning text-dark'
+  return 'badge bg-success'
+}
+
+const getEcheanceTooltip = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return ''
+  if (jours < 0) return t('taches.echeanceDepassee', { jours: Math.abs(jours) })
+  if (jours === 0) return t('taches.echeanceAujourdhui')
+  if (jours === 1) return t('taches.echeanceDemain')
+  if (jours <= 3) return t('taches.echeanceProche', { jours })
+  return t('taches.echeanceDans', { jours })
+}
+
+const getEcheanceMessage = (dateEcheance) => {
+  const jours = getJoursRestants(dateEcheance)
+  if (jours === null) return ''
+  if (jours < 0) return `${t('taches.enRetard')} (${Math.abs(jours)} ${t('temps.jours')})`
+  if (jours === 0) return t('taches.echeanceAujourdhui')
+  if (jours === 1) return t('taches.echeanceDemain')
+  if (jours <= 3) return `${jours} ${t('temps.joursRestants')}`
+  return `${jours} ${t('temps.joursRestants')}`
+}
+
+// ========== MODAL DÉTAIL TÂCHE ==========
+const ouvrirDetailTache = (tache) => {
+  tacheDetail.value = tache
+  modalDetailTache.value = true
+}
+
+const fermerModalDetailTache = () => {
+  modalDetailTache.value = false
+  tacheDetail.value = null
+}
+
+// ========== CHARGEMENT DONNÉES ==========
 const chargerToutesDonnees = async () => {
   chargementGlobal.value = true
   erreurBackend.value = ''
 
   try {
     if (!utilisateur.value || !utilisateur.value.id) {
-      console.warn('[Load] Utilisateur non défini, récupération...')
       utilisateur.value = getUserSafe()
-
       if (!utilisateur.value || !utilisateur.value.id) {
-        console.error('[Load] Impossible de récupérer utilisateur')
         erreurBackend.value = t('erreurs.sessionExpiree')
         chargementGlobal.value = false
         setTimeout(() => router.push('/connexion'), 2000)
@@ -942,7 +1011,6 @@ const chargerToutesDonnees = async () => {
     }
 
     const userId = normalizeId(utilisateur.value.id)
-    console.log('[Load] Chargement données userId:', userId)
 
     const [pRes, tRes, nRes] = await Promise.allSettled([
       projectAPI.byUser(userId),
@@ -955,16 +1023,16 @@ const chargerToutesDonnees = async () => {
       : []
 
     mesTaches.value = tRes.status === 'fulfilled' && Array.isArray(tRes.value?.data)
-      ? tRes.value.data
-        .map(t => ({
-          ...t,
-          id: normalizeId(t.id),
-          projetId: normalizeId(t.projetId || t.id_projet || t.idProjet),
-          id_projet: normalizeId(t.id_projet || t.projetId || t.idProjet),
-          idProjet: normalizeId(t.idProjet || t.projetId || t.id_projet)
-        }))
+      ? tRes.value.data.map(t => ({
+        ...t,
+        id: normalizeId(t.id),
+        projetId: normalizeId(t.projetId || t.id_projet || t.idProjet),
+        id_projet: normalizeId(t.id_projet || t.projetId || t.idProjet),
+        idProjet: normalizeId(t.idProjet || t.projetId || t.id_projet)
+      }))
       : []
-    //  Charger les projets manquants des tâches
+
+    // Charger les projets manquants
     const projetsManquants = new Set()
     mesTaches.value.forEach(t => {
       const projetId = t.projetId || t.id_projet || t.idProjet
@@ -978,10 +1046,9 @@ const chargerToutesDonnees = async () => {
         const pRes = await projectAPI.getById(projetId)
         if (pRes.data) {
           mesProjets.value.push({ ...pRes.data, id: normalizeId(pRes.data.id) })
-          console.log('[Load]  Projet manquant chargé:', pRes.data.titre)
         }
       } catch (e) {
-        console.warn('[Load]  Impossible de charger projet:', projetId)
+        console.warn('[Load] Projet manquant non chargé:', projetId)
       }
     }
 
@@ -989,40 +1056,26 @@ const chargerToutesDonnees = async () => {
       ? nRes.value.data
       : []
 
-    // Précharger les commentaires de chaque tâche
-    console.log('[F12]  Préchargement des commentaires pour', mesTaches.value.length, 'tâches')
-
+    // Précharger commentaires
     const commentairesPromises = mesTaches.value.map(async (tache) => {
       try {
         const tacheIdNormalized = normalizeId(tache.id)
         const response = await commentaireAPI.getByTache(tacheIdNormalized)
         commentairesParTache.value[tacheIdNormalized] = Array.isArray(response.data) ? response.data : []
-        console.log(`[F12]  Tâche ${tacheIdNormalized}: ${commentairesParTache.value[tacheIdNormalized].length} commentaires`)
       } catch (e) {
-        console.warn(`[F12]  Erreur chargement commentaires tâche ${tache.id}:`, e)
         commentairesParTache.value[normalizeId(tache.id)] = []
       }
     })
 
     await Promise.allSettled(commentairesPromises)
 
-    console.log('[Load]  Données chargées:', {
-      projets: mesProjets.value.length,
-      taches: mesTaches.value.length,
-      notifications: notifications.value.length,
-      commentaires: Object.keys(commentairesParTache.value).length
-    })
-
     const erreurs = [pRes, tRes, nRes].filter(r => r.status === 'rejected')
     if (erreurs.length === 3) {
       erreurBackend.value = t('erreurs.chargementDonnees')
-      console.error('[Load] Toutes les API ont échoué')
-    } else if (erreurs.length > 0) {
-      console.warn('[Load] Erreurs partielles:', erreurs.map(e => e.reason?.message))
     }
 
   } catch (e) {
-    console.error('[Load] Erreur critique:', e)
+    console.error('[Load] Erreur:', e)
     erreurBackend.value = t('erreurs.chargementDonnees')
   } finally {
     chargementGlobal.value = false
@@ -1034,11 +1087,10 @@ const chargerMessagesProjet = async (projetId) => {
     const r = await messagesAPI.byProjet(projetId)
     messagesChat.value = Array.isArray(r.data) ? r.data : []
     messagesParProjet.value[projetId] = messagesChat.value
-
     await nextTick()
     scrollToBottom()
   } catch (e) {
-    console.error('[Chat] Erreur chargement messages:', e)
+    console.error('[Chat] Erreur:', e)
     messagesChat.value = []
   }
 }
@@ -1049,21 +1101,16 @@ const scrollToBottom = () => {
   }
 }
 
-// ========== COMMENTAIRES (F12) - CONFORMES AU BACKEND ==========
+// ========== COMMENTAIRES ==========
 const chargerCommentairesTache = async (tacheId) => {
   chargementCommentaires.value = true
   try {
     const tacheIdNormalized = normalizeId(tacheId)
-    console.log(`[F12] GET /api/commentaires/tache/${tacheIdNormalized}`)
-
     const response = await commentaireAPI.getByTache(tacheIdNormalized)
-
     commentairesTache.value = Array.isArray(response.data) ? response.data : []
     commentairesParTache.value[tacheIdNormalized] = commentairesTache.value
-
-    console.log(`[F12] ${commentairesTache.value.length} commentaires chargés`)
   } catch (e) {
-    console.error('[F12] Erreur chargement commentaires:', e)
+    console.error('[Commentaires] Erreur:', e)
     commentairesTache.value = []
     showToast(t('erreurs.chargementCommentaires'), 'error')
   } finally {
@@ -1076,23 +1123,17 @@ const ouvrirCommentaires = async (tache) => {
   modalCommentaires.value = true
   await chargerCommentairesTache(tache.id)
 
-  // ⭐ AJOUT : Écoute WebSocket des nouveaux commentaires
   const tacheId = normalizeId(tache.id)
   const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
 
   if (!subscribedTopics.has(topicCommentaires)) {
     WebSocketService.subscribeToTacheCommentaires(tacheId, (nouveauCommentaire) => {
-      console.log('[F12] ✅ Nouveau commentaire temps réel:', nouveauCommentaire)
-
-      // Ajouter à la modal si c'est la tâche actuellement ouverte
       if (tacheSelectionnee.value && normalizeId(tacheSelectionnee.value.id) === tacheId) {
         const existe = commentairesTache.value.some(c => c.id === nouveauCommentaire.id)
         if (!existe) {
           commentairesTache.value.push(nouveauCommentaire)
         }
       }
-
-      // Mettre à jour le cache
       if (!commentairesParTache.value[tacheId]) {
         commentairesParTache.value[tacheId] = []
       }
@@ -1102,35 +1143,23 @@ const ouvrirCommentaires = async (tache) => {
       }
     })
 
-    // Écoute des suppressions
     WebSocketService.subscribeToTacheCommentairesSuppression(tacheId, (commentaireId) => {
-      console.log('[F12]  Suppression commentaire temps réel:', commentaireId)
-
-      // Retirer de la modal
       commentairesTache.value = commentairesTache.value.filter(c => c.id !== commentaireId)
-
-      // Retirer du cache
       if (commentairesParTache.value[tacheId]) {
         commentairesParTache.value[tacheId] = commentairesParTache.value[tacheId].filter(c => c.id !== commentaireId)
       }
     })
 
     subscribedTopics.add(topicCommentaires)
-    console.log('[F12]  Abonné aux commentaires tâche', tacheId)
   }
 }
 
 const fermerModalCommentaires = () => {
-
   if (tacheSelectionnee.value) {
     const tacheId = normalizeId(tacheSelectionnee.value.id)
     WebSocketService.unsubscribeFromTacheCommentaires(tacheId)
-
-    const topicCommentaires = `/topic/tache/${tacheId}/commentaires`
-    subscribedTopics.delete(topicCommentaires)
-    console.log('[F12] Désabonné des commentaires tâche', tacheId)
+    subscribedTopics.delete(`/topic/tache/${tacheId}/commentaires`)
   }
-
   modalCommentaires.value = false
   tacheSelectionnee.value = null
   commentairesTache.value = []
@@ -1138,31 +1167,19 @@ const fermerModalCommentaires = () => {
 }
 
 const ajouterCommentaire = async () => {
-  if (!nouveauCommentaire.value.trim() || !tacheSelectionnee.value) {
-    showToast(t('erreurs.contenuVide'), 'error')
-    return
-  }
+  if (!nouveauCommentaire.value.trim() || !tacheSelectionnee.value) return
 
   envoyantCommentaire.value = true
   try {
     const tacheIdNormalized = normalizeId(tacheSelectionnee.value.id)
-
-    console.log('[F12] POST /api/commentaires', {
-      contenu: nouveauCommentaire.value.trim(),
-      tacheId: parseInt(tacheIdNormalized, 10)
-    })
-
     await commentaireAPI.create({
       contenu: nouveauCommentaire.value.trim(),
       tacheId: parseInt(tacheIdNormalized, 10)
     })
-
-
     nouveauCommentaire.value = ''
-
     showToast(t('commentaires.ajoutSucces'), 'success')
   } catch (e) {
-    console.error('[F12] Erreur ajout commentaire:', e)
+    console.error('[Commentaires] Erreur ajout:', e)
     showToast(t('erreurs.ajoutCommentaire'), 'error')
   } finally {
     envoyantCommentaire.value = false
@@ -1174,17 +1191,10 @@ const supprimerCommentaire = async (commentaireId) => {
 
   suppressionEnCours.value = true
   try {
-    const commentaireIdNormalized = normalizeId(commentaireId)
-
-    console.log(`[F12] DELETE /api/commentaires/${commentaireIdNormalized}`)
-
-    await commentaireAPI.delete(commentaireIdNormalized)
-
-
+    await commentaireAPI.delete(normalizeId(commentaireId))
     showToast(t('commentaires.suppressionSucces'), 'success')
   } catch (e) {
-    console.error('[F12] Erreur suppression commentaire:', e)
-
+    console.error('[Commentaires] Erreur suppression:', e)
     if (e.response?.status === 403) {
       showToast(t('erreurs.nonAutorise'), 'error')
     } else {
@@ -1195,37 +1205,21 @@ const supprimerCommentaire = async (commentaireId) => {
   }
 }
 
-/**
- * CORRECTION CRITIQUE: Vérification permissions suppression
- * Seuls CHEF_PROJET et ADMINISTRATEUR peuvent supprimer
- */
 const peutSupprimerCommentaire = () => {
   if (!utilisateur.value) return false
-
   const role = utilisateur.value.role || utilisateur.value.roles?.[0]
-  const estChefOuAdmin = role === 'CHEF_PROJET' || role === 'ADMINISTRATEUR'
-
-  return estChefOuAdmin
+  return role === 'CHEF_PROJET' || role === 'ADMINISTRATEUR'
 }
 
 const getCommentairesTache = (tacheId) => {
   if (!tacheId) return []
-  const normalized = normalizeId(tacheId)
-  return commentairesParTache.value[normalized] || []
+  return commentairesParTache.value[normalizeId(tacheId)] || []
 }
 
 // ========== WEBSOCKET ==========
 const initWebsocket = () => {
   const token = localStorage.getItem('token')
-  if (!token) {
-    console.warn('[WS] Pas de token, WebSocket non initialisé')
-    return
-  }
-
-  if (!utilisateur.value || !utilisateur.value.id) {
-    console.error('[WS] Utilisateur non défini, WebSocket non initialisé')
-    return
-  }
+  if (!token || !utilisateur.value?.id) return
 
   WebSocketService.connect(token)
 
@@ -1234,8 +1228,6 @@ const initWebsocket = () => {
 
   if (!subscribedTopics.has(topicNotifications)) {
     WebSocketService.subscribe(topicNotifications, (msg) => {
-      console.log('[WS] Notification reçue:', msg)
-
       if (msg?.type === 'NOTIFICATION' || msg?.message) {
         notifications.value.unshift({
           id: msg.id || Date.now(),
@@ -1246,26 +1238,22 @@ const initWebsocket = () => {
           type: msg.sousType || 'SYSTEME'
         })
 
-        // Notification navigateur
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(msg.titre || t('notifications.notification'), {
             body: msg.message || msg.contenu,
             icon: '/favicon.ico'
           })
         }
-
         showToast(msg.message || msg.contenu, 'info')
       }
     })
     subscribedTopics.add(topicNotifications)
-    console.log('[WS] ✅ Souscription:', topicNotifications)
   }
 }
 
 // ========== ACTIONS PROJETS ==========
 const consulterProjet = (p) => {
-  const id = normalizeId(p.id)
-  router.push(`/projet/${id}`)
+  router.push(`/projet/${normalizeId(p.id)}`)
 }
 
 const progressionProjet = (projetId) => {
@@ -1296,7 +1284,7 @@ const soumettreValidation = async (tache) => {
     await taskAPI.updateStatus(tache.id, 'EN_ATTENTE_VALIDATION')
     tache.statut = 'EN_ATTENTE_VALIDATION'
     showToast(t('taches.soumissionReussie'), 'success')
-    await chargerToutesDonnees()
+    filtrerTaches()
   } catch (e) {
     console.error('[Tache] Erreur soumission:', e)
     showToast(t('erreurs.soumissionTache'), 'error')
@@ -1310,7 +1298,7 @@ const marquerNotificationLue = async (n) => {
     await notificationAPI.markAsRead(n.id, userId)
     n.lu = true
   } catch (e) {
-    console.error('[Notif] Erreur marque lue:', e)
+    console.error('[Notif] Erreur:', e)
   }
 }
 
@@ -1321,7 +1309,7 @@ const marquerToutesLues = async () => {
     notifications.value.forEach(n => n.lu = true)
     showToast(t('notifications.toutesMarquees'), 'success')
   } catch (e) {
-    console.error('[Notif] Erreur marque toutes:', e)
+    console.error('[Notif] Erreur:', e)
   }
 }
 
@@ -1333,14 +1321,13 @@ const supprimerNotification = async (n) => {
     notifications.value = notifications.value.filter(x => x.id !== n.id)
     showToast(t('notifications.suppressionSucces'), 'success')
   } catch (e) {
-    console.error('[Notif] Erreur suppression:', e)
+    console.error('[Notif] Erreur:', e)
   }
 }
 
 // ========== ACTIONS CHAT ==========
 const ouvrirChatProjet = async (projet) => {
   if (projet.prive && !projet.estMembre) {
-    console.warn('[Chat] Accès refusé au projet privé:', projet.titre)
     showToast(t('erreurs.accesRefuse'), 'error')
     return
   }
@@ -1358,16 +1345,13 @@ const ouvrirChatProjet = async (projet) => {
   const topicProjet = `/topic/projet/${projet.id}`
   if (!subscribedTopics.has(topicProjet)) {
     WebSocketService.subscribe(topicProjet, (msg) => {
-      console.log('[Chat] Message reçu:', msg)
       messagesChat.value.push(msg)
       if (messagesParProjet.value[projet.id]) {
         messagesParProjet.value[projet.id].push(msg)
       }
-
       nextTick(() => scrollToBottom())
     })
     subscribedTopics.add(topicProjet)
-    console.log('[Chat] ✅ Souscription:', topicProjet)
   }
 }
 
@@ -1381,14 +1365,12 @@ const envoyerMessage = async () => {
       contenu: nouveauMessage.value,
       type: 'TEXT'
     })
-
     messagesChat.value.push(r.data)
     nouveauMessage.value = ''
-
     await nextTick()
     scrollToBottom()
   } catch (e) {
-    console.error('[Chat] Erreur envoi:', e)
+    console.error('[Chat] Erreur:', e)
     showToast(t('erreurs.envoyerMessage'), 'error')
   } finally {
     envoyantMessage.value = false
@@ -1411,7 +1393,7 @@ const seDeconnecter = () => {
   try {
     useAuthStore().logout?.()
   } catch (e) {
-    console.warn('Erreur ignorée lors de la déconnexion :', e)
+    console.warn('Erreur déconnexion:', e)
   }
   localStorage.removeItem('token')
   localStorage.removeItem('user')
@@ -1489,19 +1471,12 @@ const formatTime = (timestamp) => {
     { hour: '2-digit', minute: '2-digit' }
   )
 }
+
 // ========== WATCHERS ==========
 watch(mesTaches, () => {
   filtrerTaches()
-  if (onglet.value === 'taches') {
-    nextTick(() => creerGraphique())
-  }
 }, { deep: true })
 
-watch(onglet, (newVal) => {
-  if (newVal === 'taches') {
-    nextTick(() => creerGraphique())
-  }
-})
 // ========== LIFECYCLE ==========
 onMounted(async () => {
   await chargerToutesDonnees()
@@ -1514,13 +1489,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (chartInstance) {
-    chartInstance.destroy()
-  }
   WebSocketService.disconnect()
-  if (toastTimeout) {
-    clearTimeout(toastTimeout)
-  }
+  if (toastTimeout) clearTimeout(toastTimeout)
 })
 </script>
 
@@ -1571,7 +1541,6 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #119c72, #96ddc8);
   color: white;
   font-weight: 600;
-  transform: translateY(-1px);
 }
 
 /* ========== NOTIFICATIONS ========== */
@@ -1601,7 +1570,8 @@ onBeforeUnmount(() => {
   animation: slideIn 0.3s ease;
 }
 
-.messages-container {
+.messages-container,
+.comments-list {
   scroll-behavior: smooth;
 }
 
@@ -1622,14 +1592,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========== TABLES ========== */
@@ -1650,20 +1614,12 @@ onBeforeUnmount(() => {
   padding: 0.375rem 0.75rem;
 }
 
-/* ✨ CORRECTION F12: Animation badge commentaires */
-.animate-badge {
-  animation: fadeInScale 0.4s ease-out;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* ========== PRIORITÉ ========== */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ========== PROGRESS ========== */
@@ -1682,10 +1638,6 @@ onBeforeUnmount(() => {
   transition: all 0.2s ease;
 }
 
-.list-group-item:hover {
-  background-color: rgba(17, 156, 114, 0.05);
-}
-
 /* ========== BUTTONS ========== */
 .btn-group .btn {
   border-radius: 6px;
@@ -1697,7 +1649,8 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(5px);
 }
 
-.modal-header.bg-info {
+.modal-header.bg-info,
+.modal-header.bg-primary {
   border-bottom: none;
 }
 
@@ -1705,38 +1658,9 @@ onBeforeUnmount(() => {
   filter: brightness(0) invert(1);
 }
 
-/* ========== COMMENTAIRES ========== */
-.comments-list {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.comments-list .card {
-  transition: all 0.2s ease;
-}
-
-.comments-list .card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 /* ========== UTILITY ========== */
 .text-break {
   word-wrap: break-word;
   overflow-wrap: break-word;
-}
-/* Styles pour les mini-stats */
-.stat-mini {
-  transition: all 0.3s ease;
-}
-
-.stat-mini:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Styles pour le graphique */
-canvas {
-  max-width: 100%;
-  height: auto !important;
 }
 </style>

@@ -143,20 +143,20 @@ public class TacheController {
         }
     }
 
-    // 🔧 CORRECTION CRITIQUE : Tâches liées aux projets d'un chef de projet
+    // Tâches liées aux projets d'un chef de projet
     @GetMapping("/chef/{idChef}")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
     public ResponseEntity<List<TacheDTO>> obtenirTachesParChef(@PathVariable Long idChef) {
         try {
-            System.out.println("🔍 [TacheController] Récupération des tâches pour le chef " + idChef);
+            System.out.println(" [TacheController] Récupération des tâches pour le chef " + idChef);
 
             List<TacheDTO> taches = tacheService.obtenirTachesParChefDeProjet(idChef);
 
-            System.out.println("✅ [TacheController] " + taches.size() + " tâches trouvées");
+            System.out.println(" [TacheController] " + taches.size() + " tâches trouvées");
 
             // Debug: Afficher les détails des tâches
             taches.forEach(t -> {
-                System.out.println("   📋 Tâche #" + t.getId() +
+                System.out.println("    Tâche #" + t.getId() +
                         " - idProjet=" + t.getIdProjet() +
                         " - titre='" + t.getTitre() + "'" +
                         " - statut=" + t.getStatut());
@@ -168,13 +168,13 @@ public class TacheController {
                     .count();
 
             if (tachesSansProjet > 0) {
-                System.err.println("⚠️ [TacheController] " + tachesSansProjet +
+                System.err.println(" [TacheController] " + tachesSansProjet +
                         " tâches SANS idProjet détectées !");
             }
 
             return ResponseEntity.ok(taches);
         } catch (Exception e) {
-            System.err.println("❌ [TacheController] Erreur lors de la récupération des tâches: " + e.getMessage());
+            System.err.println(" [TacheController] Erreur lors de la récupération des tâches: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -216,10 +216,10 @@ public class TacheController {
                                                        @RequestBody Map<String, String> body,
                                                        Authentication authentication) {
         try {
-            System.out.println("🔄 [API] Changement statut tâche " + id);
+            System.out.println(" [API] Changement statut tâche " + id);
 
             if (!body.containsKey("statut")) {
-                System.err.println("❌ [API] Paramètre 'statut' manquant");
+                System.err.println(" [API] Paramètre 'statut' manquant");
                 return ResponseEntity.badRequest().build();
             }
 
@@ -228,42 +228,57 @@ public class TacheController {
 
             Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
             if (tacheExistante.isEmpty()) {
-                System.err.println("❌ [API] Tâche " + id + " introuvable");
+                System.err.println(" [API] Tâche " + id + " introuvable");
                 return ResponseEntity.notFound().build();
             }
 
+            TacheDTO tache = tacheExistante.get();
+
+            // Vérification étendue des permissions
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+            boolean isChefProjet = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("CHEF_PROJET"));
+            boolean estAssigneALaTache = idUser.equals(tache.getIdAssigne());
+            boolean peutAccederProjet = utilisateurService.peutAccederAuProjet(idUser, tache.getIdProjet());
 
-            if (!isAdmin && !utilisateurService.peutAccederAuProjet(idUser, tacheExistante.get().getIdProjet())) {
-                System.err.println("❌ [API] Accès refusé pour utilisateur " + idUser);
+            if (!isAdmin && !estAssigneALaTache && !(isChefProjet && peutAccederProjet)) {
+                System.err.println(" [API] Accès refusé pour utilisateur " + idUser +
+                        " (assigné=" + estAssigneALaTache + ", accèsProjet=" + peutAccederProjet + ")");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-
             StatutTache nouveauStatut = StatutTache.valueOf(body.get("statut"));
-            System.out.println("✅ [API] Nouveau statut: " + nouveauStatut);
+
+            if (!isAdmin && !isChefProjet && estAssigneALaTache) {
+                StatutTache statutActuel = tache.getStatut();
+                if (!(statutActuel == StatutTache.BROUILLON && nouveauStatut == StatutTache.EN_ATTENTE_VALIDATION)) {
+                    System.err.println(" [API] Un membre ne peut que soumettre une tâche en brouillon");
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+
+            System.out.println(" [API] Nouveau statut: " + nouveauStatut);
 
             TacheDTO tacheUpdated = tacheService.changerStatutTache(id, nouveauStatut);
 
             // Notification automatique (F13)
             notificationService.notifierChangementStatutTache(tacheUpdated, nouveauStatut);
 
-            System.out.println("✅ [API] Tâche " + id + " mise à jour avec statut " + nouveauStatut);
+            System.out.println(" [API] Tâche " + id + " mise à jour avec statut " + nouveauStatut);
             return ResponseEntity.ok(tacheUpdated);
 
         } catch (IllegalArgumentException e) {
-            System.err.println("❌ [API] Statut invalide: " + e.getMessage());
+            System.err.println(" [API] Statut invalide: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (RuntimeException e) {
-            System.err.println("❌ [API] Erreur runtime: " + e.getMessage());
+            System.err.println(" [API] Erreur runtime: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            System.err.println("❌ [API] Erreur serveur: " + e.getMessage());
+            System.err.println(" [API] Erreur serveur: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
     // ---------- ASSIGNATION ----------
     @PutMapping("/{id}/assigner")
     @PreAuthorize("hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")

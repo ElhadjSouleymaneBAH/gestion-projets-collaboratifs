@@ -9,7 +9,7 @@
         <p class="text-muted mb-0">{{ t('taches.liste.description') }}</p>
       </div>
       <div class="d-flex gap-2">
-        <!-- ========== NOUVEAU: Toggle Vue ========== -->
+        <!-- Toggle Vue -->
         <div class="btn-group" role="group">
           <button
             class="btn"
@@ -37,12 +37,12 @@
       </div>
     </div>
 
-    <!-- ========== VUE KANBAN ========== -->
+    <!-- VUE KANBAN -->
     <div v-if="modeAffichage === 'kanban'">
       <KanbanBoard :projetId="projetId" />
     </div>
 
-    <!-- ========== VUE LISTE (ORIGINALE) ========== -->
+    <!-- VUE LISTE -->
     <div v-else>
       <!-- Filtres -->
       <div class="card shadow-sm mb-4">
@@ -137,7 +137,7 @@
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                      <a class="dropdown-item" href="#" @click.prevent="modifierTache(tache.id)">
+                      <a class="dropdown-item" href="#" @click.prevent="modifierTache(tache)">
                         <i class="fas fa-edit me-2"></i>{{ t('commun.modifier') }}
                       </a>
                     </li>
@@ -157,6 +157,16 @@
                 <p class="card-text text-muted small" style="min-height: 60px;">
                   {{ tache.description || t('commun.aucuneDescription') }}
                 </p>
+
+                <!-- Priorité et Date d'échéance -->
+                <div class="d-flex gap-2 mb-3">
+                  <span v-if="tache.priorite" :class="['badge', getPrioriteBadgeClass(tache.priorite)]">
+                    <i class="fas fa-flag me-1"></i>{{ translateData('priority', tache.priorite) }}
+                  </span>
+                  <span v-if="tache.dateEcheance" :class="['badge', getEcheanceBadgeClass(tache.dateEcheance)]">
+                    <i class="fas fa-calendar-day me-1"></i>{{ formatDate(tache.dateEcheance) }}
+                  </span>
+                </div>
 
                 <div class="mt-3 pt-3 border-top">
                   <div class="d-flex justify-content-between align-items-center mb-2">
@@ -199,6 +209,170 @@
         </div>
       </div>
     </div>
+
+    <!-- ========== MODAL CRÉATION TÂCHE ========== -->
+    <div v-if="modalCreationTache" class="modal d-block" style="background: rgba(0,0,0,0.5); z-index: 1060">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-plus-circle me-2"></i>{{ t('taches.creer') }}
+            </h5>
+            <button class="btn-close btn-close-white" @click="modalCreationTache = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                {{ t('taches.titre') }} <span class="text-danger">*</span>
+              </label>
+              <input
+                class="form-control"
+                v-model="nouvelleTache.titre"
+                maxlength="120"
+                :placeholder="t('taches.placeholders.titre') || 'Titre de la tâche'"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">{{ t('taches.description') }}</label>
+              <textarea
+                class="form-control"
+                v-model="nouvelleTache.description"
+                rows="4"
+                :placeholder="t('taches.placeholders.description') || 'Description détaillée de la tâche...'"
+              ></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-flag me-1"></i>{{ t('taches.priorite') }}
+                </label>
+                <select class="form-select" v-model="nouvelleTache.priorite">
+                  <option value="BASSE">🟢 {{ t('taches.priorites.basse') || 'Basse' }}</option>
+                  <option value="NORMALE">🔵 {{ t('taches.priorites.normale') || 'Normale' }}</option>
+                  <option value="HAUTE">🟠 {{ t('taches.priorites.haute') || 'Haute' }}</option>
+                  <option value="URGENTE">🔴 {{ t('taches.priorites.urgente') || 'Urgente' }}</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-calendar-day me-1"></i>{{ t('taches.dateEcheance') }}
+                </label>
+                <input
+                  type="date"
+                  class="form-control"
+                  v-model="nouvelleTache.dateEcheance"
+                  :min="today"
+                />
+              </div>
+            </div>
+
+            <!-- Aperçu -->
+            <div v-if="nouvelleTache.titre" class="alert alert-light border mt-3">
+              <small class="text-muted d-block mb-1">Aperçu :</small>
+              <strong>{{ nouvelleTache.titre }}</strong>
+              <span v-if="nouvelleTache.priorite" :class="['badge ms-2', getPrioriteBadgeClass(nouvelleTache.priorite)]">
+                {{ nouvelleTache.priorite }}
+              </span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="modalCreationTache = false">
+              <i class="fas fa-times me-1"></i>{{ t('commun.annuler') }}
+            </button>
+            <button
+              class="btn btn-primary"
+              @click="sauvegarderNouvelleTache"
+              :disabled="!nouvelleTache.titre.trim() || enCoursSauvegarde"
+            >
+              <span v-if="enCoursSauvegarde" class="spinner-border spinner-border-sm me-1"></span>
+              <i v-else class="fas fa-check me-1"></i>
+              {{ t('commun.creer') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== MODAL MODIFICATION TÂCHE ========== -->
+    <div v-if="modalModificationTache" class="modal d-block" style="background: rgba(0,0,0,0.5); z-index: 1060">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title">
+              <i class="fas fa-edit me-2"></i>{{ t('taches.modifier') || 'Modifier la tâche' }}
+            </h5>
+            <button class="btn-close" @click="modalModificationTache = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                {{ t('taches.titre') }} <span class="text-danger">*</span>
+              </label>
+              <input
+                class="form-control"
+                v-model="tacheEnModification.titre"
+                maxlength="120"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">{{ t('taches.description') }}</label>
+              <textarea
+                class="form-control"
+                v-model="tacheEnModification.description"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-flag me-1"></i>{{ t('taches.priorite') }}
+                </label>
+                <select class="form-select" v-model="tacheEnModification.priorite">
+                  <option value="BASSE">🟢 {{ t('taches.priorites.basse') || 'Basse' }}</option>
+                  <option value="NORMALE">🔵 {{ t('taches.priorites.normale') || 'Normale' }}</option>
+                  <option value="HAUTE">🟠 {{ t('taches.priorites.haute') || 'Haute' }}</option>
+                  <option value="URGENTE">🔴 {{ t('taches.priorites.urgente') || 'Urgente' }}</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-calendar-day me-1"></i>{{ t('taches.dateEcheance') }}
+                </label>
+                <input
+                  type="date"
+                  class="form-control"
+                  v-model="tacheEnModification.dateEcheance"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="modalModificationTache = false">
+              <i class="fas fa-times me-1"></i>{{ t('commun.annuler') }}
+            </button>
+            <button
+              class="btn btn-warning"
+              @click="sauvegarderModificationTache"
+              :disabled="!tacheEnModification.titre?.trim() || enCoursSauvegarde"
+            >
+              <span v-if="enCoursSauvegarde" class="spinner-border spinner-border-sm me-1"></span>
+              <i v-else class="fas fa-save me-1"></i>
+              {{ t('commun.enregistrer') || 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -211,7 +385,7 @@ import { taskAPI } from '@/services/api'
 import KanbanBoard from '@/components/KanbanBoard.vue'
 
 const { t, locale } = useI18n()
-const { translateData } = useDataTranslation()  // ✅ CORRIGÉ
+const { translateData } = useDataTranslation()
 const route = useRoute()
 const router = useRouter()
 
@@ -220,13 +394,38 @@ const loading = ref(true)
 const taches = ref([])
 const tachesFiltrees = ref([])
 
-// ========== NOUVEAU: Mode d'affichage ==========
-const modeAffichage = ref('liste') // 'liste' ou 'kanban'
+// Mode d'affichage
+const modeAffichage = ref('liste')
 
 // Filtres
 const filtreStatut = ref('')
 const rechercheTexte = ref('')
 const triOrdre = ref('recent')
+
+// Modal création
+const modalCreationTache = ref(false)
+const enCoursSauvegarde = ref(false)
+const nouvelleTache = ref({
+  titre: '',
+  description: '',
+  priorite: 'NORMALE',
+  dateEcheance: null
+})
+
+// Modal modification
+const modalModificationTache = ref(false)
+const tacheEnModification = ref({
+  id: null,
+  titre: '',
+  description: '',
+  priorite: 'NORMALE',
+  dateEcheance: null
+})
+
+// Date minimum pour l'échéance
+const today = computed(() => {
+  return new Date().toISOString().split('T')[0]
+})
 
 const utilisateurActuel = computed(() => {
   try {
@@ -266,14 +465,12 @@ const chargerTaches = async () => {
 const filtrerTaches = () => {
   let resultats = [...taches.value]
 
-  // Filtre par statut
   if (filtreStatut.value) {
     resultats = resultats.filter(t =>
       String(t.statut).toUpperCase() === filtreStatut.value.toUpperCase()
     )
   }
 
-  // Filtre par recherche
   if (rechercheTexte.value.trim()) {
     const search = rechercheTexte.value.toLowerCase()
     resultats = resultats.filter(t =>
@@ -352,31 +549,122 @@ const getStatutIcon = (statut) => {
   return icons[s] || 'fas fa-circle'
 }
 
+// ========== PRIORITÉS ==========
+const getPrioriteBadgeClass = (priorite) => {
+  const p = String(priorite || '').toUpperCase()
+  const classes = {
+    'BASSE': 'bg-success',
+    'NORMALE': 'bg-info',
+    'HAUTE': 'bg-warning text-dark',
+    'URGENTE': 'bg-danger'
+  }
+  return classes[p] || 'bg-secondary'
+}
+
+// ========== ÉCHÉANCE ==========
+const getEcheanceBadgeClass = (dateEcheance) => {
+  if (!dateEcheance) return 'bg-secondary'
+  const echeance = new Date(dateEcheance)
+  const maintenant = new Date()
+  const diffJours = Math.ceil((echeance - maintenant) / (1000 * 60 * 60 * 24))
+
+  if (diffJours < 0) return 'bg-danger' // En retard
+  if (diffJours <= 2) return 'bg-warning text-dark' // Proche
+  return 'bg-light text-dark' // OK
+}
+
 // ========== PERMISSIONS ==========
 const peutGererTache = (tache) => {
   if (estChefProjet.value) return true
   return tache.idAssigne === utilisateurActuel.value?.id
 }
 
-// ========== ACTIONS ==========
+// ========== ACTIONS CRÉATION ==========
 const creerNouvelleTache = () => {
-  router.push(`/projets/${projetId.value}/taches/creer`)
+  nouvelleTache.value = {
+    titre: '',
+    description: '',
+    priorite: 'NORMALE',
+    dateEcheance: null
+  }
+  modalCreationTache.value = true
 }
 
-const modifierTache = (tacheId) => {
-  router.push(`/taches/${tacheId}/modifier`)
+const sauvegarderNouvelleTache = async () => {
+  if (!nouvelleTache.value.titre.trim()) return
+
+  enCoursSauvegarde.value = true
+  try {
+    await taskAPI.create({
+      titre: nouvelleTache.value.titre.trim(),
+      description: nouvelleTache.value.description?.trim() || '',
+      idProjet: projetId.value,
+      priorite: nouvelleTache.value.priorite,
+      dateEcheance: nouvelleTache.value.dateEcheance || null,
+      statut: 'BROUILLON'
+    })
+
+    modalCreationTache.value = false
+    await chargerTaches()
+    alert(t('taches.creee') || 'Tâche créée avec succès !')
+  } catch (error) {
+    console.error('Erreur création tâche:', error)
+    alert(t('erreurs.creationTache') || 'Erreur lors de la création de la tâche')
+  } finally {
+    enCoursSauvegarde.value = false
+  }
 }
 
+// ========== ACTIONS MODIFICATION ==========
+const modifierTache = (tache) => {
+  tacheEnModification.value = {
+    id: tache.id,
+    titre: tache.titre || '',
+    description: tache.description || '',
+    priorite: tache.priorite || 'NORMALE',
+    dateEcheance: tache.dateEcheance ? tache.dateEcheance.split('T')[0] : null,
+    statut: tache.statut
+  }
+  modalModificationTache.value = true
+}
+
+const sauvegarderModificationTache = async () => {
+  if (!tacheEnModification.value.titre?.trim()) return
+
+  enCoursSauvegarde.value = true
+  try {
+    await taskAPI.update(tacheEnModification.value.id, {
+      titre: tacheEnModification.value.titre.trim(),
+      description: tacheEnModification.value.description?.trim() || '',
+      priorite: tacheEnModification.value.priorite,
+      dateEcheance: tacheEnModification.value.dateEcheance || null,
+      statut: tacheEnModification.value.statut,
+      projetId: projetId.value
+    })
+
+    modalModificationTache.value = false
+    await chargerTaches()
+    alert(t('taches.modifiee') || 'Tâche modifiée avec succès !')
+  } catch (error) {
+    console.error('Erreur modification tâche:', error)
+    alert(t('erreurs.modificationTache') || 'Erreur lors de la modification')
+  } finally {
+    enCoursSauvegarde.value = false
+  }
+}
+
+// ========== SUPPRESSION ==========
 const supprimerTache = async (tacheId) => {
-  if (!confirm(t('taches.confirmerSuppression'))) return
+  if (!confirm(t('taches.confirmerSuppression') || 'Êtes-vous sûr de vouloir supprimer cette tâche ?')) return
 
   try {
     await taskAPI.delete(tacheId)
     taches.value = taches.value.filter(t => t.id !== tacheId)
     filtrerTaches()
+    alert(t('taches.supprimee') || 'Tâche supprimée avec succès')
   } catch (error) {
     console.error('Erreur suppression tâche:', error)
-    alert(t('erreurs.suppressionTache'))
+    alert(t('erreurs.suppressionTache') || 'Erreur lors de la suppression')
   }
 }
 </script>
@@ -403,7 +691,7 @@ const supprimerTache = async (tacheId) => {
   padding: 1rem 1.25rem;
 }
 
-/* ========== TOGGLE VUE ========== */
+/* Toggle Vue */
 .btn-group .btn {
   border-radius: 8px;
 }
@@ -416,5 +704,26 @@ const supprimerTache = async (tacheId) => {
 .btn-group .btn:last-child {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+
+/* Modal */
+.modal {
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  border-radius: 12px 12px 0 0;
+}
+
+/* Badges priorité */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
 }
 </style>

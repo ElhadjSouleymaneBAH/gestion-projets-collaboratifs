@@ -492,9 +492,9 @@
               <i class="fas fa-redo me-1"></i>Réinitialiser
             </button>
             <button
-                class="btn btn-success ms-2"
-                @click="ouvrirModalCreationTache"
-                :disabled="!abonnementActif || mesProjets.length === 0">
+              class="btn btn-success ms-2"
+              @click="ouvrirModalCreationTache"
+              :disabled="!abonnementActif || mesProjets.length === 0">
               <i class="fas fa-plus me-2"></i>Nouvelle tâche
             </button>
           </div>
@@ -554,14 +554,6 @@
                         @click.prevent="modifierTache(t)"
                         :title="$t('taches.modifier')">
                         <i class="fas fa-edit"></i>
-                      </button>
-
-                      <button
-                        v-if="t.statut === 'BROUILLON' && peutSoumettreTache(t)"
-                        class="btn btn-sm btn-outline-primary"
-                        @click="soumettreTache(t)"
-                        :title="$t('tooltips.soumettreTache')">
-                        <i class="fas fa-paper-plane"></i>
                       </button>
 
                       <button

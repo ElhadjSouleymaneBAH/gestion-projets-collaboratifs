@@ -23,7 +23,8 @@ export default {
     equipe: 'Équipe',
     collaboration: 'Collaboration',
     connecter: 'Se connecter',
-    locale: 'Langue'
+    locale: 'Langue',
+    parametres: 'Paramètres'
   },
 
   // ==================== APPLICATION ====================
@@ -121,6 +122,8 @@ export default {
     seConnecter: 'Se connecter',
     optionsSuivantes: 'Options suivantes',
     caracteres: 'caractères',
+    resultats: 'résultats',
+    filtre: 'Filtre',
   },
 
   // ==================== TEMPS ET DATES ====================
@@ -129,7 +132,8 @@ export default {
     ilYa: 'Il y a',
     min: 'min',
     h: 'h',
-    j: 'j'
+    j: 'j',
+    joursRestants: 'jours restants',
   },
 
   // ==================== PAGE D'ACCUEIL ====================
@@ -435,7 +439,16 @@ export default {
     toutesAssignees: 'Toutes assignées',
     reassignerTacheExistante: 'Réassigner une tâche existante',
     dateCreation: 'Date de création',
+    dateEcheance: "Date d'échéance",
     pasActionPossible: 'Aucune action disponible',
+    disponibles: 'Tâches disponibles',
+    rechercher: 'Rechercher une tâche...',
+    detailTache: 'Détail de la tâche',
+
+    placeholders: {
+      titre: 'Entrez le titre de la tâche',
+      description: 'Décrivez la tâche à réaliser'
+    },
 
     kanban: {
       titre: 'Vue Kanban',
@@ -530,7 +543,11 @@ export default {
 
     actions: {
       valider: 'Valider',
-      annuler: 'Annuler'
+      annuler: 'Annuler',
+      confirmerValidation: 'Valider cette tâche ?',
+      validationReussie: 'Tâche validée avec succès',
+      confirmerAnnulation: 'Annuler cette tâche ?',
+      annulationReussie: 'Tâche annulée avec succès'
     }
   },
 
@@ -554,6 +571,7 @@ export default {
   equipe: {
     titre: 'Équipe',
     equipe: 'Équipe',
+    membresActuels: 'Membres actuels',
     gestionEquipe: "Gestion de l'équipe",
     gestionMembresEtTaches: 'Gestion des membres et des tâches',
     ajouterMembresAuxProjets: 'Ajoutez des membres à vos projets',
@@ -666,6 +684,7 @@ export default {
     publier: 'Publier',
     modifier: 'Modifier',
     supprimer: 'Supprimer',
+    parametres: 'Paramètres',
     repondre: 'Répondre',
     aucunCommentaire: 'Aucun commentaire',
     commenter: 'Commenter',
@@ -682,6 +701,9 @@ export default {
     ajouterCommentaire: 'Ajouter un commentaire',
     votreMessage: 'Votre message',
     nouveau: 'Nouveau commentaire',
+    confirmerSuppression: 'Supprimer ce commentaire ?',
+    aucun: 'Aucun commentaire',
+    voirTous: 'Voir tous les commentaires',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -1463,6 +1485,13 @@ export default {
     premium: 'Premium actif – accès à toutes les fonctionnalités',
     soumettreTache: 'Soumettre la tâche pour validation',
     voirCommentaires: 'Voir les commentaires',
+    modifier: 'Modifier',
+    supprimer: 'Supprimer',
+    parametres: 'Paramètres',
+    dateEcheance: "Date d'échéance",
+    tacheCreee: 'Tâche créée',
+    supprimerCommentaire: 'Supprimer ce commentaire',
+
   },
 
   // ==================== À PROPOS ====================

@@ -21,9 +21,11 @@ export default {
     mesFactures: 'My Invoices',
     taches: 'Tasks',
     equipe: 'Team',
+    membresActuels: 'Current members',
     collaboration: 'Collaboration',
     connecter: 'Log In',
-    locale: 'Language'
+    locale: 'Language',
+    parametres: 'Settings'
   },
 
   // ==================== APPLICATION ====================
@@ -121,6 +123,8 @@ export default {
     seConnecter: 'Sign in',
     optionsSuivantes: 'Next options',
     caracteres: 'characters',
+    resultats: 'results',
+    filtre: 'Filter',
   },
 
   // ==================== TIME AND DATES ====================
@@ -129,7 +133,8 @@ export default {
     ilYa: 'ago',
     min: 'min',
     h: 'h',
-    j: 'd'
+    j: 'd',
+    joursRestants: 'days remaining',
   },
 
   // ==================== HOME PAGE ====================
@@ -435,6 +440,15 @@ export default {
     reassignerTacheExistante: 'Reassign an existing task',
     dateCreation: 'Creation date',
     pasActionPossible: 'No action available',
+    dateEcheance: 'Due date',
+    disponibles: 'Available tasks',
+    rechercher: 'Search for a task...',
+    detailTache: 'Task detail',
+
+    placeholders: {
+      titre: 'Enter the task title',
+      description: 'Describe the task to be done'
+    },
 
     kanban: {
       titre: 'Kanban View',
@@ -529,7 +543,12 @@ export default {
 
     actions: {
       valider: 'Validate',
-      annuler: 'Cancel'
+      annuler: 'Cancel',
+      confirmerValidation: 'Validate this task?',
+      validationReussie: 'Task validated successfully',
+      confirmerAnnulation: 'Cancel this task?',
+      annulationReussie: 'Task cancelled successfully'
+
     }
   },
 
@@ -680,6 +699,9 @@ export default {
     ajouterCommentaire: 'Add a comment',
     votreMessage: 'Your message',
     nouveau: 'New comment',
+    confirmerSuppression: 'Delete this comment?',
+    aucun: 'No comments',
+    voirTous: 'View all comments',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -1461,6 +1483,13 @@ export default {
     premium: 'Premium active – access all features',
     soumettreTache: 'Submit task for validation',
     voirCommentaires: 'View comments',
+    modifier: 'Edit',
+    supprimer: 'Delete',
+    parametres: 'Settings',
+    dateEcheance: 'Due date',
+    tacheCreee: 'Task created',
+    supprimerCommentaire: 'Delete this comment',
+
   },
 
   // ==================== ABOUT ====================

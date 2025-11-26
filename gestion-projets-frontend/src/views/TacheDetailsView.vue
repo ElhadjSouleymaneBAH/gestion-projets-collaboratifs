@@ -4,7 +4,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item">
-          <router-link to="/dashboard" class="text-decoration-none">
+          <router-link :to="getAccueilRoute()" class="text-decoration-none">
             <i class="fas fa-home me-1"></i>{{ t('navigation.accueil') }}
           </router-link>
         </li>
@@ -307,6 +307,13 @@ const utilisateurActuel = computed(() => {
   const user = localStorage.getItem('user')
   return user ? JSON.parse(user) : null
 })
+const getAccueilRoute = () => {
+  const role = utilisateurActuel.value?.role
+  if (role === 'CHEF_PROJET') return '/tableau-bord-chef-projet'
+  if (role === 'MEMBRE') return '/tableau-bord-membre'
+  if (role === 'ADMINISTRATEUR') return '/admin'
+  return '/'
+}
 
 const estChefProjet = computed(() => utilisateurActuel.value?.role === 'CHEF_PROJET')
 const estAdministrateur = computed(() => utilisateurActuel.value?.role === 'ADMINISTRATEUR')
