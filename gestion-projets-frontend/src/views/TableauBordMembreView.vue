@@ -172,7 +172,7 @@
                :class="{active:onglet==='collaboration'}"
                @click="onglet='collaboration'"
                href="javascript:void(0)">
-              <i class="fas fa-comments me-2"></i>{{ $t('nav.collaboration') }}
+              <i class="fas fa-comments me-2"></i>{{ $t('nav.chatProjet') }}
             </a>
           </li>
         </ul>
@@ -345,9 +345,9 @@
                 <tbody>
                 <tr v-for="t in tachesFiltrees" :key="t.id">
                   <td>
-                    <strong>{{ t.titre }}</strong><br>
+                    <strong>{{ translateTaskTitle(t.titre) }}</strong><br>
                     <small class="text-muted">
-                      {{ (t.description || '').substring(0, 40) }}{{ t.description?.length > 40 ? '...' : '' }}
+                      {{ translateTaskDescription(t.description || '').substring(0, 40) }}{{ t.description?.length > 40 ? '...' : '' }}
                     </small>
                   </td>
                   <td>{{ getProjetNom(t.projetId || t.id_projet) }}</td>
@@ -359,7 +359,8 @@
                   </td>
                   <td>
                     <div v-if="t.dateEcheance || t.date_echeance" class="d-flex align-items-center gap-1">
-                      <i :class="getEcheanceIcon(t.dateEcheance || t.date_echeance)"></i>
+                      <i :class="getEcheanceIcon(t.dateEcheance || t.date_echeance)"
+                         :title="getEcheanceTooltip(t.dateEcheance || t.date_echeance)"></i>
                       <small :class="getEcheanceClass(t.dateEcheance || t.date_echeance)">
                         {{ formatDate(t.dateEcheance || t.date_echeance) }}
                       </small>
@@ -481,7 +482,7 @@
       <div class="card-header bg-white d-flex align-items-center gap-2">
         <h6 class="mb-0">
           <i class="fas fa-comments me-2"></i>
-          {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('nav.collaboration') }}
+          {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('chat.chatProjet') }}
         </h6>
       </div>
 
@@ -631,7 +632,7 @@
       <!-- En-tête avec titre et statut -->
       <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-          <h4 class="mb-1">{{ tacheDetail.titre }}</h4>
+          <h4 class="mb-1">{{ translateTaskTitle(tacheDetail.titre) }}</h4>
           <small class="text-muted">
             {{ $t('projets.projet') }}: {{ getProjetNom(tacheDetail.projetId || tacheDetail.id_projet) }}
           </small>
@@ -698,7 +699,7 @@
         </h6>
         <div class="card border">
           <div class="card-body">
-            <p class="mb-0" v-if="tacheDetail.description">{{ tacheDetail.description }}</p>
+            <p class="mb-0" v-if="tacheDetail.description">{{ translateTaskDescription(tacheDetail.description) }}</p>
             <p class="mb-0 text-muted fst-italic" v-else>{{ $t('taches.aucuneDescription') }}</p>
           </div>
         </div>
@@ -711,7 +712,7 @@
             <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
           </h6>
           <button class="btn btn-sm btn-outline-info"
-                  @click="fermerModalDetailTache(); ouvrirCommentaires(tacheDetail)">
+                  @click="ouvrirCommentaires(tacheDetail); fermerModalDetailTache()">
             {{ $t('commentaires.voirTous') }}
           </button>
         </div>
@@ -765,7 +766,7 @@ import { useI18n } from 'vue-i18n'
 import { useDataTranslation } from '@/composables/useDataTranslation'
 
 const { t } = useI18n()
-const { translateData, translateProjectTitle, translateProjectDescription } = useDataTranslation()
+const { translateData, translateProjectTitle, translateProjectDescription, translateTaskTitle, translateTaskDescription } = useDataTranslation()
 const router = useRouter()
 const store = useAuthStore()
 
@@ -1618,6 +1619,7 @@ onBeforeUnmount(() => {
 .text-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

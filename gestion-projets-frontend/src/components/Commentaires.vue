@@ -72,76 +72,73 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
-import axios from 'axios'
 import websocketService from '@/services/websocket.service'
 import { commentaireAPI } from '@/services/api'
 
 defineOptions({ name: 'TacheCommentaires' })
 const { t } = useI18n()
 
-/**
- * @typedef {Object} Commentaire
- * @property {number|string} id
- * @property {string} contenu
- * @property {string} date
- * @property {string} auteurPrenom
- * @property {string} auteurNom
- * @property {number|string} auteurId
- */
-
 const props = defineProps({
   tacheId: { type: [String, Number], required: true }
 })
 
-const commentaires = /** @type {import('vue').Ref<Commentaire[]>} */(ref([]))
+const commentaires = ref([])
 const nouveauCommentaire = ref('')
 const loading = ref(true)
 const envoi = ref(false)
+const websocketActif = ref(false) // NOUVEAU: tracker si WebSocket fonctionne
 const utilisateur = JSON.parse(localStorage.getItem('user') || '{}')
-const token = localStorage.getItem('token')
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 // ========================================================================
 // ⭐ WEBSOCKET - TEMPS RÉEL (F9 + F12)
 // ========================================================================
 
-/**
- * Abonnement aux nouveaux commentaires en temps réel
- */
-const setupWebSocketCommentaires = () => {
-  if (!websocketService.connected) {
-    console.warn('[Commentaires] WebSocket non connecté, abonnement impossible')
-    return
-  }
-
-  // Écouter les nouveaux commentaires
-  websocketService.subscribeToTacheCommentaires(props.tacheId, (nouveauCommentaire) => {
-    console.log('[F9] ✅ Nouveau commentaire reçu en temps réel:', nouveauCommentaire)
-
-    // Vérifier si le commentaire n'existe pas déjà (éviter les doublons)
-    const existe = commentaires.value.some(c => c.id === nouveauCommentaire.id)
-    if (!existe) {
-      commentaires.value.push(nouveauCommentaire)
+const setupWebSocketCommentaires = async () => {
+  try {
+    // Tenter de connecter si pas déjà connecté
+    if (!websocketService.connected) {
+      const token = localStorage.getItem('token')
+      if (token) {
+        console.log('[Commentaires] Tentative de connexion WebSocket...')
+        websocketService.connect(token) // Sans await (pas une Promise)
+        // Attendre un peu que la connexion s'établisse
+        await new Promise(resolve => setTimeout(resolve, 800))
+      }
     }
-  })
+    if (!websocketService.connected) {
+      console.warn('[Commentaires] WebSocket non connecté, mode fallback activé')
+      websocketActif.value = false
+      return
+    }
 
-  // Écouter les suppressions de commentaires
-  websocketService.subscribeToTacheCommentairesSuppression(props.tacheId, (commentaireId) => {
-    console.log('[F9] ✅ Suppression commentaire reçue en temps réel:', commentaireId)
+    // Écouter les nouveaux commentaires
+    websocketService.subscribeToTacheCommentaires(props.tacheId, (nouveauComm) => {
+      console.log('[F12]  Nouveau commentaire reçu en temps réel:', nouveauComm)
+      const existe = commentaires.value.some(c => c.id === nouveauComm.id)
+      if (!existe) {
+        commentaires.value.push(nouveauComm)
+      }
+    })
 
-    // Retirer le commentaire de la liste
-    commentaires.value = commentaires.value.filter(c => c.id !== commentaireId)
-  })
+    websocketService.subscribeToTacheCommentairesSuppression(props.tacheId, (commentaireId) => {
+      console.log('[F12] Suppression commentaire reçue en temps réel:', commentaireId)
+      commentaires.value = commentaires.value.filter(c => c.id !== commentaireId)
+    })
 
-  console.log('[F9] ✅ Abonné aux commentaires de la tâche', props.tacheId)
+    websocketActif.value = true
+    console.log('[F12] WebSocket actif pour tâche', props.tacheId)
+
+  } catch (error) {
+    console.error('[Commentaires] Erreur WebSocket:', error)
+    websocketActif.value = false
+  }
 }
 
-/**
- * Désabonnement propre au démontage du composant
- */
 const cleanupWebSocket = () => {
-  websocketService.unsubscribeFromTacheCommentaires(props.tacheId)
-  console.log('[F9] Désabonné des commentaires de la tâche', props.tacheId)
+  if (websocketActif.value) {
+    websocketService.unsubscribeFromTacheCommentaires(props.tacheId)
+    console.log('[F12] Désabonné des commentaires de la tâche', props.tacheId)
+  }
 }
 
 // ========== CHARGEMENT ==========
@@ -166,10 +163,15 @@ const publierCommentaire = async () => {
       contenu: nouveauCommentaire.value,
       tacheId: props.tacheId
     })
-
-
     nouveauCommentaire.value = ''
-    console.log('[F9] Commentaire publié, réception WebSocket attendue...')
+
+    if (!websocketActif.value) {
+      console.log('[F12] WebSocket inactif, rechargement manuel...')
+      await chargerCommentaires()
+    } else {
+      console.log('[F12] Commentaire publié, réception WebSocket attendue...')
+    }
+
   } catch (error) {
     console.error('Erreur publication commentaire:', error)
     alert(t('erreurs.ajouterCommentaire'))
@@ -182,8 +184,13 @@ const supprimerCommentaire = async (commentaireId) => {
   if (!confirm(t('commentaires.confirmerSuppression'))) return
   try {
     await commentaireAPI.delete(commentaireId)
+    if (!websocketActif.value) {
+      console.log('[F12] WebSocket inactif, rechargement manuel...')
+      await chargerCommentaires()
+    } else {
+      console.log('[F12] Commentaire supprimé, réception WebSocket attendue...')
+    }
 
-    console.log('[F9] Commentaire supprimé, réception WebSocket attendue...')
   } catch (error) {
     console.error('Erreur suppression commentaire:', error)
     alert(t('erreurs.supprimerCommentaire'))
@@ -224,13 +231,10 @@ const formatDate = (iso) => {
 // ========== LIFECYCLE ==========
 onMounted(async () => {
   await chargerCommentaires()
-
-  // ⭐ Configurer WebSocket après le chargement initial
-  setupWebSocketCommentaires()
+  await setupWebSocketCommentaires()
 })
 
 onBeforeUnmount(() => {
-  // ⭐ Nettoyage WebSocket au démontage
   cleanupWebSocket()
 })
 </script>

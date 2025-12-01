@@ -6,8 +6,9 @@
         <i class="fas fa-paperclip me-2 text-primary"></i>{{ t('fichiers.titre') }}
         <span class="badge bg-secondary ms-2">{{ fichiers.length }}</span>
       </h5>
+      <!-- Bouton Téléverser visible SEULEMENT si des fichiers existent déjà -->
       <button
-        v-if="peutTeleverser"
+        v-if="peutTeleverser && fichiers.length > 0 && !chargement"
         class="btn btn-primary"
         @click="ouvrirModalUpload"
       >
@@ -31,7 +32,7 @@
         class="btn btn-primary mt-2"
         @click="ouvrirModalUpload"
       >
-        <i class="fas fa-upload me-2"></i>{{ t('fichiers.televerserPremier') }}
+        <i class="fas fa-upload me-2"></i>{{ t('fichiers.televerser') }}
       </button>
     </div>
 
@@ -42,7 +43,7 @@
         <tr>
           <th><i class="fas fa-file me-2"></i>{{ t('fichiers.nom') }}</th>
           <th><i class="fas fa-weight me-2"></i>{{ t('fichiers.taille') }}</th>
-          <th><i class="fas fa-user me-2"></i>{{ t('fichiers.uploadeParr') }}</th>
+          <th><i class="fas fa-user me-2"></i>{{ t('fichiers.uploadePar') }}</th>
           <th><i class="fas fa-calendar me-2"></i>{{ t('fichiers.date') }}</th>
           <th class="text-end">{{ t('commun.actions') }}</th>
         </tr>
@@ -309,13 +310,13 @@ const televerser = async () => {
       }
     })
 
-    console.log('[Upload]  Succès:', response.data)
+    console.log('[Upload] Succès:', response.data)
     alert(t('fichiers.uploadReussi'))
     await chargerFichiers()
     fermerModalUpload()
     emit('refresh')
   } catch (error) {
-    console.error('[Upload]  Erreur:', error)
+    console.error('[Upload] Erreur:', error)
     alert(error.response?.data?.message || t('erreurs.uploadFichier'))
   } finally {
     uploadEnCours.value = false
@@ -324,10 +325,12 @@ const televerser = async () => {
 
 const telechargerFichier = async (fichier) => {
   try {
+    const token = localStorage.getItem('token')
     const response = await axios.get(
       `/api/fichiers/${fichier.id}/telecharger`,
       {
         params: { projetId: props.projetId },
+        headers: { 'Authorization': `Bearer ${token}` },
         responseType: 'blob'
       }
     )
@@ -341,9 +344,9 @@ const telechargerFichier = async (fichier) => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
-    console.log('[Download]  Téléchargement réussi')
+    console.log('[Download] Téléchargement réussi')
   } catch (error) {
-    console.error('[Download]  Erreur:', error)
+    console.error('[Download] Erreur:', error)
     alert(t('erreurs.telechargementFichier'))
   }
 }
@@ -358,12 +361,12 @@ const supprimerFichier = async (fichier) => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
 
-    console.log('[Delete]  Suppression réussie')
+    console.log('[Delete] Suppression réussie')
     alert(t('fichiers.suppressionReussie'))
     await chargerFichiers()
     emit('refresh')
   } catch (error) {
-    console.error('[Delete]  Erreur:', error)
+    console.error('[Delete] Erreur:', error)
     alert(t('erreurs.suppressionFichier'))
   }
 }

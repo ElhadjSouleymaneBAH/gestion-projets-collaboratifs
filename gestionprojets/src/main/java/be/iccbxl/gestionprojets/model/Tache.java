@@ -29,7 +29,7 @@ import java.util.HashSet;
  * - F9 : Collaborer en temps réel (commentaires, notifications)
  *
  * @author ElhadjSouleymaneBAH
- * @version 1.0f
+ * @version 1.0
  * @see StatutTache
  * @see PrioriteTache
  * @see Projet
@@ -326,8 +326,9 @@ public class Tache {
                 break;
 
             case TERMINE:
-                // Une tâche terminée peut être annulée par un Admin
-                if (nouveauStatut == StatutTache.ANNULE) {
+                // Une tâche terminée peut être modifiée (retour en validation) ou annulée
+                if (nouveauStatut == StatutTache.ANNULE ||
+                        nouveauStatut == StatutTache.EN_ATTENTE_VALIDATION) {
                     this.statut = nouveauStatut;
                     return true;
                 }

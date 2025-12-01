@@ -50,8 +50,9 @@ public interface ListeColonneRepository extends JpaRepository<ListeColonne, Long
      */
     @Query("SELECT DISTINCT lc FROM ListeColonne lc " +
             "LEFT JOIN FETCH lc.taches t " +
+            "LEFT JOIN FETCH t.assigneA " +
             "WHERE lc.projet.id = :idProjet " +
-            "ORDER BY lc.position ASC, t.position ASC")
+            "ORDER BY lc.position ASC")
     List<ListeColonne> findByProjetIdWithTaches(@Param("idProjet") Long idProjet);
 
     /**

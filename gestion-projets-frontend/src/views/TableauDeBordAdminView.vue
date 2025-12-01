@@ -579,8 +579,8 @@
                 <tr v-for="ta in taches" :key="ta.id">
                   <td><span class="badge bg-light text-dark">{{ ta.id }}</span></td>
                   <td>
-                    <div class="fw-semibold">{{ ta.titre }}</div>
-                    <small class="text-muted">{{ (ta.description || '').substring(0, 50) }}...</small>
+                    <div class="fw-semibold">{{ translateTaskTitle(ta.titre) }}</div>
+                    <small class="text-muted">{{ translateTaskDescription(ta.description || '').substring(0, 50) }}...</small>
                   </td>
                   <td><small>{{ getProjetName(ta.idProjet || ta.id_projet) }}</small></td>
                   <td>{{ getUserName(ta.idAssigne || ta.id_assigne) }}</td>
@@ -1088,8 +1088,8 @@ export default {
 
   setup() {
     const router = useRouter()
-    const { translateProjectTitle, translateProjectDescription } = useDataTranslation()
-    return { router, translateProjectTitle, translateProjectDescription }
+    const { translateProjectTitle, translateProjectDescription, translateTaskTitle, translateTaskDescription } = useDataTranslation()
+    return { router, translateProjectTitle, translateProjectDescription, translateTaskTitle, translateTaskDescription }
   },
 
   data() {
@@ -1497,7 +1497,12 @@ export default {
       this.chartRoles = new window.Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Admins', 'Chefs de Projet', 'Membres', 'Visiteurs'],
+          labels: [
+            this.$t('roles.administrateur'),
+            this.$t('roles.chef_projet'),
+            this.$t('roles.membre'),
+            this.$t('roles.visiteur')
+          ],
           datasets: [{
             data: [
               this.statsUtilisateurs.admins,
@@ -1545,9 +1550,13 @@ export default {
       this.chartProjetsEvolution = new window.Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Actifs', 'Terminés', 'Suspendus'],
+          labels: [
+            this.$t('admin.actifs'),
+            this.$t('admin.termines'),
+            this.$t('admin.suspendus')
+          ],
           datasets: [{
-            label: 'Nombre de projets',
+            label: this.$t('admin.nombreProjets'),
             data: [
               this.statsProjets.actifs,
               this.statsProjets.termines,

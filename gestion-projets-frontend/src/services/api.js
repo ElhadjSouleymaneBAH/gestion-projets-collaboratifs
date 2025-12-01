@@ -202,6 +202,14 @@ export const taskAPI = {
       { headers: { 'Content-Type': 'application/json' } }
     ),
 
+  // Déplacer une tâche (drag & drop)
+  deplacerKanban: (id, colonneDestination) =>
+    api.put(
+      `${endpoints.tasks}/${cleanId(id)}/deplacer`,
+      { colonneDestination: String(colonneDestination) },
+      { headers: { 'Content-Type': 'application/json' } }
+    ),
+
   assignTask: (taskId, userId) =>
     api.put(
       `${endpoints.tasks}/${cleanId(taskId)}/assigner`,

@@ -223,7 +223,7 @@ public class UtilisateurService {
     public List<Utilisateur> obtenirTousLesUtilisateursSansProjet() {
         return utilisateurRepository.findAll()
                 .stream()
-                .filter(u -> u.getRole() == Role.VISITEUR || u.getRole() == Role.MEMBRE || u.getRole() == Role.CHEF_PROJET)
+                .filter(u -> u.getRole() == Role.MEMBRE)
                 .toList();
     }
 

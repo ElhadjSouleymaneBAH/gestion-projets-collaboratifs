@@ -25,7 +25,9 @@ export default {
     collaboration: 'Collaboration',
     connecter: 'Log In',
     locale: 'Language',
-    parametres: 'Settings'
+    parametres: 'Settings',
+    chat: 'Chat',
+    chatProjet: 'Project Chat'
   },
 
   // ==================== APPLICATION ====================
@@ -389,6 +391,7 @@ export default {
     enValidation: 'In validation',
     aDevelopper: 'To develop',
     terminees: 'Completed',
+    terminee: 'Completed',
     validee: 'Validated',
     tachesTerminees: 'Completed tasks',
     confirmerSoumission: 'Submit this task for validation?',
@@ -666,12 +669,14 @@ export default {
   // ==================== CHAT ====================
   chat: {
     titre: 'Project Chat',
+    chatProjet: 'Project Chat',
     placeholder: 'Write a message...',
     aucunMessage: 'No messages yet',
     commencerConversation: 'Start the conversation',
     erreurChargement: 'Error loading chat',
     erreurEnvoi: 'Error sending message',
     envoi: 'Sending...'
+
   },
 
   // ==================== COMMENTS ====================
@@ -701,7 +706,7 @@ export default {
     nouveau: 'New comment',
     confirmerSuppression: 'Delete this comment?',
     aucun: 'No comments',
-    voirTous: 'View all comments',
+    voirTous: 'View all comments'
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -1220,7 +1225,10 @@ export default {
     membres: 'members',
     nav: {
       gestionEquipes: 'Team management',
-      validationTaches: 'Task validation'
+      validationTaches: 'Task validation',
+      chat: 'Chat',
+      chatProjet: 'Project Chat',
+
     },
     kpis: {
       mesProjets: 'My projects',
@@ -1346,6 +1354,14 @@ export default {
     nouveauRole: 'New role',
     confirmerSuppressionUtilisateur: 'Are you sure you want to delete this user? This action is irreversible.',
     erreurSuppression: 'Error deleting',
+    repartitionRoles: "Role distribution",
+    statistiquesProjets: "Project statistics",
+    projetsActifs: "Active Projects",
+    termines: "Completed",
+    suspendus: "Suspended",
+    publics: "Public",
+    actifs: "Active",
+    nombreProjets: "Number of projects"
   },
 
   // ==================== GENERAL ERRORS ====================

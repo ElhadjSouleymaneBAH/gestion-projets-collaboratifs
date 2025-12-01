@@ -488,19 +488,29 @@ const fetchAll = async () => {
       membres.value = Array.isArray(membresRes.data) ? membresRes.data : []
       console.log('[Membres]', membres.value.length, 'membres')
 
+      // ============ CORRECTION : Vérifier si l'utilisateur est le CRÉATEUR du projet ============
+      const estCreateur =
+        String(projet.value?.idCreateur) === String(utilisateurActuel.value?.id) ||
+        String(projet.value?.id_createur) === String(utilisateurActuel.value?.id)
+
+      console.log('[Projet] Est créateur:', estCreateur, '| idCreateur:', projet.value?.idCreateur || projet.value?.id_createur, '| userId:', utilisateurActuel.value?.id)
+
       const estMembre = membres.value.some(
-        m => m.id === utilisateurActuel.value?.id ||
+        m => String(m.id) === String(utilisateurActuel.value?.id) ||
           m.email === utilisateurActuel.value?.email
       )
 
-      if (!estMembre && projet.value?.visibilite !== 'PUBLIC') {
-        console.warn('[Projet] Utilisateur non membre d\'un projet privé')
+      // Autoriser si: créateur OU membre OU projet public
+      if (!estCreateur && !estMembre && !projet.value?.publique && projet.value?.visibilite !== 'PUBLIC') {
+        console.warn('[Projet] Utilisateur non autorisé - ni créateur ni membre d\'un projet privé')
         accesDenie.value = true
         messageErreur.value = 'Ce projet est privé. Seuls les membres peuvent y accéder.'
         return
       }
+      // ============ FIN CORRECTION ============
 
-      if (!estMembre) {
+      // Si l'utilisateur n'est ni créateur ni membre (mais projet public), pas de chargement des messages
+      if (!estCreateur && !estMembre) {
         console.info('[Projet] Utilisateur non membre - Pas de chargement des messages')
         messages.value = []
         return
@@ -516,7 +526,7 @@ const fetchAll = async () => {
       throw error
     }
 
-    // Étape 3: Charger les messages (seulement si membre)
+    // Étape 3: Charger les messages (seulement si membre ou créateur)
     try {
       const messagesRes = await messagesAPI.byProjet(projetId.value)
       messages.value = (Array.isArray(messagesRes.data) ? messagesRes.data : [])
@@ -761,3 +771,5 @@ onBeforeUnmount(() => {
   word-break: break-word;
 }
 </style>
+
+

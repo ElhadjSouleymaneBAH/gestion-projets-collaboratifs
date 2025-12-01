@@ -24,7 +24,9 @@ export default {
     collaboration: 'Collaboration',
     connecter: 'Se connecter',
     locale: 'Langue',
-    parametres: 'Paramètres'
+    parametres: 'Paramètres',
+    chat: 'Chat',
+    chatProjet: 'Chat projet'
   },
 
   // ==================== APPLICATION ====================
@@ -389,6 +391,7 @@ export default {
     enValidation: 'En validation',
     aDevelopper: 'À développer',
     terminees: 'Terminées',
+    terminee: 'Terminée',
     validee: 'Validée',
     tachesTerminees: 'Tâches terminées',
     confirmerSoumission: 'Soumettre cette tâche pour validation ?',
@@ -667,12 +670,15 @@ export default {
   // ==================== CHAT ====================
   chat: {
     titre: 'Chat du projet',
+    chatProjet: 'Chat projet',
     placeholder: 'Écrire un message...',
     aucunMessage: 'Aucun message pour le moment',
     commencerConversation: 'Commencez la conversation',
     erreurChargement: 'Erreur lors du chargement du chat',
     erreurEnvoi: "Erreur lors de l'envoi du message",
-    envoi: 'Envoi...'
+    envoi: 'Envoi...',
+
+
   },
 
   // ==================== COMMENTAIRES ====================
@@ -1222,7 +1228,10 @@ export default {
     membres: 'membres',
     nav: {
       gestionEquipes: 'Gestion équipes',
-      validationTaches: 'Validation tâches'
+      validationTaches: 'Validation tâches',
+      chat: 'Chat',
+      chatProjet: 'Chat projet',
+
     },
     kpis: {
       mesProjets: 'Mes projets',
@@ -1348,6 +1357,14 @@ export default {
     nouveauRole: 'Nouveau rôle',
     confirmerSuppressionUtilisateur: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
     erreurSuppression: 'Erreur lors de la suppression',
+    repartitionRoles: "Répartition des rôles",
+    statistiquesProjets: "Statistiques des projets",
+    projetsActifs: "Projets Actifs",
+    termines: "Terminés",
+    suspendus: "Suspendus",
+    publics: "Publics",
+    actifs: "Actifs",
+    nombreProjets: "Nombre de projets"
   },
 
   // ==================== ERREURS GÉNÉRALES ====================

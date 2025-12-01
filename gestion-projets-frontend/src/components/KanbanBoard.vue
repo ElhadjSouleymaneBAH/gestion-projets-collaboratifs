@@ -1,92 +1,84 @@
 <template>
-  <div class="kanban-container">
+  <div class="kanban-wrapper">
     <!-- En-tête Kanban -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="mb-0">
-        <i class="fas fa-columns me-2 text-primary"></i>{{ t('kanban.titre') }}
+    <div class="kanban-header">
+      <h5 class="kanban-title">
+        <i class="fas fa-columns me-2"></i>{{ t('kanban.titre') }}
       </h5>
-      <button class="btn btn-sm btn-outline-secondary" @click="rafraichir">
-        <i class="fas fa-sync-alt me-1"></i>{{ t('commun.actualiser') }}
-      </button>
     </div>
 
     <!-- Loader -->
-    <div v-if="loading" class="text-center py-5">
+    <div v-if="loading" class="kanban-loader">
       <div class="spinner-border text-primary"></div>
-      <p class="text-muted mt-3">{{ t('commun.chargement') }}</p>
+      <p>{{ t('commun.chargement') }}</p>
     </div>
 
     <!-- Colonnes Kanban -->
     <div v-else class="kanban-board">
-      <div
-        v-for="colonne in colonnes"
-        :key="colonne.id"
-        class="kanban-column"
-      >
+      <div v-for="colonne in colonnes" :key="colonne.id" class="kanban-column" :style="{ '--column-color': getColonneCouleur(colonne.nom) }">
+
         <!-- En-tête colonne -->
         <div class="column-header">
-          <h6 class="mb-0">
-            <i :class="getColonneIcon(colonne.nom)" class="me-2"></i>
-            {{ colonne.nom }}
-          </h6>
-          <span class="badge bg-secondary">{{ getTachesColonne(colonne.id).length }}</span>
+          <div class="column-title">
+            <i :class="getColonneIcon(colonne.nom)"></i>
+            <span>{{ colonne.nom }}</span>
+          </div>
+          <span class="column-count">{{ getTachesColonne(colonne.id).length }}</span>
         </div>
 
         <!-- Zone drop -->
-        <div
-          class="column-body"
-          @drop="onDrop($event, colonne.id)"
-          @dragover.prevent
-          @dragenter.prevent
-        >
+        <div class="column-body" @drop="onDrop($event, colonne.id)" @dragover.prevent @dragenter.prevent>
+
           <!-- Cartes tâches -->
-          <div
-            v-for="tache in getTachesColonne(colonne.id)"
-            :key="tache.id"
-            class="kanban-card"
-            draggable="true"
-            @dragstart="onDragStart($event, tache)"
-          >
-            <div class="card-header-mini">
-              <span :class="['badge', getStatutBadgeClass(tache.statut)]">
+          <div v-for="tache in getTachesColonne(colonne.id)" :key="tache.id"
+               class="task-card" :class="getPrioriteClass(tache.priorite)"
+               draggable="true" @dragstart="onDragStart($event, tache)">
+
+            <!-- Badges -->
+            <div class="task-badges">
+              <span class="badge-statut" :class="getStatutBadgeClass(tache.statut)">
                 {{ translateData('taskStatus', tache.statut) }}
               </span>
-              <span v-if="tache.priorite" :class="['badge ms-2', getPrioriteBadgeClass(tache.priorite)]">
-                <i :class="getPrioriteIcon(tache.priorite)" class="me-1"></i>
+              <span v-if="tache.priorite" class="badge-priorite" :class="getPrioriteBadgeClass(tache.priorite)">
+                <i :class="getPrioriteIcon(tache.priorite)"></i>
                 {{ t(`priorites.${tache.priorite}`) }}
               </span>
             </div>
 
-            <h6 class="card-title-mini">{{ tache.titre }}</h6>
+            <!-- Titre -->
+            <h6 class="task-title">{{ tache.titre }}</h6>
 
-            <p class="card-description-mini text-muted">
-              {{ (tache.description || '').substring(0, 80) }}{{ tache.description && tache.description.length > 80 ? '...' : '' }}
+            <!-- Description -->
+            <p v-if="tache.description" class="task-description">
+              {{ tache.description.substring(0, 80) }}{{ tache.description.length > 80 ? '...' : '' }}
             </p>
 
-            <div class="card-footer-mini">
-              <div class="d-flex flex-column gap-1">
-                <small class="text-muted">
-                  <i class="far fa-user me-1"></i>{{ getAssigneName(tache) }}
-                </small>
-                <small v-if="tache.dateEcheance" :class="getEcheanceClass(tache.dateEcheance)">
-                  <i class="far fa-calendar me-1"></i>{{ formatDate(tache.dateEcheance) }}
-                </small>
+            <!-- Footer -->
+            <div class="task-footer">
+              <div class="task-meta">
+                <span class="meta-assigne">
+                  <i class="far fa-user"></i>
+                  {{ getAssigneName(tache) }}
+                </span>
+                <span v-if="tache.dateEcheance" class="meta-echeance" :class="getEcheanceClass(tache.dateEcheance)">
+                  <i class="far fa-calendar"></i>
+                  {{ formatDate(tache.dateEcheance) }}
+                </span>
               </div>
-              <button
-                class="btn btn-sm btn-outline-primary"
-                @click="voirDetails(tache.id)"
-              >
+              <button class="btn-voir" @click="voirDetails(tache.id)" :title="t('tooltips.voirDetails')">
                 <i class="fas fa-eye"></i>
               </button>
             </div>
           </div>
 
           <!-- Message si vide -->
-          <div v-if="getTachesColonne(colonne.id).length === 0" class="empty-column">
-            <i class="fas fa-inbox text-muted"></i>
-            <p class="text-muted small mb-0">{{ t('kanban.aucuneTache') }}</p>
+          <div v-if="getTachesColonne(colonne.id).length === 0" class="column-empty">
+            <i class="fas fa-inbox"></i>
+            <p>{{ t('kanban.aucuneTache') }}</p>
           </div>
         </div>
+
+
       </div>
     </div>
   </div>
@@ -97,8 +89,8 @@ import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDataTranslation } from '@/composables/useDataTranslation'
 import { useRouter } from 'vue-router'
-//import { taskAPI } from '@/services/api'
 import axios from 'axios'
+
 const { t } = useI18n()
 const { translateData } = useDataTranslation()
 const router = useRouter()
@@ -109,6 +101,7 @@ const props = defineProps({
     required: true
   }
 })
+
 const loading = ref(true)
 const colonnes = ref([])
 
@@ -120,29 +113,17 @@ onMounted(async () => {
 const chargerDonnees = async () => {
   loading.value = true
   try {
-
     const token = localStorage.getItem('token')
     const colonnesRes = await axios.get(`/api/projets/${props.projetId}/colonnes`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
     colonnes.value = Array.isArray(colonnesRes.data) ? colonnesRes.data : []
-
     console.log('[Kanban] Colonnes chargées:', colonnes.value.length)
-    colonnes.value.forEach(c => {
-      console.log(`  - ${c.nom}: ${c.taches?.length || 0} tâches`)
-    })
   } catch (error) {
     console.error('[Kanban] Erreur chargement:', error)
   } finally {
     loading.value = false
   }
-
-}
-
-const rafraichir = async () => {
-  await chargerDonnees()
 }
 
 // ========== HELPERS ==========
@@ -152,41 +133,49 @@ const getTachesColonne = (colonneId) => {
 }
 
 const getColonneIcon = (nom) => {
-  if (nom.toLowerCase().includes('faire')) return 'fas fa-list-ul'
-  if (nom.toLowerCase().includes('cours')) return 'fas fa-spinner'
-  if (nom.toLowerCase().includes('termin')) return 'fas fa-check-circle'
+  const nomLower = nom.toLowerCase()
+  if (nomLower.includes('faire')) return 'fas fa-list-ul'
+  if (nomLower.includes('cours')) return 'fas fa-spinner'
+  if (nomLower.includes('termin')) return 'fas fa-check-circle'
   return 'fas fa-columns'
+}
+
+const getColonneCouleur = (nom) => {
+  const nomLower = nom.toLowerCase()
+  if (nomLower.includes('faire')) return '#FF9800'
+  if (nomLower.includes('cours')) return '#2196F3'
+  if (nomLower.includes('termin')) return '#4CAF50'
+  return '#9E9E9E'
 }
 
 const getStatutBadgeClass = (statut) => {
   const classes = {
-    'BROUILLON': 'bg-secondary',
-    'EN_ATTENTE_VALIDATION': 'bg-warning text-dark',
-    'TERMINE': 'bg-success',
-    'ANNULE': 'bg-danger'
+    'BROUILLON': 'statut-brouillon',
+    'EN_ATTENTE_VALIDATION': 'statut-attente',
+    'TERMINE': 'statut-termine',
+    'ANNULE': 'statut-annule'
   }
-  return classes[statut] || 'bg-info'
+  return classes[statut] || 'statut-default'
 }
 
-const getAssigneName = (tache) => {
-  if (!tache.assigne) return t('taches.details.nonDefini')
-  return `${tache.assigne.prenom || ''} ${tache.assigne.nom || ''}`.trim() ||
-    tache.assigne.email ||
-    t('taches.details.nonDefini')
-}
-
-const voirDetails = (tacheId) => {
-  router.push(`/taches/${tacheId}`)
+const getPrioriteClass = (priorite) => {
+  const classes = {
+    'URGENTE': 'priorite-urgente',
+    'HAUTE': 'priorite-haute',
+    'NORMALE': 'priorite-normale',
+    'BASSE': 'priorite-basse'
+  }
+  return classes[priorite?.toUpperCase()] || ''
 }
 
 const getPrioriteBadgeClass = (priorite) => {
   const classes = {
-    'URGENTE': 'bg-danger text-white',
-    'HAUTE': 'bg-warning text-dark',
-    'NORMALE': 'bg-info text-white',
-    'BASSE': 'bg-secondary text-white'
+    'URGENTE': 'badge-urgente',
+    'HAUTE': 'badge-haute',
+    'NORMALE': 'badge-normale',
+    'BASSE': 'badge-basse'
   }
-  return classes[priorite?.toUpperCase()] || 'bg-secondary text-white'
+  return classes[priorite?.toUpperCase()] || 'badge-normale'
 }
 
 const getPrioriteIcon = (priorite) => {
@@ -198,25 +187,36 @@ const getPrioriteIcon = (priorite) => {
   }
   return icons[priorite?.toUpperCase()] || 'fas fa-minus'
 }
+
+const getAssigneName = (tache) => {
+  if (!tache.idAssigne) return t('taches.details.nonDefini')
+  return `${tache.prenomAssigne || ''} ${tache.nomAssigne || ''}`.trim() || tache.emailAssigne || t('taches.details.nonDefini')
+}
+
 const getEcheanceClass = (dateEcheance) => {
   if (!dateEcheance) return ''
   const aujourdhui = new Date()
   aujourdhui.setHours(0, 0, 0, 0)
   const echeance = new Date(dateEcheance)
   echeance.setHours(0, 0, 0, 0)
-
   const diffJours = Math.ceil((echeance - aujourdhui) / (1000 * 60 * 60 * 24))
 
-  if (diffJours < 0) return 'text-danger fw-bold' // En retard
-  if (diffJours === 0) return 'text-warning fw-bold' // Aujourd'hui
-  if (diffJours <= 3) return 'text-warning' // Dans 3 jours
-  return 'text-muted' // Plus tard
+  if (diffJours < 0) return 'echeance-retard'
+  if (diffJours === 0) return 'echeance-aujourdhui'
+  if (diffJours <= 3) return 'echeance-proche'
+  return ''
 }
+
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
 }
+
+const voirDetails = (tacheId) => {
+  router.push(`/taches/${tacheId}`)
+}
+
 // ========== DRAG & DROP ==========
 let draggedTask = null
 
@@ -228,41 +228,51 @@ const onDragStart = (event, tache) => {
 
 const onDrop = async (event, colonneIdDestination) => {
   event.preventDefault()
-
   if (!draggedTask) return
 
-  // Trouver la colonne source
-  const colonneSource = colonnes.value.find(c =>
-    c.taches?.some(t => t.id === draggedTask.id)
-  )
+  const colonneSource = colonnes.value.find(c => c.taches?.some(t => t.id === draggedTask.id))
+  const colonneDestination = colonnes.value.find(c => c.id === colonneIdDestination)
 
-  if (!colonneSource || colonneSource.id === colonneIdDestination) {
-    console.log('[Kanban] Même colonne, pas de changement')
+  if (!colonneSource || !colonneDestination || colonneSource.id === colonneIdDestination) {
     draggedTask = null
     return
   }
 
-  try {
-    console.log(`[Kanban] Déplacement tâche ${draggedTask.id}`)
+  // Sauvegarder pour rollback
+  const tacheIndex = colonneSource.taches.findIndex(t => t.id === draggedTask.id)
 
-    // Mise à jour locale immédiate
-    const tacheIndex = colonneSource.taches.findIndex(t => t.id === draggedTask.id)
+  try {
+    // Mise à jour locale immédiate (optimistic UI)
     if (tacheIndex !== -1) {
       const tache = colonneSource.taches.splice(tacheIndex, 1)[0]
-
-      const colonneDestination = colonnes.value.find(c => c.id === colonneIdDestination)
-      if (colonneDestination) {
-        if (!colonneDestination.taches) colonneDestination.taches = []
-        colonneDestination.taches.push(tache)
-      }
+      if (!colonneDestination.taches) colonneDestination.taches = []
+      colonneDestination.taches.push(tache)
     }
 
-    // Recharger pour synchroniser avec le backend
+    // Appel API pour persister le changement de statut
+    const token = localStorage.getItem('token')
+    await axios.put(
+      `/api/taches/${draggedTask.id}/deplacer`,
+      { colonneDestination: colonneDestination.nom },
+      { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    )
+
+    console.log('[Kanban] Tâche déplacée avec succès vers:', colonneDestination.nom)
+
+    // Recharger pour synchroniser les badges de statut
     await chargerDonnees()
 
-    console.log('[Kanban]  Tâche déplacée')
   } catch (error) {
-    console.error('[Kanban]  Erreur:', error)
+    console.error('[Kanban] Erreur déplacement:', error)
+
+    // Message d'erreur selon le type
+    if (error.response?.status === 403) {
+      alert('Vous n\'avez pas la permission de déplacer cette tâche ici.')
+    } else {
+      alert('Erreur lors du déplacement de la tâche.')
+    }
+
+    // Recharger pour annuler le changement visuel
     await chargerDonnees()
   } finally {
     draggedTask = null
@@ -271,137 +281,229 @@ const onDrop = async (event, colonneIdDestination) => {
 </script>
 
 <style scoped>
-.kanban-container {
-  width: 100%;
-  height: calc(100vh - 250px);
-  min-height: 600px;
+/* ========== WRAPPER ========== */
+.kanban-wrapper {
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 16px;
 }
 
+/* ========== HEADER ========== */
+.kanban-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.kanban-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ========== LOADER ========== */
+.kanban-loader {
+  text-align: center;
+  padding: 60px 20px;
+}
+.kanban-loader p {
+  margin-top: 12px;
+  color: #666;
+}
+
+/* ========== BOARD ========== */
 .kanban-board {
   display: flex;
-  gap: 20px;
-  height: calc(100% - 60px);
+  gap: 16px;
   overflow-x: auto;
-  padding-bottom: 20px;
+  padding-bottom: 8px;
+  min-height: 500px;
 }
 
 /* ========== COLONNES ========== */
 .kanban-column {
   flex: 0 0 320px;
-  background: #f8f9fa;
+  background: #ebecf0;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  max-height: 100%;
+  max-height: calc(100vh - 380px);
+  min-height: 400px;
 }
 
 .column-header {
-  padding: 16px;
-  border-bottom: 2px solid #dee2e6;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 3px solid var(--column-color, #9E9E9E);
   background: white;
   border-radius: 12px 12px 0 0;
 }
-
-.column-header h6 {
-  color: #495057;
+.column-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+.column-title i {
+  color: var(--column-color, #666);
+}
+.column-count {
+  background: var(--column-color, #9E9E9E);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .column-body {
   flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-  min-height: 200px;
-}
-
-.column-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.column-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.column-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 10px;
-}
-
-/* ========== CARTES ========== */
-.kanban-card {
-  background: white;
-  border-radius: 8px;
   padding: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-  cursor: grab;
-  transition: all 0.2s ease;
-  border-left: 4px solid #007bff;
+  overflow-y: auto;
+  min-height: 100px;
 }
-
-.kanban-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transform: translateY(-2px);
-}
-
-.kanban-card:active {
-  cursor: grabbing;
-  opacity: 0.8;
-}
-
-.card-header-mini {
-  margin-bottom: 8px;
-}
-
-.card-title-mini {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #212529;
-  line-height: 1.4;
-}
-
-.card-description-mini {
-  font-size: 0.85rem;
-  margin-bottom: 12px;
-  line-height: 1.4;
-  min-height: 40px;
-}
-
-.card-footer-mini {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 8px;
-  border-top: 1px solid #e9ecef;
-}
+.column-body::-webkit-scrollbar { width: 6px; }
+.column-body::-webkit-scrollbar-track { background: transparent; }
+.column-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
 /* ========== EMPTY STATE ========== */
-.empty-column {
+.column-empty {
   text-align: center;
-  padding: 40px 20px;
-  color: #6c757d;
+  padding: 40px 16px;
+  color: #999;
 }
-
-.empty-column i {
+.column-empty i {
   font-size: 2rem;
   margin-bottom: 10px;
   opacity: 0.5;
 }
+.column-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ========== TASK CARD ========== */
+.task-card {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: grab;
+  transition: all 0.2s;
+  border-left: 4px solid #e0e0e0;
+}
+.task-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+.task-card:active { cursor: grabbing; opacity: 0.8; }
+
+/* Priorité bordure gauche */
+.task-card.priorite-urgente { border-left-color: #EF5350; }
+.task-card.priorite-haute { border-left-color: #FFB74D; }
+.task-card.priorite-normale { border-left-color: #64B5F6; }
+.task-card.priorite-basse { border-left-color: #BDBDBD; }
+
+/* ========== BADGES ========== */
+.task-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.badge-statut, .badge-priorite {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Statuts */
+.statut-brouillon { background: #ECEFF1; color: #607D8B; }
+.statut-attente { background: #FFF3E0; color: #E65100; }
+.statut-termine { background: #E8F5E9; color: #2E7D32; }
+.statut-annule { background: #FFEBEE; color: #C62828; }
+.statut-default { background: #E3F2FD; color: #1565C0; }
+
+/* Priorités */
+.badge-urgente { background: #FFEBEE; color: #C62828; }
+.badge-haute { background: #FFF3E0; color: #E65100; }
+.badge-normale { background: #E3F2FD; color: #1565C0; }
+.badge-basse { background: #ECEFF1; color: #607D8B; }
+.badge-priorite i { margin-right: 4px; font-size: 0.65rem; }
+
+/* ========== TASK CONTENT ========== */
+.task-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+.task-description {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* ========== TASK FOOTER ========== */
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+.task-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.meta-assigne, .meta-echeance {
+  font-size: 0.75rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.meta-assigne i, .meta-echeance i { font-size: 0.7rem; }
+
+/* Échéance alertes */
+.echeance-retard { color: #C62828 !important; font-weight: 600; }
+.echeance-aujourdhui { color: #E65100 !important; font-weight: 600; }
+.echeance-proche { color: #F9A825 !important; }
+
+/* Bouton voir */
+.btn-voir {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: all 0.2s;
+}
+.btn-voir:hover {
+  background: #2196F3;
+  border-color: #2196F3;
+  color: white;
+}
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .kanban-board {
-    flex-direction: column;
-  }
-
-  .kanban-column {
-    flex: 0 0 auto;
-    min-height: 300px;
-  }
+  .kanban-board { flex-direction: column; }
+  .kanban-column { flex: 0 0 auto; min-height: 250px; max-height: none; }
 }
 </style>

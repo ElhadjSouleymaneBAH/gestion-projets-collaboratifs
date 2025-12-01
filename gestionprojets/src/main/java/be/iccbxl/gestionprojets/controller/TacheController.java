@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 /**
  * Controller REST pour la gestion des tâches (F7)
- * Version CORRIGÉE COMPLÈTE — Tous les endpoints nécessaires
  *
  * @author Elhadj Souleymane BAH
  * @version 3.1 - CORRECTION FINALE + DEBUG
@@ -51,7 +50,7 @@ public class TacheController {
     @GetMapping("/priorites")
     public ResponseEntity<List<String>> listerPrioritesTache() {
         return ResponseEntity.ok(
-                List.of("HAUTE", "NORMALE", "BASSE")
+                List.of("URGENTE", "HAUTE", "NORMALE", "BASSE")
         );
     }
 
@@ -278,6 +277,80 @@ public class TacheController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    // ---------- DÉPLACER TÂCHE KANBAN (DRAG & DROP) ----------
+    @PutMapping("/{id}/deplacer")
+    @PreAuthorize("hasAuthority('MEMBRE') or hasAuthority('CHEF_PROJET') or hasAuthority('ADMINISTRATEUR')")
+    public ResponseEntity<TacheDTO> deplacerTacheKanban(@PathVariable Long id,
+                                                        @RequestBody Map<String, Object> body,
+                                                        Authentication authentication) {
+        try {
+            System.out.println(" [KANBAN] Déplacement tâche " + id);
+
+            if (!body.containsKey("colonneDestination")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            String colonneDestination = (String) body.get("colonneDestination");
+            String email = authentication.getName();
+            Long idUser = utilisateurService.obtenirIdParEmail(email);
+
+            Optional<TacheDTO> tacheExistante = tacheService.obtenirTacheParId(id);
+            if (tacheExistante.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            TacheDTO tache = tacheExistante.get();
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMINISTRATEUR"));
+            boolean isChefProjet = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("CHEF_PROJET"));
+            boolean estAssigneALaTache = idUser.equals(tache.getIdAssigne());
+            boolean peutAccederProjet = utilisateurService.peutAccederAuProjet(idUser, tache.getIdProjet());
+
+            if (!isAdmin && !peutAccederProjet) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            StatutTache nouveauStatut = determinerStatutDepuisColonne(colonneDestination);
+            if (nouveauStatut == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            StatutTache statutActuel = tache.getStatut();
+
+            if (nouveauStatut == StatutTache.TERMINE && !isAdmin && !isChefProjet) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            if (!isAdmin && !isChefProjet && estAssigneALaTache) {
+                if (!(statutActuel == StatutTache.BROUILLON && nouveauStatut == StatutTache.EN_ATTENTE_VALIDATION)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+
+            TacheDTO tacheUpdated = tacheService.deplacerTacheKanban(id, colonneDestination, nouveauStatut);
+            notificationService.notifierChangementStatutTache(tacheUpdated, nouveauStatut);
+
+            return ResponseEntity.ok(tacheUpdated);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    private StatutTache determinerStatutDepuisColonne(String nomColonne) {
+        if (nomColonne == null) return null;
+        String nom = nomColonne.toLowerCase();
+
+        if (nom.contains("faire")) return StatutTache.BROUILLON;
+        if (nom.contains("cours") || nom.contains("attente")) return StatutTache.EN_ATTENTE_VALIDATION;
+        if (nom.contains("termin")) return StatutTache.TERMINE;
+        return null;
     }
     // ---------- ASSIGNATION ----------
     @PutMapping("/{id}/assigner")

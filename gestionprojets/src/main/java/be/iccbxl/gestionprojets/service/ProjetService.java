@@ -302,6 +302,11 @@ public class ProjetService {
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
+        // Seuls les MEMBRE peuvent être ajoutés
+        if (utilisateur.getRole() != be.iccbxl.gestionprojets.enums.Role.MEMBRE) {
+            throw new RuntimeException("Seuls les utilisateurs avec le rôle MEMBRE peuvent être ajoutés à un projet");
+        }
+
         if (projetUtilisateurRepository.existsByProjetIdAndUtilisateurId(projetId, utilisateurId)) {
             System.out.println("Utilisateur déjà membre de ce projet — ajout ignoré.");
             return;
@@ -334,6 +339,7 @@ public class ProjetService {
 
         return utilisateurRepository.findAllById(utilisateurIds)
                 .stream()
+                .filter(u -> u.getRole() == be.iccbxl.gestionprojets.enums.Role.MEMBRE)
                 .map(this::convertirUtilisateurEnDTO)
                 .collect(Collectors.toList());
     }

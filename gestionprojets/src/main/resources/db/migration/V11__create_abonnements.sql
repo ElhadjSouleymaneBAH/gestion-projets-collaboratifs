@@ -1,5 +1,3 @@
--- Migration V11 : Création de la table abonnements
-
 CREATE TABLE abonnements (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
                              nom VARCHAR(100) NOT NULL,
@@ -13,12 +11,14 @@ CREATE TABLE abonnements (
                              date_fin DATE NULL,
                              utilisateur_id BIGINT NOT NULL,
 
+    -- Colonnes Stripe (traçabilité des paiements)
+                             stripe_subscription_id VARCHAR(255) NULL,
+                             stripe_customer_id VARCHAR(255) NULL,
+
     -- Contraintes
                              CONSTRAINT FK_abonnements_utilisateur
                                  FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id)
                                      ON DELETE CASCADE ON UPDATE CASCADE,
-
-    -- Un seul abonnement par utilisateur
                              CONSTRAINT UK_abonnements_utilisateur UNIQUE (utilisateur_id),
 
     -- Index pour performance

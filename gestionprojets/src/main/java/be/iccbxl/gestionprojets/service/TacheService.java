@@ -77,8 +77,10 @@ public class TacheService {
             case ANNULE:
                 nomColonne = "Terminé";
                 break;
-            case BROUILLON:
             case EN_ATTENTE_VALIDATION:
+                nomColonne = "En cours";
+                break;
+            case BROUILLON:
             default:
                 nomColonne = "À faire";
         }
@@ -303,8 +305,10 @@ public class TacheService {
         String nomColonne;
         switch (nouveauStatut) {
             case BROUILLON:
-            case EN_ATTENTE_VALIDATION:
                 nomColonne = "À faire";
+                break;
+            case EN_ATTENTE_VALIDATION:
+                nomColonne = "En cours";
                 break;
             case TERMINE:
             case ANNULE:
@@ -313,7 +317,6 @@ public class TacheService {
             default:
                 nomColonne = "À faire";
         }
-
         Optional<ListeColonne> colonneOpt = listeColonneRepository
                 .findByProjetIdAndNom(tache.getProjet().getId(), nomColonne);
 
@@ -321,6 +324,37 @@ public class TacheService {
             tache.setListeColonne(colonneOpt.get());
             System.out.println(" [Kanban] Tâche " + tache.getId() + " déplacée vers '" + nomColonne + "'");
         }
+    }
+
+    // ========== DÉPLACER TÂCHE KANBAN (DRAG & DROP) ==========
+    public TacheDTO deplacerTacheKanban(Long tacheId, String colonneDestination, StatutTache nouveauStatut) {
+        System.out.println(" [Kanban] Déplacement tâche " + tacheId + " vers '" + colonneDestination + "'");
+
+        Tache tache = tacheRepository.findByIdWithRelations(tacheId)
+                .orElseThrow(() -> new RuntimeException("Tâche non trouvée avec ID: " + tacheId));
+
+        // Changer le statut
+        boolean ok = tache.changerStatut(nouveauStatut);
+        if (!ok) {
+            throw new RuntimeException("Transition de statut non autorisée: " + tache.getStatut() + " -> " + nouveauStatut);
+        }
+
+        // Trouver et assigner la colonne destination
+        if (tache.getProjet() != null) {
+            creerColonnesParDefaut(tache.getProjet());
+
+            Optional<ListeColonne> colonneOpt = listeColonneRepository
+                    .findByProjetIdAndNom(tache.getProjet().getId(), colonneDestination);
+
+            if (colonneOpt.isPresent()) {
+                tache.setListeColonne(colonneOpt.get());
+                int nouvellePosition = colonneOpt.get().getTaches() != null ? colonneOpt.get().getTaches().size() : 0;
+                tache.setPosition(nouvellePosition);
+            }
+        }
+
+        Tache saved = tacheRepository.save(tache);
+        return convertirEnDTO(saved);
     }
 
     // ========== ANNULER PAR ADMIN ==========
