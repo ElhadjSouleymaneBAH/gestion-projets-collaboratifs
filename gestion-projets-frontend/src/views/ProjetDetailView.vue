@@ -33,10 +33,24 @@
             <p class="text-muted mb-0">{{ projet?.description }}</p>
           </div>
           <div class="text-end">
-            <span class="badge bg-success fs-6">{{ projet?.statut }}</span><br>
+            <span class="badge fs-6" :class="getStatutBadgeClass(projet?.statut)">{{ projet?.statut }}</span>
+            <br>
             <small class="text-muted">
               {{ t('projet.creeLe') }} : {{ formatDate(projet?.dateCreation) }}
             </small>
+            <div v-if="estChefProjet" class="mt-2">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-cog me-1"></i>{{ t('projet.changerStatut') }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#" @click.prevent="changerStatutProjet('ACTIF')"><i class="fas fa-play text-success me-2"></i>{{ t('statuts.ACTIF') }}</a></li>
+                  <li><a class="dropdown-item" href="#" @click.prevent="changerStatutProjet('SUSPENDU')"><i class="fas fa-pause text-warning me-2"></i>{{ t('statuts.SUSPENDU') }}</a></li>
+                  <li><a class="dropdown-item" href="#" @click.prevent="changerStatutProjet('TERMINE')"><i class="fas fa-check-circle text-secondary me-2"></i>{{ t('statuts.TERMINE') }}</a></li>
+                  <li><a class="dropdown-item" href="#" @click.prevent="changerStatutProjet('ANNULE')"><i class="fas fa-times-circle text-danger me-2"></i>{{ t('statuts.ANNULE') }}</a></li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -52,13 +66,23 @@
       <ul class="nav nav-tabs mb-3" role="tablist">
         <li class="nav-item">
           <a
-            class="nav-link"
-            :class="{ active: ongletActif === 'membres' }"
-            @click="ongletActif = 'membres'"
-            href="javascript:void(0)"
+          class="nav-link"
+          :class="{ active: ongletActif === 'taches' }"
+          @click="ongletActif = 'taches'"
+          href="javascript:void(0)"
           >
-            <i class="fas fa-users me-2"></i>{{ t('membres.titre') }}
-            <span class="badge bg-secondary ms-1">{{ membres.length }}</span>
+          <i class="fas fa-tasks me-2"></i>{{ t('taches.titre') }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+          class="nav-link"
+          :class="{ active: ongletActif === 'membres' }"
+          @click="ongletActif = 'membres'"
+          href="javascript:void(0)"
+          >
+          <i class="fas fa-users me-2"></i>{{ t('membres.titre') }}
+          <span class="badge bg-secondary ms-1">{{ membres.length }}</span>
           </a>
         </li>
         <li class="nav-item">
@@ -85,6 +109,15 @@
 
       <!-- Contenu des onglets -->
       <div class="tab-content">
+        <!-- ========== ONGLET TÂCHES ========== -->
+        <div v-show="ongletActif === 'taches'" class="row">
+          <div class="col-12">
+            <KanbanBoard
+              :projetId="projetId"
+              :peut-assigner="estChefProjet"
+            />
+          </div>
+        </div>
         <!-- ========== ONGLET MEMBRES ========== -->
         <div v-show="ongletActif === 'membres'" class="row">
           <div class="col-12">
@@ -345,8 +378,9 @@ import { useDataTranslation } from '@/composables/useDataTranslation'
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { projectAPI, messagesAPI, userAPI } from '@/services/api'
+import { projectAPI, messagesAPI, userAPI, taskAPI } from '@/services/api'
 import GestionFichiers from '@/components/GestionFichiers.vue'
+import KanbanBoard from '@/components/KanbanBoard.vue'
 
 const { t } = useI18n()
 const { translateRole } = useDataTranslation()
@@ -359,7 +393,7 @@ const sending = ref(false)
 const accesDenie = ref(false)
 const messageErreur = ref('')
 
-const ongletActif = ref('membres')
+const ongletActif = ref('taches')
 const projet = ref(null)
 const membres = ref([])
 const messages = ref([])
@@ -410,6 +444,51 @@ const formatTime = (d) => {
     })
   } catch {
     return ''
+  }
+}
+
+// ========== STATUT PROJET ==========
+const getStatutBadgeClass = (statut) => {
+  const classes = {
+    'ACTIF': 'bg-success',
+    'SUSPENDU': 'bg-warning text-dark',
+    'TERMINE': 'bg-secondary',
+    'ANNULE': 'bg-danger'
+  }
+  return classes[statut] || 'bg-info'
+}
+
+const changerStatutProjet = async (nouveauStatut) => {
+  if (projet.value?.statut === nouveauStatut) return
+
+  // Vérification avant passage en TERMINÉ
+  if (nouveauStatut === 'TERMINE') {
+    try {
+      const response = await taskAPI.byProjet(projetId.value)
+      const tachesProjet = Array.isArray(response.data) ? response.data : []
+      const tachesNonTerminees = tachesProjet.filter(t => t.statut !== 'TERMINE')
+      if (tachesNonTerminees.length > 0) {
+        alert(t('projet.erreurTachesNonTerminees', { count: tachesNonTerminees.length }))
+        return
+      }
+    } catch (error) {
+      console.error('[Projet] Erreur vérification tâches:', error)
+    }
+  }
+
+  const confirmation = confirm(t('projet.confirmerChangementStatut', { statut: nouveauStatut }))
+  if (!confirmation) return
+
+  try {
+    await projectAPI.update(projetId.value, {
+      ...projet.value,
+      statut: nouveauStatut
+    })
+    projet.value.statut = nouveauStatut
+    showFlash(t('projet.statutModifie'), 'success')
+  } catch (error) {
+    console.error('[Projet] Erreur changement statut:', error)
+    showFlash(t('erreurs.modificationProjet'), 'danger')
   }
 }
 

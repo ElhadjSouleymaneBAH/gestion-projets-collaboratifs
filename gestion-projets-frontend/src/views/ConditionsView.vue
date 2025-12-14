@@ -341,8 +341,8 @@
             </h2>
             <p class="text-muted mb-3">
               {{ $t('conditions.contactText') }}
-              <strong>{{ $t('conditions.supportEmail') }}</strong
-              >.
+              <strong>support@collabpro.com</strong>
+
             </p>
 
             <div class="row g-3">
@@ -351,7 +351,7 @@
                   <div class="card-body text-center">
                     <i class="fas fa-headset fa-2x text-primary mb-2"></i>
                     <h5 class="h6 fw-bold">{{ $t('conditions.supportTechnique') }}</h5>
-                    <p class="small text-muted">{{ $t('conditions.supportEmail') }}</p>
+                    <p class="small text-muted">support@collabpro.com</p>
                   </div>
                 </div>
               </div>
@@ -360,7 +360,7 @@
                   <div class="card-body text-center">
                     <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
                     <h5 class="h6 fw-bold">{{ $t('conditions.protectionDonnees') }}</h5>
-                    <p class="small text-muted">{{ $t('conditions.protectionEmail') }}</p>
+                    <p class="small text-muted">protection@collabpro.com</p>
                   </div>
                 </div>
               </div>

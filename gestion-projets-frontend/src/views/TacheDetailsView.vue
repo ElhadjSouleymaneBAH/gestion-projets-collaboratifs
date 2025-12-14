@@ -483,11 +483,10 @@ const formatDate = (dateStr) => {
 }
 
 const getAssigneName = () => {
-  if (!tache.value?.assigne) return t('taches.details.nonDefini')
-  const assigne = tache.value.assigne
+  if (!tache.value?.idAssigne) return t('taches.details.nonDefini')
   return (
-    `${assigne.prenom || ''} ${assigne.nom || ''}`.trim() ||
-    assigne.email ||
+    `${tache.value.prenomAssigne || ''} ${tache.value.nomAssigne || ''}`.trim() ||
+    tache.value.emailAssigne ||
     t('taches.details.nonDefini')
   )
 }

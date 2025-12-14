@@ -27,7 +27,8 @@ export default {
     locale: 'Language',
     parametres: 'Settings',
     chat: 'Chat',
-    chatProjet: 'Project Chat'
+    chatProjet: 'Project Chat',
+    statistiques: 'Statistics'
   },
 
   // ==================== APPLICATION ====================
@@ -344,7 +345,11 @@ export default {
 
   // ==================== PROJECT (SINGULAR) ====================
   projet: {
-    creeLe: 'Created on'
+    creeLe: 'Created on',
+    changerStatut: 'Change status',
+    confirmerChangementStatut: 'Confirm status change?',
+    statutModifie: 'Status updated successfully',
+    erreurTachesNonTerminees: 'Cannot complete project: {count} task(s) are not yet completed'
   },
 
   // ==================== TASK MANAGEMENT ====================
@@ -397,6 +402,7 @@ export default {
     confirmerSoumission: 'Submit this task for validation?',
     confirmerCompletion: 'Mark this task as completed?',
     soumiseValidation: 'Task submitted for validation to project manager',
+    soumissionReussie: 'Task submitted successfully',
     completee: 'Task marked as completed',
     confirmerValidation: 'Validate this task?',
     confirmerRenvoi: 'Return to draft?',
@@ -447,6 +453,8 @@ export default {
     disponibles: 'Available tasks',
     rechercher: 'Search for a task...',
     detailTache: 'Task detail',
+    echeanceDans: 'Due in {jours} days',
+    aucunResultatFiltre: 'No tasks found matching these criteria',
 
     placeholders: {
       titre: 'Enter the task title',
@@ -503,7 +511,13 @@ export default {
       enCours: 'In progress',
       termine: 'Completed',
       terminee: 'Completed',
-      annule: 'Cancelled'
+      annule: 'Cancelled',
+      ACTIF: 'Active',
+      SUSPENDU: 'Suspended',
+      TERMINE: 'Completed',
+      ANNULE: 'Cancelled',
+      BROUILLON: 'Draft',
+      EN_ATTENTE_VALIDATION: 'Pending validation'
     },
 
     details: {
@@ -600,6 +614,7 @@ export default {
     erreurAjout: 'Error adding member',
     selectionnerProjetEtMembre: 'Please select a project and a member',
     aucunResultat: 'No result found',
+    collaborateursSurTousProjets: 'Collaborators across all projects',
     roles: {
       membre: 'Member',
       moderateur: 'Moderator',
@@ -706,7 +721,8 @@ export default {
     nouveau: 'New comment',
     confirmerSuppression: 'Delete this comment?',
     aucun: 'No comments',
-    voirTous: 'View all comments'
+    voirTous: 'View all comments',
+    ajoutSucces: 'Comment added successfully'
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -751,6 +767,7 @@ export default {
     msgSupprimee: 'Notification deleted',
     msgErreurSuppression: 'Error deleting',
     msgLuesSupprimees: 'Read notifications deleted',
+    suppressionSucces: 'Notification deleted successfully',
     filtres: {
       type: 'Type',
       tousTypes: 'All types',
@@ -1228,7 +1245,20 @@ export default {
       validationTaches: 'Task validation',
       chat: 'Chat',
       chatProjet: 'Project Chat',
+      statistiques: 'Statistics',
 
+    },
+    statistiques: {
+      titre: 'Advanced Statistics',
+      description: 'Overview of your projects and tasks',
+      repartitionTaches: 'Tasks distribution by status',
+      repartitionProjets: 'Projects distribution by status',
+      indicateurs: 'Key performance indicators',
+      tauxCompletion: 'Completion rate',
+      tachesAssignees: 'Assigned tasks',
+      tachesNonAssignees: 'Unassigned tasks',
+      moyenneMembresProjet: 'Average members/project',
+      aAssigner: 'to assign',
     },
     kpis: {
       mesProjets: 'My projects',
@@ -1399,7 +1429,8 @@ export default {
     envoyerMessage: 'Unable to send message',
     uploadFichier: 'Error uploading file',
     telechargementFichier: 'Error downloading file',
-    suppressionFichier: 'Error deleting file'
+    suppressionFichier: 'Error deleting file',
+    soumissionTache: 'Error submitting task'
   },
 
   // ==================== VALIDATION ====================
@@ -1791,5 +1822,28 @@ export default {
     NORMALE: 'Normal',
     HAUTE: 'High',
     URGENTE: 'Urgent'
+  },
+
+  // ==================== GENERAL STATUSES ====================
+  statuts: {
+    ACTIF: 'Active',
+    SUSPENDU: 'Suspended',
+    TERMINE: 'Completed',
+    ANNULE: 'Cancelled',
+    BROUILLON: 'Draft',
+    EN_ATTENTE_VALIDATION: 'Pending validation'
+  },
+  // ==================== STATISTICS ====================
+  statistiques: {
+    titre: 'Advanced Statistics',
+    description: 'Overview of your projects and tasks',
+    repartitionTaches: 'Tasks distribution by status',
+    repartitionProjets: 'Projects distribution by status',
+    indicateurs: 'Key performance indicators',
+    tauxCompletion: 'Completion rate',
+    tachesAssignees: 'Assigned tasks',
+    tachesNonAssignees: 'Unassigned tasks',
+    moyenneMembresProjet: 'Average members/project',
+    aAssigner: 'to assign'
   }
 };

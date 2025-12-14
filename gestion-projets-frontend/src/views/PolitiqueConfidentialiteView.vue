@@ -351,7 +351,7 @@
               <strong>{{ $t('politique.commentExercerDroits') }} :</strong>
               <p class="mb-0">
                 {{ $t('politique.commentExercerDroitsDesc') }}
-                <strong>{{ $t('conditions.protectionEmail') }}</strong>
+                <strong>protection@collabpro.com</strong>
                 {{ $t('politique.avecPieceIdentite') }}
                 {{ $t('politique.delaiReponse') }}
               </p>
@@ -480,7 +480,7 @@
                   <div class="card-body text-center">
                     <i class="fas fa-user-shield fa-2x text-success mb-2"></i>
                     <h5 class="h6 fw-bold">{{ $t('politique.delegueDPO') }}</h5>
-                    <p class="small text-muted">{{ $t('conditions.protectionEmail') }}</p>
+                    <p class="small text-muted">protection@collabpro.com</p>
                   </div>
                 </div>
               </div>

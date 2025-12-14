@@ -11,13 +11,16 @@ import be.iccbxl.gestionprojets.repository.ProjetUtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.UtilisateurRepository;
 import be.iccbxl.gestionprojets.repository.TacheRepository;
 import be.iccbxl.gestionprojets.service.ListeColonneService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,17 +34,20 @@ public class ProjetService {
     private final ProjetUtilisateurRepository projetUtilisateurRepository;
     private final ListeColonneService listeColonneService;
     private final TacheRepository tacheRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ProjetService(ProjetRepository projetRepository,
                          UtilisateurRepository utilisateurRepository,
                          ProjetUtilisateurRepository projetUtilisateurRepository,
                          ListeColonneService listeColonneService,
-                         TacheRepository tacheRepository) {
+                         TacheRepository tacheRepository,
+                         SimpMessagingTemplate messagingTemplate) {
         this.projetRepository = projetRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.projetUtilisateurRepository = projetUtilisateurRepository;
         this.listeColonneService = listeColonneService;
         this.tacheRepository = tacheRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     // =====================================================================
@@ -190,19 +196,22 @@ public class ProjetService {
         return convertirEnDTO(saved);
     }
 
-    // =====================================================================
-    // MÉTHODE CORRIGÉE : supprimerProjet
-    // =====================================================================
     public void supprimerProjet(Long id) {
         // Vérifier si le projet existe
         Optional<Projet> projetOpt = projetRepository.findById(id);
         if (projetOpt.isEmpty()) {
-            System.err.println("❌ Tentative de suppression d'un projet inexistant: ID=" + id);
+            System.err.println(" Tentative de suppression d'un projet inexistant: ID=" + id);
             throw new RuntimeException("Projet non trouvé avec ID: " + id);
         }
 
         Projet projet = projetOpt.get();
-        System.out.println("🗑️ Suppression du projet: " + projet.getTitre() + " (ID=" + id + ")");
+        System.out.println(" Suppression du projet: " + projet.getTitre() + " (ID=" + id + ")");
+
+        // ========== NOUVEAU : Récupérer les membres AVANT suppression ==========
+        List<Long> membresIds = projetUtilisateurRepository.findUtilisateurIdsByProjetId(id);
+        String titreProjet = projet.getTitre();
+        System.out.println("    Membres à notifier: " + membresIds.size());
+        // ========== FIN NOUVEAU ==========
 
         try {
             // 1. Supprimer les tâches du projet
@@ -220,14 +229,38 @@ public class ProjetService {
             // 4. Supprimer le projet
             projetRepository.deleteById(id);
 
-            System.out.println("✅ Projet supprimé avec succès: ID=" + id);
+            System.out.println(" Projet supprimé avec succès: ID=" + id);
+
+            // ==========  Notifier les membres en temps réel ==========
+            for (Long membreId : membresIds) {
+                // Ne pas notifier le créateur (chef de projet qui supprime)
+                if (projet.getCreateur() != null && membreId.equals(projet.getCreateur().getId())) {
+                    continue;
+                }
+
+                Map<String, Object> notification = new HashMap<>();
+                notification.put("type", "NOTIFICATION");
+                notification.put("sousType", "PROJET_SUPPRIME");
+                notification.put("projetId", id);
+                notification.put("titre", "Projet supprimé");
+                notification.put("message", "Le projet \"" + titreProjet + "\" a été supprimé par le chef de projet");
+                notification.put("createdAt", LocalDateTime.now().toString());
+
+                messagingTemplate.convertAndSendToUser(
+                        membreId.toString(),
+                        "/topic/notifications",
+                        notification
+                );
+                System.out.println("  Notification envoyée au membre ID=" + membreId);
+            }
+            System.out.println(" Notifications WebSocket envoyées");
+
         } catch (Exception e) {
-            System.err.println("❌ Erreur lors de la suppression du projet ID=" + id);
+            System.err.println(" Erreur lors de la suppression du projet ID=" + id);
             e.printStackTrace();
             throw new RuntimeException("Erreur lors de la suppression du projet: " + e.getMessage(), e);
         }
     }
-
     public ProjetDTO creerProjet(ProjetDTO dto, String emailCreateur) {
         Utilisateur createur = utilisateurRepository.findByEmail(emailCreateur)
                 .orElseThrow(() -> new RuntimeException("Utilisateur créateur non trouvé"));

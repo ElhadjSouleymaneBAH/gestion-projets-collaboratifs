@@ -318,39 +318,12 @@ export function useDataTranslation() {
   }
 
   /**
-   * Traduction intelligente phrase par phrase
+   * Traduction intelligente - retourne le texte original si pas de traduction exacte
    */
   function smartTranslate(text, targetLang) {
     if (!text) return text
 
-    const sourceLang = detectLanguage(text)
-
-    // Si déjà dans la langue cible, retourner tel quel
-    if (sourceLang === targetLang) return text
-
-    // Sélectionner le dictionnaire approprié
-    const dictionary =
-      targetLang === 'en'
-        ? translationDictionary.phrases.frToEn
-        : translationDictionary.phrases.enToFr
-
-    let result = text
-
-    // Trier les entrées par longueur décroissante pour remplacer les expressions longues d'abord
-    const sortedEntries = Object.entries(dictionary).sort((a, b) => b[0].length - a[0].length)
-
-    for (const [source, target] of sortedEntries) {
-      const regex = new RegExp(source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
-      result = result.replace(regex, (match) => {
-        // Préserver la casse du premier caractère
-        if (match[0] === match[0].toUpperCase()) {
-          return target.charAt(0).toUpperCase() + target.slice(1)
-        }
-        return target
-      })
-    }
-
-    return result
+    return text
   }
 
   // ==================== FONCTIONS PRINCIPALES ====================

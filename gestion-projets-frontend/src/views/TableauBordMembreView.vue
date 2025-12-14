@@ -158,6 +158,14 @@
           </li>
           <li class="nav-item">
             <a class="nav-link"
+               :class="{active:onglet==='kanban'}"
+               @click="onglet='kanban'"
+               href="javascript:void(0)">
+              <i class="fas fa-columns me-2"></i>Kanban
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
                :class="{active:onglet==='notifications'}"
                @click="onglet='notifications'"
                href="javascript:void(0)">
@@ -202,7 +210,7 @@
                   <th>{{ $t('projets.statut') }}</th>
                   <th>{{ $t('projets.progression') }}</th>
                   <th>{{ $t('membre.mesTaches') }}</th>
-                  <th>{{ $t('projets.derniereActivite') }}</th>
+                  <th>{{ $t('projets.dateCreation') }}</th>
                   <th class="text-end">{{ $t('commun.actions') }}</th>
                 </tr>
                 </thead>
@@ -240,7 +248,7 @@
                   </td>
                   <td>
                     <small class="text-muted">
-                      {{ formatDate(p.dateModification || p.date_modification) }}
+                      {{ formatDate(p.date_creation || p.dateCreation) }}
                     </small>
                   </td>
                   <td class="text-end">
@@ -410,350 +418,378 @@
         </div>
       </div>
 
-<!-- ========== ONGLET NOTIFICATIONS ========== -->
-<div v-else-if="onglet==='notifications'">
-<div class="card shadow-sm border-0">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">{{ $t('membre.sections.notifications') }}</h5>
-    <button class="btn btn-outline-secondary btn-sm"
-            @click="marquerToutesLues"
-            :disabled="notificationsNonLues.length===0">
-      <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
-    </button>
-  </div>
-  <div class="card-body">
-    <div v-if="notifications.length===0" class="text-center text-muted py-5">
-      <i class="fas fa-bell-slash fa-3x mb-3"></i>
-      <p>{{ $t('membre.notifications.vide') }}</p>
-    </div>
-    <div v-else class="list-group">
-      <div v-for="n in notifications" :key="n.id"
-           class="list-group-item d-flex align-items-start gap-3 notification-item"
-           :class="{'bg-light': !n.lu}">
-        <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
-          <i :class="getNotificationIcon(n.type)"></i>
-        </div>
-        <div class="flex-grow-1">
-          <div class="fw-semibold">{{ n.titre || n.title || $t('notifications.notification') }}</div>
-          <div class="small text-muted">{{ n.message || n.contenu }}</div>
-          <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
-        </div>
-        <div class="btn-group">
-          <button v-if="!n.lu" class="btn btn-sm btn-outline-success"
-                  @click="marquerNotificationLue(n)">
-            <i class="fas fa-check"></i>
-          </button>
-          <button class="btn btn-sm btn-outline-danger"
-                  @click="supprimerNotification(n)">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ========== ONGLET COLLABORATION ========== -->
-<div v-else-if="onglet==='collaboration'">
-<div class="row g-3">
-  <div class="col-md-4">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white">
-        <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
-      </div>
-      <div class="list-group list-group-flush">
-        <button v-for="p in mesProjets" :key="p.id"
-                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
-                @click="ouvrirChatProjet(p)">
-          <span class="text-truncate">{{ translateProjectTitle(p.titre) }}</span>
-          <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
-        </button>
-        <div v-if="mesProjets.length===0" class="text-center text-muted py-4">
-          {{ $t('projets.aucunProjet') }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-8">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white d-flex align-items-center gap-2">
-        <h6 class="mb-0">
-          <i class="fas fa-comments me-2"></i>
-          {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('chat.chatProjet') }}
-        </h6>
-      </div>
-
-      <div class="card-body d-flex flex-column" style="height:420px">
-        <div class="flex-grow-1 overflow-auto messages-container" ref="messagesContainer">
-          <div v-if="!projetChatActuel" class="text-center text-muted py-5">
-            {{ $t('projets.choisirProjet') }}
+      <!-- ========== ONGLET KANBAN ========== -->
+      <div v-else-if="onglet==='kanban'">
+        <div class="card shadow-sm border-0 mb-3">
+          <div class="card-body">
+            <label class="form-label mb-1">
+              <i class="fas fa-project-diagram me-2"></i>{{ $t('projets.selectionnerProjet') }}
+            </label>
+            <select class="form-select" v-model="projetKanbanSelectionne" style="max-width: 350px;">
+              <option :value="null">-- {{ $t('projets.choisirProjet') }} --</option>
+              <option v-for="p in mesProjets" :key="p.id" :value="p">
+                {{ translateProjectTitle(p.titre) }}
+              </option>
+            </select>
           </div>
+        </div>
 
-          <div v-else>
-            <div v-if="messagesChat.length===0" class="text-center text-muted py-5">
-              {{ $t('chat.aucunMessage') }}
+        <KanbanBoard
+          v-if="projetKanbanSelectionne"
+          :projetId="projetKanbanSelectionne.id"
+          :key="projetKanbanSelectionne.id"
+        />
+
+        <div v-else class="text-center text-muted py-5">
+          <i class="fas fa-hand-pointer fa-3x mb-3"></i>
+          <p>{{ $t('projets.selectionnerProjetPourKanban') }}</p>
+        </div>
+      </div>
+
+      <!-- ========== ONGLET NOTIFICATIONS ========== -->
+      <div v-else-if="onglet==='notifications'">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ $t('membre.sections.notifications') }}</h5>
+            <button class="btn btn-outline-secondary btn-sm"
+                    @click="marquerToutesLues"
+                    :disabled="notificationsNonLues.length===0">
+              <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
+            </button>
+          </div>
+          <div class="card-body">
+            <div v-if="notifications.length===0" class="text-center text-muted py-5">
+              <i class="fas fa-bell-slash fa-3x mb-3"></i>
+              <p>{{ $t('membre.notifications.vide') }}</p>
             </div>
-
-            <div v-for="m in messagesChat" :key="m.id"
-                 class="p-2 rounded mb-2 chat-bubble"
-                 :class="getMessageClass(m)"
-                 style="max-width:80%">
-              <div class="small opacity-75 mb-1">
-                {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || $t('commun.inconnu') }}
-                · {{ formatTime(m.dateEnvoi || m.date || m.createdAt) }}
+            <div v-else class="list-group">
+              <div v-for="n in notifications" :key="n.id"
+                   class="list-group-item d-flex align-items-start gap-3 notification-item"
+                   :class="{'bg-light': !n.lu}">
+                <div class="notification-icon rounded" :class="getNotificationIconClass(n.type)">
+                  <i :class="getNotificationIcon(n.type)"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{ n.titre || n.title || $t('notifications.notification') }}</div>
+                  <div class="small text-muted">{{ n.message || n.contenu }}</div>
+                  <small class="text-muted">{{ formatDateRelative(n.date || n.createdAt) }}</small>
+                </div>
+                <div class="btn-group">
+                  <button v-if="!n.lu" class="btn btn-sm btn-outline-success"
+                          @click="marquerNotificationLue(n)">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger"
+                          @click="supprimerNotification(n)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </div>
-              <div>{{ m.contenu }}</div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="pt-2 border-top" v-if="projetChatActuel">
-          <div class="input-group">
-            <input class="form-control"
-                   v-model.trim="nouveauMessage"
-                   :placeholder="$t('collaboration.ecrireMessage')"
-                   @keyup.enter="envoyerMessage">
-            <button class="btn btn-success"
-                    :disabled="envoyantMessage || !nouveauMessage"
-                    @click="envoyerMessage">
-              <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
-              <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
+      <!-- ========== ONGLET COLLABORATION ========== -->
+      <div v-else-if="onglet==='collaboration'">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">{{ $t('nav.mesProjets') }}</h6>
+              </div>
+              <div class="list-group list-group-flush">
+                <button v-for="p in mesProjets" :key="p.id"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                        :class="{active: projetChatActuel && projetChatActuel.id===p.id}"
+                        @click="ouvrirChatProjet(p)">
+                  <span class="text-truncate">{{ translateProjectTitle(p.titre) }}</span>
+                  <span class="badge bg-secondary">{{ getMessagesNonLusProjet(p.id) }}</span>
+                </button>
+                <div v-if="mesProjets.length===0" class="text-center text-muted py-4">
+                  {{ $t('projets.aucunProjet') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white d-flex align-items-center gap-2">
+                <h6 class="mb-0">
+                  <i class="fas fa-comments me-2"></i>
+                  {{ projetChatActuel ? translateProjectTitle(projetChatActuel.titre) : $t('chat.chatProjet') }}
+                </h6>
+              </div>
+
+              <div class="card-body d-flex flex-column" style="height:420px">
+                <div class="flex-grow-1 overflow-auto messages-container" ref="messagesContainer">
+                  <div v-if="!projetChatActuel" class="text-center text-muted py-5">
+                    {{ $t('projets.choisirProjet') }}
+                  </div>
+
+                  <div v-else>
+                    <div v-if="messagesChat.length===0" class="text-center text-muted py-5">
+                      {{ $t('chat.aucunMessage') }}
+                    </div>
+
+                    <div v-for="m in messagesChat" :key="m.id"
+                         class="p-2 rounded mb-2 chat-bubble"
+                         :class="getMessageClass(m)"
+                         style="max-width:80%">
+                      <div class="small opacity-75 mb-1">
+                        {{ m.auteur?.prenom || m.auteur?.firstName || m.utilisateurNom || $t('commun.inconnu') }}
+                        · {{ formatTime(m.dateEnvoi || m.date || m.createdAt) }}
+                      </div>
+                      <div>{{ m.contenu }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-top" v-if="projetChatActuel">
+                  <div class="input-group">
+                    <input class="form-control"
+                           v-model.trim="nouveauMessage"
+                           :placeholder="$t('collaboration.ecrireMessage')"
+                           @keyup.enter="envoyerMessage">
+                    <button class="btn btn-success"
+                            :disabled="envoyantMessage || !nouveauMessage"
+                            @click="envoyerMessage">
+                      <span v-if="envoyantMessage" class="spinner-border spinner-border-sm"></span>
+                      <i v-else class="fas fa-paper-plane me-1"></i>{{ $t('commun.envoyer') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== MODAL COMMENTAIRES ========== -->
+    <div v-if="modalCommentaires"
+         class="modal d-block"
+         style="background:rgba(0,0,0,.6);z-index:1060"
+         @click.self="fermerModalCommentaires">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
+            </h5>
+            <button class="btn-close btn-close-white"
+                    @click="fermerModalCommentaires"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Info tâche -->
+            <div class="alert alert-info mb-3">
+              <div><strong>{{ $t('taches.tache') }}:</strong> {{ tacheSelectionnee?.titre }}</div>
+              <div><strong>{{ $t('projets.projet') }}:</strong> {{ getProjetNom(tacheSelectionnee?.projetId || tacheSelectionnee?.id_projet) }}</div>
+            </div>
+
+            <!-- Liste des commentaires -->
+            <div v-if="chargementCommentaires" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+
+            <div v-else-if="commentairesTache.length === 0" class="text-center py-4 text-muted">
+              <i class="fas fa-comment-slash fa-3x mb-3"></i>
+              <p>{{ $t('commentaires.aucunCommentaire') }}</p>
+            </div>
+
+            <div v-else class="comments-list mb-3" style="max-height:300px;overflow-y:auto">
+              <div v-for="c in commentairesTache" :key="c.id" class="card mb-2">
+                <div class="card-body py-2">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong>{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
+                      <small class="text-muted ms-2">{{ formatDateRelative(c.date) }}</small>
+                    </div>
+                    <button v-if="peutSupprimerCommentaire(c)"
+                            class="btn btn-sm btn-outline-danger"
+                            @click="supprimerCommentaire(c.id)"
+                            :disabled="suppressionEnCours">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                  <p class="mb-0 mt-2 text-break">{{ c.contenu }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formulaire nouveau commentaire -->
+            <div class="border-top pt-3">
+              <label class="form-label fw-bold">{{ $t('commentaires.nouveau') }}</label>
+              <textarea class="form-control mb-2"
+                        v-model.trim="nouveauCommentaire"
+                        rows="3"
+                        :placeholder="$t('commentaires.placeholder')"
+                        maxlength="500"></textarea>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">{{ nouveauCommentaire.length }}/500</small>
+                <button class="btn btn-primary"
+                        @click="ajouterCommentaire"
+                        :disabled="!nouveauCommentaire || envoyantCommentaire">
+                  <span v-if="envoyantCommentaire" class="spinner-border spinner-border-sm me-1"></span>
+                  <i v-else class="fas fa-paper-plane me-1"></i>
+                  {{ $t('commentaires.ajouter') }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="fermerModalCommentaires">
+              {{ $t('commun.fermer') }}
             </button>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-</div>
-</div>
 
-<!-- ========== MODAL COMMENTAIRES ========== -->
-<div v-if="modalCommentaires"
-     class="modal d-block"
-     style="background:rgba(0,0,0,.6);z-index:1060"
-     @click.self="fermerModalCommentaires">
-<div class="modal-dialog modal-lg">
-  <div class="modal-content">
-    <div class="modal-header bg-info text-white">
-      <h5 class="modal-title">
-        <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
-      </h5>
-      <button class="btn-close btn-close-white"
-              @click="fermerModalCommentaires"></button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Info tâche -->
-      <div class="alert alert-info mb-3">
-        <div><strong>{{ $t('taches.tache') }}:</strong> {{ tacheSelectionnee?.titre }}</div>
-        <div><strong>{{ $t('projets.projet') }}:</strong> {{ getProjetNom(tacheSelectionnee?.projetId || tacheSelectionnee?.id_projet) }}</div>
-      </div>
-
-      <!-- Liste des commentaires -->
-      <div v-if="chargementCommentaires" class="text-center py-4">
-        <div class="spinner-border text-primary"></div>
-      </div>
-
-      <div v-else-if="commentairesTache.length === 0" class="text-center py-4 text-muted">
-        <i class="fas fa-comment-slash fa-3x mb-3"></i>
-        <p>{{ $t('commentaires.aucunCommentaire') }}</p>
-      </div>
-
-      <div v-else class="comments-list mb-3" style="max-height:300px;overflow-y:auto">
-        <div v-for="c in commentairesTache" :key="c.id" class="card mb-2">
-          <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <strong>{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
-                <small class="text-muted ms-2">{{ formatDateRelative(c.date) }}</small>
-              </div>
-              <button v-if="peutSupprimerCommentaire(c)"
-                      class="btn btn-sm btn-outline-danger"
-                      @click="supprimerCommentaire(c.id)"
-                      :disabled="suppressionEnCours">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-            <p class="mb-0 mt-2 text-break">{{ c.contenu }}</p>
+    <!-- ========== MODAL DÉTAIL TÂCHE ========== -->
+    <div v-if="modalDetailTache"
+         class="modal d-block"
+         style="background:rgba(0,0,0,.6);z-index:1060"
+         @click.self="fermerModalDetailTache">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-tasks me-2"></i>{{ $t('taches.detailTache') }}
+            </h5>
+            <button class="btn-close btn-close-white"
+                    @click="fermerModalDetailTache"></button>
           </div>
-        </div>
-      </div>
 
-      <!-- Formulaire nouveau commentaire -->
-      <div class="border-top pt-3">
-        <label class="form-label fw-bold">{{ $t('commentaires.nouveau') }}</label>
-        <textarea class="form-control mb-2"
-                  v-model.trim="nouveauCommentaire"
-                  rows="3"
-                  :placeholder="$t('commentaires.placeholder')"
-                  maxlength="500"></textarea>
-        <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted">{{ nouveauCommentaire.length }}/500</small>
-          <button class="btn btn-primary"
-                  @click="ajouterCommentaire"
-                  :disabled="!nouveauCommentaire || envoyantCommentaire">
-            <span v-if="envoyantCommentaire" class="spinner-border spinner-border-sm me-1"></span>
-            <i v-else class="fas fa-paper-plane me-1"></i>
-            {{ $t('commentaires.ajouter') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-secondary" @click="fermerModalCommentaires">
-        {{ $t('commun.fermer') }}
-      </button>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ========== MODAL DÉTAIL TÂCHE ========== -->
-<div v-if="modalDetailTache"
-     class="modal d-block"
-     style="background:rgba(0,0,0,.6);z-index:1060"
-     @click.self="fermerModalDetailTache">
-<div class="modal-dialog modal-lg">
-  <div class="modal-content">
-    <div class="modal-header bg-primary text-white">
-      <h5 class="modal-title">
-        <i class="fas fa-tasks me-2"></i>{{ $t('taches.detailTache') }}
-      </h5>
-      <button class="btn-close btn-close-white"
-              @click="fermerModalDetailTache"></button>
-    </div>
-
-    <div class="modal-body" v-if="tacheDetail">
-      <!-- En-tête avec titre et statut -->
-      <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-          <h4 class="mb-1">{{ translateTaskTitle(tacheDetail.titre) }}</h4>
-          <small class="text-muted">
-            {{ $t('projets.projet') }}: {{ getProjetNom(tacheDetail.projetId || tacheDetail.id_projet) }}
-          </small>
-        </div>
-        <span class="badge fs-6" :class="getStatutTacheClass(tacheDetail.statut)">
+          <div class="modal-body" v-if="tacheDetail">
+            <!-- En-tête avec titre et statut -->
+            <div class="d-flex justify-content-between align-items-start mb-4">
+              <div>
+                <h4 class="mb-1">{{ translateTaskTitle(tacheDetail.titre) }}</h4>
+                <small class="text-muted">
+                  {{ $t('projets.projet') }}: {{ getProjetNom(tacheDetail.projetId || tacheDetail.id_projet) }}
+                </small>
+              </div>
+              <span class="badge fs-6" :class="getStatutTacheClass(tacheDetail.statut)">
                 {{ translateData('taskStatus', tacheDetail.statut) }}
               </span>
-      </div>
+            </div>
 
-      <!-- Infos principales -->
-      <div class="row g-3 mb-4">
-        <!-- Priorité -->
-        <div class="col-md-4">
-          <div class="card border h-100">
-            <div class="card-body text-center">
-              <i :class="getPrioriteIcon(tacheDetail.priorite)" class="fa-2x mb-2"
-                 :style="{color: getPrioriteColor(tacheDetail.priorite)}"></i>
-              <h6 class="mb-1">{{ $t('taches.priorite') }}</h6>
-              <span class="badge" :class="getPrioriteClass(tacheDetail.priorite)">
+            <!-- Infos principales -->
+            <div class="row g-3 mb-4">
+              <!-- Priorité -->
+              <div class="col-md-4">
+                <div class="card border h-100">
+                  <div class="card-body text-center">
+                    <i :class="getPrioriteIcon(tacheDetail.priorite)" class="fa-2x mb-2"
+                       :style="{color: getPrioriteColor(tacheDetail.priorite)}"></i>
+                    <h6 class="mb-1">{{ $t('taches.priorite') }}</h6>
+                    <span class="badge" :class="getPrioriteClass(tacheDetail.priorite)">
                       {{ translateData('priority', tacheDetail.priorite) || $t('taches.priorites.normale') }}
                     </span>
-            </div>
-          </div>
-        </div>
+                  </div>
+                </div>
+              </div>
 
-        <!-- Échéance -->
-        <div class="col-md-4">
-          <div class="card border h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-calendar-alt fa-2x mb-2"
-                 :class="getEcheanceIconClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)"></i>
-              <h6 class="mb-1">{{ $t('taches.echeance') }}</h6>
-              <div v-if="tacheDetail.dateEcheance || tacheDetail.date_echeance">
+              <!-- Échéance -->
+              <div class="col-md-4">
+                <div class="card border h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-2x mb-2"
+                       :class="getEcheanceIconClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)"></i>
+                    <h6 class="mb-1">{{ $t('taches.echeance') }}</h6>
+                    <div v-if="tacheDetail.dateEcheance || tacheDetail.date_echeance">
                       <span :class="getEcheanceClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)">
                         {{ formatDate(tacheDetail.dateEcheance || tacheDetail.date_echeance) }}
                       </span>
-                <div class="mt-1">
-                  <small :class="getEcheanceAlertClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)">
-                    {{ getEcheanceMessage(tacheDetail.dateEcheance || tacheDetail.date_echeance) }}
-                  </small>
+                      <div class="mt-1">
+                        <small :class="getEcheanceAlertClass(tacheDetail.dateEcheance || tacheDetail.date_echeance)">
+                          {{ getEcheanceMessage(tacheDetail.dateEcheance || tacheDetail.date_echeance) }}
+                        </small>
+                      </div>
+                    </div>
+                    <span v-else class="text-muted">{{ $t('commun.nonDefini') }}</span>
+                  </div>
                 </div>
               </div>
-              <span v-else class="text-muted">{{ $t('commun.nonDefini') }}</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Date création -->
-        <div class="col-md-4">
-          <div class="card border h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-clock fa-2x mb-2 text-secondary"></i>
-              <h6 class="mb-1">{{ $t('taches.dateCreation') }}</h6>
-              <span>{{ formatDate(tacheDetail.dateCreation || tacheDetail.date_creation) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Description -->
-      <div class="mb-4">
-        <h6 class="fw-bold">
-          <i class="fas fa-align-left me-2"></i>{{ $t('taches.description') }}
-        </h6>
-        <div class="card border">
-          <div class="card-body">
-            <p class="mb-0" v-if="tacheDetail.description">{{ translateTaskDescription(tacheDetail.description) }}</p>
-            <p class="mb-0 text-muted fst-italic" v-else>{{ $t('taches.aucuneDescription') }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Commentaires récents -->
-      <div class="mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="fw-bold mb-0">
-            <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
-          </h6>
-          <button class="btn btn-sm btn-outline-info"
-                  @click="ouvrirCommentaires(tacheDetail); fermerModalDetailTache()">
-            {{ $t('commentaires.voirTous') }}
-          </button>
-        </div>
-        <div class="card border">
-          <div class="card-body py-2">
-            <div v-if="getCommentairesTache(tacheDetail.id).length === 0" class="text-muted text-center py-2">
-              {{ $t('commentaires.aucunCommentaire') }}
-            </div>
-            <div v-else>
-              <div v-for="c in getCommentairesTache(tacheDetail.id).slice(0, 3)" :key="c.id" class="mb-2 pb-2 border-bottom">
-                <div class="d-flex justify-content-between">
-                  <strong class="small">{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
-                  <small class="text-muted">{{ formatDateRelative(c.date) }}</small>
+              <!-- Date création -->
+              <div class="col-md-4">
+                <div class="card border h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2 text-secondary"></i>
+                    <h6 class="mb-1">{{ $t('taches.dateCreation') }}</h6>
+                    <span>{{ formatDate(tacheDetail.dateCreation || tacheDetail.date_creation) }}</span>
+                  </div>
                 </div>
-                <small>{{ c.contenu.substring(0, 100) }}{{ c.contenu.length > 100 ? '...' : '' }}</small>
               </div>
-              <small v-if="getCommentairesTache(tacheDetail.id).length > 3" class="text-muted">
-                +{{ getCommentairesTache(tacheDetail.id).length - 3 }} {{ $t('commentaires.autres') }}
-              </small>
             </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+              <h6 class="fw-bold">
+                <i class="fas fa-align-left me-2"></i>{{ $t('taches.description') }}
+              </h6>
+              <div class="card border">
+                <div class="card-body">
+                  <p class="mb-0" v-if="tacheDetail.description">{{ translateTaskDescription(tacheDetail.description) }}</p>
+                  <p class="mb-0 text-muted fst-italic" v-else>{{ $t('taches.aucuneDescription') }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commentaires récents -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">
+                  <i class="fas fa-comments me-2"></i>{{ $t('commentaires.titre') }}
+                </h6>
+                <button class="btn btn-sm btn-outline-info"
+                        @click="ouvrirCommentaires(tacheDetail); fermerModalDetailTache()">
+                  {{ $t('commentaires.voirTous') }}
+                </button>
+              </div>
+              <div class="card border">
+                <div class="card-body py-2">
+                  <div v-if="getCommentairesTache(tacheDetail.id).length === 0" class="text-muted text-center py-2">
+                    {{ $t('commentaires.aucunCommentaire') }}
+                  </div>
+                  <div v-else>
+                    <div v-for="c in getCommentairesTache(tacheDetail.id).slice(0, 3)" :key="c.id" class="mb-2 pb-2 border-bottom">
+                      <div class="d-flex justify-content-between">
+                        <strong class="small">{{ c.auteurPrenom }} {{ c.auteurNom }}</strong>
+                        <small class="text-muted">{{ formatDateRelative(c.date) }}</small>
+                      </div>
+                      <small>{{ c.contenu.substring(0, 100) }}{{ c.contenu.length > 100 ? '...' : '' }}</small>
+                    </div>
+                    <small v-if="getCommentairesTache(tacheDetail.id).length > 3" class="text-muted">
+                      +{{ getCommentairesTache(tacheDetail.id).length - 3 }} {{ $t('commentaires.autres') }}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <!-- Action selon statut -->
+            <button v-if="tacheDetail?.statut === 'BROUILLON'"
+                    class="btn btn-success"
+                    @click="soumettreValidation(tacheDetail); fermerModalDetailTache()">
+              <i class="fas fa-paper-plane me-1"></i>{{ $t('taches.soumettre') }}
+            </button>
+            <button class="btn btn-secondary" @click="fermerModalDetailTache">
+              {{ $t('commun.fermer') }}
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="modal-footer">
-      <!-- Action selon statut -->
-      <button v-if="tacheDetail?.statut === 'BROUILLON'"
-              class="btn btn-success"
-              @click="soumettreValidation(tacheDetail); fermerModalDetailTache()">
-        <i class="fas fa-paper-plane me-1"></i>{{ $t('taches.soumettre') }}
-      </button>
-      <button class="btn btn-secondary" @click="fermerModalDetailTache">
-        {{ $t('commun.fermer') }}
-      </button>
-    </div>
   </div>
-</div>
-</div>
-
-</div>
 </template>
 
 <script setup>
@@ -764,6 +800,7 @@ import { projectAPI, taskAPI, notificationAPI, messagesAPI, commentaireAPI } fro
 import WebSocketService from '@/services/websocket.service.js'
 import { useI18n } from 'vue-i18n'
 import { useDataTranslation } from '@/composables/useDataTranslation'
+import KanbanBoard from '@/components/KanbanBoard.vue'
 
 const { t } = useI18n()
 const { translateData, translateProjectTitle, translateProjectDescription, translateTaskTitle, translateTaskDescription } = useDataTranslation()
@@ -804,6 +841,7 @@ const projetChatActuel = ref(null)
 const envoyantMessage = ref(false)
 const subscribedTopics = new Set()
 const messagesContainer = ref(null)
+const projetKanbanSelectionne = ref(null)
 
 // Recherche et filtres
 const rechercheTask = ref('')
@@ -823,6 +861,9 @@ const commentairesTache = ref([])
 // Modal détail tâche
 const modalDetailTache = ref(false)
 const tacheDetail = ref(null)
+
+// Polling
+let pollingInterval = null
 
 // ========== COMPUTED ==========
 const tauxReussite = computed(() => {
@@ -1102,6 +1143,34 @@ const scrollToBottom = () => {
   }
 }
 
+// ========== RECHARGEMENT TÂCHES (temps réel) ==========
+const rechargerTaches = async () => {
+  try {
+    const userId = normalizeId(utilisateur.value.id)
+    const tRes = await taskAPI.byUser(userId)
+    if (Array.isArray(tRes.data)) {
+      mesTaches.value = tRes.data.map(t => ({
+        ...t,
+        id: normalizeId(t.id),
+        projetId: normalizeId(t.projetId || t.id_projet || t.idProjet),
+        id_projet: normalizeId(t.id_projet || t.projetId || t.idProjet),
+        idProjet: normalizeId(t.idProjet || t.projetId || t.id_projet)
+      }))
+      filtrerTaches()
+      console.log('[Auto] Tâches rechargées, progression mise à jour')
+    }
+  } catch (e) {
+    console.error('[Auto] Erreur rechargement tâches:', e)
+  }
+}
+
+const handleVisibilityChange = async () => {
+  if (document.visibilityState === 'visible') {
+    console.log('[Visibility] Page visible, rechargement des tâches...')
+    await rechargerTaches()
+  }
+}
+
 // ========== COMMENTAIRES ==========
 const chargerCommentairesTache = async (tacheId) => {
   chargementCommentaires.value = true
@@ -1228,7 +1297,7 @@ const initWebsocket = () => {
   const topicNotifications = `/user/${userId}/topic/notifications`
 
   if (!subscribedTopics.has(topicNotifications)) {
-    WebSocketService.subscribe(topicNotifications, (msg) => {
+    WebSocketService.subscribe(topicNotifications, async (msg) => {
       if (msg?.type === 'NOTIFICATION' || msg?.message) {
         notifications.value.unshift({
           id: msg.id || Date.now(),
@@ -1238,6 +1307,33 @@ const initWebsocket = () => {
           lu: false,
           type: msg.sousType || 'SYSTEME'
         })
+
+        // ========== NOUVEAU : Gestion suppression projet en temps réel ==========
+        if (msg.sousType === 'PROJET_SUPPRIME' && msg.projetId) {
+          const projetIdSupprime = normalizeId(msg.projetId)
+          mesProjets.value = mesProjets.value.filter(p => normalizeId(p.id) !== projetIdSupprime)
+          mesTaches.value = mesTaches.value.filter(t => normalizeId(t.projetId || t.id_projet) !== projetIdSupprime)
+          filtrerTaches()
+
+          // Fermer le chat si le projet supprimé était ouvert
+          if (projetChatActuel.value && normalizeId(projetChatActuel.value.id) === projetIdSupprime) {
+            projetChatActuel.value = null
+            messagesChat.value = []
+          }
+
+          // Désélectionner le projet Kanban si nécessaire
+          if (projetKanbanSelectionne.value && normalizeId(projetKanbanSelectionne.value.id) === projetIdSupprime) {
+            projetKanbanSelectionne.value = null
+          }
+
+          console.log('[WS] Projet supprimé en temps réel:', projetIdSupprime)
+        }
+        // Recharger les tâches si notification liée aux tâches
+        if (msg.sousType === 'TACHE' ||
+          msg.message?.toLowerCase().includes('tâche') ||
+          msg.message?.toLowerCase().includes('validée')) {
+          await rechargerTaches()
+        }
 
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(msg.titre || t('notifications.notification'), {
@@ -1250,8 +1346,17 @@ const initWebsocket = () => {
     })
     subscribedTopics.add(topicNotifications)
   }
-}
 
+  // Abonnement aux mises à jour de tâches
+  const topicTaches = `/user/${userId}/topic/taches`
+  if (!subscribedTopics.has(topicTaches)) {
+    WebSocketService.subscribe(topicTaches, async (msg) => {
+      console.log('[WS] Mise à jour tâche reçue:', msg)
+      await rechargerTaches()
+    })
+    subscribedTopics.add(topicTaches)
+  }
+}
 // ========== ACTIONS PROJETS ==========
 const consulterProjet = (p) => {
   router.push(`/projet/${normalizeId(p.id)}`)
@@ -1262,8 +1367,16 @@ const progressionProjet = (projetId) => {
     normalizeId(t.projetId || t.id_projet) == normalizeId(projetId)
   )
   if (taches.length === 0) return 0
-  const terminees = taches.filter(t => t.statut === 'TERMINE').length
-  return Math.round((terminees / taches.length) * 100)
+
+  const poids = {
+    'BROUILLON': 0,
+    'EN_ATTENTE_VALIDATION': 50,
+    'TERMINE': 100,
+    'ANNULE': 0
+  }
+
+  const totalPoints = taches.reduce((sum, t) => sum + (poids[t.statut] || 0), 0)
+  return Math.round(totalPoints / taches.length)
 }
 
 const getTachesProjet = (projetId) => {
@@ -1478,11 +1591,34 @@ watch(mesTaches, () => {
   filtrerTaches()
 }, { deep: true })
 
+watch(onglet, async (newVal) => {
+  if (newVal === 'projets') {
+    await rechargerTaches()
+  }
+})
+
 // ========== LIFECYCLE ==========
 onMounted(async () => {
   await chargerToutesDonnees()
   initWebsocket()
   filtrerTaches()
+
+  pollingInterval = setInterval(async () => {
+    await rechargerTaches()
+
+    try {
+      const userId = normalizeId(utilisateur.value.id)
+      const pRes = await projectAPI.byUser(userId)
+      if (Array.isArray(pRes.data)) {
+        mesProjets.value = pRes.data.map(p => ({ ...p, id: normalizeId(p.id) }))
+      }
+    } catch (e) {
+      console.warn('[Polling] Erreur rechargement projets:', e)
+    }
+  }, 10000)
+
+  // Recharger quand l'utilisateur revient sur la page/onglet
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission()
@@ -1492,6 +1628,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   WebSocketService.disconnect()
   if (toastTimeout) clearTimeout(toastTimeout)
+  if (pollingInterval) clearInterval(pollingInterval)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 

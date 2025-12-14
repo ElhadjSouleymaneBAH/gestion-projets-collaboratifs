@@ -402,7 +402,7 @@ public class TacheService {
         if (tache.getAssigneA() != null) {
             Utilisateur assigne = tache.getAssigneA();
             dto.setIdAssigne(assigne.getId());
-            dto.setNomAssigne(assigne.getPrenom() + " " + assigne.getNom());
+            dto.setNomAssigne(assigne.getNom());
             dto.setPrenomAssigne(assigne.getPrenom());
             dto.setEmailAssigne(assigne.getEmail());
         } else {

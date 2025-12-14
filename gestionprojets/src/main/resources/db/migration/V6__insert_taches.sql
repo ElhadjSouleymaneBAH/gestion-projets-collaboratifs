@@ -56,7 +56,7 @@ INSERT INTO `taches` (`id`, `titre`, `description`, `id_projet`, `id_assigne`, `
 -- Projet 8: Réseau Social Étudiants (chef=57, membres=29,30,31)
 (36, 'Définition personas utilisateurs', 'Profils types étudiants cibles', 8, 29, 'TERMINE', 'NORMALE', '2025-02-06 09:40:00', NULL),
 (37, 'Architecture sociale', 'Système amis, groupes, discussions', 8, 30, 'EN_ATTENTE_VALIDATION', 'NORMALE', '2025-02-08 14:55:00', NULL),
-(38, 'Modération automatique', 'IA détection contenu inapproprié', 8, NULL, 'BROUILLON', 'HAUTE', '2025-02-10 11:10:00', NULL),
+(38, 'Modération automatique', 'IA détection contenu inapproprié', 8, 30, 'BROUILLON', 'HAUTE', '2025-02-10 11:10:00', NULL),
 (39, 'Système événements campus', 'Création et partage événements', 8, NULL, 'BROUILLON', 'NORMALE', '2025-02-12 16:25:00', NULL),
 (40, 'Application mobile native', 'Version iOS et Android', 8, 31, 'BROUILLON', 'NORMALE', '2025-02-14 13:40:00', NULL),
 

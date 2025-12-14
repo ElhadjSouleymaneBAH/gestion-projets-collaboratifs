@@ -104,7 +104,8 @@
       </div>
 
       <!-- ========== NAVIGATION SIMPLIFIÉE ========== -->
-      <ul class="nav nav-pills nav-pills-custom mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <ul class="nav nav-pills nav-pills-custom">
         <li class="nav-item">
           <a class="nav-link" :class="{ active: onglet === 'projets' }" @click="onglet = 'projets'" href="javascript:void(0)">
             <i class="fas fa-folder me-2"></i>{{ $t('nav.mesProjets') }}
@@ -136,14 +137,23 @@
             <span v-if="notificationsNonLues.length > 0" class="badge bg-danger ms-1">{{ notificationsNonLues.length }}</span>
           </a>
         </li>
+          <li class="nav-item">
+            <a class="nav-link" :class="{ active: onglet === 'statistiques' }" @click="onglet = 'statistiques'" href="javascript:void(0)">
+              <i class="fas fa-chart-pie me-2"></i>{{ $t('nav.statistiques') }}
+            </a>
+          </li>
       </ul>
+        <router-link to="/profil" class="btn btn-link text-decoration-none">
+          <i class="fas fa-user me-1"></i>{{ $t('membre.profil') }}
+        </router-link>
+      </div>
 
       <!-- ========== ONGLET PROJETS (STYLE CARTES TRELLO) ========== -->
       <div v-if="onglet === 'projets'">
         <div class="section-header mb-3">
           <div>
             <h5 class="section-title">{{ $t('projets.gestionProjets') }}</h5>
-            <p class="section-subtitle">{{ mesProjets.length }} projets • {{ projetsActifs.length }} actifs</p>
+            <p class="section-subtitle">{{ mesProjets.length }} {{ $t('projets.projets') }} • {{ projetsActifs.length }} {{ $t('commun.actifs') }}</p>
           </div>
           <button class="btn btn-success" @click="creerProjet" :disabled="!abonnementActif">
             <i class="fas fa-plus me-2"></i>{{ $t('projets.nouveauProjet') }}
@@ -221,11 +231,11 @@
               </select>
             </div>
             <button v-if="projetKanbanSelectionne" class="btn btn-success" @click="ouvrirModalCreationTache" :disabled="!abonnementActif">
-              <i class="fas fa-plus me-2"></i>Nouvelle tâche
+              <i class="fas fa-plus me-2"></i>{{ $t('taches.nouvelleTache') }}
             </button>
           </div>
 
-          <KanbanBoard v-if="projetKanbanSelectionne" :projetId="projetKanbanSelectionne.id" :key="projetKanbanSelectionne.id" />
+          <KanbanBoard v-if="projetKanbanSelectionne" :projetId="projetKanbanSelectionne.id" :peut-assigner="true" :key="projetKanbanSelectionne.id + '-' + kanbanRefreshKey" @tache-assignee="chargerTaches" />
 
           <div v-else class="empty-state">
             <i class="fas fa-hand-pointer"></i>
@@ -239,7 +249,7 @@
         <div class="section-header mb-3">
           <div>
             <h5 class="section-title">{{ $t('equipe.collaborateurs') }}</h5>
-            <p class="section-subtitle">{{ totalMembres }} collaborateurs sur tous les projets</p>
+            <p class="section-subtitle">{{ totalMembres }} {{ $t('equipe.collaborateursSurTousProjets') }}</p>
           </div>
           <button class="btn btn-success" @click="ouvrirModalAjoutMembreGlobal" :disabled="mesProjets.length === 0 || !abonnementActif">
             <i class="fas fa-user-plus me-1"></i>{{ $t('equipe.ajouterMembre') }}
@@ -427,7 +437,7 @@
         <div class="section-header mb-3">
           <div>
             <h5 class="section-title">{{ $t('nav.notifications') }}</h5>
-            <p class="section-subtitle">{{ notificationsNonLues.length }} non lues sur {{ notifications.length }}</p>
+            <p class="section-subtitle">{{ notificationsNonLues.length }} {{ $t('notifications.nonLues') }} {{ $t('commun.sur') }} {{ notifications.length }}</p>
           </div>
           <button class="btn btn-outline-secondary btn-sm" @click="marquerToutesLues" :disabled="notificationsNonLues.length === 0">
             <i class="fas fa-check-double me-1"></i>{{ $t('notifications.marquerToutesLues') }}
@@ -466,6 +476,100 @@
       </div>
 
     </div>
+    <!-- ========== ONGLET STATISTIQUES (PREMIUM) ========== -->
+    <div v-if="onglet === 'statistiques'">
+      <div class="section-header mb-3">
+        <div>
+          <h5 class="section-title"><i class="fas fa-chart-pie me-2 text-warning"></i>{{ $t('statistiques.titre') }}</h5>
+          <p class="section-subtitle">{{ $t('statistiques.description') }}</p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Camembert : Répartition des tâches -->
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+              <h6 class="mb-0"><i class="fas fa-tasks me-2 text-warning"></i>{{ $t('statistiques.repartitionTaches') }}</h6>
+            </div>
+            <div class="card-body">
+              <canvas id="chartTaches" height="250"></canvas>
+            </div>
+            <div class="card-footer bg-light">
+              <div class="d-flex justify-content-around text-center small">
+                <div><span class="badge bg-secondary">{{ statsCalculees.taches.brouillon }}</span> {{ $t('taches.statuts.brouillon') }}</div>
+                <div><span class="badge bg-warning text-dark">{{ statsCalculees.taches.enAttente }}</span> {{ $t('taches.statuts.enAttente') }}</div>
+                <div><span class="badge bg-success">{{ statsCalculees.taches.termine }}</span> {{ $t('taches.statuts.termine') }}</div>
+                <div><span class="badge bg-danger">{{ statsCalculees.taches.annule }}</span> {{ $t('taches.statuts.annule') }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Camembert : Répartition des projets -->
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+              <h6 class="mb-0"><i class="fas fa-project-diagram me-2 text-primary"></i>{{ $t('statistiques.repartitionProjets') }}</h6>
+            </div>
+            <div class="card-body">
+              <canvas id="chartProjets" height="250"></canvas>
+            </div>
+            <div class="card-footer bg-light">
+              <div class="d-flex justify-content-around text-center small">
+                <div><span class="badge bg-success">{{ statsCalculees.projets.actif }}</span> {{ $t('statuts.ACTIF') }}</div>
+                <div><span class="badge bg-warning text-dark">{{ statsCalculees.projets.suspendu }}</span> {{ $t('statuts.SUSPENDU') }}</div>
+                <div><span class="badge bg-secondary">{{ statsCalculees.projets.termine }}</span> {{ $t('statuts.TERMINE') }}</div>
+                <div><span class="badge bg-danger">{{ statsCalculees.projets.annule }}</span> {{ $t('statuts.ANNULE') }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicateurs clés -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+              <h6 class="mb-0"><i class="fas fa-tachometer-alt me-2 text-info"></i>{{ $t('statistiques.indicateurs') }}</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <div class="stat-box text-center p-3 bg-light rounded">
+                    <div class="stat-value text-primary">{{ statsCalculees.tauxCompletion }}%</div>
+                    <div class="stat-label">{{ $t('statistiques.tauxCompletion') }}</div>
+                    <div class="progress mt-2" style="height: 6px;">
+                      <div class="progress-bar bg-primary" :style="{ width: statsCalculees.tauxCompletion + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-box text-center p-3 bg-light rounded">
+                    <div class="stat-value text-success">{{ statsCalculees.tachesAssignees }}</div>
+                    <div class="stat-label">{{ $t('statistiques.tachesAssignees') }}</div>
+                    <small class="text-muted">{{ $t('commun.sur') }} {{ totalTaches.length }} {{ $t('commun.total') }}</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-box text-center p-3 bg-light rounded">
+                    <div class="stat-value text-warning">{{ statsCalculees.tachesNonAssignees }}</div>
+                    <div class="stat-label">{{ $t('statistiques.tachesNonAssignees') }}</div>
+                    <small class="text-muted">{{ $t('statistiques.aAssigner') }}</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-box text-center p-3 bg-light rounded">
+                    <div class="stat-value text-info">{{ statsCalculees.moyenneMembres }}</div>
+                    <div class="stat-label">{{ $t('statistiques.moyenneMembresProjet') }}</div>
+                    <small class="text-muted">{{ totalMembres }} {{ $t('commun.total') }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ========== SUPPORT PREMIUM (EN BAS) ========== -->
     <div v-if="abonnementActif && !chargementGlobal" class="support-premium-bar">
@@ -477,9 +581,6 @@
         <i class="fas fa-envelope me-1"></i>{{ $t('tableauBord.chefProjet.supportPremium.bouton') }}
       </router-link>
     </div>
-
-    <!-- ========== TOUS LES MODALS (INCHANGÉS) ========== -->
-
     <!-- Modal création projet -->
     <div v-if="showCreateProject" class="modal d-block" style="background: rgba(0, 0, 0, 0.5); z-index: 1060">
       <div class="modal-dialog">
@@ -519,50 +620,97 @@
       </div>
     </div>
 
+    <!-- Modal modification projet -->
+    <div v-if="modalModificationProjet" class="modal d-block" style="background: rgba(0, 0, 0, 0.5); z-index: 1060">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title"><i class="fas fa-edit me-2"></i>{{ $t('projets.modifierProjet') }}</h5>
+            <button class="btn-close" @click="fermerModalModificationProjet"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">{{ $t('projets.nom') }} *</label>
+              <input class="form-control" v-model.trim="projetModifForm.titre" maxlength="120" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ $t('projets.description') }}</label>
+              <textarea class="form-control" v-model.trim="projetModifForm.description" rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ $t('projets.statut') }}</label>
+              <select class="form-select" v-model="projetModifForm.statut">
+                <option value="ACTIF">{{ $t('statuts.ACTIF') }}</option>
+                <option value="SUSPENDU">{{ $t('statuts.SUSPENDU') }}</option>
+                <option value="TERMINE">{{ $t('statuts.TERMINE') }}</option>
+                <option value="ANNULE">{{ $t('statuts.ANNULE') }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ $t('projets.visibilite') }}</label>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="projetModifPublique" v-model="projetModifForm.publique">
+                <label class="form-check-label" for="projetModifPublique">
+                  <span v-if="projetModifForm.publique"><i class="fas fa-globe text-success me-1"></i>{{ $t('projets.public') }}</span>
+                  <span v-else><i class="fas fa-lock text-secondary me-1"></i>{{ $t('projets.prive') }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" @click="fermerModalModificationProjet">{{ $t('commun.annuler') }}</button>
+            <button class="btn btn-warning" @click="sauvegarderModificationProjet" :disabled="!projetModifForm.titre.trim()">
+              <i class="fas fa-save me-1"></i>{{ $t('commun.enregistrer') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal création tâche -->
     <div v-if="modalCreationTache" class="modal d-block" style="background: rgba(0, 0, 0, 0.5); z-index: 1060">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-success text-white">
-            <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Nouvelle tâche</h5>
+            <h5 class="modal-title"><i class="fas fa-plus me-2"></i>{{ $t('taches.nouvelleTache') }}</h5>
             <button class="btn-close btn-close-white" @click="modalCreationTache = false"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Projet *</label>
+              <label class="form-label">{{ $t('projets.projet') }} *</label>
               <select class="form-select" v-model="nouvelleTache.projetId" required>
-                <option :value="null">-- Choisir un projet --</option>
-                <option v-for="p in mesProjets" :key="p.id" :value="p.id">{{ p.titre }}</option>
+                <option :value="null">-- {{ $t('projets.choisirProjet') }} --</option>
+                <option v-for="p in mesProjets" :key="p.id" :value="p.id">{{ translateProjectTitle(p.titre) }}</option>
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label">Titre *</label>
+              <label class="form-label">{{ $t('taches.titre') }} *</label>
               <input class="form-control" v-model="nouvelleTache.titre" maxlength="120" required />
             </div>
             <div class="mb-3">
-              <label class="form-label">Description</label>
+              <label class="form-label">{{ $t('taches.description') }}</label>
               <textarea class="form-control" v-model="nouvelleTache.description" rows="3"></textarea>
             </div>
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label">Priorité</label>
+                <label class="form-label">{{ $t('taches.priorite') }}</label>
                 <select class="form-select" v-model="nouvelleTache.priorite">
-                  <option value="BASSE">Basse</option>
-                  <option value="NORMALE">Normale</option>
-                  <option value="HAUTE">Haute</option>
-                  <option value="URGENTE">Urgente</option>
+                  <option value="BASSE">{{ $t('priorites.BASSE') }}</option>
+                  <option value="NORMALE">{{ $t('priorites.NORMALE') }}</option>
+                  <option value="HAUTE">{{ $t('priorites.HAUTE') }}</option>
+                  <option value="URGENTE">{{ $t('priorites.URGENTE') }}</option>
                 </select>
               </div>
               <div class="col-md-6 mb-3">
-                <label class="form-label">Date d'échéance</label>
+                <label class="form-label">{{ $t('taches.dateEcheance') }}</label>
                 <input type="date" class="form-control" v-model="nouvelleTache.dateEcheance" />
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" @click="modalCreationTache = false">Annuler</button>
+            <button class="btn btn-secondary" @click="modalCreationTache = false">{{ $t('commun.annuler') }}</button>
             <button class="btn btn-success" @click="creerNouvelleTache" :disabled="!nouvelleTache.titre || !nouvelleTache.projetId">
-              <i class="fas fa-check me-1"></i>Créer
+              <i class="fas fa-check me-1"></i>{{ $t('commun.creer') }}
             </button>
           </div>
         </div>
@@ -793,6 +941,8 @@
 <script>
 import KanbanBoard from '@/components/KanbanBoard.vue'
 import { useDataTranslation } from '@/composables/useDataTranslation'
+import { Chart, registerables } from 'chart.js'
+Chart.register(...registerables)
 import { useAuthStore } from '@/stores/auth'
 import {
   projectAPI,
@@ -860,12 +1010,19 @@ export default {
       erreurBackend: null,
       showCreateProject: false,
       projetForm: { titre: '', description: '', publique: false },
+      modalModificationProjet: false,
+      projetEnModification: null,
+      projetModifForm: { titre: '', description: '', statut: 'ACTIF', publique: false },
       subscribedTopics: new Set(),
       projetKanbanSelectionne: null,
+      kanbanRefreshKey: 0,
       modalCreationTache: false,
       nouvelleTache: { projetId: null, titre: '', description: '', priorite: 'NORMALE', dateEcheance: null },
       // Couleurs pour les projets
-      projetCouleurs: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#E91E63', '#00BCD4', '#795548', '#607D8B']
+      projetCouleurs: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#E91E63', '#00BCD4', '#795548', '#607D8B'],
+      // Statistiques - instances Chart.js
+      chartTachesInstance: null,
+      chartProjetsInstance: null,
     }
   },
   computed: {
@@ -893,6 +1050,41 @@ export default {
     },
     notificationsNonLues() {
       return this.notifications.filter((n) => !n.lu)
+
+    },
+
+    statsCalculees() {
+      // Répartition des tâches par statut
+      const taches = {
+        brouillon: this.totalTaches.filter(t => t.statut === 'BROUILLON').length,
+        enAttente: this.totalTaches.filter(t => t.statut === 'EN_ATTENTE_VALIDATION').length,
+        termine: this.totalTaches.filter(t => t.statut === 'TERMINE').length,
+        annule: this.totalTaches.filter(t => t.statut === 'ANNULE').length
+      }
+
+      // Répartition des projets par statut
+      const projets = {
+        actif: this.mesProjets.filter(p => p.statut === 'ACTIF').length,
+        suspendu: this.mesProjets.filter(p => p.statut === 'SUSPENDU').length,
+        termine: this.mesProjets.filter(p => p.statut === 'TERMINE').length,
+        annule: this.mesProjets.filter(p => p.statut === 'ANNULE').length
+      }
+
+      // Taux de complétion
+      const tauxCompletion = this.totalTaches.length > 0
+        ? Math.round((taches.termine / this.totalTaches.length) * 100)
+        : 0
+
+      // Tâches assignées / non assignées
+      const tachesAssignees = this.totalTaches.filter(t => t.assigneId || t.idAssigne || t.id_assigne).length
+      const tachesNonAssignees = this.totalTaches.length - tachesAssignees
+
+      // Moyenne membres par projet
+      const moyenneMembres = this.mesProjets.length > 0
+        ? Math.round(this.totalMembres / this.mesProjets.length * 10) / 10
+        : 0
+
+      return { taches, projets, tauxCompletion, tachesAssignees, tachesNonAssignees, moyenneMembres }
     },
   },
   async mounted() {
@@ -925,7 +1117,14 @@ export default {
       if (nv === 'notifications' && this.notifications.length === 0) this.chargerNotifications()
       if (nv === 'chat' && !this.projetChatActuel && this.mesProjets[0])
         this.ouvrirChatProjet(this.mesProjets[0])
+      if (nv === 'statistiques') this.dessinerGraphiques()
     },
+
+    '$i18n.locale'() {
+      if (this.onglet === 'statistiques') {
+        this.dessinerGraphiques()
+      }
+    }
   },
   methods: {
     normalizeId(v) {
@@ -1000,9 +1199,9 @@ export default {
         console.error('[Projets] Erreur:', e)
         this.mesProjets = []
         if (e.response?.status === 401) {
-          this.erreurBackend = 'Session expirée. Veuillez vous reconnecter'
+          this.erreurBackend = this.$t('erreurs.sessionExpiree')
         } else {
-          this.erreurBackend = 'Erreur de chargement des projets'
+          this.erreurBackend = this.$t('erreurs.chargementProjets')
         }
       } finally {
         this.chargementProjets = false
@@ -1213,16 +1412,45 @@ export default {
     consulterProjet(p) {
       this.$router.push(`/projet/${this.normalizeId(p.id)}`)
     },
-    async modifierProjet(p) {
-      const nouveauTitre = prompt(this.$t('projets.nouveauTitre'), p.titre)
-      if (!nouveauTitre || nouveauTitre === p.titre) return
-      const nouvelleDesc = prompt(this.$t('projets.nouvelleDescription'), p.description)
-      if (nouvelleDesc === null) return
+    modifierProjet(p) {
+      this.projetEnModification = p
+      this.projetModifForm = {
+        titre: p.titre || '',
+        description: p.description || '',
+        statut: p.statut || 'ACTIF',
+        publique: p.publique || false
+      }
+      this.modalModificationProjet = true
+    },
+    fermerModalModificationProjet() {
+      this.modalModificationProjet = false
+      this.projetEnModification = null
+      this.projetModifForm = { titre: '', description: '', statut: 'ACTIF', publique: false }
+    },
+    async sauvegarderModificationProjet() {
+      if (!this.projetModifForm.titre.trim()) {
+        alert(this.$t('projets.titreObligatoire'))
+        return
+      }
       try {
-        await projectAPI.update(p.id, { ...p, titre: nouveauTitre, description: nouvelleDesc })
-        p.titre = nouveauTitre
-        p.description = nouvelleDesc
+        const projetMaj = {
+          ...this.projetEnModification,
+          titre: this.projetModifForm.titre,
+          description: this.projetModifForm.description,
+          statut: this.projetModifForm.statut,
+          publique: this.projetModifForm.publique
+        }
+        await projectAPI.update(this.projetEnModification.id, projetMaj)
+
+        // Mettre à jour localement
+        this.projetEnModification.titre = this.projetModifForm.titre
+        this.projetEnModification.description = this.projetModifForm.description
+        this.projetEnModification.statut = this.projetModifForm.statut
+        this.projetEnModification.publique = this.projetModifForm.publique
+
+        this.$forceUpdate()
         alert(this.$t('projets.projetModifie'))
+        this.fermerModalModificationProjet()
       } catch (e) {
         console.error('[Projet] Erreur modification:', e)
         if (e.response?.status === 403) alert(this.$t('erreurs.pasAutoriseModifier'))
@@ -1231,13 +1459,13 @@ export default {
     },
     async toggleVisibilite(projet) {
       const nouveauStatut = !projet.publique
-      const message = nouveauStatut ? 'Rendre ce projet visible par tous les visiteurs ?' : 'Rendre ce projet privé (visible uniquement par les membres) ?'
+      const message = nouveauStatut ? this.$t('projets.confirmerRendrePublic') : this.$t('projets.confirmerRendrePrive')
       if (!confirm(message)) return
       try {
         await projectAPI.update(projet.id, { ...projet, publique: nouveauStatut })
         projet.publique = nouveauStatut
         this.$forceUpdate()
-        alert('Visibilité modifiée avec succès')
+        alert(this.$t('projets.visibiliteModifiee'))
       } catch (e) {
         console.error('[Projet] Erreur changement visibilité:', e)
         alert(this.$t('erreurs.modificationProjet'))
@@ -1290,11 +1518,12 @@ export default {
           statut: 'BROUILLON'
         })
         await this.chargerTaches()
+        this.kanbanRefreshKey++
         this.modalCreationTache = false
-        alert('Tâche créée avec succès')
+        alert(this.$t('taches.tacheCreee'))
       } catch (e) {
         console.error('[Tache] Erreur création:', e)
-        alert('Erreur lors de la création')
+        alert(this.$t('erreurs.creationTache'))
       }
     },
 
@@ -1668,6 +1897,46 @@ export default {
     formatPrix(prix) {
       if (!prix && prix !== 0) return '—'
       return new Intl.NumberFormat(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', { style: 'currency', currency: 'EUR' }).format(prix)
+    },
+
+    dessinerGraphiques() {
+      this.$nextTick(() => {
+        // Graphique Tâches
+        const ctxTaches = document.getElementById('chartTaches')
+        if (ctxTaches) {
+          if (this.chartTachesInstance) this.chartTachesInstance.destroy()
+          this.chartTachesInstance = new Chart(ctxTaches, {
+            type: 'doughnut',
+            data: {
+              labels: [this.$t('taches.statuts.brouillon'), this.$t('taches.statuts.enAttente'), this.$t('taches.statuts.termine'), this.$t('taches.statuts.annule')],
+              datasets: [{
+                data: [this.statsCalculees.taches.brouillon, this.statsCalculees.taches.enAttente, this.statsCalculees.taches.termine, this.statsCalculees.taches.annule],
+                backgroundColor: ['#6c757d', '#ffc107', '#28a745', '#dc3545'],
+                borderWidth: 0
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+          })
+        }
+
+        // Graphique Projets
+        const ctxProjets = document.getElementById('chartProjets')
+        if (ctxProjets) {
+          if (this.chartProjetsInstance) this.chartProjetsInstance.destroy()
+          this.chartProjetsInstance = new Chart(ctxProjets, {
+            type: 'doughnut',
+            data: {
+              labels: [this.$t('statuts.ACTIF'), this.$t('statuts.SUSPENDU'), this.$t('statuts.TERMINE'), this.$t('statuts.ANNULE')],
+              datasets: [{
+                data: [this.statsCalculees.projets.actif, this.statsCalculees.projets.suspendu, this.statsCalculees.projets.termine, this.statsCalculees.projets.annule],
+                backgroundColor: ['#28a745', '#ffc107', '#6c757d', '#dc3545'],
+                borderWidth: 0
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+          })
+        }
+      })
     },
   },
   beforeUnmount() {
@@ -2052,5 +2321,25 @@ export default {
   .kpi-item { flex: 1 1 100%; }
   .section-header { flex-direction: column; gap: 12px; align-items: stretch; }
   .section-header .btn { width: 100%; }
+}
+
+/* ========== STATISTIQUES ========== */
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+.stat-box {
+  transition: all 0.2s;
+}
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#chartTaches, #chartProjets {
+  max-height: 250px;
 }
 </style>

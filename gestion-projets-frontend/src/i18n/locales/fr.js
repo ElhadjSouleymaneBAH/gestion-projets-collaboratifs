@@ -26,7 +26,8 @@ export default {
     locale: 'Langue',
     parametres: 'Paramètres',
     chat: 'Chat',
-    chatProjet: 'Chat projet'
+    chatProjet: 'Chat projet',
+    statistiques: 'Statistiques'
   },
 
   // ==================== APPLICATION ====================
@@ -256,6 +257,7 @@ export default {
     dateCreation: 'Date de création',
     createur: 'Créateur',
     creeLe: 'Créé le',
+    changerStatut: 'Changer le statut',
     membres: 'Membres',
     taches: 'Tâches',
     visibilite: 'Visibilité',
@@ -344,7 +346,11 @@ export default {
 
   // ==================== PROJET (SINGULIER) ====================
   projet: {
-    creeLe: 'Créé le'
+    creeLe: 'Créé le',
+    changerStatut: 'Changer le statut',
+    confirmerChangementStatut: 'Confirmer le changement de statut ?',
+    statutModifie: 'Statut modifié avec succès',
+    erreurTachesNonTerminees: 'Impossible de terminer le projet : {count} tâche(s) ne sont pas encore terminées'
   },
 
   // ==================== GESTION DES TÂCHES ====================
@@ -397,6 +403,7 @@ export default {
     confirmerSoumission: 'Soumettre cette tâche pour validation ?',
     confirmerCompletion: 'Marquer cette tâche comme terminée ?',
     soumiseValidation: 'Tâche soumise pour validation au chef de projet',
+    soumissionReussie: 'Tâche soumise avec succès',
     completee: 'Tâche marquée comme terminée',
     confirmerValidation: 'Valider cette tâche ?',
     confirmerRenvoi: 'Renvoyer en brouillon ?',
@@ -447,6 +454,8 @@ export default {
     disponibles: 'Tâches disponibles',
     rechercher: 'Rechercher une tâche...',
     detailTache: 'Détail de la tâche',
+    echeanceDans: 'Échéance dans {jours} jours',
+    aucunResultatFiltre: 'Aucune tâche trouvée avec ces critères',
 
     placeholders: {
       titre: 'Entrez le titre de la tâche',
@@ -503,7 +512,13 @@ export default {
       enCours: 'En cours',
       termine: 'Terminé',
       terminee: 'Terminée',
-      annule: 'Annulé'
+      annule: 'Annulé',
+      ACTIF: 'Actif',
+      SUSPENDU: 'Suspendu',
+      TERMINE: 'Terminé',
+      ANNULE: 'Annulé',
+      BROUILLON: 'Brouillon',
+      EN_ATTENTE_VALIDATION: 'En attente de validation'
     },
 
     details: {
@@ -600,6 +615,7 @@ export default {
     erreurAjout: "Erreur lors de l'ajout du membre",
     selectionnerProjetEtMembre: 'Veuillez sélectionner un projet et un membre',
     aucunResultat: 'Aucun résultat trouvé',
+    collaborateursSurTousProjets: 'Collaborateurs sur tous les projets',
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
@@ -710,6 +726,7 @@ export default {
     confirmerSuppression: 'Supprimer ce commentaire ?',
     aucun: 'Aucun commentaire',
     voirTous: 'Voir tous les commentaires',
+    ajoutSucces: 'Commentaire ajouté avec succès'
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -754,6 +771,7 @@ export default {
     msgSupprimee: 'Notification supprimée',
     msgErreurSuppression: 'Erreur lors de la suppression',
     msgLuesSupprimees: 'Notifications lues supprimées',
+    suppressionSucces: 'Notification supprimée avec succès',
     filtres: {
       type: 'Type',
       tousTypes: 'Tous les types',
@@ -1231,7 +1249,19 @@ export default {
       validationTaches: 'Validation tâches',
       chat: 'Chat',
       chatProjet: 'Chat projet',
-
+      statistiques: 'Statistiques',
+    },
+    statistiques: {
+      titre: 'Advanced Statistics',
+      description: 'Overview of your projects and tasks',
+      repartitionTaches: 'Tasks distribution by status',
+      repartitionProjets: 'Projects distribution by status',
+      indicateurs: 'Key performance indicators',
+      tauxCompletion: 'Completion rate',
+      tachesAssignees: 'Assigned tasks',
+      tachesNonAssignees: 'Unassigned tasks',
+      moyenneMembresProjet: 'Average members/project',
+      aAssigner: 'to assign',
     },
     kpis: {
       mesProjets: 'Mes projets',
@@ -1402,7 +1432,8 @@ export default {
     envoyerMessage: "Impossible d'envoyer le message",
     uploadFichier: 'Erreur lors du téléversement du fichier',
     telechargementFichier: 'Erreur lors du téléchargement du fichier',
-    suppressionFichier: 'Erreur lors de la suppression du fichier'
+    suppressionFichier: 'Erreur lors de la suppression du fichier',
+    soumissionTache: 'Erreur lors de la soumission de la tâche'
   },
 
   // ==================== VALIDATION ====================
@@ -1794,6 +1825,29 @@ export default {
     NORMALE: 'Normale',
     HAUTE: 'Haute',
     URGENTE: 'Urgente'
+  },
+
+  // ==================== STATUTS GÉNÉRAUX ====================
+  statuts: {
+    ACTIF: 'Actif',
+    SUSPENDU: 'Suspendu',
+    TERMINE: 'Terminé',
+    ANNULE: 'Annulé',
+    BROUILLON: 'Brouillon',
+    EN_ATTENTE_VALIDATION: 'En attente de validation'
+  },
+  // ==================== STATISTIQUES ====================
+  statistiques: {
+    titre: 'Statistiques avancées',
+    description: 'Aperçu de vos projets et tâches',
+    repartitionTaches: 'Répartition des tâches par statut',
+    repartitionProjets: 'Répartition des projets par statut',
+    indicateurs: 'Indicateurs clés de performance',
+    tauxCompletion: 'Taux de complétion',
+    tachesAssignees: 'Tâches assignées',
+    tachesNonAssignees: 'Tâches non assignées',
+    moyenneMembresProjet: 'Moyenne membres/projet',
+    aAssigner: 'à assigner'
   }
 
 

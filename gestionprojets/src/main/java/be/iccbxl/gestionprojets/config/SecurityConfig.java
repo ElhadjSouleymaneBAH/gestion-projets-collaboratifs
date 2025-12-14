@@ -128,11 +128,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/taches")
                         .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
 
-                        // ===================================================================
+                        // VUE KANBAN - Colonnes (accessible aux membres du projet)
+
+                                .requestMatchers(HttpMethod.GET, "/api/projets/*/colonnes")
+                                .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                        // Détail tâche (accessible aux membres du projet)
+
+                                .requestMatchers(HttpMethod.GET, "/api/taches/*")
+                                .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
+                                // F7 : Membre peut soumettre ses tâches (BROUILLON → EN_ATTENTE_VALIDATION)
+                                .requestMatchers(HttpMethod.PUT, "/api/taches/*/statut")
+                                .hasAnyAuthority("MEMBRE", "CHEF_PROJET", "ADMINISTRATEUR")
+
                         // F6-F8 : CHEF DE PROJET (gestion complète)
-                        // ===================================================================
-                        .requestMatchers("/api/projets/**", "/api/taches/**", "/api/chef-projet/**")
-                        .hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
+                                .requestMatchers("/api/projets/**", "/api/taches/**", "/api/chef-projet/**")
+                                .hasAnyAuthority("CHEF_PROJET", "ADMINISTRATEUR")
 
                         // ===================================================================
                         // F4-F5 : PROFIL

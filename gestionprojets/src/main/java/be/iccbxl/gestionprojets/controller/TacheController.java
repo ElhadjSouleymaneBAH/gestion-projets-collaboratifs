@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 /**
  * Controller REST pour la gestion des tâches (F7)
@@ -30,13 +31,16 @@ public class TacheController {
     private final TacheService tacheService;
     private final UtilisateurService utilisateurService;
     private final NotificationService notificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public TacheController(TacheService tacheService,
                            UtilisateurService utilisateurService,
-                           NotificationService notificationService) {
+                           NotificationService notificationService,
+                           SimpMessagingTemplate messagingTemplate) {
         this.tacheService = tacheService;
         this.utilisateurService = utilisateurService;
         this.notificationService = notificationService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     // ---------- META ----------
@@ -333,6 +337,12 @@ public class TacheController {
 
             TacheDTO tacheUpdated = tacheService.deplacerTacheKanban(id, colonneDestination, nouveauStatut);
             notificationService.notifierChangementStatutTache(tacheUpdated, nouveauStatut);
+
+            // Broadcast temps réel pour Kanban
+            messagingTemplate.convertAndSend(
+                    "/topic/projet/" + tache.getIdProjet() + "/kanban",
+                    Map.of("type", "TACHE_DEPLACEE", "tache", tacheUpdated)
+            );
 
             return ResponseEntity.ok(tacheUpdated);
 

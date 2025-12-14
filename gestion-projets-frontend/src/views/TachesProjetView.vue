@@ -516,10 +516,24 @@ const formatDate = (dateStr) => {
 }
 
 const getAssigneName = (tache) => {
-  if (!tache.assigne) return t('taches.details.nonDefini')
-  return `${tache.assigne.prenom || ''} ${tache.assigne.nom || ''}`.trim() ||
-    tache.assigne.email ||
-    t('taches.details.nonDefini')
+  // Vérifier si la tâche a un assigné (via idAssigne ou objet assigne)
+  if (!tache.idAssigne && !tache.assigne) return t('taches.details.nonDefini')
+
+  // Champs directs (prenomAssigne, nomAssigne) - utilisé par l'API
+  if (tache.prenomAssigne || tache.nomAssigne) {
+    return `${tache.prenomAssigne || ''} ${tache.nomAssigne || ''}`.trim() ||
+      tache.emailAssigne ||
+      t('taches.details.nonDefini')
+  }
+
+  //Objet imbriqué (assigne.prenom, assigne.nom) - fallback
+  if (tache.assigne) {
+    return `${tache.assigne.prenom || ''} ${tache.assigne.nom || ''}`.trim() ||
+      tache.assigne.email ||
+      t('taches.details.nonDefini')
+  }
+
+  return t('taches.details.nonDefini')
 }
 
 // ========== STATUTS ==========
