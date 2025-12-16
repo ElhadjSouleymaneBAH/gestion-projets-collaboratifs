@@ -33,10 +33,10 @@
               ></i>
               <span class="ms-2">
                 <strong>{{
-                  abonnementActif ? $t('abonnement.actif') : $t('abonnement.expire')
-                }}</strong>
+                    abonnementActif ? $t('abonnement.actif') : $t('abonnement.expire')
+                  }}</strong>
                 <span v-if="abonnement.date_fin" class="ms-2"
-                  >—
+                >—
                   {{ $t('abonnement.expireLe') }}
                   {{ formatDate(abonnement.date_fin) }}</span
                 >
@@ -54,12 +54,11 @@
                   </div>
                   <div class="card-body">
                     <div class="text-center mb-4">
-                      <!-- ✅ CORRECTION 1 : Prix avec HT -->
                       <h2 class="text-primary">
                         10,00 € <small class="text-muted">HT</small>
                         <small class="text-muted d-block" style="font-size: 0.9rem">{{
-                          $t('abonnement.parMois')
-                        }}</small>
+                            $t('abonnement.parMois')
+                          }}</small>
                       </h2>
                     </div>
                     <ul class="list-unstyled mb-0 features-list">
@@ -134,7 +133,6 @@
                         </div>
                         <div class="col-md-6 mb-3">
                           <label class="form-label">{{ $t('paiement.cvv') }}</label>
-                          <!-- 🔒 CVV masqué -->
                           <input
                             class="form-control"
                             type="password"
@@ -179,10 +177,9 @@
                           <h6 class="mb-3">
                             {{ $t('paiement.resumerCommande') }}
                           </h6>
-                          <!-- ✅ CORRECTION 2 : Ligne avec HT -->
                           <div class="d-flex justify-content-between">
                             <span
-                              >{{ $t('paiement.abonnementMensuel') }}
+                            >{{ $t('paiement.abonnementMensuel') }}
                               <small class="text-muted">HT</small></span
                             >
                             <strong>{{ montantHTFormatte }}</strong>
@@ -199,8 +196,13 @@
                         </div>
                       </div>
 
-                      <!-- Bouton -->
-                      <button type="submit" class="btn btn-success w-100" :disabled="loadingAction">
+                      <!-- Bouton (caché après succès) -->
+                      <button
+                        v-if="!paiementReussi"
+                        type="submit"
+                        class="btn btn-success w-100"
+                        :disabled="loadingAction"
+                      >
                         <span
                           v-if="loadingAction"
                           class="spinner-border spinner-border-sm me-2"
@@ -274,6 +276,7 @@ export default {
         adresse: '',
         accepteConditions: false,
       },
+      paiementReussi: false,
     }
   },
   computed: {
@@ -281,23 +284,16 @@ export default {
       return useAuthStore().user
     },
 
-    // ✅ Vérifier si l'abonnement est VRAIMENT actif
     abonnementActif() {
       const a = this.abonnement
       if (!a || !a.id) return false
-
-      // Vérifier le statut
       if (a.statut !== 'ACTIF') return false
-
-      // Vérifier la date d'expiration
       if (!a.date_fin) return false
       const dateFin = new Date(a.date_fin)
       const maintenant = new Date()
-
       return dateFin > maintenant
     },
 
-    // ✅ Vérifier si un abonnement existe (même expiré)
     abonnementExiste() {
       return this.abonnement && this.abonnement.id
     },
@@ -410,7 +406,7 @@ export default {
       const store = useAuthStore()
       const u = store.user
       if (!u || !u.id) {
-        this.message = 'Erreur : utilisateur non connecté'
+        this.message = this.$t('paiement.erreurUtilisateurNonConnecte') || 'Erreur : utilisateur non connecté'
         this.messageType = 'alert-danger'
         return
       }
@@ -444,13 +440,24 @@ export default {
           type: 'premium',
         })
 
-        this.abonnement = data
+        // Récupérer l'abonnement et le nouveau token
+        this.abonnement = data.abonnement || data
+        const newToken = data.token
 
-        // Étape 4 : Rafraîchir utilisateur (rôle mis à jour)
+        // Étape 4 : Mettre à jour le token si présent
+        if (newToken) {
+          localStorage.setItem('token', newToken)
+          console.log('[F10] Nouveau token JWT stocké avec rôle CHEF_PROJET')
+        }
+
+        // Étape 5 : Rafraîchir utilisateur (rôle mis à jour)
         const userId = String(u.id).split(':')[0]
         const me = await userAPI.getById(userId)
         store.user = me.data
         localStorage.setItem('user', JSON.stringify(me.data))
+
+        // Cacher le bouton
+        this.paiementReussi = true
 
         // Message succès
         this.message = this.$t('paiement.paiementReussi') || 'Abonnement souscrit avec succès !'

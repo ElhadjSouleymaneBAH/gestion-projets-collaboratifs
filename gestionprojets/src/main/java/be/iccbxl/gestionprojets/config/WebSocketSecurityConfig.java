@@ -24,7 +24,7 @@ import java.util.List;
  * - Intercepter la commande CONNECT envoyée par le client STOMP.
  * - Extraire le token JWT du header "Authorization".
  * - Valider le token et injecter l’utilisateur dans le contexte Spring Security.
- *
+
  * Ce module complète le filtre HTTP JwtFilter pour les communications WebSocket.
 
  * @author

@@ -315,6 +315,9 @@ export default {
     priveDescription: 'Visible uniquement par les membres',
     rendrePublic: 'Rendre public',
     rendrePrive: 'Rendre privé',
+    confirmerRendrePublic: 'Confirmer le passage en public ?',
+    confirmerRendrePrive: 'Confirmer le passage en privé ?',
+    visibiliteModifiee: 'Visibilité modifiée avec succès',
     statuts: {
       actif: 'Actif',
       suspendu: 'Suspendu',
@@ -853,6 +856,12 @@ export default {
     validiteJusqu: "Validité jusqu'au",
     gererAbonnement: "Gérer l'abonnement",
     renouvellementReussi: 'Abonnement renouvelé avec succès pour 1 mois !',
+    statuts: {
+      actif: 'Actif',
+      expire: 'Expiré',
+      annule: 'Annulé',
+      en_attente: 'En attente',
+    },
     features: {
       creationProjets: 'Créer des projets illimités',
       gestionEquipes: 'Gérer une équipe',
@@ -1210,6 +1219,9 @@ export default {
       aucunProjet: 'Aucun projet',
       messageVide: 'Vous serez invité par un chef de projet',
       mesTaches: 'Mes tâches',
+      confirmerRendrePublic: 'Confirmer le passage en public ?',
+      confirmerRendrePrive: 'Confirmer le passage en privé ?',
+      visibiliteModifiee: 'Visibilité modifiée avec succès',
     },
     taches: {
       titre: 'Mes tâches assignées',

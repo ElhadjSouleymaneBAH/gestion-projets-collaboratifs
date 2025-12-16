@@ -6,6 +6,7 @@ import be.iccbxl.gestionprojets.model.Abonnement;
 import be.iccbxl.gestionprojets.model.Utilisateur;
 import be.iccbxl.gestionprojets.service.AbonnementService;
 import be.iccbxl.gestionprojets.service.UtilisateurService;
+import be.iccbxl.gestionprojets.security.JwtService;
 import be.iccbxl.gestionprojets.enums.StatutAbonnement;
 import be.iccbxl.gestionprojets.enums.Role;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,8 +32,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/abonnements")
 @CrossOrigin(
         origins = {
-                "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5177",
-                "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5177"
+                "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177",
+                "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5176", "http://127.0.0.1:5177"
         },
         allowCredentials = "true"
 )
@@ -38,10 +41,12 @@ public class AbonnementController {
 
     private final AbonnementService abonnementService;
     private final UtilisateurService utilisateurService;
+    private final JwtService jwtService;
 
-    public AbonnementController(AbonnementService abonnementService, UtilisateurService utilisateurService) {
+    public AbonnementController(AbonnementService abonnementService, UtilisateurService utilisateurService, JwtService jwtService) {
         this.abonnementService = abonnementService;
         this.utilisateurService = utilisateurService;
+        this.jwtService = jwtService;
     }
 
     // ========== F10 : SOUSCRIRE UN ABONNEMENT ==========
@@ -66,7 +71,14 @@ public class AbonnementController {
                 if (abonnementService.hasActiveSubscription(utilisateur.getId())) {
                     System.out.println("DEBUG: [F10] Renouvellement automatique pour utilisateur: " + utilisateur.getId());
                     Abonnement abonnementRenouvelé = abonnementService.renouvelerAbonnement(existant.getId());
-                    AbonnementDTO response = AbonnementMapper.toDTO(abonnementRenouvelé);
+                    AbonnementDTO abonnementDTO = AbonnementMapper.toDTO(abonnementRenouvelé);
+
+                    // Générer nouveau token (le rôle reste CHEF_PROJET)
+                    String newToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getRole().name());
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("abonnement", abonnementDTO);
+                    response.put("token", newToken);
                     return ResponseEntity.ok(response);
                 }
 
@@ -78,7 +90,13 @@ public class AbonnementController {
                     utilisateurService.save(utilisateur);
                 }
 
-                AbonnementDTO response = AbonnementMapper.toDTO(abonnementReactive);
+                // Générer nouveau token avec le rôle mis à jour
+                String newToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getRole().name());
+
+                AbonnementDTO abonnementDTO = AbonnementMapper.toDTO(abonnementReactive);
+                Map<String, Object> response = new HashMap<>();
+                response.put("abonnement", abonnementDTO);
+                response.put("token", newToken);
                 return ResponseEntity.ok(response);
             }
 
@@ -105,7 +123,13 @@ public class AbonnementController {
                 utilisateurService.save(utilisateur);
             }
 
-            AbonnementDTO response = AbonnementMapper.toDTO(abonnementCree);
+            // Générer nouveau token avec le rôle mis à jour
+            String newToken = jwtService.generateToken(utilisateur.getEmail(), utilisateur.getRole().name());
+
+            AbonnementDTO abonnementDTO = AbonnementMapper.toDTO(abonnementCree);
+            Map<String, Object> response = new HashMap<>();
+            response.put("abonnement", abonnementDTO);
+            response.put("token", newToken);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {

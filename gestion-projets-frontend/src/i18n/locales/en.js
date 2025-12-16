@@ -314,6 +314,9 @@ export default {
     priveDescription: 'Visible only to members',
     rendrePublic: 'Make public',
     rendrePrive: 'Make private',
+    confirmerRendrePublic: 'Confirm making public?',
+    confirmerRendrePrive: 'Confirm making private?',
+    visibiliteModifiee: 'Visibility updated successfully',
     statuts: {
       actif: 'Active',
       suspendu: 'Suspended',
@@ -845,6 +848,12 @@ export default {
     validiteJusqu: 'Valid until',
     gererAbonnement: 'Manage subscription',
     renouvellementReussi: 'Subscription renewed successfully for 1 month!',
+    statuts: {
+      actif: 'Active',
+      expire: 'Expired',
+      annule: 'Cancelled',
+      en_attente: 'Pending',
+    },
     features: {
       creationProjets: 'Create unlimited projects',
       gestionEquipes: 'Manage a team',
@@ -1201,6 +1210,9 @@ export default {
       aucunProjet: 'No projects',
       messageVide: 'You will be invited by a project manager',
       mesTaches: 'My tasks',
+      confirmerRendrePublic: 'Confirm making public?',
+      confirmerRendrePrive: 'Confirm making private?',
+      visibiliteModifiee: 'Visibility updated successfully',
     },
     taches: {
       titre: 'My assigned tasks',
