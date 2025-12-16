@@ -234,13 +234,14 @@
           </div>
           <div class="card-body">
 
+            <!-- ========== STATS UTILISATEURS - CORRIGÉ AVEC TRADUCTIONS ========== -->
             <div class="row g-3 mb-4">
               <div class="col-md-3">
                 <div class="card h-100 border-danger">
                   <div class="card-body text-center">
                     <i class="fas fa-shield-alt text-danger fa-2x mb-2"></i>
-                    <h4 class="mb-0 text-danger">{{ statsUtilisateurs.admins }}</h4>
-                    <small class="text-muted">Administrateurs</small>
+                    <h4 class="mb-0 text-danger">{{ statsUtilisateursGlobales.admins }}</h4>
+                    <small class="text-muted">{{ $t('roles.administrateur') }}</small>
                   </div>
                 </div>
               </div>
@@ -248,8 +249,8 @@
                 <div class="card h-100 border-primary">
                   <div class="card-body text-center">
                     <i class="fas fa-user-tie text-primary fa-2x mb-2"></i>
-                    <h4 class="mb-0 text-primary">{{ statsUtilisateurs.chefs }}</h4>
-                    <small class="text-muted">Chefs de Projet</small>
+                    <h4 class="mb-0 text-primary">{{ statsUtilisateursGlobales.chefs }}</h4>
+                    <small class="text-muted">{{ $t('roles.chef_projet') }}</small>
                   </div>
                 </div>
               </div>
@@ -257,8 +258,8 @@
                 <div class="card h-100 border-success">
                   <div class="card-body text-center">
                     <i class="fas fa-users text-success fa-2x mb-2"></i>
-                    <h4 class="mb-0 text-success">{{ statsUtilisateurs.membres }}</h4>
-                    <small class="text-muted">Membres</small>
+                    <h4 class="mb-0 text-success">{{ statsUtilisateursGlobales.membres }}</h4>
+                    <small class="text-muted">{{ $t('roles.membre') }}</small>
                   </div>
                 </div>
               </div>
@@ -266,18 +267,19 @@
                 <div class="card h-100 border-secondary">
                   <div class="card-body text-center">
                     <i class="fas fa-user text-secondary fa-2x mb-2"></i>
-                    <h4 class="mb-0 text-secondary">{{ statsUtilisateurs.visiteurs }}</h4>
-                    <small class="text-muted">Visiteurs</small>
+                    <h4 class="mb-0 text-secondary">{{ statsUtilisateursGlobales.visiteurs }}</h4>
+                    <small class="text-muted">{{ $t('roles.visiteur') }}</small>
                   </div>
                 </div>
               </div>
             </div>
 
 
+            <!-- ========== GRAPHIQUE RÔLES - CORRIGÉ AVEC TRADUCTION ========== -->
             <div class="card mb-4 border-0 shadow-sm">
               <div class="card-header bg-light">
                 <h6 class="mb-0">
-                  <i class="fas fa-chart-pie me-2"></i>Répartition des rôles
+                  <i class="fas fa-chart-pie me-2"></i>{{ $t('admin.repartitionRoles') }}
                 </h6>
               </div>
               <div class="card-body">
@@ -416,13 +418,14 @@
           <div class="card-body">
 
 
+            <!-- ========== STATS PROJETS - CORRIGÉ AVEC TRADUCTIONS ========== -->
             <div class="row g-3 mb-4">
               <div class="col-md-3">
                 <div class="card h-100 border-success">
                   <div class="card-body text-center">
                     <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
                     <h4 class="mb-0 text-success">{{ statsProjets.actifs }}</h4>
-                    <small class="text-muted">Projets Actifs</small>
+                    <small class="text-muted">{{ $t('admin.projetsActifs') }}</small>
                   </div>
                 </div>
               </div>
@@ -431,7 +434,7 @@
                   <div class="card-body text-center">
                     <i class="fas fa-flag-checkered text-secondary fa-2x mb-2"></i>
                     <h4 class="mb-0 text-secondary">{{ statsProjets.termines }}</h4>
-                    <small class="text-muted">Terminés</small>
+                    <small class="text-muted">{{ $t('admin.termines') }}</small>
                   </div>
                 </div>
               </div>
@@ -440,7 +443,7 @@
                   <div class="card-body text-center">
                     <i class="fas fa-pause-circle text-warning fa-2x mb-2"></i>
                     <h4 class="mb-0 text-warning">{{ statsProjets.suspendus }}</h4>
-                    <small class="text-muted">Suspendus</small>
+                    <small class="text-muted">{{ $t('admin.suspendus') }}</small>
                   </div>
                 </div>
               </div>
@@ -449,17 +452,18 @@
                   <div class="card-body text-center">
                     <i class="fas fa-globe text-info fa-2x mb-2"></i>
                     <h4 class="mb-0 text-info">{{ statsProjets.publics }}</h4>
-                    <small class="text-muted">Publics</small>
+                    <small class="text-muted">{{ $t('admin.publics') }}</small>
                   </div>
                 </div>
               </div>
             </div>
 
 
+            <!-- ========== GRAPHIQUE PROJETS ========== -->
             <div class="card mb-4 border-0 shadow-sm">
               <div class="card-header bg-light">
                 <h6 class="mb-0">
-                  <i class="fas fa-chart-bar me-2"></i>Statistiques des projets
+                  <i class="fas fa-chart-bar me-2"></i>{{ $t('admin.statistiquesProjets') }}
                 </h6>
               </div>
               <div class="card-body">
@@ -499,12 +503,12 @@
                     <td>
                       <span class="badge" :class="p.visibilite === 'PUBLIC' ? 'bg-success' : 'bg-secondary'">
                         <i :class="p.visibilite === 'PUBLIC' ? 'fas fa-globe' : 'fas fa-lock'" class="me-1"></i>
-                        {{ p.visibilite }}
+                        {{ $t('projets.' + (p.visibilite || 'prive').toLowerCase()) }}
                       </span>
                     </td>
                     <td>
                       <span class="badge" :class="getStatutProjetClass(p.statut)">
-                        {{ p.statut }}
+                        {{ $t('projets.statuts.' + (p.statut || 'actif').toLowerCase()) }}
                       </span>
                     </td>
                     <td><small class="text-muted">{{ formatDate(getDateCreation(p)) }}</small></td>
@@ -584,7 +588,7 @@
                   </td>
                   <td><small>{{ getProjetName(ta.idProjet || ta.id_projet) }}</small></td>
                   <td>{{ getUserName(ta.idAssigne || ta.id_assigne) }}</td>
-                  <td><span class="badge" :class="getStatutTacheClass(ta.statut)">{{ ta.statut }}</span></td>
+                  <td><span class="badge" :class="getStatutTacheClass(ta.statut)">{{ $t('taches.statuts.' + (ta.statut || '').toLowerCase()) }}</span></td>
                   <td>{{ formatDate(ta.dateCreation || ta.date_creation) }}</td>
                   <td class="text-end">
                     <button v-if="ta.statut !== 'ANNULE'"
@@ -730,7 +734,7 @@
                     <td>{{ formatDate(getDateFin(a)) }}</td>
                     <td>
                       <span class="badge" :class="getStatutAbonnementClass(a.statut)">
-                        {{ a.statut || 'ACTIF' }}
+                        {{ $t('abonnement.statuts.' + (a.statut || 'actif').toLowerCase()) }}
                       </span>
                     </td>
                     <td>
@@ -808,7 +812,7 @@
                     <td><span class="fw-bold text-success">{{ formatPrix(f.montant || f.montantHT || f.montant_ht) }}</span></td>
                     <td>{{ formatDate(f.dateEmission || f.createdAt || f.date_emission) }}</td>
                     <td>
-                      <span class="badge bg-success">{{ f.statut || 'GENEREE' }}</span>
+                      <span class="badge bg-success">{{ $t('facture.statuts.' + (f.statut || 'generee').toLowerCase()) }}</span>
                     </td>
                     <td>
                       <div class="btn-group">
@@ -858,10 +862,10 @@
                     <th>ID</th>
                     <th>{{ $t('commun.utilisateur') }}</th>
                     <th>{{ $t('facture.montantHT') }}</th>
-                    <th>TVA</th>
+                    <th>{{ $t('facture.tva') }}</th>
                     <th>{{ $t('facture.montantTTC') }}</th>
                     <th>{{ $t('projets.statut') }}</th>
-                    <th>Date</th>
+                    <th>{{ $t('commun.date') }}</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -873,7 +877,7 @@
                     <td><span class="fw-bold text-success">{{ formatPrix(t.montant_ttc || t.montantTTC) }}</span></td>
                     <td>
                       <span class="badge" :class="t.statut === 'COMPLETE' ? 'bg-success' : 'bg-danger'">
-                        {{ t.statut }}
+                        {{ $t('transaction.statuts.' + (t.statut || '').toLowerCase()) }}
                       </span>
                     </td>
                     <td>{{ formatDate(t.date_creation || t.dateCreation || t.date) }}</td>
@@ -973,13 +977,13 @@
                       <strong>{{ $t('projets.visibilite') }} :</strong>
                       <span class="badge" :class="projetSelectionne.visibilite === 'PUBLIC' ? 'bg-success' : 'bg-secondary'">
                         <i :class="projetSelectionne.visibilite === 'PUBLIC' ? 'fas fa-globe' : 'fas fa-lock'" class="me-1"></i>
-                        {{ projetSelectionne.visibilite }}
+                        {{ $t('projets.' + (projetSelectionne.visibilite || 'prive').toLowerCase()) }}
                       </span>
                     </p>
                     <p>
                       <strong>{{ $t('projets.statut') }} :</strong>
                       <span class="badge" :class="getStatutProjetClass(projetSelectionne.statut)">
-                        {{ projetSelectionne.statut }}
+                        {{ $t('projets.statuts.' + (projetSelectionne.statut || 'actif').toLowerCase()) }}
                       </span>
                     </p>
                     <p><strong>{{ $t('commun.creeLe') }} :</strong> {{ formatDate(projetSelectionne.dateCreation) }}</p>
@@ -1133,7 +1137,13 @@ export default {
       chartRoles: null,
       chartProjetsEvolution: null,
       chartRevenus: null,
-
+      // ========== NOUVELLES DONNÉES POUR STATS GLOBALES ==========
+      statsUtilisateursGlobales: {
+        admins: 0,
+        chefs: 0,
+        membres: 0,
+        visiteurs: 0
+      }
     }
   },
 
@@ -1152,28 +1162,21 @@ export default {
         chiffreAffaires: this.factures.reduce((s, f) => s + (f.montant || f.montantHT || f.montant_ht || 0), 0),
       }
     },
-    // ========== STATS DÉTAILLÉES UTILISATEURS ==========
-    statsUtilisateurs() {
-      const admins = this.utilisateurs.filter(u => u.role === 'ADMINISTRATEUR').length
-      const chefs = this.utilisateurs.filter(u => u.role === 'CHEF_PROJET').length
-      const membres = this.utilisateurs.filter(u => u.role === 'MEMBRE').length
-      const visiteurs = this.utilisateurs.filter(u => u.role === 'VISITEUR').length
 
-      return { admins, chefs, membres, visiteurs }
-    },
-
-// ========== STATS DÉTAILLÉES PROJETS ==========
+    // ========== STATS DÉTAILLÉES PROJETS ==========
     statsProjets() {
-      const actifs = this.projets.filter(p => p.statut === 'ACTIF').length
-      const termines = this.projets.filter(p => p.statut === 'TERMINE').length
-      const suspendus = this.projets.filter(p => p.statut === 'SUSPENDU').length
-      const publics = this.projets.filter(p => p.visibilite === 'PUBLIC').length
-      const prives = this.projets.filter(p => p.visibilite === 'PRIVE').length
+      const actifs = this.projets.filter(p => (p.statut || '').toUpperCase() === 'ACTIF').length
+      const termines = this.projets.filter(p => (p.statut || '').toUpperCase() === 'TERMINE').length
+      const suspendus = this.projets.filter(p => (p.statut || '').toUpperCase() === 'SUSPENDU').length
+
+      // Utilise le champ "publique" (Boolean) du backend
+      const publics = this.projets.filter(p => p.publique === true).length
+      const prives = this.projets.filter(p => p.publique === false || p.publique === null).length
 
       return { actifs, termines, suspendus, publics, prives }
     },
 
-// ========== STATS FINANCE ==========
+    // ========== STATS FINANCE ==========
     statsFinance() {
       const revenuTotal = this.factures.reduce((s, f) =>
         s + (f.montant || f.montantHT || f.montant_ht || 0), 0
@@ -1192,8 +1195,8 @@ export default {
     abonnementsActifs() {
       const list = Array.isArray(this.abonnements) ? this.abonnements : []
       return list.filter(a =>
-          (a.statut || 'ACTIF') === 'ACTIF' &&
-          new Date(this.getDateFin(a)) > new Date()
+        (a.statut || 'ACTIF') === 'ACTIF' &&
+        new Date(this.getDateFin(a)) > new Date()
       )
     },
 
@@ -1291,6 +1294,16 @@ export default {
     this.$nextTick(() => {
       this.creerGraphiqueRoles()
     })
+
+    this.intervalRefresh = setInterval(() => {
+      this.chargerToutesDonnees()
+    }, 5000)
+  },
+
+  beforeUnmount() {
+    if (this.intervalRefresh) {
+      clearInterval(this.intervalRefresh)
+    }
   },
 
   methods: {
@@ -1325,8 +1338,8 @@ export default {
       if (date == null) return '-'
       try {
         const d = (typeof date === 'number')
-            ? new Date(date)
-            : new Date(String(date))
+          ? new Date(date)
+          : new Date(String(date))
         return isNaN(d) ? '-' : d.toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US')
       } catch { return '-' }
     },
@@ -1339,6 +1352,7 @@ export default {
         this.erreurBackend = ''
         await Promise.all([
           this.chargerUtilisateurs(),
+          this.chargerStatsUtilisateursGlobales(), // NOUVEAU: Charger les stats globales
           this.chargerAbonnements(),
           this.chargerProjets(),
           this.chargerFactures(),
@@ -1351,6 +1365,52 @@ export default {
         this.erreurBackend = this.$t('erreurs.chargementDonnees')
       } finally {
         this.chargementGlobal = false
+      }
+    },
+
+    // ========== NOUVELLE MÉTHODE: CHARGER STATS GLOBALES ==========
+    async chargerStatsUtilisateursGlobales() {
+      try {
+        // Option 1: Appeler un endpoint dédié pour les stats (recommandé)
+        // const res = await userAPI.getStats()
+        // this.statsUtilisateursGlobales = res.data
+
+        // Option 2: Charger tous les utilisateurs sans pagination pour les stats
+        const res = await userAPI.list({
+          q: '',
+          role: '',
+          statut: '',
+          page: 0,
+          size: 10000 // Grande valeur pour récupérer tous
+        })
+
+        let tousUtilisateurs = []
+        if (res.data?.content) {
+          tousUtilisateurs = Array.isArray(res.data.content) ? res.data.content : []
+        } else {
+          tousUtilisateurs = Array.isArray(res.data) ? res.data : []
+        }
+
+        // Calculer les stats sur TOUS les utilisateurs
+        this.statsUtilisateursGlobales = {
+          admins: tousUtilisateurs.filter(u => u.role === 'ADMINISTRATEUR').length,
+          chefs: tousUtilisateurs.filter(u => u.role === 'CHEF_PROJET').length,
+          membres: tousUtilisateurs.filter(u => u.role === 'MEMBRE').length,
+          visiteurs: tousUtilisateurs.filter(u => u.role === 'VISITEUR').length
+        }
+
+        // Mettre en cache tous les utilisateurs
+        tousUtilisateurs.forEach(u => { this.userCache[u.id] = u })
+
+      } catch (e) {
+        console.error('Erreur stats utilisateurs globales:', e)
+        // Fallback: utiliser les données paginées actuelles
+        this.statsUtilisateursGlobales = {
+          admins: this.utilisateurs.filter(u => u.role === 'ADMINISTRATEUR').length,
+          chefs: this.utilisateurs.filter(u => u.role === 'CHEF_PROJET').length,
+          membres: this.utilisateurs.filter(u => u.role === 'MEMBRE').length,
+          visiteurs: this.utilisateurs.filter(u => u.role === 'VISITEUR').length
+        }
       }
     },
 
@@ -1395,7 +1455,7 @@ export default {
       try {
         const res = await abonnementAPI.list()
         this.abonnements = Array.isArray(res?.data) ? res.data
-            : (Array.isArray(res?.data?.content) ? res.data.content : [])
+          : (Array.isArray(res?.data?.content) ? res.data.content : [])
       } catch (e) {
         console.error('Erreur abonnements:', e)
         this.abonnements = []
@@ -1431,8 +1491,8 @@ export default {
       try {
         const res = await transactionAPI.getAllAdmin()
         this.transactions = Array.isArray(res?.data)
-            ? res.data
-            : (Array.isArray(res?.data?.content) ? res.data.content : [])
+          ? res.data
+          : (Array.isArray(res?.data?.content) ? res.data.content : [])
       } catch (e) {
         console.warn('Erreur transactions:', e)
         this.transactions = []
@@ -1471,6 +1531,7 @@ export default {
         this.chargementCommentaires = false
       }
     },
+
     // ========== GRAPHIQUES ==========
     async creerGraphiqueRoles() {
       await this.$nextTick()
@@ -1505,10 +1566,10 @@ export default {
           ],
           datasets: [{
             data: [
-              this.statsUtilisateurs.admins,
-              this.statsUtilisateurs.chefs,
-              this.statsUtilisateurs.membres,
-              this.statsUtilisateurs.visiteurs
+              this.statsUtilisateursGlobales.admins,
+              this.statsUtilisateursGlobales.chefs,
+              this.statsUtilisateursGlobales.membres,
+              this.statsUtilisateursGlobales.visiteurs
             ],
             backgroundColor: ['#dc3545', '#0d6efd', '#198754', '#6c757d'],
             borderWidth: 2,
@@ -1610,21 +1671,21 @@ export default {
         const p = u.prenom || u.firstName || ''
         const n = u.nom || u.lastName || ''
         const full = (p + ' ' + n).trim()
-        return full || `Utilisateur #${userId}`
+        return full || `${this.$t('commun.utilisateur')} #${userId}`
       }
-      return `Utilisateur #${userId}`
+      return `${this.$t('commun.utilisateur')} #${userId}`
     },
 
     getProjetName(projetId) {
       if (!projetId) return '-'
       const projet = this.projets.find(p => p.id === projetId)
-      return projet ? projet.titre : `Projet #${projetId}`
+      return projet ? projet.titre : `${this.$t('nav.projet')} #${projetId}`
     },
 
     getTacheNom(tacheId) {
       if (!tacheId) return '-'
       const tache = this.taches.find(t => t.id === tacheId)
-      return tache ? tache.titre : `Tache #${tacheId}`
+      return tache ? tache.titre : `${this.$t('taches.tache')} #${tacheId}`
     },
 
     getProprietaireName(p) {
@@ -1812,6 +1873,7 @@ export default {
         alert(this.$t('admin.roleModifie'))
         this.fermerModalRole()
         await this.chargerUtilisateurs()
+        await this.chargerStatsUtilisateursGlobales() // Recharger les stats globales
       } catch (e) {
         console.error('Erreur modification role:', e)
         alert(this.$t('admin.erreurModificationRole'))
@@ -1824,6 +1886,7 @@ export default {
         await userAPI.delete(id)
         this.utilisateurs = this.utilisateurs.filter(u => u.id !== id)
         this.totalUtilisateursApi--
+        await this.chargerStatsUtilisateursGlobales() // Recharger les stats globales
         alert(this.$t('admin.utilisateurSupprime'))
       } catch (e) {
         console.error('Erreur suppression utilisateur:', e)

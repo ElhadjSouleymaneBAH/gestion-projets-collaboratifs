@@ -27,12 +27,12 @@ export default {
     parametres: 'Paramètres',
     chat: 'Chat',
     chatProjet: 'Chat projet',
-    statistiques: 'Statistiques'
+    statistiques: 'Statistiques',
   },
 
   // ==================== APPLICATION ====================
   app: {
-    nom: 'CollabPro'
+    nom: 'CollabPro',
   },
 
   locale: 'Français',
@@ -40,7 +40,7 @@ export default {
   // ==================== LANGUES ====================
   langues: {
     francais: 'Français',
-    anglais: 'English'
+    anglais: 'English',
   },
 
   // ==================== COMMUN ====================
@@ -81,7 +81,8 @@ export default {
     langue: 'Langue',
     fonctionnalites: 'Fonctionnalités',
     pretCommencer: 'Prêt à commencer ?',
-    rejoindreCollabPro: 'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
+    rejoindreCollabPro:
+      'Rejoignez CollabPro et commencez à gérer vos projets collaboratifs maintenant.',
     invitationUnique: 'Rejoignez notre communauté et transformez votre façon de collaborer',
     gratuit: 'Gratuit',
     inconnu: 'Inconnu',
@@ -143,12 +144,13 @@ export default {
   home: {
     hero: {
       tagline: 'Application Web de Gestion de Projets Collaboratifs',
-      description: "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel."
+      description:
+        "Plateforme intuitive pour PME et freelances, permettant la création et gestion de projets ainsi que l'attribution de tâches avec intégration d'outils de collaboration en temps réel.",
     },
     cta: {
       titre: 'Prêt à démarrer ?',
-      sousTitre: 'Créez votre compte et lancez vos projets collaboratifs.'
-    }
+      sousTitre: 'Créez votre compte et lancez vos projets collaboratifs.',
+    },
   },
 
   // ==================== AUTHENTIFICATION ====================
@@ -175,7 +177,7 @@ export default {
     dejaInscrit: 'Déjà inscrit ?',
     abonnementPremiumRequis: 'Abonnement Premium requis pour ce rôle',
     francais: 'Français',
-    english: 'English'
+    english: 'English',
   },
 
   // ==================== INSCRIPTION ====================
@@ -200,7 +202,7 @@ export default {
     accepterCGU: "J'accepte les conditions générales d'utilisation",
     creerCompte: 'Créer mon compte',
     dejaCompte: 'Vous avez déjà un compte ?',
-    seConnecter: 'Se connecter'
+    seConnecter: 'Se connecter',
   },
 
   // ==================== CONNEXION ====================
@@ -213,7 +215,7 @@ export default {
     motDePasseOublie: 'Mot de passe oublié ?',
     pasDeCompte: "Vous n'avez pas de compte ?",
     sInscrire: "S'inscrire",
-    resterConnecte: 'Rester connecté'
+    resterConnecte: 'Rester connecté',
   },
 
   // ==================== MOT DE PASSE OUBLIÉ ====================
@@ -223,7 +225,7 @@ export default {
     email: 'Votre adresse e-mail',
     envoyer: 'Envoyer le lien',
     retourConnexion: 'Retour à la connexion',
-    emailEnvoye: 'E-mail de réinitialisation envoyé'
+    emailEnvoye: 'E-mail de réinitialisation envoyé',
   },
 
   // ==================== RÔLES UTILISATEURS ====================
@@ -237,7 +239,7 @@ export default {
     chefProjetPremium: 'Chef de projet Premium',
     coChefProjet: 'Co-chef de projet',
     administrateur: 'Administrateur',
-    tousLesRoles: 'Tous les rôles'
+    tousLesRoles: 'Tous les rôles',
   },
 
   // ==================== GESTION DE PROJETS ====================
@@ -323,7 +325,7 @@ export default {
       en_attente_validation: 'En attente de validation',
       enAttente: 'En attente',
       EN_ATTENTE: 'En attente',
-    }
+    },
   },
 
   // ==================== PROJETS PUBLICS ====================
@@ -341,7 +343,7 @@ export default {
     modeConsultationDescription: 'Vous êtes en mode consultation. Veuillez vous',
     erreurChargement: 'Erreur lors du chargement des projets publics',
     creerNouvelleTache: 'Créer une nouvelle tâche',
-    creerTache: 'Créer une tâche'
+    creerTache: 'Créer une tâche',
   },
 
   // ==================== PROJET (SINGULIER) ====================
@@ -350,7 +352,8 @@ export default {
     changerStatut: 'Changer le statut',
     confirmerChangementStatut: 'Confirmer le changement de statut ?',
     statutModifie: 'Statut modifié avec succès',
-    erreurTachesNonTerminees: 'Impossible de terminer le projet : {count} tâche(s) ne sont pas encore terminées'
+    erreurTachesNonTerminees:
+      'Impossible de terminer le projet : {count} tâche(s) ne sont pas encore terminées',
   },
 
   // ==================== GESTION DES TÂCHES ====================
@@ -459,19 +462,19 @@ export default {
 
     placeholders: {
       titre: 'Entrez le titre de la tâche',
-      description: 'Décrivez la tâche à réaliser'
+      description: 'Décrivez la tâche à réaliser',
     },
 
     kanban: {
       titre: 'Vue Kanban',
       aucuneTache: 'Aucune tâche',
       deplacementReussi: 'Tâche déplacée avec succès',
-      erreurDeplacement: 'Erreur lors du déplacement de la tâche'
+      erreurDeplacement: 'Erreur lors du déplacement de la tâche',
     },
 
     vue: {
       liste: 'Liste',
-      kanban: 'Kanban'
+      kanban: 'Kanban',
     },
 
     liste: {
@@ -490,7 +493,7 @@ export default {
       prioriteBasse: 'Basse',
       prioriteNormale: 'Normale',
       prioriteHaute: 'Haute',
-      commencerCreer: 'Commencer à créer'
+      commencerCreer: 'Commencer à créer',
     },
 
     filtres: {
@@ -501,7 +504,7 @@ export default {
       tri: 'Tri',
       plusRecent: 'Plus récent',
       plusAncien: 'Plus ancien',
-      parTitre: 'Par titre'
+      parTitre: 'Par titre',
     },
 
     statuts: {
@@ -518,7 +521,7 @@ export default {
       TERMINE: 'Terminé',
       ANNULE: 'Annulé',
       BROUILLON: 'Brouillon',
-      EN_ATTENTE_VALIDATION: 'En attente de validation'
+      EN_ATTENTE_VALIDATION: 'En attente de validation',
     },
 
     details: {
@@ -532,7 +535,7 @@ export default {
       statut: 'Statut',
       assigneeA: 'Assigné à',
       nonDefini: 'Non défini',
-      introuvable: 'Tâche introuvable'
+      introuvable: 'Tâche introuvable',
     },
 
     priorites: {
@@ -547,16 +550,16 @@ export default {
       critique: 'Critique',
       CRITIQUE: 'Critique',
       urgente: 'Urgente',
-      URGENTE: 'Urgente'
+      URGENTE: 'Urgente',
     },
 
     commentaires: {
-      titre: 'Commentaires'
+      titre: 'Commentaires',
     },
 
     workflow: {
       titre: 'Workflow',
-      aide: 'Aide'
+      aide: 'Aide',
     },
 
     actions: {
@@ -565,8 +568,8 @@ export default {
       confirmerValidation: 'Valider cette tâche ?',
       validationReussie: 'Tâche validée avec succès',
       confirmerAnnulation: 'Annuler cette tâche ?',
-      annulationReussie: 'Tâche annulée avec succès'
-    }
+      annulationReussie: 'Tâche annulée avec succès',
+    },
   },
 
   // ==================== KANBAN ====================
@@ -576,16 +579,16 @@ export default {
     colonnes: {
       aFaire: 'À faire',
       enCours: 'En cours',
-      termine: 'Terminé'
-    }
+      termine: 'Terminé',
+    },
   },
 
   // ==================== NAVIGATION ====================
   navigation: {
     accueil: 'Accueil',
-    taches: 'Tâches'
+    taches: 'Tâches',
   },
-// ==================== GESTION DES ÉQUIPES ====================
+  // ==================== GESTION DES ÉQUIPES ====================
   equipe: {
     titre: 'Équipe',
     equipe: 'Équipe',
@@ -619,8 +622,8 @@ export default {
     roles: {
       membre: 'Membre',
       moderateur: 'Modérateur',
-      admin: 'Administrateur'
-    }
+      admin: 'Administrateur',
+    },
   },
 
   // ==================== MEMBRES ====================
@@ -644,24 +647,25 @@ export default {
       description: 'Devenez Chef de Projet et créez vos propres équipes',
       decouvrir: 'Découvrir Premium',
       ajouterMembre: 'Ajouter un membre',
-      aucunResultat: 'Aucun résultat trouvé'
+      aucunResultat: 'Aucun résultat trouvé',
     },
     kpis: {
       projetsRejoints: 'Projets rejoints',
       tachesAssignees: 'Tâches assignées',
-      tachesTerminees: 'Tâches terminées'
+      tachesTerminees: 'Tâches terminées',
     },
     devenirChefProjet: 'Devenir Chef de Projet',
     creerProjetGererEquipes: 'Créez vos projets et gérez vos équipes',
     passerPremium: 'Passer à Premium',
-    infoAbonnement: 'Les invitations de membres sont réservées aux chefs de projet avec abonnement actif.',
+    infoAbonnement:
+      'Les invitations de membres sont réservées aux chefs de projet avec abonnement actif.',
     rechercherUtilisateur: 'Rechercher un utilisateur',
     placeholderRecherche: 'Tapez un nom ou un email...',
     minimum3caracteres: 'Saisissez au moins 3 caractères',
     resultatsTrouves: '{count} résultat(s) trouvé(s)',
     dejaMembre: 'Déjà membre',
     instructionsRecherche: 'Utilisez la recherche ci-dessus pour trouver des utilisateurs.',
-    membreAjouteAvecNotification: 'Membre {nom} ajouté et notifié'
+    membreAjouteAvecNotification: 'Membre {nom} ajouté et notifié',
   },
 
   // ==================== COLLABORATION EN TEMPS RÉEL ====================
@@ -680,7 +684,7 @@ export default {
     descriptionTempsReel: 'Chat en temps réel dans les projets pour les membres connectés.',
     commencerDiscussion: 'Commencez la discussion',
     mesProjets: 'Mes projets',
-    selectionnerProjet: 'Sélectionnez un projet pour commencer'
+    selectionnerProjet: 'Sélectionnez un projet pour commencer',
   },
 
   // ==================== CHAT ====================
@@ -693,8 +697,6 @@ export default {
     erreurChargement: 'Erreur lors du chargement du chat',
     erreurEnvoi: "Erreur lors de l'envoi du message",
     envoi: 'Envoi...',
-
-
   },
 
   // ==================== COMMENTAIRES ====================
@@ -726,7 +728,7 @@ export default {
     confirmerSuppression: 'Supprimer ce commentaire ?',
     aucun: 'Aucun commentaire',
     voirTous: 'Voir tous les commentaires',
-    ajoutSucces: 'Commentaire ajouté avec succès'
+    ajoutSucces: 'Commentaire ajouté avec succès',
   },
 
   // ==================== NOTIFICATIONS ====================
@@ -780,7 +782,7 @@ export default {
       periode: 'Période',
       toutesPeriodes: 'Toutes les périodes',
       rechercher: 'Rechercher',
-      placeholder: 'Rechercher dans les notifications...'
+      placeholder: 'Rechercher dans les notifications...',
     },
     types: {
       tache: 'Tâche',
@@ -789,13 +791,13 @@ export default {
       membre: 'Nouveau membre ajouté',
       paiement: 'Paiement',
       invitation: 'Invitation',
-      systeme: 'Système'
+      systeme: 'Système',
     },
     periodes: {
       ajd: "Aujourd'hui",
       semaine: 'Cette semaine',
-      mois: 'Ce mois'
-    }
+      mois: 'Ce mois',
+    },
   },
 
   // ==================== ABONNEMENTS ====================
@@ -835,14 +837,17 @@ export default {
     abonnementExpire: 'Abonnement expiré',
     renouvelerPourContinuer: 'Renouvelez pour continuer',
     abonnementPremiumRequis: 'Abonnement Premium Requis',
-    pourAccederFonctionnalites: 'Pour accéder aux fonctionnalités Chef de Projet, un abonnement Premium est requis.',
-    accepterConditions: "J'accepte les conditions d'abonnement et autorise le prélèvement mensuel de 10€",
-    souscrirePremium: 'Souscrire à Premium ({prix})',
+    pourAccederFonctionnalites:
+      'Pour accéder aux fonctionnalités Chef de Projet, un abonnement Premium est requis.',
+    accepterConditions:
+      "J'accepte les conditions d'abonnement et autorise le prélèvement mensuel de 10€",
+    souscrirePremium: 'Souscrire à Premium',
     devenirChef: 'Devenir Chef de Projet',
     avantagesChef: 'Créez vos projets et gérez vos équipes',
     commencer: 'Commencer',
     activationRequise: 'Activation requise',
-    fonctionnalitesLimitees: "Certaines fonctionnalités sont limitées tant que l'abonnement n'est pas activé.",
+    fonctionnalitesLimitees:
+      "Certaines fonctionnalités sont limitées tant que l'abonnement n'est pas activé.",
     activerMaintenant: 'Activer maintenant',
     premiumActif: 'Premium actif',
     validiteJusqu: "Validité jusqu'au",
@@ -860,8 +865,8 @@ export default {
       montantTTC: 'Montant TTC',
       reactiver: 'Réactiver mon abonnement',
       expire: 'Expiré',
-      souscrirePremium: 'Souscrire à Premium'
-    }
+      souscrirePremium: 'Souscrire à Premium',
+    },
   },
 
   // ==================== PAIEMENTS ====================
@@ -888,7 +893,12 @@ export default {
     cvvInvalide: 'CVV invalide',
     expirationInvalide: "Format de date d'expiration invalide",
     adresseInvalide: 'Adresse de facturation invalide',
-    accepterConditionsRequis: "Veuillez accepter les conditions d'abonnement"
+    accepterConditionsRequis: "Veuillez accepter les conditions d'abonnement",
+    nomCarteRequis: 'Le nom sur la carte est requis',
+    erreurUtilisateurNonConnecte: 'Erreur : utilisateur non connecté',
+    erreurChargementFormulaire: 'Erreur de chargement du formulaire de paiement',
+    erreurClientSecret: 'Erreur de configuration du paiement',
+    erreurPaiementNonAbouti: "Le paiement n'a pas abouti",
   },
 
   // ==================== FACTURES ====================
@@ -961,7 +971,7 @@ export default {
       EN_ATTENTE: 'En attente',
       envoyee: 'Envoyée',
       payee: 'Payée',
-      annulee: 'Annulée'
+      annulee: 'Annulée',
     },
     errors: {
       loadFailed: 'Erreur lors du chargement des factures',
@@ -969,13 +979,13 @@ export default {
       emailNotAvailable: 'Fonction email non disponible',
       networkError: 'Erreur réseau',
       serverError: 'Erreur serveur',
-      general: 'Erreur générale'
+      general: 'Erreur générale',
     },
     success: {
       loaded: 'Factures chargées avec succès',
       pdfDownloaded: 'PDF téléchargé avec succès',
-      general: 'Opération réussie'
-    }
+      general: 'Opération réussie',
+    },
   },
 
   // ==================== FICHIERS ====================
@@ -997,7 +1007,7 @@ export default {
     telechargement: 'Téléversement...',
     uploadReussi: 'Fichier téléversé avec succès !',
     suppressionReussie: 'Fichier supprimé avec succès !',
-    confirmerSuppression: 'Voulez-vous vraiment supprimer ce fichier ?'
+    confirmerSuppression: 'Voulez-vous vraiment supprimer ce fichier ?',
   },
 
   // ==================== FACTURE (Détail) ====================
@@ -1030,10 +1040,11 @@ export default {
     informationsPaiement: 'Informations de paiement :',
     iban: 'IBAN : BE99 9999 9999 9999',
     bic: 'BIC : GEBABEBB',
-    mentionLegale: 'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.',
+    mentionLegale:
+      'En effectuant le règlement de cette facture, vous confirmez automatiquement votre accord avec les conditions générales de vente.',
     genereeLe: 'Générée le',
     chargementDetails: 'Chargement des détails de la facture…',
-    total: 'TOTAL TTC :'
+    total: 'TOTAL TTC :',
   },
 
   // ==================== PROFIL ====================
@@ -1097,7 +1108,7 @@ export default {
     dateDebut: 'Date de début',
     membres: 'membres',
     motDePasseMinLength: 'Le mot de passe doit contenir au moins {length} caractères.',
-    motDePasseNonIdentique: 'Les mots de passe ne correspondent pas.'
+    motDePasseNonIdentique: 'Les mots de passe ne correspondent pas.',
   },
 
   // ==================== TABLEAUX DE BORD ====================
@@ -1119,8 +1130,8 @@ export default {
       supportPremium: {
         titre: 'Support Premium',
         description: 'Contactez-nous pour une assistance prioritaire',
-        bouton: 'Contacter le support'
-      }
+        bouton: 'Contacter le support',
+      },
     },
     membre: {
       titre: 'Tableau de bord Membre',
@@ -1131,28 +1142,29 @@ export default {
       profil: 'Mon profil',
       promoPremium: {
         titre: 'Passez à la version Premium !',
-        description: "Profitez de fonctionnalités avancées et d'une meilleure expérience collaborative.",
-        bouton: "Découvrir l'offre"
+        description:
+          "Profitez de fonctionnalités avancées et d'une meilleure expérience collaborative.",
+        bouton: "Découvrir l'offre",
       },
       kpi: {
         projetsRejoints: 'Projets rejoints',
         tachesAttribuees: 'Tâches attribuées',
         tachesTerminees: 'Tâches terminées',
         reussite: 'de réussite',
-        notifications: 'Notifications'
+        notifications: 'Notifications',
       },
       sections: {
         projets: 'Mes projets',
         taches: 'Mes tâches',
-        notifications: 'Mes notifications'
+        notifications: 'Mes notifications',
       },
       taches: {
-        aucuneTache: 'Aucune tâche pour le moment'
+        aucuneTache: 'Aucune tâche pour le moment',
       },
       notifications: {
-        vide: 'Aucune notification pour le moment'
-      }
-    }
+        vide: 'Aucune notification pour le moment',
+      },
+    },
   },
 
   // ==================== MEMBRE SPÉCIFIQUE ====================
@@ -1165,22 +1177,22 @@ export default {
       titre: 'Mon profil',
       informations: 'Informations personnelles',
       statistiques: 'Statistiques',
-      preferences: 'Préférences'
+      preferences: 'Préférences',
     },
     sections: {
       projets: 'Mes projets',
       taches: 'Mes tâches assignées',
       notifications: 'Notifications',
-      collaboration: 'Collaboration'
+      collaboration: 'Collaboration',
     },
     chat: {
       description: "Messagerie d'équipe en temps réel",
-      placeholder: 'Écrire un message...'
+      placeholder: 'Écrire un message...',
     },
     promoPremium: {
       titre: 'Passez à Premium !',
       description: 'Devenez Chef de Projet et créez vos propres équipes',
-      bouton: 'Découvrir Premium'
+      bouton: 'Découvrir Premium',
     },
     kpi: {
       projetsRejoints: 'Projets rejoints',
@@ -1190,14 +1202,14 @@ export default {
       urgentes: 'urgentes',
       reussite: 'réussite',
       messages: 'Messages',
-      notifications: 'Notifications'
+      notifications: 'Notifications',
     },
     projets: {
       titre: 'Mes projets',
       description: 'Projets auxquels vous participez',
       aucunProjet: 'Aucun projet',
       messageVide: 'Vous serez invité par un chef de projet',
-      mesTaches: 'Mes tâches'
+      mesTaches: 'Mes tâches',
     },
     taches: {
       titre: 'Mes tâches assignées',
@@ -1213,21 +1225,22 @@ export default {
       soumettre: 'Soumettre pour validation',
       confirmerSoumission: 'Voulez-vous soumettre cette tâche pour validation ?',
       soumissionReussie: 'Tâche soumise avec succès !',
-      pasActionPossible: 'Aucune action disponible'
+      pasActionPossible: 'Aucune action disponible',
     },
     premium: {
       titre: 'Devenez Chef de Projet',
       description: 'Créez vos projets et gérez vos équipes',
-      bouton: 'Passer à Premium'
+      bouton: 'Passer à Premium',
     },
     devenirChef: {
       titre: 'Passez Chef de Projet et créez vos propres projets !',
-      description: 'Souscrivez un abonnement pour débloquer la création et la gestion complète de projets collaboratifs.',
-      bouton: 'Découvrir'
+      description:
+        'Souscrivez un abonnement pour débloquer la création et la gestion complète de projets collaboratifs.',
+      bouton: 'Découvrir',
     },
     notifications: {
-      vide: 'Aucune notification pour le moment'
-    }
+      vide: 'Aucune notification pour le moment',
+    },
   },
 
   // ==================== CHEF DE PROJET SPÉCIFIQUE ====================
@@ -1267,10 +1280,10 @@ export default {
       mesProjets: 'Mes projets',
       membresEquipe: 'Membres équipe',
       tachesEnValidation: 'Tâches en validation',
-      equipes: 'équipes'
+      equipes: 'équipes',
     },
     projets: {
-      creationGestionSupervision: 'Création, gestion et supervision'
+      creationGestionSupervision: 'Création, gestion et supervision',
     },
     equipes: {
       ajouterMembre: 'Ajouter un membre',
@@ -1291,7 +1304,7 @@ export default {
       roleModifie: 'Rôle modifié avec succès',
       confirmerRetrait: 'Retirer ce membre du projet ?',
       membreRetire: 'Membre retiré du projet',
-      supprimerCompte: 'Supprimer le compte'
+      supprimerCompte: 'Supprimer le compte',
     },
     taches: {
       creerAssigner: 'Créer et assigner',
@@ -1303,8 +1316,8 @@ export default {
       tacheCreeeAssignee: 'Tâche créée et assignée',
       validationTaches: 'Validation des tâches',
       workflowApprobation: "Workflow d'approbation",
-      aucuneTacheValider: 'Aucune tâche à valider pour le moment'
-    }
+      aucuneTacheValider: 'Aucune tâche à valider pour le moment',
+    },
   },
 
   // ==================== ADMINISTRATION ====================
@@ -1360,7 +1373,8 @@ export default {
     toutesLesTaches: 'Toutes les tâches de la plateforme',
     aucuneTache: 'Aucune tâche',
     annulerTache: 'Annuler cette tâche',
-    confirmerAnnulationTache: 'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
+    confirmerAnnulationTache:
+      'Êtes-vous sûr de vouloir annuler cette tâche ? Cette action est irréversible.',
     tacheAnnulee: 'Tâche annulée avec succès',
     erreurAnnulationTache: "Erreur lors de l'annulation de la tâche",
     gestionMessages: 'Gestion des messages',
@@ -1385,16 +1399,17 @@ export default {
     brouillon: 'Brouillon',
     aucunProjet: 'Aucun projet',
     nouveauRole: 'Nouveau rôle',
-    confirmerSuppressionUtilisateur: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
+    confirmerSuppressionUtilisateur:
+      'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
     erreurSuppression: 'Erreur lors de la suppression',
-    repartitionRoles: "Répartition des rôles",
-    statistiquesProjets: "Statistiques des projets",
-    projetsActifs: "Projets Actifs",
-    termines: "Terminés",
-    suspendus: "Suspendus",
-    publics: "Publics",
-    actifs: "Actifs",
-    nombreProjets: "Nombre de projets"
+    repartitionRoles: 'Répartition des rôles',
+    statistiquesProjets: 'Statistiques des projets',
+    projetsActifs: 'Projets Actifs',
+    termines: 'Terminés',
+    suspendus: 'Suspendus',
+    publics: 'Publics',
+    actifs: 'Actifs',
+    nombreProjets: 'Nombre de projets',
   },
 
   // ==================== ERREURS GÉNÉRALES ====================
@@ -1433,7 +1448,7 @@ export default {
     uploadFichier: 'Erreur lors du téléversement du fichier',
     telechargementFichier: 'Erreur lors du téléchargement du fichier',
     suppressionFichier: 'Erreur lors de la suppression du fichier',
-    soumissionTache: 'Erreur lors de la soumission de la tâche'
+    soumissionTache: 'Erreur lors de la soumission de la tâche',
   },
 
   // ==================== VALIDATION ====================
@@ -1457,16 +1472,17 @@ export default {
     erreurConnexion: 'Email ou mot de passe incorrect',
     emailMotDePasseIncorrect: 'Email ou mot de passe incorrect',
     accepterConditionsAbonnement: "Veuillez accepter les conditions d'abonnement",
-    conditionsAbonnementRequises: "L'acceptation des conditions d'abonnement est obligatoire"
+    conditionsAbonnementRequises: "L'acceptation des conditions d'abonnement est obligatoire",
   },
 
   // ==================== STRIPE ====================
   stripe: {
     cancel: {
       titre: 'Paiement annulé',
-      description: "Votre paiement n'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.",
+      description:
+        "Votre paiement n'a pas été finalisé. Vous pouvez réessayer ou revenir à votre tableau de bord.",
       retour: 'Retour au tableau de bord',
-      supportEmail: 'support@collabpro.com'
+      supportEmail: 'support@collabpro.com',
     },
     success: {
       titre: 'Paiement réussi',
@@ -1484,10 +1500,10 @@ export default {
       factureGeneree: 'Votre facture a été générée et est disponible dans la section Factures.',
       accederTableauBord: 'Aller au tableau de bord',
       voirFactures: 'Voir mes factures',
-      erreurConfirmation: 'Erreur de confirmation du paiement.'
+      erreurConfirmation: 'Erreur de confirmation du paiement.',
     },
     retour: 'Aller à mon tableau de bord',
-    contactSupport: 'support@collabpro.com'
+    contactSupport: 'support@collabpro.com',
   },
 
   // ==================== TOOLTIPS ====================
@@ -1539,7 +1555,6 @@ export default {
     dateEcheance: "Date d'échéance",
     tacheCreee: 'Tâche créée',
     supprimerCommentaire: 'Supprimer ce commentaire',
-
   },
 
   // ==================== À PROPOS ====================
@@ -1549,29 +1564,34 @@ export default {
     retourAccueil: "Retour à l'accueil",
     mission: {
       titre: 'Notre mission',
-      description1: 'CollabPro a été conçu pour simplifier la gestion de projets collaboratifs et offrir aux ',
+      description1:
+        'CollabPro a été conçu pour simplifier la gestion de projets collaboratifs et offrir aux ',
       cible: 'PME et freelances',
-      description2: ' une solution intuitive et complète pour organiser leur travail en équipe.'
+      description2: ' une solution intuitive et complète pour organiser leur travail en équipe.',
     },
     fonctionnalites: {
       titre: 'Fonctionnalités principales',
       gestionProjets: {
         titre: 'Gestion de projets',
-        description: 'Créez, organisez et suivez vos projets avec une interface intuitive et des outils de collaboration avancés.'
+        description:
+          'Créez, organisez et suivez vos projets avec une interface intuitive et des outils de collaboration avancés.',
       },
       gestionTaches: {
         titre: 'Gestion des tâches',
         disponibles: 'Tâches disponibles',
-        description: "Assignez des tâches, suivez leur progression et validez les résultats avec un workflow d'approbation complet."
+        description:
+          "Assignez des tâches, suivez leur progression et validez les résultats avec un workflow d'approbation complet.",
       },
       collaborationEquipe: {
         titre: 'Collaboration en équipe',
-        description: 'Invitez des membres, gérez les rôles et facilitez la communication au sein de vos équipes projet.'
+        description:
+          'Invitez des membres, gérez les rôles et facilitez la communication au sein de vos équipes projet.',
       },
       tempsReel: {
         titre: 'Communication temps réel',
-        description: 'Échangez instantanément avec votre équipe grâce au chat intégré et aux notifications automatiques.'
-      }
+        description:
+          'Échangez instantanément avec votre équipe grâce au chat intégré et aux notifications automatiques.',
+      },
     },
     technologies: {
       titre: 'Technologies utilisées',
@@ -1580,30 +1600,30 @@ export default {
         springBoot: 'Spring Boot (Java 21)',
         apiRest: 'API REST sécurisée',
         mysql: 'Base de données MySQL',
-        jwt: 'Authentification JWT + BCrypt'
+        jwt: 'Authentification JWT + BCrypt',
       },
       frontend: {
         titre: 'Frontend',
         vue: 'Vue.js 3 + Vue Router',
         responsive: 'Interface responsive',
         multilingue: 'Support multilingue (FR/EN)',
-        stripe: 'Intégration Stripe pour les paiements'
-      }
+        stripe: 'Intégration Stripe pour les paiements',
+      },
     },
     conformite: {
       titre: 'Conformité et sécurité',
       rgpd: {
         titre: 'Conformité RGPD',
-        description: 'Protection des données personnelles selon la réglementation européenne'
+        description: 'Protection des données personnelles selon la réglementation européenne',
       },
       securite: {
         titre: 'Sécurité',
-        description: 'Chiffrement des données et authentification sécurisée'
+        description: 'Chiffrement des données et authentification sécurisée',
       },
       paiements: {
         titre: 'Paiements sécurisés',
-        description: 'Traitement des paiements via Stripe, certifié PCI DSS'
-      }
+        description: 'Traitement des paiements via Stripe, certifié PCI DSS',
+      },
     },
     contact: {
       developpePar: 'Développé par',
@@ -1611,8 +1631,8 @@ export default {
       cadre: "Dans le cadre d'un projet académique",
       institution: 'Institution Éducative',
       decouvrir: 'Découvrir la plateforme',
-      contacter: 'Nous contacter'
-    }
+      contacter: 'Nous contacter',
+    },
   },
 
   // ==================== CONDITIONS GÉNÉRALES ====================
@@ -1622,23 +1642,28 @@ export default {
     conditionsUsage: "Conditions d'utilisation de CollabPro",
     documentMisAJour: 'Document mis à jour en septembre 2025',
     introduction: 'Introduction',
-    introductionText: "Les présentes conditions générales d'utilisation régissent l'accès et l'utilisation de la plateforme CollabPro. En utilisant nos services, vous acceptez sans réserve ces conditions.",
+    introductionText:
+      "Les présentes conditions générales d'utilisation régissent l'accès et l'utilisation de la plateforme CollabPro. En utilisant nos services, vous acceptez sans réserve ces conditions.",
     important: 'Important',
-    importantText: "L'utilisation de CollabPro implique l'acceptation intégrale de ces conditions. Si vous n'acceptez pas ces termes, veuillez ne pas utiliser notre plateforme.",
+    importantText:
+      "L'utilisation de CollabPro implique l'acceptation intégrale de ces conditions. Si vous n'acceptez pas ces termes, veuillez ne pas utiliser notre plateforme.",
     objetApplication: "Objet de l'application",
-    objetText: 'CollabPro est une plateforme de gestion de projets collaboratifs destinée aux PME et freelances, offrant les fonctionnalités suivantes :',
+    objetText:
+      'CollabPro est une plateforme de gestion de projets collaboratifs destinée aux PME et freelances, offrant les fonctionnalités suivantes :',
     gestionProjets: 'Gestion de projets',
     gestionProjetsDesc: 'Création, organisation et suivi de projets professionnels',
     collaborationTempsReel: 'Collaboration temps réel',
     collaborationDesc: 'Communication instantanée et partage de documents entre membres',
     inscriptionComptes: 'Inscription et comptes',
-    inscriptionText: "L'inscription sur CollabPro est gratuite pour les membres. Les fonctionnalités Chef de Projet nécessitent un abonnement Premium.",
+    inscriptionText:
+      "L'inscription sur CollabPro est gratuite pour les membres. Les fonctionnalités Chef de Projet nécessitent un abonnement Premium.",
     responsabiliteCompte: 'Responsabilité du compte',
     informationsExactes: 'Fournir des informations exactes et à jour',
     confidentialiteIdentifiants: 'Maintenir la confidentialité de vos identifiants',
     notificationUsage: 'Notifier tout usage non autorisé de votre compte',
     utilisationApplication: "Utilisation de l'application",
-    utilisationText: "L'utilisation de CollabPro doit respecter les lois en vigueur et les présentes conditions.",
+    utilisationText:
+      "L'utilisation de CollabPro doit respecter les lois en vigueur et les présentes conditions.",
     usagesAutorises: 'Usages autorisés',
     gestionProjetsPro: 'Gestion de projets professionnels',
     collaborationEquipe: "Collaboration d'équipe",
@@ -1650,7 +1675,8 @@ export default {
     paiementsTransactions: 'Paiements et transactions',
     paiementsText: 'Les paiements sont traités de manière sécurisée via notre partenaire Stripe.',
     securiteStripe: 'Sécurité Stripe',
-    securiteStripeDesc: 'Les paiements sont traités via Stripe, certifié PCI DSS. CollabPro ne stocke aucune information bancaire.',
+    securiteStripeDesc:
+      'Les paiements sont traités via Stripe, certifié PCI DSS. CollabPro ne stocke aucune information bancaire.',
     typeAbonnement: "Type d'abonnement",
     creationGestion: 'Création et gestion de projets illimités',
     participationProjets: 'Participation aux projets existants',
@@ -1658,9 +1684,11 @@ export default {
     protectionDonnees: 'Protection des données',
     protectionText: "CollabPro s'engage à protéger vos données personnelles conformément au RGPD.",
     referenceRGPD: 'Référence RGPD',
-    referenceRGPDText: 'Pour plus de détails sur le traitement de vos données, consultez notre politique de confidentialité.',
+    referenceRGPDText:
+      'Pour plus de détails sur le traitement de vos données, consultez notre politique de confidentialité.',
     responsabilites: 'Responsabilités',
-    responsabilitesText: 'CollabPro met tout en œuvre pour assurer la disponibilité et la sécurité de la plateforme.',
+    responsabilitesText:
+      'CollabPro met tout en œuvre pour assurer la disponibilité et la sécurité de la plateforme.',
     nosEngagements: 'Nos engagements',
     disponibiliteOptimale: 'Disponibilité optimale du service',
     securiteDonnees: 'Sécurité des données',
@@ -1670,11 +1698,14 @@ export default {
     maintenanceProgrammee: 'Maintenance programmée',
     forceMajeure: 'Cas de force majeure',
     modificationsCGU: 'Modifications des CGU',
-    modificationsText: 'CollabPro se réserve le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés de tout changement significatif.',
+    modificationsText:
+      'CollabPro se réserve le droit de modifier ces conditions à tout moment. Les utilisateurs seront informés de tout changement significatif.',
     notificationChangements: 'Notification des changements',
-    notificationDesc: 'Les modifications importantes seront notifiées par email et affichées sur la plateforme.',
+    notificationDesc:
+      'Les modifications importantes seront notifiées par email et affichées sur la plateforme.',
     loiApplicable: 'Loi applicable',
-    loiText: 'Les présentes conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux compétents de Belgique.',
+    loiText:
+      'Les présentes conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux compétents de Belgique.',
     juridictionCompetente: 'Juridiction compétente',
     juridictionDesc: 'En cas de litige, les tribunaux de Bruxelles sont exclusivement compétents.',
     contact: 'Contact',
@@ -1683,7 +1714,7 @@ export default {
     protectionEmail: 'protection@collabpro.com',
     creerCompteBtn: 'Créer un compte',
     retourAccueilBtn: "Retour à l'accueil",
-    adapteProjets: 'Adapté aux PME et freelances pour leurs projets collaboratifs'
+    adapteProjets: 'Adapté aux PME et freelances pour leurs projets collaboratifs',
   },
 
   // ==================== POLITIQUE DE CONFIDENTIALITÉ ====================
@@ -1693,9 +1724,11 @@ export default {
     rgpd: 'RGPD',
     derniereMiseAJour: 'Dernière mise à jour : septembre 2025',
     conformiteRGPD: 'Conformité RGPD',
-    conformiteRGPDDesc: "Cette politique est conforme au Règlement Général sur la Protection des Données (RGPD) en vigueur dans l'Union Européenne.",
+    conformiteRGPDDesc:
+      "Cette politique est conforme au Règlement Général sur la Protection des Données (RGPD) en vigueur dans l'Union Européenne.",
     donneesCollectees: 'Données collectées',
-    donneesCollecteesDesc: "Nous collectons uniquement les données nécessaires à la création de votre compte et à l'utilisation de nos services.",
+    donneesCollecteesDesc:
+      "Nous collectons uniquement les données nécessaires à la création de votre compte et à l'utilisation de nos services.",
     donneesIdentification: "Données d'identification",
     hache: 'haché',
     donneesUtilisation: "Données d'utilisation",
@@ -1714,7 +1747,8 @@ export default {
     pagesVisitees: 'Pages visitées',
     preferencesLangue: 'Préférences de langue',
     finalitesTraitement: 'Finalités du traitement',
-    finalitesTraitementDesc: 'Vos données sont utilisées exclusivement pour le bon fonctionnement de la plateforme.',
+    finalitesTraitementDesc:
+      'Vos données sont utilisées exclusivement pour le bon fonctionnement de la plateforme.',
     fournitureServices: 'Fourniture des services',
     fournitureServicesDesc: 'Création de compte, gestion de projets, collaboration en temps réel',
     baseLegale: 'Base légale',
@@ -1728,7 +1762,8 @@ export default {
     ameliorationService: 'Amélioration du service',
     ameliorationServiceDesc: "Analyse d'utilisation pour améliorer nos fonctionnalités",
     dureeConservation: 'Durée de conservation',
-    dureeConservationDesc: 'Nous conservons vos données uniquement pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées.',
+    dureeConservationDesc:
+      'Nous conservons vos données uniquement pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées.',
     typeDonnees: 'Type de données',
     justification: 'Justification',
     compteUtilisateur: 'Compte utilisateur',
@@ -1743,7 +1778,8 @@ export default {
     dureeConnexion: '12 mois',
     securiteAudit: 'Sécurité et audit',
     vosDroitsRGPD: 'Vos droits RGPD',
-    vosDroitsRGPDDesc: 'Conformément au RGPD, vous disposez de plusieurs droits sur vos données personnelles.',
+    vosDroitsRGPDDesc:
+      'Conformément au RGPD, vous disposez de plusieurs droits sur vos données personnelles.',
     droitAcces: "Droit d'accès",
     droitAccesDesc: 'Obtenir une copie de vos données personnelles',
     droitRectification: 'Droit de rectification',
@@ -1761,7 +1797,8 @@ export default {
     avecPieceIdentite: "avec une pièce d'identité",
     delaiReponse: 'Délai de réponse : 1 mois maximum',
     securiteTransferts: 'Sécurité et transferts',
-    securiteTransfertsDesc: 'Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.',
+    securiteTransfertsDesc:
+      'Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données.',
     mesuresTechniques: 'Mesures techniques',
     chiffrementDonnees: 'Chiffrement des données (HTTPS)',
     hachageMotsPasse: 'Hachage des mots de passe (BCrypt)',
@@ -1773,7 +1810,8 @@ export default {
     proceduresIncidents: "Procédures en cas d'incident",
     auditsSecurite: 'Audits de sécurité',
     destinatairesDonnees: 'Destinataires des données',
-    destinatairesDonneesDesc: 'Vos données peuvent être partagées avec les destinataires suivants :',
+    destinatairesDonneesDesc:
+      'Vos données peuvent être partagées avec les destinataires suivants :',
     destinataire: 'Destinataire',
     finalite: 'Finalité',
     donneesConcernees: 'Données concernées',
@@ -1786,15 +1824,18 @@ export default {
     serviceEmail: 'Service email',
     emailNomPrenom: 'Email, nom, prénom',
     transfertsHorsUE: 'Transferts hors UE',
-    transfertsHorsUEDesc: 'Certains partenaires peuvent être situés hors UE avec garanties de protection adéquates (clauses contractuelles types).',
+    transfertsHorsUEDesc:
+      'Certains partenaires peuvent être situés hors UE avec garanties de protection adéquates (clauses contractuelles types).',
     contactReclamations: 'Contact et réclamations',
     contactReclamationsDesc: 'Pour toute question concernant vos données personnelles :',
     delegueDPO: 'Délégué à la protection des données',
     autoriteControle: 'Autorité de contrôle',
     commissionEuropeenne: 'Commission de la protection de la vie privée (Belgique)',
     droitReclamation: 'Droit de réclamation',
-    droitReclamationDesc: "Vous avez le droit d'introduire une réclamation auprès de l'autorité de contrôle si vous estimez que vos droits ne sont pas respectés.",
-    conformiteRGPDFooter: "CollabPro est conforme au RGPD et s'engage à protéger vos données personnelles."
+    droitReclamationDesc:
+      "Vous avez le droit d'introduire une réclamation auprès de l'autorité de contrôle si vous estimez que vos droits ne sont pas respectés.",
+    conformiteRGPDFooter:
+      "CollabPro est conforme au RGPD et s'engage à protéger vos données personnelles.",
   },
 
   // ==================== CONTACT ====================
@@ -1805,18 +1846,18 @@ export default {
     entreprise: 'CollabPro Solutions',
     adresse: {
       rue: '123 Rue de la Paix',
-      ville: '1000 Bruxelles, Belgique'
+      ville: '1000 Bruxelles, Belgique',
     },
     email: {
       titre: 'Adresse e-mail',
-      adresse: 'contact@collabpro.be'
+      adresse: 'contact@collabpro.be',
     },
     tva: {
       titre: 'Numéro de TVA',
-      numero: 'BE0123.456.789'
+      numero: 'BE0123.456.789',
     },
     enAttente: 'En attente',
-    retourAccueil: "Retour à l'accueil"
+    retourAccueil: "Retour à l'accueil",
   },
 
   // ==================== PRIORITÉS ====================
@@ -1824,7 +1865,7 @@ export default {
     BASSE: 'Basse',
     NORMALE: 'Normale',
     HAUTE: 'Haute',
-    URGENTE: 'Urgente'
+    URGENTE: 'Urgente',
   },
 
   // ==================== STATUTS GÉNÉRAUX ====================
@@ -1834,7 +1875,7 @@ export default {
     TERMINE: 'Terminé',
     ANNULE: 'Annulé',
     BROUILLON: 'Brouillon',
-    EN_ATTENTE_VALIDATION: 'En attente de validation'
+    EN_ATTENTE_VALIDATION: 'En attente de validation',
   },
   // ==================== STATISTIQUES ====================
   statistiques: {
@@ -1847,8 +1888,6 @@ export default {
     tachesAssignees: 'Tâches assignées',
     tachesNonAssignees: 'Tâches non assignées',
     moyenneMembresProjet: 'Moyenne membres/projet',
-    aAssigner: 'à assigner'
-  }
-
-
-};
+    aAssigner: 'à assigner',
+  },
+}

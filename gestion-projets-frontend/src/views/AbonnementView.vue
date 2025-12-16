@@ -16,7 +16,7 @@
             <div class="alert alert-info d-flex align-items-start">
               <i class="fas fa-info-circle me-2 mt-1"></i>
               <div>
-                <strong>{{ $t('commun.bienvenue') }} {{ utilisateur?.prenom }} !</strong><br>
+                <strong>{{ $t('commun.bienvenue') }} {{ utilisateur?.prenom }} !</strong><br />
                 {{ $t('abonnement.pourAccederFonctionnalites') }}
               </div>
             </div>
@@ -33,11 +33,10 @@
               ></i>
               <span class="ms-2">
                 <strong>{{
-                    abonnementActif
-                      ? $t('abonnement.actif')
-                      : $t('abonnement.expire')
-                  }}</strong>
-                <span v-if="abonnement.date_fin" class="ms-2">—
+                  abonnementActif ? $t('abonnement.actif') : $t('abonnement.expire')
+                }}</strong>
+                <span v-if="abonnement.date_fin" class="ms-2"
+                  >—
                   {{ $t('abonnement.expireLe') }}
                   {{ formatDate(abonnement.date_fin) }}</span
                 >
@@ -50,8 +49,7 @@
                 <div class="card border-primary h-100">
                   <div class="card-header bg-primary text-white text-center">
                     <h5 class="mb-0">
-                      <i class="fas fa-crown me-2"></i
-                      >{{ $t('abonnement.planPremium') }}
+                      <i class="fas fa-crown me-2"></i>{{ $t('abonnement.planPremium') }}
                     </h5>
                   </div>
                   <div class="card-body">
@@ -59,7 +57,9 @@
                       <!-- ✅ CORRECTION 1 : Prix avec HT -->
                       <h2 class="text-primary">
                         10,00 € <small class="text-muted">HT</small>
-                        <small class="text-muted d-block" style="font-size: 0.9rem;">{{ $t('abonnement.parMois') }}</small>
+                        <small class="text-muted d-block" style="font-size: 0.9rem">{{
+                          $t('abonnement.parMois')
+                        }}</small>
                       </h2>
                     </div>
                     <ul class="list-unstyled mb-0 features-list">
@@ -102,21 +102,13 @@
                     <form @submit.prevent="souscrire">
                       <!-- Nom sur la carte -->
                       <div class="mb-3">
-                        <label class="form-label">{{
-                            $t('paiement.nomCarte')
-                          }}</label>
-                        <input
-                          class="form-control"
-                          v-model.trim="paiement.nomCarte"
-                          required
-                        />
+                        <label class="form-label">{{ $t('paiement.nomCarte') }}</label>
+                        <input class="form-control" v-model.trim="paiement.nomCarte" required />
                       </div>
 
                       <!-- Numéro de carte -->
                       <div class="mb-3">
-                        <label class="form-label">{{
-                            $t('paiement.numeroCarte')
-                          }}</label>
+                        <label class="form-label">{{ $t('paiement.numeroCarte') }}</label>
                         <input
                           class="form-control"
                           :placeholder="$t('paiement.numeroCartePlaceholder')"
@@ -130,9 +122,7 @@
                       <!-- Expiration + CVV -->
                       <div class="row">
                         <div class="col-md-6 mb-3">
-                          <label class="form-label">{{
-                              $t('paiement.expiration')
-                            }}</label>
+                          <label class="form-label">{{ $t('paiement.expiration') }}</label>
                           <input
                             class="form-control"
                             :placeholder="$t('paiement.expirationPlaceholder')"
@@ -143,9 +133,7 @@
                           />
                         </div>
                         <div class="col-md-6 mb-3">
-                          <label class="form-label">{{
-                              $t('paiement.cvv')
-                            }}</label>
+                          <label class="form-label">{{ $t('paiement.cvv') }}</label>
                           <!-- 🔒 CVV masqué -->
                           <input
                             class="form-control"
@@ -162,9 +150,7 @@
 
                       <!-- Adresse de facturation -->
                       <div class="mb-3">
-                        <label class="form-label">{{
-                            $t('paiement.adresseFacturation')
-                          }}</label>
+                        <label class="form-label">{{ $t('paiement.adresseFacturation') }}</label>
                         <input
                           class="form-control"
                           :placeholder="$t('paiement.adressePlaceholder')"
@@ -195,7 +181,10 @@
                           </h6>
                           <!-- ✅ CORRECTION 2 : Ligne avec HT -->
                           <div class="d-flex justify-content-between">
-                            <span>{{ $t('paiement.abonnementMensuel') }} <small class="text-muted">HT</small></span>
+                            <span
+                              >{{ $t('paiement.abonnementMensuel') }}
+                              <small class="text-muted">HT</small></span
+                            >
                             <strong>{{ montantHTFormatte }}</strong>
                           </div>
                           <div class="d-flex justify-content-between">
@@ -211,11 +200,7 @@
                       </div>
 
                       <!-- Bouton -->
-                      <button
-                        type="submit"
-                        class="btn btn-success w-100"
-                        :disabled="loadingAction"
-                      >
+                      <button type="submit" class="btn btn-success w-100" :disabled="loadingAction">
                         <span
                           v-if="loadingAction"
                           class="spinner-border spinner-border-sm me-2"
@@ -235,11 +220,7 @@
                     </form>
 
                     <!-- Messages -->
-                    <div
-                      v-if="message"
-                      class="alert mt-3"
-                      :class="messageType"
-                    >
+                    <div v-if="message" class="alert mt-3" :class="messageType">
                       <i
                         :class="
                           messageType.includes('success')
@@ -253,8 +234,7 @@
                 </div>
 
                 <p class="text-muted small mt-2">
-                  <i class="fas fa-lock me-1"></i
-                  >{{ $t('abonnement.descriptionPaiements') }}
+                  <i class="fas fa-lock me-1"></i>{{ $t('abonnement.descriptionPaiements') }}
                 </p>
               </div>
             </div>
@@ -263,12 +243,8 @@
 
         <!-- Lien tableau de bord si actif -->
         <div class="text-center mt-3" v-if="abonnementActif">
-          <router-link
-            to="/tableau-bord-chef-projet"
-            class="btn btn-outline-success"
-          >
-            <i class="fas fa-arrow-right me-2"></i
-            >{{ $t('nav.tableauBord') }}
+          <router-link to="/tableau-bord-chef-projet" class="btn btn-outline-success">
+            <i class="fas fa-arrow-right me-2"></i>{{ $t('nav.tableauBord') }}
           </router-link>
         </div>
       </div>
@@ -296,8 +272,8 @@ export default {
         expiration: '',
         cvv: '',
         adresse: '',
-        accepteConditions: false
-      }
+        accepteConditions: false,
+      },
     }
   },
   computed: {
@@ -343,7 +319,7 @@ export default {
     },
     totalTTCFormatte() {
       return this.formatPrix(this.totalTTC)
-    }
+    },
   },
   mounted() {
     const u = useAuthStore().user
@@ -386,16 +362,14 @@ export default {
         digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits
     },
     formatPrix(val) {
-      return new Intl.NumberFormat(
-        this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US',
-        { style: 'currency', currency: 'EUR' }
-      ).format(val)
+      return new Intl.NumberFormat(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US', {
+        style: 'currency',
+        currency: 'EUR',
+      }).format(val)
     },
     formatDate(date) {
       if (!date) return '—'
-      return new Date(date).toLocaleDateString(
-        this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US'
-      )
+      return new Date(date).toLocaleDateString(this.$i18n.locale === 'fr' ? 'fr-FR' : 'en-US')
     },
     validerForm() {
       const num = this.paiement.numeroCarte.replace(/\s/g, '')
@@ -467,7 +441,7 @@ export default {
           nom: 'Plan Premium Mensuel',
           prix: this.prixMensuelHT,
           duree: 1,
-          type: 'premium'
+          type: 'premium',
         })
 
         this.abonnement = data
@@ -479,16 +453,13 @@ export default {
         localStorage.setItem('user', JSON.stringify(me.data))
 
         // Message succès
-        this.message =
-          this.$t('paiement.paiementReussi') ||
-          'Abonnement souscrit avec succès !'
+        this.message = this.$t('paiement.paiementReussi') || 'Abonnement souscrit avec succès !'
         this.messageType = 'alert-success'
 
         // Redirection
         setTimeout(() => {
           this.$router.push('/tableau-bord-chef-projet')
         }, 1500)
-
       } catch (e) {
         console.error('Erreur souscription:', e)
         const errorMsg =
@@ -502,8 +473,8 @@ export default {
       } finally {
         this.loadingAction = false
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

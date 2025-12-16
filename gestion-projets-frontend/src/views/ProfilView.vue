@@ -15,59 +15,6 @@
     </div>
 
     <div v-else class="profil-content">
-      <div class="projets-actifs-section">
-        <h2>{{ t('profil.mesProjetsActifs') }}</h2>
-
-        <div v-if="chargementProjets" class="loading-projets">
-          <div class="spinner-small"></div>
-          <span>{{ t('profil.chargementProjets') }}</span>
-        </div>
-
-        <div v-else-if="projetsActifs.length === 0" class="aucun-projet">
-          <p>{{ t('profil.aucunProjetActif') }}</p>
-        </div>
-
-        <div v-else class="projets-grid">
-          <div
-            v-for="projet in projetsActifs"
-            :key="projet.id"
-            class="projet-card"
-            @click="naviguerVersProjet(projet.id)"
-          >
-            <div class="projet-header">
-              <h3 class="projet-nom">{{ projet.nom || projet.titre || 'Projet' }}</h3>
-              <span :class="['projet-statut', `statut-${(projet.statut || 'actif').toLowerCase()}`]">
-                {{ t(`projets.statuts.${(projet.statut || 'actif').toLowerCase()}`) }}
-              </span>
-            </div>
-
-            <p v-if="projet.description" class="projet-description">
-              {{ projet.description }}
-            </p>
-
-            <div class="projet-info">
-              <div class="info-item">
-                <span class="info-label">{{ t('profil.role') }}:</span>
-                <span class="info-value">{{ getRoleLabel(projet.role || projet.roleUtilisateur) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">{{ t('profil.tachesEnCours') }}:</span>
-                <span class="info-value">{{ projet.tachesCount || projet.nombreTaches || 0 }}</span>
-              </div>
-              <div class="info-item" v-if="projet.dateDebut">
-                <span class="info-label">{{ t('profil.dateDebut') }}:</span>
-                <span class="info-value">{{ formaterDate(projet.dateDebut) }}</span>
-              </div>
-            </div>
-
-            <div v-if="projet.membres?.length || projet.membresCount" class="projet-membres">
-              <span class="membres-icon">👥</span>
-              <span>{{ projet.membres?.length || projet.membresCount || 0 }} {{ t('profil.membres') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Formulaire profil -->
       <div class="profil-form-container">
         <h2>{{ t('profil.informationsPersonnelles') }}</h2>
@@ -127,16 +74,8 @@
 
           <div class="form-group">
             <label for="langue">{{ t('profil.langue') }}</label>
-            <select
-              id="langue"
-              v-model="formulaire.langue"
-              :disabled="sauvegardeEnCours"
-            >
-              <option
-                v-for="langue in languesDisponibles"
-                :key="langue.code"
-                :value="langue.code"
-              >
+            <select id="langue" v-model="formulaire.langue" :disabled="sauvegardeEnCours">
+              <option v-for="langue in languesDisponibles" :key="langue.code" :value="langue.code">
                 {{ t(langue.label) }}
               </option>
             </select>
@@ -195,7 +134,7 @@
             type="text"
             :value="formulaire.email"
             autocomplete="username"
-            style="display: none;"
+            style="display: none"
             aria-hidden="true"
           />
 
@@ -243,7 +182,14 @@
             />
           </div>
 
-          <div v-if="motDePasseForm.nouveauMotDePasse && motDePasseForm.confirmationMotDePasse && motDePasseForm.nouveauMotDePasse !== motDePasseForm.confirmationMotDePasse" class="error-message">
+          <div
+            v-if="
+              motDePasseForm.nouveauMotDePasse &&
+              motDePasseForm.confirmationMotDePasse &&
+              motDePasseForm.nouveauMotDePasse !== motDePasseForm.confirmationMotDePasse
+            "
+            class="error-message"
+          >
             {{ t('profil.motDePasseNonIdentique') }}
           </div>
 
@@ -266,29 +212,26 @@
 <script>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
-import { userAPI, projectAPI } from '@/services/api'
+import { userAPI } from '@/services/api'
 
 export default {
   name: 'ProfilView',
   setup() {
     const { t, locale } = useI18n()
-    const router = useRouter()
     const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE || 'fr'
     const motDePasseMinLength = parseInt(import.meta.env.VITE_PASSWORD_MIN_LENGTH || '8')
 
     const languesDisponibles = [
       { code: 'fr', label: 'langues.francais' },
-      { code: 'en', label: 'langues.anglais' }
+      { code: 'en', label: 'langues.anglais' },
     ]
 
     const chargement = ref(true)
-    const chargementProjets = ref(true)
+
     const sauvegardeEnCours = ref(false)
     const changementMotDePasseEnCours = ref(false)
 
     const utilisateur = ref({})
-    const projetsActifs = ref([])
 
     const message = reactive({ texte: '', type: '' })
     const messageCss = computed(() =>
@@ -296,7 +239,7 @@ export default {
         ? 'alert-success'
         : message.type === 'error'
           ? 'alert-danger'
-          : 'alert-info'
+          : 'alert-info',
     )
 
     const formulaire = reactive({
@@ -304,35 +247,39 @@ export default {
       prenom: '',
       email: '',
       langue: defaultLocale,
-      adresse: ''
+      adresse: '',
     })
     const formulaireOriginal = reactive({})
 
     const motDePasseForm = reactive({
       ancienMotDePasse: '',
       nouveauMotDePasse: '',
-      confirmationMotDePasse: ''
+      confirmationMotDePasse: '',
     })
 
     const formulaireModifie = computed(() =>
-      Object.keys(formulaire).some(k => formulaire[k] !== formulaireOriginal[k])
+      Object.keys(formulaire).some((k) => formulaire[k] !== formulaireOriginal[k]),
     )
 
-    const motDePasseFormValide = computed(() =>
-      motDePasseForm.ancienMotDePasse &&
-      motDePasseForm.nouveauMotDePasse &&
-      motDePasseForm.confirmationMotDePasse &&
-      motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
-      motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength
+    const motDePasseFormValide = computed(
+      () =>
+        motDePasseForm.ancienMotDePasse &&
+        motDePasseForm.nouveauMotDePasse &&
+        motDePasseForm.confirmationMotDePasse &&
+        motDePasseForm.nouveauMotDePasse === motDePasseForm.confirmationMotDePasse &&
+        motDePasseForm.nouveauMotDePasse.length >= motDePasseMinLength,
     )
 
     const afficherMessage = (texte, type = 'success') => {
       message.texte = texte
       message.type = type
-      setTimeout(() => { message.texte = ''; message.type = '' }, 5000)
+      setTimeout(() => {
+        message.texte = ''
+        message.type = ''
+      }, 5000)
     }
 
-    const normalizeId = (v) => v == null ? v : String(v).split(':')[0]
+    const normalizeId = (v) => (v == null ? v : String(v).split(':')[0])
 
     const chargerProfil = async () => {
       chargement.value = true
@@ -355,7 +302,7 @@ export default {
           prenom: utilisateur.value.prenom || '',
           email: utilisateur.value.email || '',
           langue: utilisateur.value.langue || locale.value || defaultLocale,
-          adresse: utilisateur.value.adresse || ''
+          adresse: utilisateur.value.adresse || '',
         })
         Object.assign(formulaireOriginal, { ...formulaire })
       } else {
@@ -366,30 +313,6 @@ export default {
       chargement.value = false
     }
 
-    const chargerProjetsActifs = async () => {
-      chargementProjets.value = true
-
-      const utilisateurConnecte = JSON.parse(localStorage.getItem('user') || '{}')
-      if (!utilisateurConnecte?.id) {
-        chargementProjets.value = false
-        return
-      }
-
-      const userId = normalizeId(utilisateurConnecte.id)
-      const reponse = await projectAPI.byUser(userId)
-
-      if (reponse?.data && Array.isArray(reponse.data)) {
-        projetsActifs.value = reponse.data.map(p => ({
-          ...p,
-          id: normalizeId(p.id)
-        }))
-      } else {
-        projetsActifs.value = []
-      }
-
-      chargementProjets.value = false
-    }
-
     const mettreAJourProfil = async () => {
       sauvegardeEnCours.value = true
 
@@ -397,7 +320,7 @@ export default {
       const userId = normalizeId(utilisateurConnecte.id)
 
       const payload = {}
-      Object.keys(formulaire).forEach(k => {
+      Object.keys(formulaire).forEach((k) => {
         if (formulaire[k] !== formulaireOriginal[k]) payload[k] = formulaire[k]
       })
 
@@ -430,7 +353,7 @@ export default {
       Object.assign(motDePasseForm, {
         ancienMotDePasse: '',
         nouveauMotDePasse: '',
-        confirmationMotDePasse: ''
+        confirmationMotDePasse: '',
       })
       afficherMessage(t('profil.motDePasseChange'), 'success')
 
@@ -439,53 +362,52 @@ export default {
 
     const annulerModifications = () => Object.assign(formulaire, { ...formulaireOriginal })
 
-    const naviguerVersProjet = (projetId) => {
-      if (projetId) {
-        router.push({ name: 'ProjetDetail', params: { id: normalizeId(projetId) } })
-      }
-    }
-
     const formaterDate = (str) => {
       if (!str) return ''
       const langueActuelle = formulaire.langue || defaultLocale
       const localeMap = { fr: 'fr-FR', en: 'en-US' }
-      return new Date(str).toLocaleDateString(localeMap[langueActuelle] || localeMap[defaultLocale], {
-        year: 'numeric', month: 'long', day: 'numeric'
-      })
+      return new Date(str).toLocaleDateString(
+        localeMap[langueActuelle] || localeMap[defaultLocale],
+        {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        },
+      )
     }
 
     const getRoleLabel = (role) => {
       if (!role) return '—'
       const labels = {
-        'CHEF_PROJET': t('roles.chefProjet') || 'Chef de Projet',
-        'MEMBRE': t('roles.membre') || 'Membre',
-        'ADMINISTRATEUR': t('roles.administrateur') || 'Administrateur'
+        CHEF_PROJET: t('roles.chefProjet') || 'Chef de Projet',
+        MEMBRE: t('roles.membre') || 'Membre',
+        ADMINISTRATEUR: t('roles.administrateur') || 'Administrateur',
       }
       return labels[role] || role
     }
 
     onMounted(() => {
       chargerProfil()
-      chargerProjetsActifs()
     })
 
-    watch(() => formulaire.langue, (lang) => {
-      if (!lang) return
-      locale.value = lang
-      const stored = JSON.parse(localStorage.getItem('user') || '{}')
-      if (stored?.id) {
-        stored.langue = lang
-        localStorage.setItem('user', JSON.stringify(stored))
-      }
-    })
+    watch(
+      () => formulaire.langue,
+      (lang) => {
+        if (!lang) return
+        locale.value = lang
+        const stored = JSON.parse(localStorage.getItem('user') || '{}')
+        if (stored?.id) {
+          stored.langue = lang
+          localStorage.setItem('user', JSON.stringify(stored))
+        }
+      },
+    )
 
     return {
       chargement,
-      chargementProjets,
       sauvegardeEnCours,
       changementMotDePasseEnCours,
       utilisateur,
-      projetsActifs,
       message,
       messageCss,
       formulaire,
@@ -497,144 +419,85 @@ export default {
       mettreAJourProfil,
       changerMotDePasse,
       annulerModifications,
-      naviguerVersProjet,
       formaterDate,
       getRoleLabel,
-      t
+      t,
     }
-  }
+  },
 }
 </script>
 
-<style scoped>stion-projets-
-.profil-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-.profil-header { text-align: center; margin-bottom: 30px; }
-.profil-header h1 { font-size: 2.5rem; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
-.profil-subtitle { color: #718096; font-size: 1.1rem; }
-
-.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
-.alert-success { background-color: #f0fff4; color: #38a169; border: 1px solid #9ae6b4; }
-.alert-danger { background-color: #fed7d7; color: #e53e3e; border: 1px solid #feb2b2; }
-
-.loading { text-align: center; padding: 40px; }
-.spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-@keyframes spin { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
-
-.loading-projets { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 24px; color: #718096; }
-.spinner-small { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top: 2px solid #4299e1; border-radius: 50%; animation: spin 1s linear infinite; }
-
-.projets-actifs-section {
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  border: 1px solid #e2e8f0;
-  margin-bottom: 30px;
-}
-.projets-actifs-section h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 12px;
-}
-
-.aucun-projet {
-  text-align: center;
-  padding: 40px 20px;
-  color: #718096;
-  font-size: 1.05rem;
-}
-
-.projets-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.projet-card {
-  background: #f7fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+<style scoped>
+.profil-container {
+  max-width: 1000px;
+  margin: 0 auto;
   padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
-.projet-card:hover {
-  border-color: #4299e1;
-  box-shadow: 0 4px 12px rgba(66,153,225,.15);
-  transform: translateY(-2px);
+.profil-header {
+  text-align: center;
+  margin-bottom: 30px;
 }
-
-.projet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  gap: 12px;
-}
-.projet-nom {
-  font-size: 1.25rem;
+.profil-header h1 {
+  font-size: 2.5rem;
   font-weight: 600;
   color: #2d3748;
-  margin: 0;
-  flex: 1;
+  margin-bottom: 8px;
+}
+.profil-subtitle {
+  color: #718096;
+  font-size: 1.1rem;
 }
 
-.projet-statut {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
 }
-.statut-actif { background: #c6f6d5; color: #22543d; }
-.statut-termine { background: #bee3f8; color: #2c5282; }
-
-.projet-description {
-  color: #4a5568;
-  font-size: 0.95rem;
-  margin-bottom: 16px;
-  line-height: 1.5;
+.alert-success {
+  background-color: #f0fff4;
+  color: #38a169;
+  border: 1px solid #9ae6b4;
+}
+.alert-danger {
+  background-color: #fed7d7;
+  color: #e53e3e;
+  border: 1px solid #feb2b2;
 }
 
-.projet-info {
-  margin-bottom: 12px;
+.loading {
+  text-align: center;
+  padding: 40px;
 }
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #e2e8f0;
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #4299e1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
 }
-.info-item:last-child { border-bottom: none; }
-.info-label { color: #718096; font-weight: 500; }
-.info-value { color: #2d3748; font-weight: 600; }
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
-.projet-membres {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
-  color: #4a5568;
-  font-size: 0.9rem;
-}
-.membres-icon { font-size: 1.1rem; }
-
-.profil-form-container, .mot-de-passe-section {
+.profil-form-container,
+.mot-de-passe-section {
   background: #fff;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
   margin-bottom: 30px;
 }
-.profil-form-container h2, .mot-de-passe-section h2 {
+.profil-form-container h2,
+.mot-de-passe-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
   color: #2d3748;
@@ -643,31 +506,57 @@ export default {
   padding-bottom: 12px;
 }
 
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 6px; font-size: .95rem; }
-.form-group input, .form-group select, .form-group textarea {
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
-  transition: all .2s;
+  transition: all 0.2s;
   background: #fff;
   font-family: inherit;
 }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66,153,225,.1);
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
-.form-group input:disabled, .form-group select:disabled, .form-group textarea:disabled {
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
   background: #f7fafc;
   cursor: not-allowed;
-  opacity: .6;
+  opacity: 0.6;
 }
-.form-group input.readonly { background: #f7fafc; color: #718096; cursor: default; }
-.form-group textarea { resize: vertical; min-height: 80px; }
-.form-help { display: block; margin-top: 6px; font-size: 0.85rem; color: #718096; }
+.form-group input.readonly {
+  background: #f7fafc;
+  color: #718096;
+  cursor: default;
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.form-help {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #718096;
+}
 
 .error-message {
   background: #fed7d7;
@@ -687,23 +576,44 @@ export default {
   padding-top: 20px;
   border-top: 1px solid #e2e8f0;
 }
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: .95rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all .2s;
+  transition: all 0.2s;
   border: 2px solid transparent;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.btn-primary { background: #4299e1; color: #fff; border-color: #4299e1; }
-.btn-primary:hover:not(:disabled) { background: #3182ce; border-color: #3182ce; transform: translateY(-1px); }
-.btn-secondary { background: #fff; color: #4a5568; border-color: #e2e8f0; }
-.btn-secondary:hover:not(:disabled) { background: #f7fafc; border-color: #cbd5e0; }
-.btn-primary:disabled, .btn-secondary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.btn-primary {
+  background: #4299e1;
+  color: #fff;
+  border-color: #4299e1;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #3182ce;
+  border-color: #3182ce;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: #fff;
+  color: #4a5568;
+  border-color: #e2e8f0;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 .btn-spinner {
   width: 16px;
   height: 16px;
@@ -714,10 +624,21 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .profil-container { padding: 16px; }
-  .profil-form-container, .mot-de-passe-section, .projets-actifs-section { padding: 20px; }
-  .projets-grid { grid-template-columns: 1fr; }
-  .form-actions { flex-direction: column; }
-  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+  .profil-container {
+    padding: 16px;
+  }
+  .profil-form-container,
+  .mot-de-passe-section {
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
